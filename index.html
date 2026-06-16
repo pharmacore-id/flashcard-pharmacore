@@ -43,7 +43,7 @@
             padding: 16px;
             display: flex;
             justify-content: center;
-            align-items: flex-start;
+            align-items: center;
         }
 
         .app {
@@ -71,7 +71,143 @@
             }
         }
 
-        /* ---------- HEADER ---------- */
+        /* ---------- LOGIN / REGISTER SCREEN ---------- */
+        .auth-container {
+            background: white;
+            border-radius: var(--radius);
+            padding: 40px 28px;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--gray-100);
+        }
+
+        .auth-container .logo {
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--primary);
+            text-align: center;
+            margin-bottom: 4px;
+        }
+        .auth-container .logo span {
+            color: var(--gray-800);
+        }
+        .auth-container .subtitle {
+            text-align: center;
+            color: var(--gray-600);
+            margin-bottom: 28px;
+            font-size: 14px;
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+        .form-group label {
+            display: block;
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--gray-800);
+            margin-bottom: 4px;
+        }
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid var(--gray-200);
+            border-radius: var(--radius-sm);
+            font-size: 15px;
+            outline: none;
+            transition: 0.2s;
+            font-family: inherit;
+            background: white;
+        }
+        .form-group input:focus,
+        .form-group select:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(13, 148, 136, 0.1);
+        }
+
+        .btn {
+            padding: 14px 28px;
+            border: none;
+            border-radius: 40px;
+            font-weight: 600;
+            font-size: 15px;
+            cursor: pointer;
+            transition: 0.2s;
+            font-family: inherit;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+        }
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+        .btn-primary:hover {
+            background: #0f766e;
+            transform: translateY(-1px);
+        }
+        .btn-primary:active {
+            transform: scale(0.98);
+        }
+
+        .btn-outline {
+            background: transparent;
+            color: var(--primary);
+            border: 2px solid var(--primary);
+        }
+        .btn-outline:hover {
+            background: var(--primary-bg);
+        }
+
+        .auth-switch {
+            text-align: center;
+            margin-top: 16px;
+            font-size: 14px;
+            color: var(--gray-600);
+        }
+        .auth-switch a {
+            color: var(--primary);
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+        }
+        .auth-switch a:hover {
+            text-decoration: underline;
+        }
+
+        .error-msg {
+            background: #fee2e2;
+            color: #991b1b;
+            padding: 10px 14px;
+            border-radius: var(--radius-sm);
+            font-size: 14px;
+            margin-bottom: 12px;
+            display: none;
+        }
+        .error-msg.visible {
+            display: block;
+        }
+
+        .plan-badge {
+            display: inline-block;
+            padding: 2px 12px;
+            border-radius: 40px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-left: 8px;
+        }
+        .plan-badge.free {
+            background: #e2e8f0;
+            color: #475569;
+        }
+        .plan-badge.premium {
+            background: #fef9c3;
+            color: #854d0e;
+        }
+
+        /* ---------- DASHBOARD ---------- */
         .header {
             display: flex;
             justify-content: space-between;
@@ -79,13 +215,13 @@
             margin-bottom: 4px;
         }
 
-        .logo {
+        .logo-small {
             font-size: 22px;
             font-weight: 700;
             color: var(--primary);
             letter-spacing: -0.5px;
         }
-        .logo span {
+        .logo-small span {
             color: var(--gray-800);
         }
 
@@ -106,6 +242,19 @@
             margin-bottom: 18px;
         }
 
+        .logout-btn {
+            background: none;
+            border: none;
+            color: var(--gray-400);
+            font-size: 13px;
+            cursor: pointer;
+            padding: 4px 8px;
+            transition: 0.2s;
+        }
+        .logout-btn:hover {
+            color: var(--red);
+        }
+
         /* ---------- DECK GRID ---------- */
         .deck-grid {
             display: grid;
@@ -122,6 +271,7 @@
             cursor: pointer;
             transition: transform 0.15s, box-shadow 0.2s;
             border: 1px solid var(--gray-100);
+            position: relative;
         }
         .deck-card:hover {
             transform: translateY(-2px);
@@ -129,6 +279,13 @@
         }
         .deck-card:active {
             transform: scale(0.97);
+        }
+        .deck-card .premium-lock {
+            position: absolute;
+            top: 8px;
+            right: 10px;
+            font-size: 14px;
+            color: var(--yellow);
         }
 
         .deck-icon {
@@ -167,6 +324,17 @@
             background: var(--primary);
             border-radius: 4px;
             transition: width 0.4s ease;
+        }
+
+        .premium-badge {
+            display: inline-block;
+            background: #fef9c3;
+            color: #854d0e;
+            font-size: 10px;
+            font-weight: 700;
+            padding: 2px 8px;
+            border-radius: 40px;
+            margin-left: 6px;
         }
 
         /* ---------- STATS ---------- */
@@ -471,21 +639,93 @@
             .flashcard .card-answer {
                 font-size: 16px;
             }
+            .auth-container {
+                padding: 28px 16px;
+            }
         }
     </style>
 </head>
 <body>
 
     <div class="app" id="app">
-        <!-- ====== DASHBOARD ====== -->
-        <div class="screen active" id="dashboardScreen">
-            <div class="header">
+
+        <!-- ====== LOGIN SCREEN ====== -->
+        <div class="screen active" id="loginScreen">
+            <div class="auth-container">
                 <div class="logo">💊 Pharma<span>Core</span></div>
-                <span style="font-size:14px; color:var(--gray-400);">📅 <span id="todayDate"></span></span>
+                <div class="subtitle">Sign in to continue studying</div>
+
+                <div class="error-msg" id="loginError">Invalid username or password</div>
+
+                <div class="form-group">
+                    <label>Username</label>
+                    <input type="text" id="loginUsername" placeholder="Enter your username" />
+                </div>
+                <div class="form-group">
+                    <label>Password</label>
+                    <input type="password" id="loginPassword" placeholder="Enter your password" />
+                </div>
+
+                <button class="btn btn-primary" id="loginBtn">🔑 Sign In</button>
+
+                <div class="auth-switch">
+                    Don't have an account? <a id="switchToRegister">Create one</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- ====== REGISTER SCREEN ====== -->
+        <div class="screen" id="registerScreen">
+            <div class="auth-container">
+                <div class="logo">💊 Pharma<span>Core</span></div>
+                <div class="subtitle">Create your free account</div>
+
+                <div class="error-msg" id="registerError">Something went wrong</div>
+
+                <div class="form-group">
+                    <label>Choose a Nickname <span style="color:var(--gray-400);font-weight:400;">(how we'll call you)</span></label>
+                    <input type="text" id="registerNickname" placeholder="e.g. George, Sarah, Alex" />
+                </div>
+                <div class="form-group">
+                    <label>Username <span style="color:var(--gray-400);font-weight:400;">(for login)</span></label>
+                    <input type="text" id="registerUsername" placeholder="Choose a username" />
+                </div>
+                <div class="form-group">
+                    <label>Password</label>
+                    <input type="password" id="registerPassword" placeholder="Create a password" />
+                </div>
+                <div class="form-group">
+                    <label>Exam Date</label>
+                    <input type="date" id="registerExamDate" />
+                </div>
+                <div class="form-group">
+                    <label>Plan</label>
+                    <select id="registerPlan">
+                        <option value="FREE">FREE — Basic flashcards</option>
+                        <option value="PREMIUM">PREMIUM — All decks + advanced features</option>
+                    </select>
+                </div>
+
+                <button class="btn btn-primary" id="registerBtn">🚀 Create Account</button>
+
+                <div class="auth-switch">
+                    Already have an account? <a id="switchToLogin">Sign in</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- ====== DASHBOARD SCREEN ====== -->
+        <div class="screen" id="dashboardScreen">
+            <div class="header">
+                <div class="logo-small">💊 Pharma<span>Core</span></div>
+                <div>
+                    <span id="planBadge"></span>
+                    <button class="logout-btn" id="logoutBtn">🚪 Logout</button>
+                </div>
             </div>
 
             <div class="greeting">Hi, <span id="userName">Student</span>! <small>👋</small></div>
-            <div class="sub-headline">What are we studying today?</div>
+            <div class="sub-headline">What are we studying today? <span id="examCountdown" style="color:var(--gray-400);font-size:13px;"></span></div>
 
             <div class="deck-grid" id="deckGrid">
                 <div class="loading" id="deckLoading">
@@ -566,7 +806,7 @@
 
     <script>
         // ============================================================
-        // YOUR APPS SCRIPT URL — ALREADY EMBEDDED
+        // YOUR APPS SCRIPT URL
         // ============================================================
         const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxmq6IDit8M1WwbIszr5b4iskC4j1CpuEkaIEvvSaWmg4CfKByT93z8HaUL8nZTyQ-tQQ/exec';
 
@@ -574,7 +814,9 @@
         // STATE
         // ============================================================
         const state = {
-            token: 'IDEMO',
+            token: null,
+            nickname: null,
+            plan: null,
             decks: [],
             currentDeck: null,
             cards: [],
@@ -589,17 +831,38 @@
         const $ = (sel) => document.querySelector(sel);
         const $$ = (sel) => document.querySelectorAll(sel);
 
+        // Auth
+        const loginScreen = $('#loginScreen');
+        const registerScreen = $('#registerScreen');
+        const loginError = $('#loginError');
+        const registerError = $('#registerError');
+        const loginUsername = $('#loginUsername');
+        const loginPassword = $('#loginPassword');
+        const loginBtn = $('#loginBtn');
+        const registerNickname = $('#registerNickname');
+        const registerUsername = $('#registerUsername');
+        const registerPassword = $('#registerPassword');
+        const registerExamDate = $('#registerExamDate');
+        const registerPlan = $('#registerPlan');
+        const registerBtn = $('#registerBtn');
+        const switchToRegister = $('#switchToRegister');
+        const switchToLogin = $('#switchToLogin');
+
+        // Dashboard
         const dashboardScreen = $('#dashboardScreen');
-        const studyScreen = $('#studyScreen');
+        const userName = $('#userName');
+        const planBadge = $('#planBadge');
+        const examCountdown = $('#examCountdown');
         const deckGrid = $('#deckGrid');
         const deckLoading = $('#deckLoading');
-        const todayDate = $('#todayDate');
-        const userName = $('#userName');
         const statAccuracy = $('#statAccuracy');
         const statMastered = $('#statMastered');
         const statStreak = $('#statStreak');
         const notificationList = $('#notificationList');
+        const logoutBtn = $('#logoutBtn');
 
+        // Study
+        const studyScreen = $('#studyScreen');
         const studyTitle = $('#studyTitle');
         const studyProgressText = $('#studyProgressText');
         const studyProgressFill = $('#studyProgressFill');
@@ -638,6 +901,13 @@
             return state.progress[cardId] || null;
         }
 
+        function getDaysUntil(dateStr) {
+            const target = new Date(dateStr);
+            const now = new Date();
+            const diff = target - now;
+            return Math.ceil(diff / (1000 * 60 * 60 * 24));
+        }
+
         // ============================================================
         // API CALLS
         // ============================================================
@@ -653,17 +923,147 @@
         }
 
         // ============================================================
+        // AUTH FUNCTIONS
+        // ============================================================
+        async function handleLogin() {
+            const username = loginUsername.value.trim();
+            const password = loginPassword.value.trim();
+
+            if (!username || !password) {
+                loginError.textContent = 'Please enter username and password';
+                loginError.classList.add('visible');
+                return;
+            }
+
+            loginError.classList.remove('visible');
+            loginBtn.textContent = '⏳ Signing in...';
+            loginBtn.disabled = true;
+
+            try {
+                const result = await apiCall('login', { username, password });
+
+                if (result.error) {
+                    loginError.textContent = result.error;
+                    loginError.classList.add('visible');
+                    loginBtn.textContent = '🔑 Sign In';
+                    loginBtn.disabled = false;
+                    return;
+                }
+
+                if (result.success && result.user) {
+                    state.token = result.user.token;
+                    state.nickname = result.user.nickname || result.user.token;
+                    state.plan = result.user.plan;
+
+                    // Save session
+                    sessionStorage.setItem('pharmacore_token', state.token);
+                    sessionStorage.setItem('pharmacore_nickname', state.nickname);
+                    sessionStorage.setItem('pharmacore_plan', state.plan);
+
+                    showScreen('dashboardScreen');
+                    loadDashboard();
+                }
+            } catch (err) {
+                loginError.textContent = 'Network error. Please try again.';
+                loginError.classList.add('visible');
+            }
+
+            loginBtn.textContent = '🔑 Sign In';
+            loginBtn.disabled = false;
+        }
+
+        async function handleRegister() {
+            const nickname = registerNickname.value.trim();
+            const username = registerUsername.value.trim();
+            const password = registerPassword.value.trim();
+            const examDate = registerExamDate.value;
+            const plan = registerPlan.value;
+
+            if (!nickname || !username || !password) {
+                registerError.textContent = 'Please fill in all fields';
+                registerError.classList.add('visible');
+                return;
+            }
+
+            registerError.classList.remove('visible');
+            registerBtn.textContent = '⏳ Creating account...';
+            registerBtn.disabled = true;
+
+            try {
+                const result = await apiCall('register', {
+                    username,
+                    password,
+                    nickname,
+                    plan,
+                    examDate
+                });
+
+                if (result.error) {
+                    registerError.textContent = result.error;
+                    registerError.classList.add('visible');
+                    registerBtn.textContent = '🚀 Create Account';
+                    registerBtn.disabled = false;
+                    return;
+                }
+
+                if (result.success && result.user) {
+                    state.token = result.user.token;
+                    state.nickname = result.user.nickname || result.user.token;
+                    state.plan = result.user.plan;
+
+                    sessionStorage.setItem('pharmacore_token', state.token);
+                    sessionStorage.setItem('pharmacore_nickname', state.nickname);
+                    sessionStorage.setItem('pharmacore_plan', state.plan);
+
+                    showScreen('dashboardScreen');
+                    loadDashboard();
+                }
+            } catch (err) {
+                registerError.textContent = 'Network error. Please try again.';
+                registerError.classList.add('visible');
+            }
+
+            registerBtn.textContent = '🚀 Create Account';
+            registerBtn.disabled = false;
+        }
+
+        function logout() {
+            sessionStorage.removeItem('pharmacore_token');
+            sessionStorage.removeItem('pharmacore_nickname');
+            sessionStorage.removeItem('pharmacore_plan');
+            state.token = null;
+            state.nickname = null;
+            state.plan = null;
+            showScreen('loginScreen');
+            loginUsername.value = '';
+            loginPassword.value = '';
+        }
+
+        // ============================================================
         // LOAD DASHBOARD
         // ============================================================
         async function loadDashboard() {
             try {
-                const userData = await apiCall('getUser', { token: state.token });
-                if (userData.user) {
-                    userName.textContent = userData.user.token;
-                }
-
                 const decksData = await apiCall('getDecks', { token: state.token });
                 state.decks = decksData.decks || [];
+                state.plan = decksData.plan || 'FREE';
+                state.nickname = decksData.nickname || state.nickname;
+
+                // Update UI
+                userName.textContent = state.nickname;
+
+                // Plan badge
+                const isPremium = state.plan === 'PREMIUM';
+                planBadge.innerHTML = isPremium ?
+                    '<span class="plan-badge premium">⭐ PREMIUM</span>' :
+                    '<span class="plan-badge free">FREE</span>';
+
+                // Get user for exam date
+                const userData = await apiCall('getUser', { token: state.token });
+                if (userData.user && userData.user.examDate) {
+                    const days = getDaysUntil(userData.user.examDate);
+                    examCountdown.textContent = days > 0 ? `📅 ${days} days until exam` : '📅 Exam day!';
+                }
 
                 const progData = await apiCall('getAllProgress', { token: state.token });
                 if (progData.progress) {
@@ -680,13 +1080,11 @@
             } catch (err) {
                 console.error('Dashboard load error:', err);
                 deckGrid.innerHTML =
-                    `<div style="color:var(--red); text-align:center; padding:20px;">⚠️ Failed to load data. Check your Apps Script URL.</div>`;
+                    `<div style="color:var(--red); text-align:center; padding:20px;">⚠️ Failed to load data. Check your connection.</div>`;
             }
         }
 
         function renderDashboard(stats) {
-            todayDate.textContent = formatDate();
-
             statAccuracy.textContent = stats.accuracy + '%';
             statMastered.textContent = stats.mastered || 0;
             statStreak.textContent = stats.streak || 0;
@@ -700,13 +1098,25 @@
                 return;
             }
 
+            const isPremium = state.plan === 'PREMIUM';
+
             state.decks.forEach(deck => {
                 const div = document.createElement('div');
                 div.className = 'deck-card';
                 div.dataset.deckId = deck.deckId;
+
+                let lockHtml = '';
+                if (deck.isPremium && !isPremium) {
+                    lockHtml = '<span class="premium-lock">🔒</span>';
+                }
+
                 div.innerHTML = `
+                    ${lockHtml}
                     <span class="deck-icon">${deck.icon || '📚'}</span>
-                    <div class="deck-name">${deck.deckName}</div>
+                    <div class="deck-name">
+                        ${deck.deckName}
+                        ${deck.isPremium ? '<span class="premium-badge">PREMIUM</span>' : ''}
+                    </div>
                     <div class="deck-subject">${deck.subTopics ? deck.subTopics.join(', ') : ''}</div>
                     <div class="deck-meta">
                         <span>${deck.cardCount} cards</span>
@@ -716,15 +1126,33 @@
                         <div class="fill" id="deckProgressFill_${deck.deckId}" style="width:0%"></div>
                     </div>
                 `;
-                div.addEventListener('click', () => openDeck(deck.deckId));
+
+                div.addEventListener('click', () => {
+                    if (deck.isPremium && !isPremium) {
+                        alert('🔒 This is a PREMIUM deck. Upgrade your plan to access it!');
+                        return;
+                    }
+                    openDeck(deck.deckId);
+                });
+
                 deckGrid.appendChild(div);
-                updateDeckProgress(deck.deckId);
+
+                // Only update progress for accessible decks
+                if (!deck.isPremium || isPremium) {
+                    updateDeckProgress(deck.deckId);
+                } else {
+                    // Show locked
+                    const fill = document.getElementById(`deckProgressFill_${deck.deckId}`);
+                    const label = document.getElementById(`deckProgressLabel_${deck.deckId}`);
+                    if (fill) fill.style.width = '0%';
+                    if (label) label.textContent = '🔒';
+                }
             });
         }
 
         async function updateDeckProgress(deckId) {
             try {
-                const data = await apiCall('getCards', { mainTopic: deckId });
+                const data = await apiCall('getCards', { mainTopic: deckId, token: state.token });
                 const cards = data.cards || [];
                 const total = cards.length;
                 if (total === 0) return;
@@ -744,11 +1172,11 @@
         }
 
         // ============================================================
-        // OPEN DECK (Study Mode)
+        // OPEN DECK
         // ============================================================
         async function openDeck(deckId) {
             try {
-                const data = await apiCall('getCards', { mainTopic: deckId });
+                const data = await apiCall('getCards', { mainTopic: deckId, token: state.token });
                 state.cards = data.cards || [];
                 state.currentDeck = deckId;
                 state.currentCardIndex = 0;
@@ -759,7 +1187,6 @@
                     return;
                 }
 
-                // Shuffle cards
                 state.cards = shuffleArray(state.cards);
 
                 studyTitle.textContent = deckId;
@@ -778,7 +1205,6 @@
             const index = state.currentCardIndex;
 
             if (index >= cards.length) {
-                // All done
                 flashcard.classList.add('hidden');
                 studyEmpty.classList.remove('hidden');
                 ratingRow.classList.add('hidden');
@@ -798,11 +1224,9 @@
             cardAnswer.textContent = card.back;
             cardTag.textContent = card.subTopic || card.mainTopic;
 
-            // Reset flip
             flashcard.classList.remove('flipped');
             state.isFlipped = false;
 
-            // Update progress
             const total = cards.length;
             const done = index;
             studyProgressText.textContent = `${done}/${total}`;
@@ -819,7 +1243,7 @@
         });
 
         // ============================================================
-        // RATE CARD (Save Progress)
+        // RATE CARD
         // ============================================================
         ratingRow.addEventListener('click', async (e) => {
             const btn = e.target.closest('.btn-rate');
@@ -836,14 +1260,9 @@
                     confidence: confidence
                 });
 
-                // Update local progress
                 state.progress[card.cardId] = confidence;
-
-                // Move to next card
                 state.currentCardIndex++;
                 renderCard();
-
-                // Update dashboard progress for this deck
                 updateDeckProgress(state.currentDeck);
 
             } catch (err) {
@@ -869,9 +1288,71 @@
         });
 
         // ============================================================
-        // INIT
+        // LOGOUT
         // ============================================================
-        loadDashboard();
+        logoutBtn.addEventListener('click', logout);
+
+        // ============================================================
+        // AUTH UI SWITCHING
+        // ============================================================
+        switchToRegister.addEventListener('click', () => {
+            showScreen('registerScreen');
+            loginError.classList.remove('visible');
+            registerError.classList.remove('visible');
+        });
+
+        switchToLogin.addEventListener('click', () => {
+            showScreen('loginScreen');
+            loginError.classList.remove('visible');
+            registerError.classList.remove('visible');
+        });
+
+        loginBtn.addEventListener('click', handleLogin);
+        registerBtn.addEventListener('click', handleRegister);
+
+        loginUsername.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') loginPassword.focus();
+        });
+        loginPassword.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') handleLogin();
+        });
+
+        registerNickname.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') registerUsername.focus();
+        });
+        registerUsername.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') registerPassword.focus();
+        });
+        registerPassword.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') registerExamDate.focus();
+        });
+        registerExamDate.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') handleRegister();
+        });
+
+        // ============================================================
+        // CHECK SESSION ON LOAD
+        // ============================================================
+        (function init() {
+            const token = sessionStorage.getItem('pharmacore_token');
+            const nickname = sessionStorage.getItem('pharmacore_nickname');
+            const plan = sessionStorage.getItem('pharmacore_plan');
+
+            if (token) {
+                state.token = token;
+                state.nickname = nickname || token;
+                state.plan = plan || 'FREE';
+                showScreen('dashboardScreen');
+                loadDashboard();
+            } else {
+                showScreen('loginScreen');
+            }
+
+            // Set default exam date to 3 months from now
+            const defaultDate = new Date();
+            defaultDate.setMonth(defaultDate.getMonth() + 3);
+            registerExamDate.value = defaultDate.toISOString().split('T')[0];
+        })();
     </script>
 </body>
 </html>
