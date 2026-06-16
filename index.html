@@ -1,0 +1,610 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes" />
+    <title>PharmaCore — Flashcard Dashboard</title>
+    <style>
+        /* ---------- ROOT VARIABLES ---------- */
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        :root {
+            --primary: #0d9488;
+            --primary-light: #14b8a6;
+            --primary-bg: #f0fdfa;
+            --gray-50: #f8fafc;
+            --gray-100: #f1f5f9;
+            --gray-200: #e2e8f0;
+            --gray-300: #cbd5e1;
+            --gray-400: #94a3b8;
+            --gray-600: #475569;
+            --gray-800: #1e293b;
+            --gray-900: #0f172a;
+            --green: #22c55e;
+            --yellow: #eab308;
+            --red: #ef4444;
+            --shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
+            --radius: 16px;
+            --radius-sm: 12px;
+            --transition: 0.25s ease;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: var(--gray-50);
+            color: var(--gray-900);
+            min-height: 100vh;
+            padding: 16px;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+        }
+
+        .app {
+            max-width: 480px;
+            width: 100%;
+            margin: 0 auto;
+        }
+
+        .screen {
+            display: none;
+            animation: fadeIn 0.3s ease;
+        }
+        .screen.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(8px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* ---------- HEADER ---------- */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 4px;
+        }
+
+        .logo {
+            font-size: 22px;
+            font-weight: 700;
+            color: var(--primary);
+            letter-spacing: -0.5px;
+        }
+        .logo span {
+            color: var(--gray-800);
+        }
+
+        .greeting {
+            font-size: 20px;
+            font-weight: 600;
+            margin-top: 4px;
+        }
+        .greeting small {
+            font-weight: 400;
+            color: var(--gray-600);
+            font-size: 16px;
+        }
+
+        .sub-headline {
+            color: var(--gray-600);
+            font-size: 15px;
+            margin-bottom: 18px;
+        }
+
+        /* ---------- DECK GRID ---------- */
+        .deck-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+
+        .deck-card {
+            background: white;
+            border-radius: var(--radius);
+            padding: 16px 14px;
+            box-shadow: var(--shadow);
+            cursor: pointer;
+            transition: transform 0.15s, box-shadow 0.2s;
+            border: 1px solid var(--gray-100);
+        }
+        .deck-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+        }
+        .deck-card:active {
+            transform: scale(0.97);
+        }
+
+        .deck-icon {
+            font-size: 28px;
+            margin-bottom: 6px;
+            display: block;
+        }
+        .deck-name {
+            font-weight: 600;
+            font-size: 15px;
+            color: var(--gray-800);
+        }
+        .deck-subject {
+            font-size: 12px;
+            color: var(--gray-400);
+            margin-top: 2px;
+        }
+        .deck-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 8px;
+            font-size: 13px;
+            color: var(--gray-600);
+        }
+        .deck-progress-bar {
+            width: 100%;
+            height: 4px;
+            background: var(--gray-200);
+            border-radius: 4px;
+            margin-top: 8px;
+            overflow: hidden;
+        }
+        .deck-progress-bar .fill {
+            height: 100%;
+            background: var(--primary);
+            border-radius: 4px;
+            transition: width 0.4s ease;
+        }
+
+        /* ---------- STATS ---------- */
+        .stats-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: var(--radius-sm);
+            padding: 14px 12px;
+            text-align: center;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--gray-100);
+        }
+        .stat-number {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--gray-900);
+            line-height: 1.2;
+        }
+        .stat-label {
+            font-size: 12px;
+            color: var(--gray-400);
+            margin-top: 2px;
+        }
+        .stat-number.green {
+            color: var(--green);
+        }
+        .stat-number.primary {
+            color: var(--primary);
+        }
+        .stat-number.yellow {
+            color: var(--yellow);
+        }
+
+        /* ---------- NOTIFICATIONS ---------- */
+        .notifications {
+            background: white;
+            border-radius: var(--radius);
+            padding: 16px 18px;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--gray-100);
+            margin-bottom: 8px;
+        }
+        .notifications h4 {
+            font-size: 14px;
+            color: var(--gray-600);
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .notification-item {
+            font-size: 14px;
+            color: var(--gray-800);
+            padding: 6px 0;
+            border-bottom: 1px solid var(--gray-100);
+            display: flex;
+            align-items: flex-start;
+            gap: 8px;
+        }
+        .notification-item:last-child {
+            border-bottom: none;
+        }
+        .notification-item .dot {
+            display: inline-block;
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: var(--primary);
+            flex-shrink: 0;
+            margin-top: 7px;
+        }
+
+        /* ---------- STUDY SCREEN ---------- */
+        .study-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 8px;
+        }
+        .back-btn {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            padding: 4px 8px;
+            color: var(--gray-600);
+            transition: 0.2s;
+        }
+        .back-btn:hover {
+            color: var(--gray-900);
+        }
+        .study-title {
+            font-size: 20px;
+            font-weight: 600;
+        }
+        .study-progress-text {
+            margin-left: auto;
+            font-size: 14px;
+            color: var(--gray-600);
+        }
+
+        .study-progress-bar {
+            width: 100%;
+            height: 6px;
+            background: var(--gray-200);
+            border-radius: 6px;
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+        .study-progress-bar .fill {
+            height: 100%;
+            background: var(--primary);
+            border-radius: 6px;
+            transition: width 0.4s ease;
+        }
+
+        /* ---------- FLASHCARD ---------- */
+        .flashcard-container {
+            perspective: 1200px;
+            margin-bottom: 24px;
+            cursor: pointer;
+        }
+
+        .flashcard {
+            background: white;
+            border-radius: var(--radius);
+            padding: 40px 24px;
+            min-height: 220px;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--gray-100);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            transition: transform 0.5s ease;
+            transform-style: preserve-3d;
+            position: relative;
+        }
+
+        .flashcard.flipped {
+            transform: rotateY(180deg);
+        }
+
+        .flashcard .front,
+        .flashcard .back {
+            backface-visibility: hidden;
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 40px 24px;
+            border-radius: var(--radius);
+        }
+
+        .flashcard .front {
+            background: white;
+            z-index: 2;
+        }
+        .flashcard .back {
+            background: white;
+            transform: rotateY(180deg);
+            z-index: 1;
+        }
+
+        .flashcard .card-question {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--gray-800);
+            line-height: 1.5;
+        }
+        .flashcard .card-answer {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--primary);
+            line-height: 1.5;
+        }
+        .flashcard .card-tag {
+            font-size: 12px;
+            color: var(--gray-400);
+            margin-top: 12px;
+            background: var(--gray-100);
+            padding: 4px 14px;
+            border-radius: 40px;
+            display: inline-block;
+        }
+        .flashcard .flip-hint {
+            font-size: 13px;
+            color: var(--gray-400);
+            margin-top: 16px;
+        }
+
+        /* ---------- RATING BUTTONS ---------- */
+        .rating-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 12px;
+        }
+
+        .btn-rate {
+            padding: 14px 8px;
+            border: none;
+            border-radius: var(--radius-sm);
+            font-weight: 600;
+            font-size: 15px;
+            cursor: pointer;
+            transition: 0.2s;
+            font-family: inherit;
+        }
+        .btn-rate:active {
+            transform: scale(0.95);
+        }
+        .btn-rate.know {
+            background: #dcfce7;
+            color: #166534;
+        }
+        .btn-rate.know:hover {
+            background: #bbf7d0;
+        }
+        .btn-rate.almost {
+            background: #fef9c3;
+            color: #854d0e;
+        }
+        .btn-rate.almost:hover {
+            background: #fde68a;
+        }
+        .btn-rate.unknown {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+        .btn-rate.unknown:hover {
+            background: #fca5a5;
+        }
+
+        .study-empty {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--gray-600);
+        }
+        .study-empty .big {
+            font-size: 48px;
+            display: block;
+            margin-bottom: 12px;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--gray-400);
+        }
+        .loading-spinner {
+            display: inline-block;
+            width: 32px;
+            height: 32px;
+            border: 3px solid var(--gray-200);
+            border-radius: 50%;
+            border-top-color: var(--primary);
+            animation: spin 0.7s linear infinite;
+            margin-bottom: 12px;
+        }
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        @media (max-width: 400px) {
+            .deck-grid {
+                grid-template-columns: 1fr 1fr;
+                gap: 8px;
+            }
+            .deck-card {
+                padding: 12px 10px;
+            }
+            .stats-row {
+                grid-template-columns: 1fr 1fr 1fr;
+                gap: 6px;
+            }
+            .stat-card {
+                padding: 10px 6px;
+            }
+            .stat-number {
+                font-size: 20px;
+            }
+            .flashcard .card-question,
+            .flashcard .card-answer {
+                font-size: 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="app" id="app">
+        <!-- ====== DASHBOARD ====== -->
+        <div class="screen active" id="dashboardScreen">
+            <div class="header">
+                <div class="logo">💊 Pharma<span>Core</span></div>
+                <span style="font-size:14px; color:var(--gray-400);">📅 <span id="todayDate"></span></span>
+            </div>
+
+            <div class="greeting">Hi, <span id="userName">Student</span>! <small>👋</small></div>
+            <div class="sub-headline">What are we studying today?</div>
+
+            <div class="deck-grid" id="deckGrid">
+                <div class="loading" id="deckLoading">
+                    <div class="loading-spinner"></div>
+                    <div>Loading decks...</div>
+                </div>
+            </div>
+
+            <div class="stats-row" id="statsRow">
+                <div class="stat-card">
+                    <div class="stat-number primary" id="statAccuracy">--%</div>
+                    <div class="stat-label">Accuracy</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number green" id="statMastered">--</div>
+                    <div class="stat-label">Mastered</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number yellow" id="statStreak">--</div>
+                    <div class="stat-label">Day Streak</div>
+                </div>
+            </div>
+
+            <div class="notifications" id="notifications">
+                <h4>📌 Quick Reminders</h4>
+                <div id="notificationList">
+                    <div class="notification-item">
+                        <span class="dot"></span>
+                        Tap a deck above to start studying 💪
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ====== STUDY SCREEN ====== -->
+        <div class="screen" id="studyScreen">
+            <div class="study-header">
+                <button class="back-btn" id="backBtn">←</button>
+                <span class="study-title" id="studyTitle">Deck</span>
+                <span class="study-progress-text" id="studyProgressText">0/0</span>
+            </div>
+            <div class="study-progress-bar">
+                <div class="fill" id="studyProgressFill" style="width:0%"></div>
+            </div>
+
+            <div id="studyContent">
+                <div id="flashcardWrapper">
+                    <div class="flashcard-container" id="flashcardContainer">
+                        <div class="flashcard" id="flashcard">
+                            <div class="front">
+                                <div class="card-question" id="cardQuestion">Loading...</div>
+                                <div class="flip-hint">👆 Tap to reveal answer</div>
+                            </div>
+                            <div class="back">
+                                <div class="card-answer" id="cardAnswer">-</div>
+                                <div class="card-tag" id="cardTag"></div>
+                                <div class="flip-hint">👆 Tap to flip back</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="study-empty hidden" id="studyEmpty">
+                    <span class="big">🎉</span>
+                    <h3>All done!</h3>
+                    <p style="color:var(--gray-600); margin-top:4px;">You've reviewed all cards in this deck.</p>
+                    <button class="btn-rate know" style="margin-top:16px; padding:12px 32px;" id="resetDeckBtn">↻ Review Again</button>
+                </div>
+
+                <div class="rating-row" id="ratingRow">
+                    <button class="btn-rate know" data-confidence="4">✅ Know</button>
+                    <button class="btn-rate almost" data-confidence="3">🔄 Almost</button>
+                    <button class="btn-rate unknown" data-confidence="1">❌ Don't know</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ============================================================
+        // CONFIG — REPLACE WITH YOUR APPS SCRIPT URL
+        // ============================================================
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxmq6IDit8M1WwbIszr5b4iskC4j1CpuEkaIEvvSaWmg4CfKByT93z8HaUL8nZTyQ-tQQ/exec';
+
+        // ============================================================
+        // STATE
+        // ============================================================
+        const state = {
+            token: 'IDEMO',
+            decks: [],
+            currentDeck: null,
+            cards: [],
+            currentCardIndex: 0,
+            progress: {},
+            isFlipped: false,
+        };
+
+        // ============================================================
+        // DOM REFS
+        // ============================================================
+        const $ = (sel) => document.querySelector(sel);
+        const $$ = (sel) => document.querySelectorAll(sel);
+
+        const dashboardScreen = $('#dashboardScreen');
+        const studyScreen = $('#studyScreen');
+        const deckGrid = $('#deckGrid');
+        const deckLoading = $('#deckLoading');
+        const todayDate = $('#todayDate');
+        const userName = $('#userName');
+        const statAccuracy = $('#statAccuracy');
+        const statMastered = $('#statMastered');
+        const statStreak = $('#statStreak');
+        const notificationList = $('#notificationList');
+
+        const studyTitle = $('#studyTitle');
+        const studyProgressText = $('#studyProgressText');
+        const studyProgressFill = $('#studyProgressFill');
+        const flashcard = $('#flashcard');
+        const cardQuestion = $('#cardQuestion');
+        const cardAnswer = $('#cardAnswer');
+        const cardTag = $('#cardTag');
+        const flashcardContainer = $('#flashcardContainer');
