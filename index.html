@@ -566,7 +566,7 @@
 
     <script>
         // ============================================================
-        // CONFIG — REPLACE WITH YOUR APPS SCRIPT URL
+        // YOUR APPS SCRIPT URL — ALREADY EMBEDDED
         // ============================================================
         const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxmq6IDit8M1WwbIszr5b4iskC4j1CpuEkaIEvvSaWmg4CfKByT93z8HaUL8nZTyQ-tQQ/exec';
 
@@ -608,3 +608,270 @@
         const cardAnswer = $('#cardAnswer');
         const cardTag = $('#cardTag');
         const flashcardContainer = $('#flashcardContainer');
+        const ratingRow = $('#ratingRow');
+        const studyEmpty = $('#studyEmpty');
+        const resetDeckBtn = $('#resetDeckBtn');
+        const backBtn = $('#backBtn');
+
+        // ============================================================
+        // HELPERS
+        // ============================================================
+        function showScreen(screenId) {
+            $$('.screen').forEach(el => el.classList.remove('active'));
+            $(`#${screenId}`).classList.add('active');
+        }
+
+        function formatDate() {
+            const d = new Date();
+            return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+        }
+
+        function shuffleArray(arr) {
+            for (let i = arr.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [arr[i], arr[j]] = [arr[j], arr[i]];
+            }
+            return arr;
+        }
+
+        function getCardConfidence(cardId) {
+            return state.progress[cardId] || null;
+        }
+
+        // ============================================================
+        // API CALLS
+        // ============================================================
+        async function apiCall(action, params = {}) {
+            const url = new URL(SCRIPT_URL);
+            url.searchParams.set('action', action);
+            Object.entries(params).forEach(([k, v]) => {
+                if (v !== undefined && v !== null) url.searchParams.set(k, v);
+            });
+
+            const res = await fetch(url.toString());
+            return res.json();
+        }
+
+        // ============================================================
+        // LOAD DASHBOARD
+        // ============================================================
+        async function loadDashboard() {
+            try {
+                const userData = await apiCall('getUser', { token: state.token });
+                if (userData.user) {
+                    userName.textContent = userData.user.token;
+                }
+
+                const decksData = await apiCall('getDecks', { token: state.token });
+                state.decks = decksData.decks || [];
+
+                const progData = await apiCall('getAllProgress', { token: state.token });
+                if (progData.progress) {
+                    progData.progress.forEach(p => {
+                        state.progress[p.cardId] = p.confidence;
+                    });
+                }
+
+                const statsData = await apiCall('getStats', { token: state.token });
+                const stats = statsData.stats || { accuracy: 0, mastered: 0, streak: 0 };
+
+                renderDashboard(stats);
+
+            } catch (err) {
+                console.error('Dashboard load error:', err);
+                deckGrid.innerHTML =
+                    `<div style="color:var(--red); text-align:center; padding:20px;">⚠️ Failed to load data. Check your Apps Script URL.</div>`;
+            }
+        }
+
+        function renderDashboard(stats) {
+            todayDate.textContent = formatDate();
+
+            statAccuracy.textContent = stats.accuracy + '%';
+            statMastered.textContent = stats.mastered || 0;
+            statStreak.textContent = stats.streak || 0;
+
+            deckLoading.classList.add('hidden');
+            deckGrid.innerHTML = '';
+
+            if (!state.decks.length) {
+                deckGrid.innerHTML =
+                    `<div style="grid-column:1/-1; text-align:center; color:var(--gray-400); padding:20px;">No decks available.</div>`;
+                return;
+            }
+
+            state.decks.forEach(deck => {
+                const div = document.createElement('div');
+                div.className = 'deck-card';
+                div.dataset.deckId = deck.deckId;
+                div.innerHTML = `
+                    <span class="deck-icon">${deck.icon || '📚'}</span>
+                    <div class="deck-name">${deck.deckName}</div>
+                    <div class="deck-subject">${deck.subTopics ? deck.subTopics.join(', ') : ''}</div>
+                    <div class="deck-meta">
+                        <span>${deck.cardCount} cards</span>
+                        <span id="deckProgressLabel_${deck.deckId}">0%</span>
+                    </div>
+                    <div class="deck-progress-bar">
+                        <div class="fill" id="deckProgressFill_${deck.deckId}" style="width:0%"></div>
+                    </div>
+                `;
+                div.addEventListener('click', () => openDeck(deck.deckId));
+                deckGrid.appendChild(div);
+                updateDeckProgress(deck.deckId);
+            });
+        }
+
+        async function updateDeckProgress(deckId) {
+            try {
+                const data = await apiCall('getCards', { mainTopic: deckId });
+                const cards = data.cards || [];
+                const total = cards.length;
+                if (total === 0) return;
+
+                let mastered = 0;
+                cards.forEach(c => {
+                    const conf = getCardConfidence(c.cardId);
+                    if (conf && conf >= 3) mastered++;
+                });
+
+                const pct = Math.round((mastered / total) * 100);
+                const fill = document.getElementById(`deckProgressFill_${deckId}`);
+                const label = document.getElementById(`deckProgressLabel_${deckId}`);
+                if (fill) fill.style.width = pct + '%';
+                if (label) label.textContent = pct + '%';
+            } catch (e) {}
+        }
+
+        // ============================================================
+        // OPEN DECK (Study Mode)
+        // ============================================================
+        async function openDeck(deckId) {
+            try {
+                const data = await apiCall('getCards', { mainTopic: deckId });
+                state.cards = data.cards || [];
+                state.currentDeck = deckId;
+                state.currentCardIndex = 0;
+                state.isFlipped = false;
+
+                if (state.cards.length === 0) {
+                    alert('No cards in this deck.');
+                    return;
+                }
+
+                // Shuffle cards
+                state.cards = shuffleArray(state.cards);
+
+                studyTitle.textContent = deckId;
+                showScreen('studyScreen');
+                renderCard();
+            } catch (err) {
+                alert('Error loading cards: ' + err.message);
+            }
+        }
+
+        // ============================================================
+        // RENDER CARD
+        // ============================================================
+        function renderCard() {
+            const cards = state.cards;
+            const index = state.currentCardIndex;
+
+            if (index >= cards.length) {
+                // All done
+                flashcard.classList.add('hidden');
+                studyEmpty.classList.remove('hidden');
+                ratingRow.classList.add('hidden');
+                document.getElementById('flashcardWrapper').classList.add('hidden');
+                studyProgressText.textContent = `${cards.length}/${cards.length}`;
+                studyProgressFill.style.width = '100%';
+                return;
+            }
+
+            document.getElementById('flashcardWrapper').classList.remove('hidden');
+            flashcard.classList.remove('hidden');
+            studyEmpty.classList.add('hidden');
+            ratingRow.classList.remove('hidden');
+
+            const card = cards[index];
+            cardQuestion.textContent = card.front;
+            cardAnswer.textContent = card.back;
+            cardTag.textContent = card.subTopic || card.mainTopic;
+
+            // Reset flip
+            flashcard.classList.remove('flipped');
+            state.isFlipped = false;
+
+            // Update progress
+            const total = cards.length;
+            const done = index;
+            studyProgressText.textContent = `${done}/${total}`;
+            studyProgressFill.style.width = `${(done/total)*100}%`;
+        }
+
+        // ============================================================
+        // FLIP CARD
+        // ============================================================
+        flashcardContainer.addEventListener('click', () => {
+            if (state.currentCardIndex >= state.cards.length) return;
+            state.isFlipped = !state.isFlipped;
+            flashcard.classList.toggle('flipped');
+        });
+
+        // ============================================================
+        // RATE CARD (Save Progress)
+        // ============================================================
+        ratingRow.addEventListener('click', async (e) => {
+            const btn = e.target.closest('.btn-rate');
+            if (!btn) return;
+            if (state.currentCardIndex >= state.cards.length) return;
+
+            const confidence = parseInt(btn.dataset.confidence);
+            const card = state.cards[state.currentCardIndex];
+
+            try {
+                await apiCall('saveProgress', {
+                    token: state.token,
+                    cardId: card.cardId,
+                    confidence: confidence
+                });
+
+                // Update local progress
+                state.progress[card.cardId] = confidence;
+
+                // Move to next card
+                state.currentCardIndex++;
+                renderCard();
+
+                // Update dashboard progress for this deck
+                updateDeckProgress(state.currentDeck);
+
+            } catch (err) {
+                alert('Error saving progress: ' + err.message);
+            }
+        });
+
+        // ============================================================
+        // RESET DECK
+        // ============================================================
+        resetDeckBtn.addEventListener('click', () => {
+            state.currentCardIndex = 0;
+            state.cards = shuffleArray(state.cards);
+            renderCard();
+        });
+
+        // ============================================================
+        // BACK BUTTON
+        // ============================================================
+        backBtn.addEventListener('click', () => {
+            showScreen('dashboardScreen');
+            loadDashboard();
+        });
+
+        // ============================================================
+        // INIT
+        // ============================================================
+        loadDashboard();
+    </script>
+</body>
+</html>
