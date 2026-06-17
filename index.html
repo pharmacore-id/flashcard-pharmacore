@@ -795,6 +795,196 @@
     .daily-progress.hero-gradient .progress-fill {
       background: #ffffff;
     }
+    /* Stats page new styles */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.5rem;
+      margin-bottom: 0.75rem;
+    }
+    .stats-grid .stat-item {
+      background: var(--surface);
+      border-radius: 1rem;
+      padding: 0.75rem 0.5rem;
+      border: 1px solid var(--border);
+      text-align: center;
+      box-shadow: var(--shadow);
+    }
+    .stats-grid .stat-item .label {
+      font-size: 0.6rem;
+      font-weight: 600;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+    }
+    .stats-grid .stat-item .value {
+      font-size: 1.25rem;
+      font-weight: 800;
+    }
+    .stats-card {
+      background: var(--surface);
+      border-radius: var(--radius);
+      padding: 1rem;
+      border: 1px solid var(--border);
+      margin-bottom: 0.75rem;
+      box-shadow: var(--shadow);
+    }
+    .stats-card .card-title {
+      font-size: 0.8rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .deck-perf-bar {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-bottom: 0.3rem;
+    }
+    .deck-perf-bar .name {
+      font-size: 0.7rem;
+      font-weight: 600;
+      width: 70px;
+      flex-shrink: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .deck-perf-bar .bar-track {
+      flex: 1;
+      height: 6px;
+      background: var(--border);
+      border-radius: 99px;
+      overflow: hidden;
+    }
+    .deck-perf-bar .bar-fill {
+      height: 100%;
+      border-radius: 99px;
+      transition: width 0.3s;
+    }
+    .deck-perf-bar .pct {
+      font-size: 0.65rem;
+      font-weight: 600;
+      width: 32px;
+      text-align: right;
+      flex-shrink: 0;
+    }
+    .heatmap-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 3px;
+    }
+    .heatmap-grid .day-label {
+      font-size: 0.5rem;
+      font-weight: 600;
+      color: var(--text-secondary);
+      text-align: center;
+      padding: 2px 0;
+    }
+    .heatmap-grid .heat-cell {
+      aspect-ratio: 1;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.5rem;
+      font-weight: 700;
+      transition: 0.15s;
+    }
+    .heatmap-grid .heat-cell.studied {
+      background: var(--accent);
+      color: #fff;
+    }
+    .heatmap-grid .heat-cell.partial {
+      background: var(--accent-light);
+      color: var(--accent);
+    }
+    .heatmap-grid .heat-cell.empty {
+      background: var(--border);
+      color: var(--text-secondary);
+    }
+    .heatmap-grid .heat-cell.today {
+      border: 2px solid var(--accent);
+    }
+    .progress-toggle {
+      display: flex;
+      gap: 0.25rem;
+      background: var(--bg);
+      border-radius: 0.75rem;
+      padding: 0.2rem;
+    }
+    .progress-toggle button {
+      padding: 0.2rem 0.6rem;
+      border-radius: 0.5rem;
+      border: none;
+      font-size: 0.65rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: 0.15s;
+      background: transparent;
+      color: var(--text-secondary);
+    }
+    .progress-toggle button.active {
+      background: var(--accent);
+      color: #fff;
+    }
+    .progress-toggle button:hover:not(.active) {
+      background: var(--border);
+    }
+    .retention-dots {
+      display: flex;
+      gap: 0.5rem;
+      justify-content: center;
+    }
+    .retention-dots .dot-item {
+      text-align: center;
+    }
+    .retention-dots .dot-item .value {
+      font-size: 1rem;
+      font-weight: 800;
+    }
+    .retention-dots .dot-item .label {
+      font-size: 0.55rem;
+      color: var(--text-secondary);
+      font-weight: 600;
+    }
+    .subject-item {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-bottom: 0.3rem;
+    }
+    .subject-item .name {
+      font-size: 0.7rem;
+      font-weight: 600;
+      width: 80px;
+      flex-shrink: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .subject-item .bar-track {
+      flex: 1;
+      height: 6px;
+      background: var(--border);
+      border-radius: 99px;
+      overflow: hidden;
+    }
+    .subject-item .bar-fill {
+      height: 100%;
+      border-radius: 99px;
+      background: var(--accent);
+      transition: width 0.3s;
+    }
+    .subject-item .pct {
+      font-size: 0.65rem;
+      font-weight: 600;
+      width: 32px;
+      text-align: right;
+      flex-shrink: 0;
+    }
   </style>
 </head>
 <body>
@@ -869,24 +1059,24 @@
       </div>
 
       <!-- Daily Progress - ORANGE GRADIENT (TALLER & BIGGER) -->
-<div class="daily-progress hero-gradient rounded-3xl p-6 mb-3 relative overflow-hidden shadow-card" style="background:linear-gradient(135deg,#f97316,#ea580c); min-height:140px;">
-  <div class="relative z-10 h-full flex flex-col justify-center">
-    <div class="flex items-center justify-between">
-      <div>
-        <span class="text-base font-bold text-white">📚 Today's Progress</span>
-        <div class="text-white text-sm mt-1 font-medium" id="daily-goal-text">Goal: 20 cards</div>
+      <div class="daily-progress hero-gradient rounded-3xl p-6 mb-3 relative overflow-hidden shadow-card" style="background:linear-gradient(135deg,#f97316,#ea580c); min-height:140px;">
+        <div class="relative z-10 h-full flex flex-col justify-center">
+          <div class="flex items-center justify-between">
+            <div>
+              <span class="text-base font-bold text-white">📚 Today's Progress</span>
+              <div class="text-white text-sm mt-1 font-medium" id="daily-goal-text">Goal: 20 cards</div>
+            </div>
+            <div class="text-right">
+              <span class="text-4xl font-extrabold text-white" id="today-count">0</span>
+              <span class="text-white/80 text-base font-semibold"> / <span id="today-goal">20</span></span>
+            </div>
+          </div>
+          <div class="progress-bar mt-3 bg-white/30" style="height:8px;">
+            <div id="daily-progress-fill" class="progress-fill" style="width:0%; background:#fff; height:8px;"></div>
+          </div>
+        </div>
+        <div class="absolute right-0 bottom-0 opacity-10 text-8xl p-4 select-none">📚</div>
       </div>
-      <div class="text-right">
-        <span class="text-4xl font-extrabold text-white" id="today-count">0</span>
-        <span class="text-white/80 text-base font-semibold"> / <span id="today-goal">20</span></span>
-      </div>
-    </div>
-    <div class="progress-bar mt-3 bg-white/30" style="height:8px;">
-      <div id="daily-progress-fill" class="progress-fill" style="width:0%; background:#fff; height:8px;"></div>
-    </div>
-  </div>
-  <div class="absolute right-0 bottom-0 opacity-10 text-8xl p-4 select-none">📚</div>
-</div>
 
       <!-- Streak Calendar (7 days) -->
       <div class="surface rounded-2xl p-3 border border-theme shadow-card mb-3">
@@ -1076,12 +1266,70 @@
 
     <!-- ===== STATS ===== -->
     <div id="view-stats" class="view">
-      <h2 class="text-xl font-bold mb-4">📊 Statistics</h2>
+      <h2 class="text-xl font-bold mb-3">📊 Statistics</h2>
       <div class="view-scroll">
-        <div class="card-peach rounded-3xl p-4 mb-3 shadow-card"><p class="text-sec text-sm font-medium">Current Streak</p><p id="stats-streak-val" class="text-3xl font-extrabold accent-text">0 days</p></div>
-        <div class="grid grid-cols-2 gap-3 mb-3"><div class="surface rounded-2xl border border-theme p-4 shadow-card"><p class="text-sec text-xs font-medium uppercase">Total Reviews</p><p id="stats-total" class="text-2xl font-bold mt-1">0</p></div><div class="surface rounded-2xl border border-theme p-4 shadow-card"><p class="text-sec text-xs font-medium uppercase">Accuracy</p><p id="stats-acc" class="text-2xl font-bold mt-1">0%</p></div></div>
-        <div class="surface rounded-2xl border border-theme p-4 mb-3 shadow-card"><p class="text-sec text-sm font-medium mb-3">Reviews (last 7 days)</p><div id="stats-chart" class="flex items-end gap-1 h-20"></div></div>
-        <div class="surface rounded-2xl border border-theme p-4 shadow-card"><p class="text-sec text-xs font-medium uppercase">Cards Mastered</p><p id="stats-mastered-val" class="text-2xl font-bold mt-1">0</p></div>
+
+        <!-- Quick Stats Grid -->
+        <div class="stats-grid">
+          <div class="stat-item"><div class="label">🔥 Streak</div><div class="value accent-text" id="stats-streak-val">0 days</div></div>
+          <div class="stat-item"><div class="label">🎯 Accuracy</div><div class="value" style="color:#059669;" id="stats-acc">0%</div></div>
+          <div class="stat-item"><div class="label">📚 Total</div><div class="value" style="color:#2563eb;" id="stats-total">0</div></div>
+          <div class="stat-item"><div class="label">🏆 Mastered</div><div class="value" style="color:#7c3aed;" id="stats-mastered-val">0</div></div>
+        </div>
+
+        <!-- 1. Weekly/Monthly Progress -->
+        <div class="stats-card">
+          <div class="card-title">📈 Progress <span class="text-xs text-sec font-normal ml-auto" id="progress-period-label">This Week</span></div>
+          <div class="flex items-center gap-2 mb-2">
+            <div class="progress-toggle" id="progress-toggle">
+              <button class="active" data-period="week">Week</button>
+              <button data-period="month">Month</button>
+              <button data-period="all">All</button>
+            </div>
+            <span class="text-xs text-sec ml-auto" id="progress-total-label">Total: 0 cards</span>
+          </div>
+          <div id="progress-chart" class="flex items-end gap-1 h-16"></div>
+        </div>
+
+        <!-- 2. Deck Performance -->
+        <div class="stats-card">
+          <div class="card-title">📚 Deck Performance</div>
+          <div id="deck-performance-list"></div>
+        </div>
+
+        <!-- 3. Card Retention Rate -->
+        <div class="stats-card">
+          <div class="card-title">📈 Retention Rate <span class="text-xs text-sec font-normal ml-auto" id="retention-overall">Overall: 0%</span></div>
+          <div class="retention-dots" id="retention-dots">
+            <div class="dot-item"><div class="value" id="ret-7d">0%</div><div class="label">7 days</div></div>
+            <div class="dot-item"><div class="value" id="ret-14d">0%</div><div class="label">14 days</div></div>
+            <div class="dot-item"><div class="value" id="ret-30d">0%</div><div class="label">30 days</div></div>
+          </div>
+        </div>
+
+        <!-- 4. Average Cards/Day -->
+        <div class="stats-card">
+          <div class="card-title">🔢 Average Cards/Day</div>
+          <div class="grid grid-cols-3 gap-2 text-center">
+            <div><div class="text-xl font-bold" id="avg-week">0</div><div class="text-xs text-sec">This Week</div></div>
+            <div><div class="text-xl font-bold" id="avg-month">0</div><div class="text-xs text-sec">This Month</div></div>
+            <div><div class="text-xl font-bold" id="best-day">0</div><div class="text-xs text-sec">Best Day</div></div>
+          </div>
+          <div class="text-center text-xs text-sec mt-1">Goal: <span id="avg-goal">20</span> cards/day</div>
+        </div>
+
+        <!-- 5. Subject Breakdown -->
+        <div class="stats-card">
+          <div class="card-title">📊 Subject Breakdown</div>
+          <div id="subject-breakdown-list"></div>
+        </div>
+
+        <!-- 6. Study Heatmap -->
+        <div class="stats-card">
+          <div class="card-title">📅 Study Heatmap <span class="text-xs text-sec font-normal ml-auto" id="heatmap-label">Last 4 weeks</span></div>
+          <div id="heatmap-container"></div>
+        </div>
+
       </div>
     </div>
 
@@ -1090,7 +1338,7 @@
       <h2 class="text-xl font-bold mb-4">⚙️ Settings</h2>
       <div class="view-scroll space-y-3">
         <div class="surface rounded-2xl border border-theme p-4 shadow-card"><p class="text-sm text-sec font-medium mb-1">Account</p><div class="flex items-center justify-between"><span id="settings-username" class="font-semibold">User</span><button onclick="handleLogout()" class="px-4 py-1.5 rounded-xl text-white text-sm font-medium bg-red-500">Logout</button></div></div>
-        
+
         <!-- Daily Goal Setting -->
         <div class="surface rounded-2xl border border-theme p-4 shadow-card">
           <p class="text-sm text-sec font-medium mb-2">🎯 Daily Goal</p>
@@ -1304,6 +1552,7 @@
     let hasValidCode = false;
     let currentTab = 'home';
     let navTimeout = null;
+    let progressPeriod = 'week';
 
     // ============================================================
     //  HELPERS
@@ -1314,10 +1563,6 @@
       const d = new Date(date);
       d.setMonth(d.getMonth() + months);
       return d;
-    }
-
-    function formatDate(date) {
-      return new Date(date).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
     }
 
     function daysUntil(date) {
@@ -1371,6 +1616,32 @@
       return new Date(expiry) > new Date();
     }
 
+    function getDaysAgo(days) {
+      const d = new Date();
+      d.setDate(d.getDate() - days);
+      return d.toISOString().split('T')[0];
+    }
+
+    function getDateRange(days) {
+      const dates = [];
+      for (let i = days - 1; i >= 0; i--) {
+        const d = new Date();
+        d.setDate(d.getDate() - i);
+        dates.push(d.toISOString().split('T')[0]);
+      }
+      return dates;
+    }
+
+    function getLastDays(days) {
+      const dates = [];
+      for (let i = days - 1; i >= 0; i--) {
+        const d = new Date();
+        d.setDate(d.getDate() - i);
+        dates.push(d.toISOString().split('T')[0]);
+      }
+      return dates;
+    }
+
     // ============================================================
     //  DAILY GOAL & STUDY TIME
     // ============================================================
@@ -1385,6 +1656,7 @@
       if (val > 0 && val <= 500) {
         localStorage.setItem(GOAL_KEY + '_' + (currentUser || 'default'), val);
         updateHome();
+        renderStats();
         alert('✅ Daily goal updated to ' + val + ' cards!');
       }
     }
@@ -1406,6 +1678,105 @@
     function getTodayStudyCount() {
       const todayStr = today();
       return allCards.filter(c => c.last_review && c.last_review.startsWith(todayStr)).length;
+    }
+
+    function getCardsByDate(date) {
+      return allCards.filter(c => c.last_review && c.last_review.startsWith(date));
+    }
+
+    function getTotalReviewsForDate(date) {
+      return getCardsByDate(date).length;
+    }
+
+    function getSubjectBreakdown() {
+      const subjects = {};
+      getRealCards().forEach(c => {
+        const topic = c.topic || 'General';
+        if (!subjects[topic]) subjects[topic] = 0;
+        subjects[topic]++;
+      });
+      return subjects;
+    }
+
+    function getDeckPerformance() {
+      const decks = getDecks();
+      return decks.map(d => {
+        const cards = d.cards;
+        const total = cards.length;
+        const correct = cards.filter(c => (c.correct_count || 0) > 0).length;
+        const accuracy = total > 0 ? Math.round((correct / total) * 100) : 0;
+        return { name: d.name, accuracy, total };
+      }).sort((a, b) => b.accuracy - a.accuracy);
+    }
+
+    function getRetentionRates() {
+      const real = getRealCards();
+      const total = real.length;
+      if (total === 0) return { overall: 0, d7: 0, d14: 0, d30: 0 };
+
+      const totalReviews = real.reduce((s, c) => s + (c.total_reviews || 0), 0);
+      const correctReviews = real.reduce((s, c) => s + (c.correct_count || 0), 0);
+      const overall = totalReviews > 0 ? Math.round((correctReviews / totalReviews) * 100) : 0;
+
+      // 7-day retention: cards reviewed in last 7 days
+      const d7 = real.filter(c => {
+        if (!c.last_review) return false;
+        const days = (Date.now() - new Date(c.last_review).getTime()) / (1000 * 60 * 60 * 24);
+        return days <= 7 && c.correct_count > 0;
+      });
+      const d7Total = real.filter(c => {
+        if (!c.last_review) return false;
+        const days = (Date.now() - new Date(c.last_review).getTime()) / (1000 * 60 * 60 * 24);
+        return days <= 7;
+      });
+      const ret7 = d7Total.length > 0 ? Math.round((d7.length / d7Total.length) * 100) : 0;
+
+      // 14-day retention
+      const d14 = real.filter(c => {
+        if (!c.last_review) return false;
+        const days = (Date.now() - new Date(c.last_review).getTime()) / (1000 * 60 * 60 * 24);
+        return days <= 14 && c.correct_count > 0;
+      });
+      const d14Total = real.filter(c => {
+        if (!c.last_review) return false;
+        const days = (Date.now() - new Date(c.last_review).getTime()) / (1000 * 60 * 60 * 24);
+        return days <= 14;
+      });
+      const ret14 = d14Total.length > 0 ? Math.round((d14.length / d14Total.length) * 100) : 0;
+
+      // 30-day retention
+      const d30 = real.filter(c => {
+        if (!c.last_review) return false;
+        const days = (Date.now() - new Date(c.last_review).getTime()) / (1000 * 60 * 60 * 24);
+        return days <= 30 && c.correct_count > 0;
+      });
+      const d30Total = real.filter(c => {
+        if (!c.last_review) return false;
+        const days = (Date.now() - new Date(c.last_review).getTime()) / (1000 * 60 * 60 * 24);
+        return days <= 30;
+      });
+      const ret30 = d30Total.length > 0 ? Math.round((d30.length / d30Total.length) * 100) : 0;
+
+      return { overall, d7: ret7, d14: ret14, d30: ret30 };
+    }
+
+    function getAvgCardsPerDay(days) {
+      const dates = getDateRange(days);
+      let total = 0;
+      dates.forEach(d => {
+        total += getTotalReviewsForDate(d);
+      });
+      return Math.round(total / days);
+    }
+
+    function getBestDay(days) {
+      const dates = getDateRange(days);
+      let best = 0;
+      dates.forEach(d => {
+        const count = getTotalReviewsForDate(d);
+        if (count > best) best = count;
+      });
+      return best;
     }
 
     // ============================================================
@@ -1565,7 +1936,6 @@
         return;
       }
 
-      // 🔐 ADMIN PASSWORD CHECK
       if (email === 'adm.pharmacore@gmail.com' && pw !== 'admin9900') {
         err.textContent = 'Incorrect admin password.';
         return;
@@ -1948,30 +2318,169 @@
       }
     }
 
+    // ============================================================
+    //  STATS RENDERING (UPDATED WITH ALL 6 FEATURES)
+    // ============================================================
     function renderStats() {
       const real = getRealCards();
       const total = real.reduce((s, c) => s + (c.total_reviews || 0), 0);
       const correct = real.reduce((s, c) => s + (c.correct_count || 0), 0);
       const acc = total > 0 ? Math.round(correct / total * 100) : 0;
       const mastered = real.filter(c => (c.interval || 0) >= 21).length;
-      document.getElementById('stats-streak-val').textContent = getStreak() + ' days';
-      document.getElementById('stats-total').textContent = total;
+      const streak = getStreak();
+
+      // Quick stats
+      document.getElementById('stats-streak-val').textContent = streak + ' days';
       document.getElementById('stats-acc').textContent = acc + '%';
+      document.getElementById('stats-total').textContent = total;
       document.getElementById('stats-mastered-val').textContent = mastered;
-      const chart = document.getElementById('stats-chart');
-      const days = [];
-      for (let i = 6; i >= 0; i--) {
-        const d = new Date();
-        d.setDate(d.getDate() - i);
-        const ds = d.toISOString().split('T')[0];
-        const count = real.filter(c => c.last_review && c.last_review.startsWith(ds)).length;
-        days.push({ label: d.toLocaleDateString('id-ID', { weekday: 'short' }), count });
-      }
-      const max = Math.max(...days.map(d => d.count), 1);
-      chart.innerHTML = days.map(d =>
-        `<div class="flex-1 flex flex-col items-center gap-1"><div class="chart-bar w-full" style="height:${Math.max((d.count/max)*60,4)}px"></div><span class="text-[10px] text-sec">${d.label}</span></div>`
-      ).join('');
+
+      // 1. Weekly/Monthly Progress
+      renderProgressChart();
+
+      // 2. Deck Performance
+      renderDeckPerformance();
+
+      // 3. Retention Rate
+      renderRetentionRate();
+
+      // 4. Average Cards/Day
+      renderAvgCards();
+
+      // 5. Subject Breakdown
+      renderSubjectBreakdown();
+
+      // 6. Study Heatmap
+      renderHeatmap();
     }
+
+    function renderProgressChart() {
+      const days = progressPeriod === 'week' ? 7 : progressPeriod === 'month' ? 30 : 60;
+      const dates = getDateRange(days);
+      const counts = dates.map(d => getTotalReviewsForDate(d));
+      const maxCount = Math.max(...counts, 1);
+
+      const container = document.getElementById('progress-chart');
+      container.innerHTML = dates.map((d, i) => {
+        const height = Math.max((counts[i] / maxCount) * 60, 4);
+        const isToday = d === today();
+        return `<div class="flex-1 flex flex-col items-center gap-0.5">
+                  <div class="w-full rounded-full accent-bg transition-all duration-300" style="height:${height}px; min-height:4px; ${isToday ? 'background:var(--premium-gold);' : ''}"></div>
+                  <span class="text-[8px] text-sec font-medium">${d.slice(5)}</span>
+                </div>`;
+      }).join('');
+
+      const totalInPeriod = counts.reduce((a, b) => a + b, 0);
+      document.getElementById('progress-total-label').textContent = `Total: ${totalInPeriod} cards`;
+      document.getElementById('progress-period-label').textContent =
+        progressPeriod === 'week' ? 'This Week' : progressPeriod === 'month' ? 'This Month' : 'All Time';
+    }
+
+    function renderDeckPerformance() {
+      const perf = getDeckPerformance();
+      const container = document.getElementById('deck-performance-list');
+      if (perf.length === 0) {
+        container.innerHTML = '<p class="text-xs text-sec">No decks yet.</p>';
+        return;
+      }
+      container.innerHTML = perf.slice(0, 5).map(d => {
+        const color = d.accuracy >= 80 ? '#059669' : d.accuracy >= 60 ? '#f59e0b' : '#ef4444';
+        return `<div class="deck-perf-bar">
+                  <span class="name" title="${d.name}">${d.name}</span>
+                  <div class="bar-track"><div class="bar-fill" style="width:${d.accuracy}%; background:${color};"></div></div>
+                  <span class="pct" style="color:${color}">${d.accuracy}%</span>
+                </div>`;
+      }).join('');
+    }
+
+    function renderRetentionRate() {
+      const ret = getRetentionRates();
+      document.getElementById('retention-overall').textContent = `Overall: ${ret.overall}%`;
+      document.getElementById('ret-7d').textContent = ret.d7 + '%';
+      document.getElementById('ret-14d').textContent = ret.d14 + '%';
+      document.getElementById('ret-30d').textContent = ret.d30 + '%';
+    }
+
+    function renderAvgCards() {
+      const avgWeek = getAvgCardsPerDay(7);
+      const avgMonth = getAvgCardsPerDay(30);
+      const bestDay = getBestDay(30);
+      const goal = getDailyGoal();
+
+      document.getElementById('avg-week').textContent = avgWeek;
+      document.getElementById('avg-month').textContent = avgMonth;
+      document.getElementById('best-day').textContent = bestDay;
+      document.getElementById('avg-goal').textContent = goal;
+    }
+
+    function renderSubjectBreakdown() {
+      const subjects = getSubjectBreakdown();
+      const container = document.getElementById('subject-breakdown-list');
+      const total = Object.values(subjects).reduce((a, b) => a + b, 0);
+      if (total === 0) {
+        container.innerHTML = '<p class="text-xs text-sec">No subjects yet.</p>';
+        return;
+      }
+
+      const sorted = Object.entries(subjects).sort((a, b) => b[1] - a[1]);
+      container.innerHTML = sorted.slice(0, 5).map(([name, count]) => {
+        const pct = Math.round((count / total) * 100);
+        return `<div class="subject-item">
+                  <span class="name" title="${name}">${name}</span>
+                  <div class="bar-track"><div class="bar-fill" style="width:${pct}%;"></div></div>
+                  <span class="pct">${pct}%</span>
+                </div>`;
+      }).join('');
+    }
+
+    function renderHeatmap() {
+      const container = document.getElementById('heatmap-container');
+      const weeks = 4;
+      const days = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
+      const todayDate = new Date();
+      const firstDay = new Date(todayDate);
+      firstDay.setDate(firstDay.getDate() - (firstDay.getDay() === 0 ? 6 : firstDay.getDay() - 1));
+      firstDay.setDate(firstDay.getDate() - (weeks - 1) * 7);
+
+      let html = `<div class="heatmap-grid">`;
+      days.forEach(d => {
+        html += `<div class="day-label">${d}</div>`;
+      });
+
+      for (let w = 0; w < weeks; w++) {
+        for (let d = 0; d < 7; d++) {
+          const date = new Date(firstDay);
+          date.setDate(date.getDate() + w * 7 + d);
+          const dateStr = date.toISOString().split('T')[0];
+          const isToday = dateStr === today();
+          const count = getTotalReviewsForDate(dateStr);
+          let cls = 'heat-cell';
+          if (isToday) cls += ' today';
+          if (count > 0) cls += ' studied';
+          else if (date <= new Date()) cls += ' empty';
+          else cls += ' empty';
+
+          const label = count > 0 ? count : '';
+          html += `<div class="${cls}" title="${dateStr}: ${count} cards">${label}</div>`;
+        }
+      }
+      html += `</div>`;
+      container.innerHTML = html;
+    }
+
+    // ============================================================
+    //  PROGRESS TOGGLE
+    // ============================================================
+    document.addEventListener('DOMContentLoaded', function() {
+      document.getElementById('progress-toggle')?.addEventListener('click', function(e) {
+        const btn = e.target.closest('button');
+        if (!btn || !btn.dataset.period) return;
+        document.querySelectorAll('#progress-toggle button').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        progressPeriod = btn.dataset.period;
+        renderStats();
+      });
+    });
 
     function updateThemeToggle() {
       const dark = document.documentElement.classList.contains('dark');
@@ -2854,7 +3363,18 @@
     if (typeof lucide !== 'undefined' && lucide.createIcons) {
       lucide.createIcons();
     }
-    console.log('🚀 FlashMind · Pharmacy Study App (Optimized)');
+
+    // Initialize progress toggle listeners
+    document.querySelectorAll('#progress-toggle button')?.forEach(btn => {
+      btn.addEventListener('click', function() {
+        document.querySelectorAll('#progress-toggle button').forEach(b => b.classList.remove('active'));
+        this.classList.add('active');
+        progressPeriod = this.dataset.period;
+        renderStats();
+      });
+    });
+
+    console.log('🚀 FlashMind · Pharmacy Study App (Optimized + Stats)');
     console.log('📊 Plan:', userPlan);
     console.log('👑 Admin:', isAdmin);
     console.log('📚 Cards:', getRealCards().length, 'Decks:', getDecks().length);
