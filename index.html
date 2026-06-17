@@ -1,35 +1,6 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <!-- PWA Meta Tags -->
-<link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#f97316">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="FlashMind">
-<link rel="apple-touch-icon" href="icons/icon-192.png">
-
-<!-- PWA Service Worker Registration -->
-<script>
-  // Register Service Worker
-  if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-      navigator.serviceWorker.register('/service-worker.js')
-        .then(registration => {
-          console.log('✅ Service Worker registered successfully:', registration.scope);
-        })
-        .catch(error => {
-          console.log('❌ Service Worker registration failed:', error);
-        });
-    });
-  }
-
-  // Check if app is installed
-  if (window.matchMedia('(display-mode: standalone)').matches) {
-    console.log('📱 FlashMind is running in standalone mode (installed app)');
-    document.body.classList.add('installed');
-  }
-</script>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>FlashMind · Pharmacy Study</title>
@@ -1003,18 +974,42 @@
       background: var(--border);
     }
 
-    /* Deck performance */
+    /* ===== SCROLLABLE HORIZONTAL CONTAINERS ===== */
+    .scrollable-horizontal {
+      overflow-x: auto;
+      overflow-y: hidden;
+      padding-bottom: 4px;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: thin;
+      scrollbar-color: var(--border) transparent;
+    }
+
+    .scrollable-horizontal::-webkit-scrollbar {
+      height: 4px;
+    }
+
+    .scrollable-horizontal::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    .scrollable-horizontal::-webkit-scrollbar-thumb {
+      background: var(--border);
+      border-radius: 99px;
+    }
+
+    /* Deck Performance - wider names */
     .deck-perf-bar {
       display: flex;
       align-items: center;
       gap: 0.5rem;
       margin-bottom: 0.3rem;
+      min-width: 280px;
     }
 
     .deck-perf-bar .name {
       font-size: 0.7rem;
       font-weight: 600;
-      width: 70px;
+      width: 100px;
       flex-shrink: 0;
       overflow: hidden;
       text-overflow: ellipsis;
@@ -1023,6 +1018,7 @@
 
     .deck-perf-bar .bar-track {
       flex: 1;
+      min-width: 80px;
       height: 6px;
       background: var(--border);
       border-radius: 99px;
@@ -1036,6 +1032,49 @@
     }
 
     .deck-perf-bar .pct {
+      font-size: 0.65rem;
+      font-weight: 600;
+      width: 32px;
+      text-align: right;
+      flex-shrink: 0;
+    }
+
+    /* Subject Breakdown - wider names */
+    .subject-item {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-bottom: 0.3rem;
+      min-width: 280px;
+    }
+
+    .subject-item .name {
+      font-size: 0.7rem;
+      font-weight: 600;
+      width: 100px;
+      flex-shrink: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .subject-item .bar-track {
+      flex: 1;
+      min-width: 80px;
+      height: 6px;
+      background: var(--border);
+      border-radius: 99px;
+      overflow: hidden;
+    }
+
+    .subject-item .bar-fill {
+      height: 100%;
+      border-radius: 99px;
+      background: var(--accent);
+      transition: width 0.3s;
+    }
+
+    .subject-item .pct {
       font-size: 0.65rem;
       font-weight: 600;
       width: 32px;
@@ -1063,47 +1102,6 @@
       font-size: 0.55rem;
       color: var(--text-secondary);
       font-weight: 600;
-    }
-
-    /* Subject breakdown */
-    .subject-item {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      margin-bottom: 0.3rem;
-    }
-
-    .subject-item .name {
-      font-size: 0.7rem;
-      font-weight: 600;
-      width: 80px;
-      flex-shrink: 0;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-    }
-
-    .subject-item .bar-track {
-      flex: 1;
-      height: 6px;
-      background: var(--border);
-      border-radius: 99px;
-      overflow: hidden;
-    }
-
-    .subject-item .bar-fill {
-      height: 100%;
-      border-radius: 99px;
-      background: var(--accent);
-      transition: width 0.3s;
-    }
-
-    .subject-item .pct {
-      font-size: 0.65rem;
-      font-weight: 600;
-      width: 32px;
-      text-align: right;
-      flex-shrink: 0;
     }
 
     /* Heatmap */
@@ -1213,25 +1211,30 @@
             <span id="plan-badge" class="free-badge">FREE</span>
             <span id="admin-badge" class="admin-badge hidden">ADMIN</span>
           </div>
-          <p class="text-sec text-sm" id="welcome-msg">Welcome back!</p>
         </div>
         <button onclick="toggleTheme()" class="w-10 h-10 rounded-full surface flex items-center justify-center shadow-card border border-theme"><i data-lucide="sun" class="w-5 h-5"></i></button>
       </div>
 
-      <!-- Daily Progress - ORANGE GRADIENT (TALLER & BIGGER) -->
-      <div class="daily-progress hero-gradient rounded-3xl p-6 mb-3 relative overflow-hidden shadow-card" style="background:linear-gradient(135deg,#f97316,#ea580c); min-height:140px;">
+      <!-- Daily Progress - ORANGE GRADIENT with Welcome Message -->
+      <div class="daily-progress hero-gradient rounded-3xl p-6 mb-3 relative overflow-hidden shadow-card" style="background:linear-gradient(135deg,#f97316,#ea580c); min-height:160px;">
         <div class="relative z-10 h-full flex flex-col justify-center">
+          <!-- Welcome Message -->
+          <p class="text-white/90 text-sm font-medium mb-1" id="welcome-msg">Welcome back!</p>
+          
+          <!-- Today's Progress -->
           <div class="flex items-center justify-between">
             <div>
-              <span class="text-base font-bold text-white">📚 Today's Progress</span>
-              <div class="text-white text-sm mt-1 font-medium" id="daily-goal-text">Goal: 20 cards</div>
+              <span class="text-white/80 text-xs font-medium">Today's Progress</span>
+              <div class="text-white text-xs font-medium mt-0.5" id="daily-goal-text">Goal: 20 cards</div>
             </div>
             <div class="text-right">
               <span class="text-4xl font-extrabold text-white" id="today-count">0</span>
               <span class="text-white/80 text-base font-semibold"> / <span id="today-goal">20</span></span>
             </div>
           </div>
-          <div class="progress-bar mt-3 bg-white/30" style="height:8px;">
+          
+          <!-- Progress Bar -->
+          <div class="progress-bar mt-2 bg-white/30" style="height:8px;">
             <div id="daily-progress-fill" class="progress-fill" style="width:0%; background:#fff; height:8px;"></div>
           </div>
         </div>
@@ -1476,11 +1479,13 @@
           <div class="text-xs text-sec mt-2 text-center" id="progress-streak-msg">📖 Start your streak today! Study at least one card.</div>
         </div>
 
-        <!-- 2. Deck Performance -->
+        <!-- 2. Deck Performance (Scrollable) -->
         <div class="stats-card">
           <div class="card-title">📚 Deck Performance</div>
           <div class="text-xs text-sec mb-1.5">Accuracy per deck (Green ≥80%, Yellow ≥60%, Red &lt;60%)</div>
-          <div id="deck-performance-list"></div>
+          <div class="scrollable-horizontal" id="deck-performance-wrapper">
+            <div id="deck-performance-list" class="min-w-full"></div>
+          </div>
         </div>
 
         <!-- 3. Card Retention Rate -->
@@ -1507,11 +1512,13 @@
           <div class="text-center text-xs text-sec mt-1">Daily goal: <span id="avg-goal">20</span> cards</div>
         </div>
 
-        <!-- 5. Subject Breakdown -->
+        <!-- 5. Subject Breakdown (Scrollable) -->
         <div class="stats-card">
           <div class="card-title">📊 Subject Breakdown</div>
           <div class="text-xs text-sec mb-1.5">What topics you've studied most</div>
-          <div id="subject-breakdown-list"></div>
+          <div class="scrollable-horizontal" id="subject-breakdown-wrapper">
+            <div id="subject-breakdown-list" class="min-w-full"></div>
+          </div>
         </div>
 
         <!-- 6. Study Heatmap -->
@@ -1585,11 +1592,13 @@
     </div>
 
     <!-- ===== BOTTOM NAV ===== -->
-    <div class="bottom-nav" id="bottomNav">
-      <button class="nav-item active" data-tab="home"><i data-lucide="home"></i><span>Home</span></button>
-      <button class="nav-item" data-tab="decks"><i data-lucide="layers"></i><span>Decks</span></button>
-      <button class="nav-item" data-tab="stats"><i data-lucide="bar-chart-2"></i><span>Stats</span></button>
-      <button class="nav-item" data-tab="settings"><i data-lucide="settings"></i><span>Settings</span></button>
+    <div id="bottom-nav-container" class="hidden">
+      <div class="bottom-nav" id="bottomNav">
+        <button class="nav-item active" data-tab="home"><i data-lucide="home"></i><span>Home</span></button>
+        <button class="nav-item" data-tab="decks"><i data-lucide="layers"></i><span>Decks</span></button>
+        <button class="nav-item" data-tab="stats"><i data-lucide="bar-chart-2"></i><span>Stats</span></button>
+        <button class="nav-item" data-tab="settings"><i data-lucide="settings"></i><span>Settings</span></button>
+      </div>
     </div>
 
     <!-- ===== CONTACT ADMIN MODAL ===== -->
@@ -1807,23 +1816,7 @@
       return new Date(expiry) > new Date();
     }
 
-    function getDaysAgo(days) {
-      const d = new Date();
-      d.setDate(d.getDate() - days);
-      return d.toISOString().split('T')[0];
-    }
-
     function getDateRange(days) {
-      const dates = [];
-      for (let i = days - 1; i >= 0; i--) {
-        const d = new Date();
-        d.setDate(d.getDate() - i);
-        dates.push(d.toISOString().split('T')[0]);
-      }
-      return dates;
-    }
-
-    function getLastDays(days) {
       const dates = [];
       for (let i = days - 1; i >= 0; i--) {
         const d = new Date();
@@ -1909,7 +1902,6 @@
       const correctReviews = real.reduce((s, c) => s + (c.correct_count || 0), 0);
       const overall = totalReviews > 0 ? Math.round((correctReviews / totalReviews) * 100) : 0;
 
-      // 7-day retention
       const d7 = real.filter(c => {
         if (!c.last_review) return false;
         const days = (Date.now() - new Date(c.last_review).getTime()) / (1000 * 60 * 60 * 24);
@@ -1922,7 +1914,6 @@
       });
       const ret7 = d7Total.length > 0 ? Math.round((d7.length / d7Total.length) * 100) : 0;
 
-      // 14-day retention
       const d14 = real.filter(c => {
         if (!c.last_review) return false;
         const days = (Date.now() - new Date(c.last_review).getTime()) / (1000 * 60 * 60 * 24);
@@ -1935,7 +1926,6 @@
       });
       const ret14 = d14Total.length > 0 ? Math.round((d14.length / d14Total.length) * 100) : 0;
 
-      // 30-day retention
       const d30 = real.filter(c => {
         if (!c.last_review) return false;
         const days = (Date.now() - new Date(c.last_review).getTime()) / (1000 * 60 * 60 * 24);
@@ -2091,11 +2081,17 @@
     // ============================================================
     //  AUTH
     // ============================================================
-    function showLogin() { document.getElementById('view-login').classList.add('active');
-      document.getElementById('view-signup').classList.remove('active') }
+    function showLogin() { 
+      document.getElementById('view-login').classList.add('active');
+      document.getElementById('view-signup').classList.remove('active');
+      document.getElementById('bottom-nav-container').classList.add('hidden');
+    }
 
-    function showSignup() { document.getElementById('view-signup').classList.add('active');
-      document.getElementById('view-login').classList.remove('active') }
+    function showSignup() { 
+      document.getElementById('view-signup').classList.add('active');
+      document.getElementById('view-login').classList.remove('active');
+      document.getElementById('bottom-nav-container').classList.add('hidden');
+    }
 
     function showFreeTrial() {
       document.getElementById('free-trial-modal').classList.remove('hidden');
@@ -2112,6 +2108,7 @@
         showSignup();
         return;
       }
+      document.getElementById('bottom-nav-container').classList.remove('hidden');
       switchTab('home');
     }
 
@@ -2141,6 +2138,7 @@
       saveSession(email);
       loadUserData(email);
       isAdmin = users[email].isAdmin || ADMIN_EMAILS.includes(email);
+      document.getElementById('bottom-nav-container').classList.remove('hidden');
       enterApp();
     }
 
@@ -2196,6 +2194,7 @@
         savePlan(email, 'premium', expiry);
       }
       isAdmin = isAdminUser;
+      document.getElementById('bottom-nav-container').classList.remove('hidden');
       enterApp();
       if (isBookBuyer) {
         alert('🎉 Access code validated! You now have Premium access for 3 months.');
@@ -2206,18 +2205,23 @@
     }
 
     function handleLogout() {
-      if (confirm('Logout?')) { clearSession();
+      if (confirm('Logout?')) { 
+        clearSession();
         currentUser = null;
         allCards = [];
         isAdmin = false;
+        document.getElementById('bottom-nav-container').classList.add('hidden');
         document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
         document.getElementById('view-login').classList.add('active');
         document.getElementById('login-email').value = '';
-        document.getElementById('login-password').value = ''; }
+        document.getElementById('login-password').value = ''; 
+      }
     }
 
     function enterApp() {
       requestAnimationFrame(() => {
+        document.getElementById('bottom-nav-container').classList.remove('hidden');
+        
         document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
         document.getElementById('view-home').classList.add('active');
 
@@ -2228,7 +2232,6 @@
         const users = getUsers();
         if (currentUser && users[currentUser]) {
           document.getElementById('settings-username').textContent = users[currentUser].username;
-          document.getElementById('welcome-msg').textContent = 'Welcome back, ' + users[currentUser].username + '! 👋';
           isAdmin = users[currentUser].isAdmin || ADMIN_EMAILS.includes(currentUser);
         }
 
@@ -2268,10 +2271,12 @@
           currentUser = s.email;
           loadUserData(s.email);
           isAdmin = users[s.email].isAdmin || ADMIN_EMAILS.includes(s.email);
+          document.getElementById('bottom-nav-container').classList.remove('hidden');
           enterApp();
           return true;
         }
       }
+      document.getElementById('bottom-nav-container').classList.add('hidden');
       return false;
     }
 
@@ -2381,6 +2386,12 @@
       const acc = total > 0 ? Math.round(correct / total * 100) : 0;
       const mastered = real.filter(c => (c.interval || 0) >= 21).length;
       const streak = getStreak();
+
+      // Update welcome message inside orange card
+      const users = getUsers();
+      if (currentUser && users[currentUser]) {
+        document.getElementById('welcome-msg').textContent = 'Welcome back, ' + users[currentUser].username + '! 👋';
+      }
 
       document.getElementById('stat-streak').textContent = streak;
       document.getElementById('stat-accuracy').textContent = acc + '%';
@@ -2521,28 +2532,16 @@
       const mastered = real.filter(c => (c.interval || 0) >= 21).length;
       const streak = getStreak();
 
-      // Quick stats
       document.getElementById('stats-streak-val').textContent = streak + ' days';
       document.getElementById('stats-acc').textContent = acc + '%';
       document.getElementById('stats-total').textContent = total;
       document.getElementById('stats-mastered-val').textContent = mastered;
 
-      // 1. Progress Chart
       renderProgressChart();
-
-      // 2. Deck Performance
       renderDeckPerformance();
-
-      // 3. Retention Rate
       renderRetentionRate();
-
-      // 4. Average Cards/Day
       renderAvgCards();
-
-      // 5. Subject Breakdown
       renderSubjectBreakdown();
-
-      // 6. Study Heatmap
       renderHeatmap();
     }
 
@@ -2558,24 +2557,39 @@
 
       const container = document.getElementById('progress-chart');
 
-      // Reset classes
       container.className = 'flex items-end gap-1';
       container.style.minHeight = '80px';
       container.style.width = 'max-content';
       container.style.minWidth = '100%';
       container.style.padding = '4px 8px 4px 4px';
 
-      // Add view class for styling
       if (days > 14) container.classList.add('month');
       if (days > 40) container.classList.add('all');
 
-      // Determine label step
       let labelStep = 1;
       if (days === 30) labelStep = 5;
       if (days === 60) labelStep = 10;
 
-      // Get month names
       const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+      const getWeekLabels = () => {
+        const todayDate = new Date();
+        const dayOfWeek = todayDate.getDay();
+        const mondayOffset = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
+        const startOfWeek = new Date(todayDate);
+        startOfWeek.setDate(todayDate.getDate() - mondayOffset);
+        const dayNames = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+        const labels = [];
+        for (let i = 0; i < 7; i++) {
+          const d = new Date(startOfWeek);
+          d.setDate(d.getDate() + i);
+          labels.push({
+            label: dayNames[i],
+            date: d.toISOString().split('T')[0]
+          });
+        }
+        return labels;
+      };
 
       container.innerHTML = dates.map((d, i) => {
         const height = Math.max((counts[i] / maxCount) * 55, 3);
@@ -2586,13 +2600,13 @@
         const month = months[dateObj.getMonth()];
         const dayOfWeek = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][dateObj.getDay()];
 
-        // Show label based on step
         let showLabel = false;
         let labelText = '';
 
         if (days === 7) {
+          const weekLabels = getWeekLabels();
           showLabel = true;
-          labelText = dayOfWeek.substring(0, 3);
+          labelText = weekLabels[i]?.label || dayOfWeek.substring(0, 3);
         } else {
           if (i % labelStep === 0 || i === dates.length - 1) {
             showLabel = true;
@@ -2600,13 +2614,10 @@
           }
         }
 
-        // Bar width based on view
         let barWidth = '18px';
         let minWidth = '24px';
-        if (days > 14) { barWidth = '12px';
-          minWidth = '18px'; }
-        if (days > 40) { barWidth = '8px';
-          minWidth = '14px'; }
+        if (days > 14) { barWidth = '12px'; minWidth = '18px'; }
+        if (days > 40) { barWidth = '8px'; minWidth = '14px'; }
 
         return `<div class="bar-group" style="min-width:${minWidth};">
                   <span class="bar-value">${counts[i] > 0 ? counts[i] : ''}</span>
@@ -2616,12 +2627,10 @@
                 </div>`;
       }).join('');
 
-      // Update total
       const totalInPeriod = counts.reduce((a, b) => a + b, 0);
       const periodLabel = progressPeriod === 'week' ? 'this week' : progressPeriod === 'month' ? 'this month' : 'all time';
       document.getElementById('progress-total-label').textContent = `${totalInPeriod} cards ${periodLabel}`;
 
-      // Update streak message
       const streak = getStreak();
       const streakMsg = document.getElementById('progress-streak-msg');
       if (streak >= 30) {
@@ -2656,7 +2665,7 @@
         container.innerHTML = '<p class="text-xs text-sec">No decks yet.</p>';
         return;
       }
-      container.innerHTML = perf.slice(0, 5).map(d => {
+      container.innerHTML = perf.map(d => {
         const color = d.accuracy >= 80 ? '#059669' : d.accuracy >= 60 ? '#f59e0b' : '#ef4444';
         return `<div class="deck-perf-bar">
                   <span class="name" title="${d.name}">${d.name}</span>
@@ -2708,7 +2717,7 @@
       }
 
       const sorted = Object.entries(subjects).sort((a, b) => b[1] - a[1]);
-      container.innerHTML = sorted.slice(0, 5).map(([name, count]) => {
+      container.innerHTML = sorted.map(([name, count]) => {
         const pct = Math.round((count / total) * 100);
         return `<div class="subject-item">
                   <span class="name" title="${name}">${name}</span>
@@ -3608,7 +3617,10 @@
     // ============================================================
     if (localStorage.getItem('flashmind_theme') === 'dark') document.documentElement.classList.add('dark');
     const logged = checkSession();
-    if (!logged) document.getElementById('view-login').classList.add('active');
+    if (!logged) {
+      document.getElementById('view-login').classList.add('active');
+      document.getElementById('bottom-nav-container').classList.add('hidden');
+    }
 
     document.querySelectorAll('.nav-item').forEach(btn => {
       btn.addEventListener('click', () => {
@@ -3652,7 +3664,6 @@
       lucide.createIcons();
     }
 
-    // Initialize progress toggle listeners
     document.querySelectorAll('#progress-toggle button')?.forEach(btn => {
       btn.addEventListener('click', function() {
         document.querySelectorAll('#progress-toggle button').forEach(b => b.classList.remove('active'));
@@ -3662,7 +3673,7 @@
       });
     });
 
-    console.log('🚀 FlashMind · Pharmacy Study App (Optimized + Stats)');
+    console.log('🚀 FlashMind · Pharmacy Study App (Final)');
     console.log('📊 Plan:', userPlan);
     console.log('👑 Admin:', isAdmin);
     console.log('📚 Cards:', getRealCards().length, 'Decks:', getDecks().length);
