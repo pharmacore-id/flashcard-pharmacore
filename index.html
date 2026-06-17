@@ -1265,204 +1265,106 @@
     </div>
 
     <!-- ===== STATS ===== -->
-    <div id="view-stats" class="view">
-      <h2 class="text-xl font-bold mb-3">📊 Statistics</h2>
-      <div class="view-scroll">
+   <!-- ===== STATS ===== -->
+<div id="view-stats" class="view">
+  <h2 class="text-xl font-bold mb-3">📊 Statistics</h2>
+  <div class="view-scroll">
 
-        <!-- Quick Stats Grid -->
-        <div class="stats-grid">
-          <div class="stat-item"><div class="label">🔥 Streak</div><div class="value accent-text" id="stats-streak-val">0 days</div></div>
-          <div class="stat-item"><div class="label">🎯 Accuracy</div><div class="value" style="color:#059669;" id="stats-acc">0%</div></div>
-          <div class="stat-item"><div class="label">📚 Total</div><div class="value" style="color:#2563eb;" id="stats-total">0</div></div>
-          <div class="stat-item"><div class="label">🏆 Mastered</div><div class="value" style="color:#7c3aed;" id="stats-mastered-val">0</div></div>
-        </div>
-
-       <!-- 1. Progress Chart - Scrollable -->
-<div class="stats-card">
-  <div class="flex items-center justify-between mb-2">
-    <div class="card-title">📈 Progress</div>
-    <div class="progress-toggle" id="progress-toggle">
-      <button class="active" data-period="week">Week</button>
-      <button data-period="month">Month</button>
-      <button data-period="all">All</button>
-    </div>
-  </div>
-  
-  <div class="text-sm font-semibold mb-2" id="progress-total-label">0 cards this week</div>
-  
-  /* ===== PROGRESS CHART - SCROLLABLE ===== */
-.progress-chart-wrapper {
-  overflow-x: auto;
-  overflow-y: hidden;
-  padding-bottom: 4px;
-  -webkit-overflow-scrolling: touch;
-  scrollbar-width: thin;
-  scrollbar-color: var(--border) transparent;
-}
-
-.progress-chart-wrapper::-webkit-scrollbar {
-  height: 4px;
-}
-
-.progress-chart-wrapper::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-.progress-chart-wrapper::-webkit-scrollbar-thumb {
-  background: var(--border);
-  border-radius: 99px;
-}
-
-#progress-chart {
-  display: flex;
-  align-items: flex-end;
-  gap: 3px;
-  padding: 4px 8px 4px 4px;
-  min-height: 80px;
-  width: max-content;
-  min-width: 100%;
-}
-
-#progress-chart .bar-group {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 3px;
-  flex-shrink: 0;
-  min-width: 24px;
-}
-
-#progress-chart .bar-value {
-  font-size: 8px;
-  font-weight: 700;
-  color: var(--text-secondary);
-  line-height: 1;
-  min-height: 12px;
-}
-
-#progress-chart .bar {
-  width: 18px;
-  border-radius: 3px 3px 0 0;
-  background: var(--border);
-  transition: height 0.4s ease, background 0.3s ease;
-  min-height: 3px;
-}
-
-#progress-chart .bar.filled {
-  background: var(--accent);
-}
-
-#progress-chart .bar.today {
-  background: var(--premium-gold);
-  box-shadow: 0 0 8px rgba(217, 119, 6, 0.3);
-}
-
-#progress-chart .bar-label {
-  font-size: 7px;
-  font-weight: 600;
-  color: var(--text-secondary);
-  text-align: center;
-  line-height: 1;
-  min-height: 10px;
-  white-space: nowrap;
-}
-
-/* Month view - smaller bars */
-#progress-chart.month .bar-group {
-  min-width: 18px;
-}
-
-#progress-chart.month .bar {
-  width: 12px;
-}
-
-/* All view - even smaller */
-#progress-chart.all .bar-group {
-  min-width: 14px;
-}
-
-#progress-chart.all .bar {
-  width: 8px;
-}
-
-#progress-chart.all .bar-value {
-  font-size: 7px;
-  min-height: 10px;
-}
-
-/* Progress toggle */
-.progress-toggle {
-  display: flex;
-  gap: 2px;
-  background: var(--bg);
-  border-radius: 8px;
-  padding: 2px;
-  flex-shrink: 0;
-}
-
-.progress-toggle button {
-  padding: 4px 12px;
-  border-radius: 6px;
-  border: none;
-  font-size: 11px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: 0.15s;
-  background: transparent;
-  color: var(--text-secondary);
-}
-
-.progress-toggle button.active {
-  background: var(--accent);
-  color: #fff;
-}
-
-.progress-toggle button:hover:not(.active) {
-  background: var(--border);
-}
-
-        <!-- 2. Deck Performance -->
-        <div class="stats-card">
-          <div class="card-title">📚 Deck Performance</div>
-          <div id="deck-performance-list"></div>
-        </div>
-
-        <!-- 3. Card Retention Rate -->
-        <div class="stats-card">
-          <div class="card-title">📈 Retention Rate <span class="text-xs text-sec font-normal ml-auto" id="retention-overall">Overall: 0%</span></div>
-          <div class="retention-dots" id="retention-dots">
-            <div class="dot-item"><div class="value" id="ret-7d">0%</div><div class="label">7 days</div></div>
-            <div class="dot-item"><div class="value" id="ret-14d">0%</div><div class="label">14 days</div></div>
-            <div class="dot-item"><div class="value" id="ret-30d">0%</div><div class="label">30 days</div></div>
-          </div>
-        </div>
-
-        <!-- 4. Average Cards/Day -->
-        <div class="stats-card">
-          <div class="card-title">🔢 Average Cards/Day</div>
-          <div class="grid grid-cols-3 gap-2 text-center">
-            <div><div class="text-xl font-bold" id="avg-week">0</div><div class="text-xs text-sec">This Week</div></div>
-            <div><div class="text-xl font-bold" id="avg-month">0</div><div class="text-xs text-sec">This Month</div></div>
-            <div><div class="text-xl font-bold" id="best-day">0</div><div class="text-xs text-sec">Best Day</div></div>
-          </div>
-          <div class="text-center text-xs text-sec mt-1">Goal: <span id="avg-goal">20</span> cards/day</div>
-        </div>
-
-        <!-- 5. Subject Breakdown -->
-        <div class="stats-card">
-          <div class="card-title">📊 Subject Breakdown</div>
-          <div id="subject-breakdown-list"></div>
-        </div>
-
-        <!-- 6. Study Heatmap -->
-        <div class="stats-card">
-          <div class="card-title">📅 Study Heatmap <span class="text-xs text-sec font-normal ml-auto" id="heatmap-label">Last 4 weeks</span></div>
-          <div id="heatmap-container"></div>
-        </div>
-
+    <!-- Quick Stats Grid -->
+    <div class="stats-grid">
+      <div class="stat-item">
+        <div class="label">🔥 Streak</div>
+        <div class="value accent-text" id="stats-streak-val">0 days</div>
+        <div class="text-[10px] text-sec mt-0.5">Consecutive study days</div>
+      </div>
+      <div class="stat-item">
+        <div class="label">🎯 Accuracy</div>
+        <div class="value" style="color:#059669;" id="stats-acc">0%</div>
+        <div class="text-[10px] text-sec mt-0.5">% of correct answers</div>
+      </div>
+      <div class="stat-item">
+        <div class="label">📚 Total Reviews</div>
+        <div class="value" style="color:#2563eb;" id="stats-total">0</div>
+        <div class="text-[10px] text-sec mt-0.5">All cards ever reviewed</div>
+      </div>
+      <div class="stat-item">
+        <div class="label">🏆 Mastered</div>
+        <div class="value" style="color:#7c3aed;" id="stats-mastered-val">0</div>
+        <div class="text-[10px] text-sec mt-0.5">Cards with 21+ day intervals</div>
       </div>
     </div>
 
+    <!-- 1. Progress Chart - Clean Duolingo Style -->
+    <div class="stats-card">
+      <div class="flex items-center justify-between mb-2">
+        <div class="card-title">📈 Progress</div>
+        <div class="progress-toggle" id="progress-toggle">
+          <button class="active" data-period="week">Week</button>
+          <button data-period="month">Month</button>
+          <button data-period="all">All</button>
+        </div>
+      </div>
+      
+      <div class="text-sm font-semibold mb-2" id="progress-total-label">0 cards this week</div>
+      
+      <!-- Scrollable chart container -->
+      <div class="progress-chart-wrapper">
+        <div id="progress-chart" class="flex items-end gap-1" style="min-height:80px;">
+          <!-- Bars rendered by JS -->
+        </div>
+      </div>
+      
+      <div class="text-xs text-sec mt-2 text-center" id="progress-streak-msg">📖 Start your streak today! Study at least one card.</div>
+    </div>
+
+    <!-- 2. Deck Performance -->
+    <div class="stats-card">
+      <div class="card-title">📚 Deck Performance</div>
+      <div class="text-xs text-sec mb-1.5">Accuracy per deck (Green ≥80%, Yellow ≥60%, Red &lt;60%)</div>
+      <div id="deck-performance-list"></div>
+    </div>
+
+    <!-- 3. Card Retention Rate -->
+    <div class="stats-card">
+      <div class="card-title">📈 Retention Rate</div>
+      <div class="text-xs text-sec mb-1.5">% of cards you remembered correctly</div>
+      <div class="retention-dots" id="retention-dots">
+        <div class="dot-item"><div class="value" id="ret-7d">0%</div><div class="label">7 days</div></div>
+        <div class="dot-item"><div class="value" id="ret-14d">0%</div><div class="label">14 days</div></div>
+        <div class="dot-item"><div class="value" id="ret-30d">0%</div><div class="label">30 days</div></div>
+        <div class="dot-item"><div class="value" id="ret-overall">0%</div><div class="label">Overall</div></div>
+      </div>
+    </div>
+
+    <!-- 4. Average Cards/Day -->
+    <div class="stats-card">
+      <div class="card-title">🔢 Average Cards/Day</div>
+      <div class="text-xs text-sec mb-1.5">Study consistency metrics</div>
+      <div class="grid grid-cols-3 gap-2 text-center">
+        <div><div class="text-xl font-bold" id="avg-week">0</div><div class="text-xs text-sec">This Week</div></div>
+        <div><div class="text-xl font-bold" id="avg-month">0</div><div class="text-xs text-sec">This Month</div></div>
+        <div><div class="text-xl font-bold" id="best-day">0</div><div class="text-xs text-sec">Best Day</div></div>
+      </div>
+      <div class="text-center text-xs text-sec mt-1">Daily goal: <span id="avg-goal">20</span> cards</div>
+    </div>
+
+    <!-- 5. Subject Breakdown -->
+    <div class="stats-card">
+      <div class="card-title">📊 Subject Breakdown</div>
+      <div class="text-xs text-sec mb-1.5">What topics you've studied most</div>
+      <div id="subject-breakdown-list"></div>
+    </div>
+
+    <!-- 6. Study Heatmap -->
+    <div class="stats-card">
+      <div class="card-title">📅 Study Heatmap</div>
+      <div class="text-xs text-sec mb-1.5">Darker = more cards studied that day</div>
+      <div id="heatmap-container"></div>
+    </div>
+
+  </div>
+</div>
+    
     <!-- ===== SETTINGS ===== -->
     <div id="view-settings" class="view">
       <h2 class="text-xl font-bold mb-4">⚙️ Settings</h2>
