@@ -216,6 +216,14 @@
       background: var(--card-green);
       transform: rotateY(180deg);
     }
+    #fc-done {
+  pointer-events: all;
+  cursor: pointer;
+}
+
+#fc-done .back-btn {
+  pointer-events: all;
+}
     .progress-bar {
       background: var(--border);
       border-radius: 99px;
@@ -2898,9 +2906,17 @@
     }
 
     function exitStudy() {
-      addStudyTime(5);
-      switchTab('decks');
-    }
+  addStudyTime(5);
+  // Reset flashcard state
+  studyQueue = [];
+  studyIdx = 0;
+  fcFlipped = false;
+  document.getElementById('fc-buttons').classList.add('hidden');
+  document.getElementById('fc-done').classList.add('hidden');
+  document.getElementById('fc-done').style.display = 'none';
+  document.getElementById('fc-card').style.display = '';
+  switchTab('decks');
+}
 
     // ============================================================
     //  CONTACT ADMIN
@@ -3318,37 +3334,53 @@
       fcShowCard();
     }
 
-    function fcShowCard() {
-      const card = document.getElementById('fc-card'),
-        done = document.getElementById('fc-done'),
-        btns = document.getElementById('fc-buttons');
-      if (studyIdx >= studyQueue.length) {
-        card.style.display = 'none';
-        btns.classList.add('hidden');
-        done.classList.remove('hidden');
-        done.style.display = 'flex';
-        document.getElementById('fc-progress').textContent = `${studyQueue.length}/${studyQueue.length}`;
-        document.getElementById('fc-progress-fill').style.width = '100%';
-        if (typeof lucide !== 'undefined' && lucide.createIcons) {
-          lucide.createIcons();
-        }
-        return;
-      }
-      card.style.display = '';
-      done.classList.add('hidden');
-      done.style.display = 'none';
-      const c = studyQueue[studyIdx];
-      document.getElementById('fc-front-text').textContent = c.card_front;
-      document.getElementById('fc-back-text').textContent = c.card_back;
-      card.classList.remove('flipped');
-      btns.classList.add('hidden');
-      fcFlipped = false;
-      document.getElementById('fc-progress').textContent = `${studyIdx+1}/${studyQueue.length}`;
-      document.getElementById('fc-progress-fill').style.width = `${(studyIdx/studyQueue.length)*100}%`;
-      if (typeof lucide !== 'undefined' && lucide.createIcons) {
-        lucide.createIcons();
-      }
+   function fcShowCard() {
+  const card = document.getElementById('fc-card');
+  const done = document.getElementById('fc-done');
+  const btns = document.getElementById('fc-buttons');
+  const hint = document.getElementById('fc-hint');
+  
+  if (studyIdx >= studyQueue.length) {
+    // Hide the card
+    card.style.display = 'none';
+    // Hide buttons
+    btns.classList.add('hidden');
+    // Hide hint
+    hint.style.display = 'none';
+    // Show done message
+    done.classList.remove('hidden');
+    done.style.display = 'flex';
+    // Update progress
+    document.getElementById('fc-progress').textContent = `${studyQueue.length}/${studyQueue.length}`;
+    document.getElementById('fc-progress-fill').style.width = '100%';
+    // Re-enable navigation by allowing clicks
+    if (typeof lucide !== 'undefined' && lucide.createIcons) {
+      lucide.createIcons();
     }
+    return;
+  }
+  
+  // Show card and hide done
+  card.style.display = '';
+  done.classList.add('hidden');
+  done.style.display = 'none';
+  // Hide buttons until flipped
+  btns.classList.add('hidden');
+  hint.style.display = '';
+  
+  const c = studyQueue[studyIdx];
+  document.getElementById('fc-front-text').textContent = c.card_front;
+  document.getElementById('fc-back-text').textContent = c.card_back;
+  document.getElementById('fc-card').classList.remove('flipped');
+  fcFlipped = false;
+  
+  document.getElementById('fc-progress').textContent = `${studyIdx + 1}/${studyQueue.length}`;
+  document.getElementById('fc-progress-fill').style.width = `${(studyIdx / studyQueue.length) * 100}%`;
+  
+  if (typeof lucide !== 'undefined' && lucide.createIcons) {
+    lucide.createIcons();
+  }
+}
 
     function fcFlip() {
       if (studyIdx >= studyQueue.length) return;
