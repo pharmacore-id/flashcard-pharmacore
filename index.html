@@ -1,69 +1,93 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes" />
-    <title>PharmaCore — Flashcard Dashboard</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>FlashMind</title>
+    <script src="https://cdn.tailwindcss.com/3.4.17">
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/lucide@0.263.0/dist/umd/lucide.min.js">
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
     <style>
-        /* ---------- ROOT VARIABLES ---------- */
-        *,
-        *::before,
-        *::after {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
+        * {
+            font-family: 'DM Sans', sans-serif;
         }
-
         :root {
-            --primary: #0d9488;
-            --primary-light: #14b8a6;
-            --primary-bg: #f0fdfa;
-            --gray-50: #f8fafc;
-            --gray-100: #f1f5f9;
-            --gray-200: #e2e8f0;
-            --gray-300: #cbd5e1;
-            --gray-400: #94a3b8;
-            --gray-600: #475569;
-            --gray-800: #1e293b;
-            --gray-900: #0f172a;
-            --green: #22c55e;
-            --yellow: #eab308;
-            --red: #ef4444;
-            --shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
-            --radius: 16px;
-            --radius-sm: 12px;
-            --transition: 0.25s ease;
+            --bg: #fdf6ec;
+            --surface: #ffffff;
+            --text: #1a1a2e;
+            --text-secondary: #7c6f64;
+            --accent: #f97316;
+            --accent-light: #fff7ed;
+            --border: #f0e4d4;
+            --card-peach: #fdebd0;
+            --card-green: #d1fae5;
+            --card-blue: #dbeafe;
+            --card-purple: #ede9fe;
+            --premium-gold: #d97706;
+            --premium-purple: #7c3aed;
+            --shadow: 0 8px 30px rgba(0, 0, 0, 0.06);
         }
-
+        .dark {
+            --bg: #1a1410;
+            --surface: #2a2218;
+            --text: #f5f0eb;
+            --text-secondary: #a89888;
+            --accent: #fb923c;
+            --accent-light: #3b2a1a;
+            --border: #3d3225;
+            --card-peach: #3b2a1a;
+            --card-green: #1a2e1a;
+            --card-blue: #1a2440;
+            --card-purple: #2a1a40;
+            --premium-gold: #fbbf24;
+            --premium-purple: #a78bfa;
+            --shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
+        }
         body {
-            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-            background: var(--gray-50);
-            color: var(--gray-900);
-            min-height: 100vh;
-            padding: 16px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
+            background: var(--bg);
+            color: var(--text);
+            overflow: hidden;
+            height: 100vh;
+            height: 100dvh;
         }
-
-        .app {
-            max-width: 480px;
-            width: 100%;
-            margin: 0 auto;
+        .surface {
+            background: var(--surface);
+        }
+        .text-sec {
+            color: var(--text-secondary);
+        }
+        .border-theme {
+            border-color: var(--border);
+        }
+        .accent-bg {
+            background: var(--accent);
+        }
+        .accent-text {
+            color: var(--accent);
+        }
+        .shadow-card {
+            box-shadow: var(--shadow);
         }
 
         .screen {
             display: none;
-            animation: fadeIn 0.3s ease;
+            position: absolute;
+            inset: 0;
+            bottom: 64px;
+            overflow-y: auto;
+            padding-bottom: 8px;
         }
         .screen.active {
-            display: block;
+            display: flex;
+            flex-direction: column;
+            animation: fadeIn 0.2s ease;
         }
-
         @keyframes fadeIn {
             from {
                 opacity: 0;
-                transform: translateY(8px);
+                transform: translateY(6px);
             }
             to {
                 opacity: 1;
@@ -71,1288 +95,1392 @@
             }
         }
 
-        /* ---------- LOGIN / REGISTER SCREEN ---------- */
-        .auth-container {
-            background: white;
-            border-radius: var(--radius);
-            padding: 40px 28px;
-            box-shadow: var(--shadow);
-            border: 1px solid var(--gray-100);
+        .flip-card {
+            perspective: 1000px;
+        }
+        .flip-inner {
+            transition: transform 0.5s cubic-bezier(0.23, 1, 0.32, 1);
+            transform-style: preserve-3d;
+        }
+        .flip-card.flipped .flip-inner {
+            transform: rotateY(180deg);
+        }
+        .flip-front,
+        .flip-back {
+            backface-visibility: hidden;
+            -webkit-backface-visibility: hidden;
+        }
+        .flip-back {
+            transform: rotateY(180deg);
         }
 
-        .auth-container .logo {
-            font-size: 28px;
-            font-weight: 700;
-            color: var(--primary);
-            text-align: center;
-            margin-bottom: 4px;
+        .progress-bar {
+            background: var(--border);
+            border-radius: 999px;
+            overflow: hidden;
         }
-        .auth-container .logo span {
-            color: var(--gray-800);
-        }
-        .auth-container .subtitle {
-            text-align: center;
-            color: var(--gray-600);
-            margin-bottom: 28px;
-            font-size: 14px;
+        .progress-fill {
+            background: var(--accent);
+            height: 100%;
+            border-radius: 999px;
+            transition: width 0.4s ease;
         }
 
-        .form-group {
-            margin-bottom: 16px;
-        }
-        .form-group label {
-            display: block;
-            font-size: 14px;
-            font-weight: 600;
-            color: var(--gray-800);
-            margin-bottom: 4px;
-        }
-        .form-group input,
-        .form-group select {
-            width: 100%;
-            padding: 12px 16px;
-            border: 2px solid var(--gray-200);
-            border-radius: var(--radius-sm);
-            font-size: 15px;
-            outline: none;
-            transition: 0.2s;
-            font-family: inherit;
-            background: white;
-        }
-        .form-group input:focus,
-        .form-group select:focus {
-            border-color: var(--primary);
-            box-shadow: 0 0 0 4px rgba(13, 148, 136, 0.1);
-        }
-
-        .btn {
-            padding: 14px 28px;
-            border: none;
-            border-radius: 40px;
-            font-weight: 600;
-            font-size: 15px;
-            cursor: pointer;
-            transition: 0.2s;
-            font-family: inherit;
-            width: 100%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 8px;
-        }
-        .btn-primary {
-            background: var(--primary);
-            color: white;
-        }
-        .btn-primary:hover {
-            background: #0f766e;
-            transform: translateY(-1px);
-        }
-        .btn-primary:active {
-            transform: scale(0.98);
-        }
-
-        .btn-outline {
+        .nav-btn {
+            color: var(--text-secondary);
+            transition: color 0.2s;
             background: transparent;
-            color: var(--primary);
-            border: 2px solid var(--primary);
-        }
-        .btn-outline:hover {
-            background: var(--primary-bg);
-        }
-
-        .auth-switch {
-            text-align: center;
-            margin-top: 16px;
-            font-size: 14px;
-            color: var(--gray-600);
-        }
-        .auth-switch a {
-            color: var(--primary);
-            font-weight: 600;
-            cursor: pointer;
-            text-decoration: none;
-        }
-        .auth-switch a:hover {
-            text-decoration: underline;
-        }
-
-        .error-msg {
-            background: #fee2e2;
-            color: #991b1b;
-            padding: 10px 14px;
-            border-radius: var(--radius-sm);
-            font-size: 14px;
-            margin-bottom: 12px;
-            display: none;
-        }
-        .error-msg.visible {
-            display: block;
-        }
-
-        .plan-badge {
-            display: inline-block;
-            padding: 2px 12px;
-            border-radius: 40px;
-            font-size: 12px;
-            font-weight: 600;
-            margin-left: 8px;
-        }
-        .plan-badge.free {
-            background: #e2e8f0;
-            color: #475569;
-        }
-        .plan-badge.premium {
-            background: #fef9c3;
-            color: #854d0e;
-        }
-
-        /* ---------- DASHBOARD ---------- */
-        .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 4px;
-        }
-
-        .logo-small {
-            font-size: 22px;
-            font-weight: 700;
-            color: var(--primary);
-            letter-spacing: -0.5px;
-        }
-        .logo-small span {
-            color: var(--gray-800);
-        }
-
-        .greeting {
-            font-size: 20px;
-            font-weight: 600;
-            margin-top: 4px;
-        }
-        .greeting small {
-            font-weight: 400;
-            color: var(--gray-600);
-            font-size: 16px;
-        }
-
-        .sub-headline {
-            color: var(--gray-600);
-            font-size: 15px;
-            margin-bottom: 18px;
-        }
-
-        .logout-btn {
-            background: none;
             border: none;
-            color: var(--gray-400);
-            font-size: 13px;
             cursor: pointer;
-            padding: 4px 8px;
-            transition: 0.2s;
+            padding: 4px 12px;
+            border-radius: 12px;
         }
-        .logout-btn:hover {
-            color: var(--red);
+        .nav-btn.active {
+            color: var(--accent);
+        }
+        .nav-btn:hover {
+            color: var(--text);
+        }
+        .nav-btn.active:hover {
+            color: var(--accent);
         }
 
-        /* ---------- DECK GRID ---------- */
-        .deck-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 12px;
-            margin-bottom: 24px;
+        .card-peach {
+            background: var(--card-peach);
+        }
+        .card-green {
+            background: var(--card-green);
+        }
+        .card-blue {
+            background: var(--card-blue);
+        }
+        .card-purple {
+            background: var(--card-purple);
+        }
+
+        .free-badge {
+            background: var(--border);
+            color: var(--text-secondary);
+            font-size: 10px;
+            font-weight: 700;
+            padding: 2px 10px;
+            border-radius: 999px;
+            letter-spacing: 0.3px;
+            text-transform: uppercase;
+        }
+        .premium-badge {
+            background: linear-gradient(135deg, var(--premium-gold), var(--premium-purple));
+            color: #fff;
+            font-size: 10px;
+            font-weight: 700;
+            padding: 2px 10px;
+            border-radius: 999px;
+            letter-spacing: 0.3px;
+            text-transform: uppercase;
+        }
+
+        .modal-overlay {
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
+        }
+
+        ::-webkit-scrollbar {
+            width: 4px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: var(--border);
+            border-radius: 999px;
+        }
+
+        .btn-ripple {
+            position: relative;
+            overflow: hidden;
         }
 
         .deck-card {
-            background: white;
-            border-radius: var(--radius);
-            padding: 16px 14px;
-            box-shadow: var(--shadow);
+            transition: transform 0.15s ease, box-shadow 0.15s ease;
             cursor: pointer;
-            transition: transform 0.15s, box-shadow 0.2s;
-            border: 1px solid var(--gray-100);
-            position: relative;
         }
         .deck-card:hover {
             transform: translateY(-2px);
-            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
-        }
-        .deck-card:active {
-            transform: scale(0.97);
-        }
-        .deck-card .premium-lock {
-            position: absolute;
-            top: 8px;
-            right: 10px;
-            font-size: 14px;
-            color: var(--yellow);
-        }
-
-        .deck-icon {
-            font-size: 28px;
-            margin-bottom: 6px;
-            display: block;
-        }
-        .deck-name {
-            font-weight: 600;
-            font-size: 15px;
-            color: var(--gray-800);
-        }
-        .deck-subject {
-            font-size: 12px;
-            color: var(--gray-400);
-            margin-top: 2px;
-        }
-        .deck-meta {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-top: 8px;
-            font-size: 13px;
-            color: var(--gray-600);
-        }
-        .deck-progress-bar {
-            width: 100%;
-            height: 4px;
-            background: var(--gray-200);
-            border-radius: 4px;
-            margin-top: 8px;
-            overflow: hidden;
-        }
-        .deck-progress-bar .fill {
-            height: 100%;
-            background: var(--primary);
-            border-radius: 4px;
-            transition: width 0.4s ease;
-        }
-
-        .premium-badge {
-            display: inline-block;
-            background: #fef9c3;
-            color: #854d0e;
-            font-size: 10px;
-            font-weight: 700;
-            padding: 2px 8px;
-            border-radius: 40px;
-            margin-left: 6px;
-        }
-
-        /* ---------- STATS ---------- */
-        .stats-row {
-            display: grid;
-            grid-template-columns: 1fr 1fr 1fr;
-            gap: 10px;
-            margin-bottom: 20px;
-        }
-
-        .stat-card {
-            background: white;
-            border-radius: var(--radius-sm);
-            padding: 14px 12px;
-            text-align: center;
             box-shadow: var(--shadow);
-            border: 1px solid var(--gray-100);
-        }
-        .stat-number {
-            font-size: 24px;
-            font-weight: 700;
-            color: var(--gray-900);
-            line-height: 1.2;
-        }
-        .stat-label {
-            font-size: 12px;
-            color: var(--gray-400);
-            margin-top: 2px;
-        }
-        .stat-number.green {
-            color: var(--green);
-        }
-        .stat-number.primary {
-            color: var(--primary);
-        }
-        .stat-number.yellow {
-            color: var(--yellow);
         }
 
-        /* ---------- NOTIFICATIONS ---------- */
-        .notifications {
-            background: white;
-            border-radius: var(--radius);
-            padding: 16px 18px;
-            box-shadow: var(--shadow);
-            border: 1px solid var(--gray-100);
-            margin-bottom: 8px;
+        .hero-gradient {
+            background: linear-gradient(135deg, #f97316, #ea580c);
         }
-        .notifications h4 {
-            font-size: 14px;
-            color: var(--gray-600);
-            margin-bottom: 10px;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-        .notification-item {
-            font-size: 14px;
-            color: var(--gray-800);
-            padding: 6px 0;
-            border-bottom: 1px solid var(--gray-100);
-            display: flex;
-            align-items: flex-start;
-            gap: 8px;
-        }
-        .notification-item:last-child {
-            border-bottom: none;
-        }
-        .notification-item .dot {
-            display: inline-block;
-            width: 6px;
-            height: 6px;
-            border-radius: 50%;
-            background: var(--primary);
-            flex-shrink: 0;
-            margin-top: 7px;
-        }
-
-        /* ---------- STUDY SCREEN ---------- */
-        .study-header {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            margin-bottom: 8px;
-        }
-        .back-btn {
-            background: none;
-            border: none;
-            font-size: 24px;
-            cursor: pointer;
-            padding: 4px 8px;
-            color: var(--gray-600);
-            transition: 0.2s;
-        }
-        .back-btn:hover {
-            color: var(--gray-900);
-        }
-        .study-title {
-            font-size: 20px;
-            font-weight: 600;
-        }
-        .study-progress-text {
-            margin-left: auto;
-            font-size: 14px;
-            color: var(--gray-600);
-        }
-
-        .study-progress-bar {
-            width: 100%;
-            height: 6px;
-            background: var(--gray-200);
-            border-radius: 6px;
-            margin-bottom: 20px;
-            overflow: hidden;
-        }
-        .study-progress-bar .fill {
-            height: 100%;
-            background: var(--primary);
-            border-radius: 6px;
-            transition: width 0.4s ease;
-        }
-
-        /* ---------- FLASHCARD ---------- */
-        .flashcard-container {
-            perspective: 1200px;
-            margin-bottom: 24px;
-            cursor: pointer;
-        }
-
-        .flashcard {
-            background: white;
-            border-radius: var(--radius);
-            padding: 40px 24px;
-            min-height: 220px;
-            box-shadow: var(--shadow);
-            border: 1px solid var(--gray-100);
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            text-align: center;
-            transition: transform 0.5s ease;
-            transform-style: preserve-3d;
-            position: relative;
-        }
-
-        .flashcard.flipped {
-            transform: rotateY(180deg);
-        }
-
-        .flashcard .front,
-        .flashcard .back {
-            backface-visibility: hidden;
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            padding: 40px 24px;
-            border-radius: var(--radius);
-        }
-
-        .flashcard .front {
-            background: white;
-            z-index: 2;
-        }
-        .flashcard .back {
-            background: white;
-            transform: rotateY(180deg);
-            z-index: 1;
-        }
-
-        .flashcard .card-question {
-            font-size: 18px;
-            font-weight: 600;
-            color: var(--gray-800);
-            line-height: 1.5;
-        }
-        .flashcard .card-answer {
-            font-size: 18px;
-            font-weight: 600;
-            color: var(--primary);
-            line-height: 1.5;
-        }
-        .flashcard .card-tag {
-            font-size: 12px;
-            color: var(--gray-400);
-            margin-top: 12px;
-            background: var(--gray-100);
-            padding: 4px 14px;
-            border-radius: 40px;
-            display: inline-block;
-        }
-        .flashcard .flip-hint {
-            font-size: 13px;
-            color: var(--gray-400);
-            margin-top: 16px;
-        }
-
-        /* ---------- RATING BUTTONS ---------- */
-        .rating-row {
-            display: grid;
-            grid-template-columns: 1fr 1fr 1fr;
-            gap: 10px;
-            margin-bottom: 12px;
-        }
-
-        .btn-rate {
-            padding: 14px 8px;
-            border: none;
-            border-radius: var(--radius-sm);
-            font-weight: 600;
-            font-size: 15px;
-            cursor: pointer;
-            transition: 0.2s;
-            font-family: inherit;
-        }
-        .btn-rate:active {
-            transform: scale(0.95);
-        }
-        .btn-rate.know {
-            background: #dcfce7;
-            color: #166534;
-        }
-        .btn-rate.know:hover {
-            background: #bbf7d0;
-        }
-        .btn-rate.almost {
-            background: #fef9c3;
-            color: #854d0e;
-        }
-        .btn-rate.almost:hover {
-            background: #fde68a;
-        }
-        .btn-rate.unknown {
-            background: #fee2e2;
-            color: #991b1b;
-        }
-        .btn-rate.unknown:hover {
-            background: #fca5a5;
-        }
-
-        .study-empty {
-            text-align: center;
-            padding: 40px 20px;
-            color: var(--gray-600);
-        }
-        .study-empty .big {
-            font-size: 48px;
-            display: block;
-            margin-bottom: 12px;
-        }
-
-        .loading {
-            text-align: center;
-            padding: 40px 20px;
-            color: var(--gray-400);
-        }
-        .loading-spinner {
-            display: inline-block;
-            width: 32px;
-            height: 32px;
-            border: 3px solid var(--gray-200);
-            border-radius: 50%;
-            border-top-color: var(--primary);
-            animation: spin 0.7s linear infinite;
-            margin-bottom: 12px;
-        }
-        @keyframes spin {
-            to {
-                transform: rotate(360deg);
-            }
-        }
-
-        .hidden {
-            display: none !important;
-        }
-
-        @media (max-width: 400px) {
-            .deck-grid {
-                grid-template-columns: 1fr 1fr;
-                gap: 8px;
-            }
-            .deck-card {
-                padding: 12px 10px;
-            }
-            .stats-row {
-                grid-template-columns: 1fr 1fr 1fr;
-                gap: 6px;
-            }
-            .stat-card {
-                padding: 10px 6px;
-            }
-            .stat-number {
-                font-size: 20px;
-            }
-            .flashcard .card-question,
-            .flashcard .card-answer {
-                font-size: 16px;
-            }
-            .auth-container {
-                padding: 28px 16px;
-            }
+        .dark .hero-gradient {
+            background: linear-gradient(135deg, #fb923c, #d97706);
         }
     </style>
 </head>
 <body>
 
-    <div class="app" id="app">
+    <div id="app" class="max-w-lg mx-auto relative w-full h-full" style="height: 100vh; height: 100dvh;">
 
-        <!-- ====== LOGIN SCREEN ====== -->
-        <div class="screen active" id="loginScreen">
-            <div class="auth-container">
-                <div class="logo">💊 Pharma<span>Core</span></div>
-                <div class="subtitle">Sign in to continue studying</div>
-
-                <div class="error-msg" id="loginError">Invalid username or password</div>
-
-                <div class="form-group">
-                    <label>Username</label>
-                    <input type="text" id="loginUsername" placeholder="Enter your username" />
-                </div>
-                <div class="form-group">
-                    <label>Password</label>
-                    <input type="password" id="loginPassword" placeholder="Enter your password" />
-                </div>
-
-                <button class="btn btn-primary" id="loginBtn">🔑 Sign In</button>
-
-                <div class="auth-switch">
-                    Don't have an account? <a id="switchToRegister">Create one</a>
-                </div>
-            </div>
-        </div>
-
-        <!-- ====== REGISTER SCREEN ====== -->
-        <div class="screen" id="registerScreen">
-            <div class="auth-container">
-                <div class="logo">💊 Pharma<span>Core</span></div>
-                <div class="subtitle">Create your free account</div>
-
-                <div class="error-msg" id="registerError">Something went wrong</div>
-
-                <div class="form-group">
-                    <label>Choose a Nickname <span style="color:var(--gray-400);font-weight:400;">(how we'll call you)</span></label>
-                    <input type="text" id="registerNickname" placeholder="e.g. George, Sarah, Alex" />
-                </div>
-                <div class="form-group">
-                    <label>Username <span style="color:var(--gray-400);font-weight:400;">(for login)</span></label>
-                    <input type="text" id="registerUsername" placeholder="Choose a username" />
-                </div>
-                <div class="form-group">
-                    <label>Password</label>
-                    <input type="password" id="registerPassword" placeholder="Create a password" />
-                </div>
-                <div class="form-group">
-                    <label>Exam Date</label>
-                    <input type="date" id="registerExamDate" />
-                </div>
-                <div class="form-group">
-                    <label>Plan</label>
-                    <select id="registerPlan">
-                        <option value="FREE">FREE — Basic flashcards</option>
-                        <option value="PREMIUM">PREMIUM — All decks + advanced features</option>
-                    </select>
-                </div>
-
-                <button class="btn btn-primary" id="registerBtn">🚀 Create Account</button>
-
-                <div class="auth-switch">
-                    Already have an account? <a id="switchToLogin">Sign in</a>
-                </div>
-            </div>
-        </div>
-
-        <!-- ====== DASHBOARD SCREEN ====== -->
-        <div class="screen" id="dashboardScreen">
-            <div class="header">
-                <div class="logo-small">💊 Pharma<span>Core</span></div>
+        <!-- ===== HOME ===== -->
+        <div id="screen-home" class="screen active p-5">
+            <div class="flex items-center justify-between mb-5">
                 <div>
-                    <span id="planBadge"></span>
-                    <button class="logout-btn" id="logoutBtn">🚪 Logout</button>
-                </div>
-            </div>
-
-            <div class="greeting">Hi, <span id="userName">Student</span>! <small>👋</small></div>
-            <div class="sub-headline">What are we studying today? <span id="examCountdown" style="color:var(--gray-400);font-size:13px;"></span></div>
-
-            <div class="deck-grid" id="deckGrid">
-                <div class="loading" id="deckLoading">
-                    <div class="loading-spinner"></div>
-                    <div>Loading decks...</div>
-                </div>
-            </div>
-
-            <div class="stats-row" id="statsRow">
-                <div class="stat-card">
-                    <div class="stat-number primary" id="statAccuracy">--%</div>
-                    <div class="stat-label">Accuracy</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-number green" id="statMastered">--</div>
-                    <div class="stat-label">Mastered</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-number yellow" id="statStreak">--</div>
-                    <div class="stat-label">Day Streak</div>
-                </div>
-            </div>
-
-            <div class="notifications" id="notifications">
-                <h4>📌 Quick Reminders</h4>
-                <div id="notificationList">
-                    <div class="notification-item">
-                        <span class="dot"></span>
-                        Tap a deck above to start studying 💪
+                    <div class="flex items-center gap-2.5">
+                        <h1 class="text-2xl font-extrabold tracking-tight">FlashMind</h1>
+                        <span id="plan-badge" class="free-badge">FREE</span>
                     </div>
+                    <p class="text-sec text-sm mt-0.5">Master anything, one card at a time.</p>
                 </div>
+                <button onclick="toggleTheme()" class="w-10 h-10 rounded-full surface flex items-center justify-center shadow-card border border-theme transition-colors">
+                    <i data-lucide="sun" class="w-5 h-5"></i>
+                </button>
+            </div>
+
+            <div class="hero-gradient rounded-3xl p-6 mb-5 relative overflow-hidden shadow-card">
+                <div class="relative z-10">
+                    <p id="due-count" class="text-5xl font-extrabold text-white">0</p>
+                    <p class="text-white/80 text-sm mt-0.5 font-medium">cards due for review</p>
+                    <button onclick="continueStudying()" id="home-review-btn" class="mt-4 bg-white text-orange-600 font-bold px-6 py-2.5 rounded-2xl shadow-md text-sm hover:bg-orange-50 transition-colors">
+                        Review Now
+                    </button>
+                </div>
+                <div class="absolute right-0 bottom-0 opacity-20 select-none text-8xl leading-none p-4">📚</div>
+            </div>
+
+            <div class="grid grid-cols-3 gap-3 mb-5">
+                <div class="card-peach rounded-2xl p-4 text-center shadow-card">
+                    <p id="stat-streak" class="text-2xl font-bold accent-text">0</p>
+                    <p class="text-sec text-xs mt-0.5 font-medium">🔥 Streak</p>
+                </div>
+                <div class="card-green rounded-2xl p-4 text-center shadow-card">
+                    <p id="stat-accuracy" class="text-2xl font-bold" style="color:#059669">0%</p>
+                    <p class="text-sec text-xs mt-0.5 font-medium">🎯 Accuracy</p>
+                </div>
+                <div class="card-blue rounded-2xl p-4 text-center shadow-card">
+                    <p id="stat-mastered" class="text-2xl font-bold" style="color:#2563eb">0</p>
+                    <p class="text-sec text-xs mt-0.5 font-medium">🏆 Mastered</p>
+                </div>
+            </div>
+
+            <div id="upgrade-prompt" class="surface rounded-2xl p-4 flex items-center gap-3 cursor-pointer border border-theme shadow-card hover:shadow-md transition-shadow" onclick="showUpgradeModal()">
+                <div class="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0" style="background: linear-gradient(135deg, var(--premium-gold), var(--premium-purple));">
+                    <i data-lucide="crown" class="w-5 h-5 text-white"></i>
+                </div>
+                <div class="flex-1 min-w-0">
+                    <p class="font-semibold text-sm">Unlock Premium</p>
+                    <p class="text-xs text-sec truncate">Unlimited decks &amp; advanced SRS</p>
+                </div>
+                <i data-lucide="chevron-right" class="w-5 h-5 text-sec flex-shrink-0"></i>
             </div>
         </div>
 
-        <!-- ====== STUDY SCREEN ====== -->
-        <div class="screen" id="studyScreen">
-            <div class="study-header">
-                <button class="back-btn" id="backBtn">←</button>
-                <span class="study-title" id="studyTitle">Deck</span>
-                <span class="study-progress-text" id="studyProgressText">0/0</span>
+        <!-- ===== DECKS ===== -->
+        <div id="screen-decks" class="screen p-5">
+            <header class="flex items-center justify-between mb-5">
+                <h2 class="text-xl font-bold">Your Decks</h2>
+                <button onclick="showCreateDeck()" class="accent-bg text-white w-10 h-10 rounded-full flex items-center justify-center shadow-md hover:opacity-90 transition-opacity">
+                    <i data-lucide="plus" class="w-5 h-5"></i>
+                </button>
+            </header>
+            <div id="deck-list" class="space-y-3 flex-1"></div>
+            <p id="no-decks" class="text-sec text-center py-12 hidden">No decks yet. Create your first one! ✨</p>
+        </div>
+
+        <!-- ===== STUDY SELECT ===== -->
+        <div id="screen-study-select" class="screen p-5">
+            <header class="flex items-center gap-3 mb-6">
+                <button onclick="switchTab('decks')" class="text-sec hover:text-text transition-colors">
+                    <i data-lucide="arrow-left" class="w-6 h-6"></i>
+                </button>
+                <h2 id="study-deck-name" class="text-xl font-bold flex-1 truncate"></h2>
+            </header>
+            <p class="text-sec text-sm mb-4 font-medium">Choose how you want to study</p>
+            <div class="space-y-3">
+                <button onclick="startFlashcardsMode()" class="w-full card-peach rounded-2xl p-5 text-left flex items-center gap-4 shadow-card hover:shadow-md transition-shadow">
+                    <div class="w-12 h-12 rounded-xl accent-bg flex items-center justify-center flex-shrink-0">
+                        <i data-lucide="repeat" class="w-6 h-6 text-white"></i>
+                    </div>
+                    <div>
+                        <p class="font-bold">Flashcards</p>
+                        <p class="text-sec text-sm">Classic flip &amp; rate</p>
+                    </div>
+                </button>
+                <button onclick="startLearnMode()" class="w-full card-green rounded-2xl p-5 text-left flex items-center gap-4 shadow-card hover:shadow-md transition-shadow">
+                    <div class="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0" style="background:#059669">
+                        <i data-lucide="book-open" class="w-6 h-6 text-white"></i>
+                    </div>
+                    <div>
+                        <p class="font-bold">Learn</p>
+                        <p class="text-sec text-sm">Guided step-by-step</p>
+                    </div>
+                </button>
+                <button onclick="startTestMode()" class="w-full card-blue rounded-2xl p-5 text-left flex items-center gap-4 shadow-card hover:shadow-md transition-shadow">
+                    <div class="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0" style="background:#2563eb">
+                        <i data-lucide="file-question" class="w-6 h-6 text-white"></i>
+                    </div>
+                    <div>
+                        <p class="font-bold">Test</p>
+                        <p class="text-sec text-sm">Quiz yourself</p>
+                    </div>
+                </button>
             </div>
-            <div class="study-progress-bar">
-                <div class="fill" id="studyProgressFill" style="width:0%"></div>
+        </div>
+
+        <!-- ===== FLASHCARDS ===== -->
+        <div id="screen-flashcards" class="screen p-5">
+            <div class="flex items-center justify-between mb-3">
+                <button onclick="exitStudy()" class="text-sec hover:text-text transition-colors">
+                    <i data-lucide="x" class="w-6 h-6"></i>
+                </button>
+                <p id="fc-progress" class="text-sm text-sec font-medium">0/0</p>
+                <div class="w-6"></div>
+            </div>
+            <div class="progress-bar h-1.5 mb-4">
+                <div id="fc-progress-fill" class="progress-fill" style="width:0%"></div>
             </div>
 
-            <div id="studyContent">
-                <div id="flashcardWrapper">
-                    <div class="flashcard-container" id="flashcardContainer">
-                        <div class="flashcard" id="flashcard">
-                            <div class="front">
-                                <div class="card-question" id="cardQuestion">Loading...</div>
-                                <div class="flip-hint">👆 Tap to reveal answer</div>
-                            </div>
-                            <div class="back">
-                                <div class="card-answer" id="cardAnswer">-</div>
-                                <div class="card-tag" id="cardTag"></div>
-                                <div class="flip-hint">👆 Tap to flip back</div>
-                            </div>
+            <div class="flex-1 flex items-center justify-center">
+                <div id="fc-card" class="flip-card w-full cursor-pointer" onclick="fcFlip()" style="max-width:340px; height:260px;">
+                    <div class="flip-inner w-full h-full relative">
+                        <div class="flip-front absolute inset-0 card-peach rounded-3xl shadow-card flex items-center justify-center p-6">
+                            <p id="fc-front-text" class="text-xl font-bold text-center leading-relaxed"></p>
+                        </div>
+                        <div class="flip-back absolute inset-0 card-green rounded-3xl shadow-card flex items-center justify-center p-6">
+                            <p id="fc-back-text" class="text-xl font-semibold text-center leading-relaxed"></p>
                         </div>
                     </div>
                 </div>
+            </div>
 
-                <div class="study-empty hidden" id="studyEmpty">
-                    <span class="big">🎉</span>
-                    <h3>All done!</h3>
-                    <p style="color:var(--gray-600); margin-top:4px;">You've reviewed all cards in this deck.</p>
-                    <button class="btn-rate know" style="margin-top:16px; padding:12px 32px;" id="resetDeckBtn">↻ Review Again</button>
+            <p id="fc-hint" class="text-center text-sec text-sm mb-3 mt-2">👆 Tap to flip</p>
+
+            <div id="fc-buttons" class="hidden grid grid-cols-4 gap-2 mt-1">
+                <button onclick="fcRate(0)" class="py-3 rounded-2xl text-white font-semibold text-sm hover:opacity-80 transition-opacity" style="background:#ef4444">Again</button>
+                <button onclick="fcRate(1)" class="py-3 rounded-2xl text-white font-semibold text-sm hover:opacity-80 transition-opacity" style="background:#f59e0b">Hard</button>
+                <button onclick="fcRate(2)" class="py-3 rounded-2xl text-white font-semibold text-sm hover:opacity-80 transition-opacity" style="background:#3b82f6">Good</button>
+                <button onclick="fcRate(3)" class="py-3 rounded-2xl text-white font-semibold text-sm hover:opacity-80 transition-opacity" style="background:#10b981">Easy</button>
+            </div>
+
+            <div id="fc-done" class="hidden flex-1 flex-col items-center justify-center text-center">
+                <i data-lucide="check-circle" class="w-16 h-16 accent-text mb-4"></i>
+                <p class="text-xl font-bold mb-1">All done! 🎉</p>
+                <p class="text-sec text-sm">You've reviewed all cards in this session.</p>
+                <button onclick="exitStudy()" class="mt-5 accent-bg text-white px-6 py-2.5 rounded-2xl font-bold hover:opacity-90 transition-opacity">Back to Decks</button>
+            </div>
+        </div>
+
+        <!-- ===== LEARN ===== -->
+        <div id="screen-learn" class="screen p-5">
+            <div class="flex items-center justify-between mb-3">
+                <button onclick="exitStudy()" class="text-sec hover:text-text transition-colors">
+                    <i data-lucide="x" class="w-6 h-6"></i>
+                </button>
+                <p id="ln-progress" class="text-sm text-sec font-medium">0/0</p>
+                <div class="w-6"></div>
+            </div>
+            <div class="progress-bar h-1.5 mb-6">
+                <div id="ln-progress-fill" class="progress-fill" style="width:0%"></div>
+            </div>
+
+            <div class="flex-1 flex flex-col items-center justify-center">
+                <div id="ln-question" class="card-purple rounded-3xl p-8 w-full max-w-sm text-center shadow-card mb-6">
+                    <p id="ln-front-text" class="text-xl font-bold leading-relaxed"></p>
                 </div>
+                <div id="ln-answer-box" class="hidden card-green rounded-3xl p-6 w-full max-w-sm text-center shadow-card mb-6">
+                    <p id="ln-back-text" class="text-lg font-semibold leading-relaxed"></p>
+                </div>
+                <button id="ln-show-btn" onclick="lnShowAnswer()" class="accent-bg text-white px-8 py-3 rounded-2xl font-bold hover:opacity-90 transition-opacity">
+                    Show Answer
+                </button>
+                <div id="ln-grade-btns" class="hidden flex gap-3 mt-2">
+                    <button onclick="lnGrade(false)" class="px-6 py-3 rounded-2xl font-bold text-white hover:opacity-80 transition-opacity" style="background:#ef4444">Incorrect</button>
+                    <button onclick="lnGrade(true)" class="px-6 py-3 rounded-2xl font-bold text-white hover:opacity-80 transition-opacity" style="background:#10b981">Correct</button>
+                </div>
+            </div>
 
-                <div class="rating-row" id="ratingRow">
-                    <button class="btn-rate know" data-confidence="4">✅ Know</button>
-                    <button class="btn-rate almost" data-confidence="3">🔄 Almost</button>
-                    <button class="btn-rate unknown" data-confidence="1">❌ Don't know</button>
+            <div id="ln-done" class="hidden flex-1 flex-col items-center justify-center text-center">
+                <i data-lucide="check-circle" class="w-16 h-16 accent-text mb-4"></i>
+                <p class="text-xl font-bold mb-1">Session complete! 🎉</p>
+                <p class="text-sec text-sm">Great job learning today.</p>
+                <button onclick="exitStudy()" class="mt-5 accent-bg text-white px-6 py-2.5 rounded-2xl font-bold hover:opacity-90 transition-opacity">Back to Decks</button>
+            </div>
+        </div>
+
+        <!-- ===== TEST ===== -->
+        <div id="screen-test" class="screen p-5">
+            <div class="flex items-center justify-between mb-3">
+                <button onclick="exitStudy()" class="text-sec hover:text-text transition-colors">
+                    <i data-lucide="x" class="w-6 h-6"></i>
+                </button>
+                <p id="ts-progress" class="text-sm text-sec font-medium">0/0</p>
+                <div class="w-6"></div>
+            </div>
+            <div class="progress-bar h-1.5 mb-6">
+                <div id="ts-progress-fill" class="progress-fill" style="width:0%"></div>
+            </div>
+
+            <div id="ts-question-area" class="flex-1 flex flex-col items-center justify-center">
+                <div class="card-blue rounded-3xl p-8 w-full max-w-sm text-center shadow-card mb-6">
+                    <p id="ts-question" class="text-xl font-bold leading-relaxed"></p>
+                </div>
+                <div id="ts-choices" class="w-full max-w-sm space-y-2.5"></div>
+                <div id="ts-type-area" class="hidden w-full max-w-sm">
+                    <input id="ts-type-input" type="text" class="w-full border rounded-2xl px-4 py-3 surface text-center text-base focus:outline-none focus:ring-2 focus:ring-orange-400" style="border-color:var(--border)" placeholder="Type your answer…" autocomplete="off" />
+                    <button onclick="tsSubmitTyped()" class="w-full mt-3 accent-bg text-white py-3 rounded-2xl font-bold hover:opacity-90 transition-opacity">Submit</button>
+                </div>
+                <div id="ts-feedback" class="hidden w-full max-w-sm text-center mt-4 p-4 rounded-2xl shadow-card">
+                    <p id="ts-feedback-text" class="font-bold text-lg"></p>
+                    <p id="ts-correct-answer" class="text-sec text-sm mt-1"></p>
+                    <button onclick="tsNext()" class="mt-3 accent-bg text-white px-6 py-2.5 rounded-2xl font-bold text-sm hover:opacity-90 transition-opacity">Next</button>
+                </div>
+            </div>
+
+            <div id="ts-results" class="hidden flex-1 flex-col items-center justify-center text-center">
+                <p class="text-5xl font-extrabold accent-text mb-2" id="ts-score">0%</p>
+                <p class="text-sec text-sm mb-5">Your score</p>
+                <div class="flex gap-8 mb-5">
+                    <div class="text-center">
+                        <p id="ts-correct-count" class="text-3xl font-bold" style="color:#10b981">0</p>
+                        <p class="text-xs text-sec">Correct</p>
+                    </div>
+                    <div class="text-center">
+                        <p id="ts-incorrect-count" class="text-3xl font-bold" style="color:#ef4444">0</p>
+                        <p class="text-xs text-sec">Incorrect</p>
+                    </div>
+                </div>
+                <button onclick="exitStudy()" class="accent-bg text-white px-6 py-2.5 rounded-2xl font-bold hover:opacity-90 transition-opacity">Back to Decks</button>
+            </div>
+        </div>
+
+        <!-- ===== STATS ===== -->
+        <div id="screen-stats" class="screen p-5">
+            <h2 class="text-xl font-bold mb-5">📊 Statistics</h2>
+            <div class="card-peach rounded-3xl p-5 mb-4 shadow-card">
+                <p class="text-sec text-sm font-medium mb-0.5">Current Streak</p>
+                <p id="stats-streak-val" class="text-3xl font-extrabold accent-text">0 days</p>
+            </div>
+            <div class="grid grid-cols-2 gap-3 mb-4">
+                <div class="surface rounded-2xl border border-theme p-4 shadow-card">
+                    <p class="text-sec text-xs font-medium uppercase tracking-wider">Total Reviews</p>
+                    <p id="stats-total" class="text-2xl font-bold mt-1">0</p>
+                </div>
+                <div class="surface rounded-2xl border border-theme p-4 shadow-card">
+                    <p class="text-sec text-xs font-medium uppercase tracking-wider">Accuracy</p>
+                    <p id="stats-acc" class="text-2xl font-bold mt-1">0%</p>
+                </div>
+            </div>
+            <div class="surface rounded-2xl border border-theme p-5 mb-4 shadow-card">
+                <p class="text-sec text-sm font-medium mb-3">Reviews (last 7 days)</p>
+                <div id="stats-chart" class="flex items-end gap-1 h-24"></div>
+            </div>
+            <div class="surface rounded-2xl border border-theme p-4 shadow-card">
+                <p class="text-sec text-xs font-medium uppercase tracking-wider">Cards Mastered</p>
+                <p id="stats-mastered-val" class="text-2xl font-bold mt-1">0</p>
+            </div>
+        </div>
+
+        <!-- ===== SETTINGS ===== -->
+        <div id="screen-settings" class="screen p-5">
+            <h2 class="text-xl font-bold mb-5">⚙️ Settings</h2>
+            <div class="space-y-3">
+                <div class="surface rounded-2xl border border-theme p-4 shadow-card">
+                    <p class="text-sm text-sec font-medium mb-1">Plan</p>
+                    <div class="flex items-center justify-between">
+                        <span id="settings-plan-label" class="font-semibold">Free</span>
+                        <button onclick="showUpgradeModal()" id="settings-upgrade-btn" class="px-4 py-1.5 rounded-xl text-white text-sm font-medium hover:opacity-90 transition-opacity" style="background: linear-gradient(135deg, var(--premium-gold), var(--premium-purple));">Upgrade</button>
+                    </div>
+                </div>
+                <div class="surface rounded-2xl border border-theme p-4 flex items-center justify-between shadow-card">
+                    <span class="font-medium text-sm">Dark Mode</span>
+                    <button onclick="toggleTheme()" id="theme-toggle-btn" class="w-12 h-7 rounded-full relative transition-colors border border-theme flex-shrink-0" style="background:var(--border)">
+                        <div id="theme-toggle-dot" class="w-5 h-5 rounded-full accent-bg absolute top-1 left-1 transition-transform shadow-sm"></div>
+                    </button>
+                </div>
+                <div class="surface rounded-2xl border border-theme p-4 shadow-card">
+                    <label for="ease-input" class="text-sm font-medium">Default Ease Factor</label>
+                    <input id="ease-input" type="number" step="0.1" min="1.3" max="4.0" value="2.5" class="w-full border rounded-xl px-3 py-2 mt-2 surface text-sm focus:outline-none focus:ring-2 focus:ring-orange-400" style="border-color:var(--border)" />
+                </div>
+                <div class="surface rounded-2xl border border-theme p-4 shadow-card">
+                    <label for="interval-input" class="text-sm font-medium">Interval Multiplier</label>
+                    <input id="interval-input" type="number" step="0.1" min="0.5" max="3.0" value="1.0" class="w-full border rounded-xl px-3 py-2 mt-2 surface text-sm focus:outline-none focus:ring-2 focus:ring-orange-400" style="border-color:var(--border)" />
+                </div>
+                <button onclick="exportData()" class="w-full surface rounded-2xl border border-theme p-4 text-left flex items-center gap-3 shadow-card hover:shadow-md transition-shadow">
+                    <i data-lucide="download" class="w-5 h-5 text-sec"></i>
+                    <span class="font-medium text-sm">Export All Data</span>
+                </button>
+                <button onclick="importData()" class="w-full surface rounded-2xl border border-theme p-4 text-left flex items-center gap-3 shadow-card hover:shadow-md transition-shadow">
+                    <i data-lucide="upload" class="w-5 h-5 text-sec"></i>
+                    <span class="font-medium text-sm">Import Data</span>
+                </button>
+                <input id="import-input" type="file" accept=".json" class="hidden" onchange="handleImport(event)" />
+            </div>
+        </div>
+
+        <!-- ===== BOTTOM NAV ===== -->
+        <nav class="absolute bottom-0 left-0 right-0 surface border-t border-theme z-40 h-16 flex items-center px-2 shadow-[0_-4px_20px_rgba(0,0,0,0.04)]">
+            <div class="flex justify-around w-full max-w-sm mx-auto">
+                <button onclick="switchTab('home')" class="nav-btn active flex flex-col items-center gap-0.5 text-xs font-medium" data-tab="home">
+                    <i data-lucide="home" class="w-5 h-5"></i>
+                    <span>Home</span>
+                </button>
+                <button onclick="switchTab('decks')" class="nav-btn flex flex-col items-center gap-0.5 text-xs font-medium" data-tab="decks">
+                    <i data-lucide="layers" class="w-5 h-5"></i>
+                    <span>Decks</span>
+                </button>
+                <button onclick="switchTab('stats')" class="nav-btn flex flex-col items-center gap-0.5 text-xs font-medium" data-tab="stats">
+                    <i data-lucide="bar-chart-2" class="w-5 h-5"></i>
+                    <span>Stats</span>
+                </button>
+                <button onclick="switchTab('settings')" class="nav-btn flex flex-col items-center gap-0.5 text-xs font-medium" data-tab="settings">
+                    <i data-lucide="settings" class="w-5 h-5"></i>
+                    <span>Settings</span>
+                </button>
+            </div>
+        </nav>
+
+        <!-- ===== DECK MODAL ===== -->
+        <div id="deck-modal" class="hidden fixed inset-0 z-50 flex items-end sm:items-center justify-center modal-overlay" onclick="if(event.target===this) closeDeckModal()">
+            <div class="surface rounded-t-3xl sm:rounded-3xl w-full max-w-lg p-6 animate-[fadeIn_0.2s_ease] shadow-2xl" onclick="event.stopPropagation()">
+                <h3 class="font-bold text-lg mb-4">📁 New Deck</h3>
+                <label for="deck-name-input" class="text-sm text-sec font-medium">Deck Name</label>
+                <input id="deck-name-input" type="text" class="w-full border rounded-2xl px-4 py-3 mt-1 mb-4 surface text-base focus:outline-none focus:ring-2 focus:ring-orange-400" style="border-color:var(--border)" placeholder="e.g. Spanish Vocabulary" autofocus />
+                <div class="flex gap-3">
+                    <button onclick="closeDeckModal()" class="flex-1 py-3 rounded-2xl border border-theme font-medium hover:bg-opacity-10 transition-colors" style="color:var(--text-secondary)">Cancel</button>
+                    <button onclick="saveDeck()" class="flex-1 py-3 rounded-2xl accent-bg text-white font-medium hover:opacity-90 transition-opacity">Save</button>
                 </div>
             </div>
         </div>
+
+        <!-- ===== CARD MODAL ===== -->
+        <div id="card-modal" class="hidden fixed inset-0 z-50 flex items-end sm:items-center justify-center modal-overlay" onclick="if(event.target===this) closeCardModal()">
+            <div class="surface rounded-t-3xl sm:rounded-3xl w-full max-w-lg p-6 animate-[fadeIn_0.2s_ease] shadow-2xl" onclick="event.stopPropagation()">
+                <h3 class="font-bold text-lg mb-4">➕ Add Card</h3>
+                <label for="card-front-input" class="text-sm text-sec font-medium">Front (Question)</label>
+                <input id="card-front-input" type="text" class="w-full border rounded-2xl px-4 py-3 mt-1 mb-3 surface text-base focus:outline-none focus:ring-2 focus:ring-orange-400" style="border-color:var(--border)" placeholder="What is the capital of France?" />
+                <label for="card-back-input" class="text-sm text-sec font-medium">Back (Answer)</label>
+                <input id="card-back-input" type="text" class="w-full border rounded-2xl px-4 py-3 mt-1 mb-4 surface text-base focus:outline-none focus:ring-2 focus:ring-orange-400" style="border-color:var(--border)" placeholder="Paris" />
+                <div class="flex gap-3">
+                    <button onclick="closeCardModal()" class="flex-1 py-3 rounded-2xl border border-theme font-medium hover:bg-opacity-10 transition-colors" style="color:var(--text-secondary)">Cancel</button>
+                    <button onclick="saveCard()" class="flex-1 py-3 rounded-2xl accent-bg text-white font-medium hover:opacity-90 transition-opacity">Save</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== UPGRADE MODAL ===== -->
+        <div id="upgrade-modal" class="hidden fixed inset-0 z-50 flex items-end sm:items-center justify-center modal-overlay" onclick="if(event.target===this) closeUpgradeModal()">
+            <div class="surface rounded-t-3xl sm:rounded-3xl w-full max-w-md p-6 animate-[fadeIn_0.2s_ease] shadow-2xl" onclick="event.stopPropagation()">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="font-bold text-xl">✨ Upgrade to Premium</h3>
+                    <button onclick="closeUpgradeModal()" class="text-sec hover:text-text transition-colors">
+                        <i data-lucide="x" class="w-6 h-6"></i>
+                    </button>
+                </div>
+                <div class="rounded-2xl p-5 mb-4 text-center" style="background: linear-gradient(135deg, var(--premium-gold), var(--premium-purple));">
+                    <p class="text-white font-bold text-3xl mb-0.5">$4.99<span class="text-base font-normal">/mo</span></p>
+                    <p class="text-white/80 text-sm">Unlock everything</p>
+                </div>
+                <ul class="space-y-2.5 text-sm mb-6">
+                    <li class="flex items-center gap-3">
+                        <i data-lucide="check" class="w-5 h-5" style="color:var(--premium-gold)"></i>
+                        <span>Unlimited decks &amp; cards</span>
+                    </li>
+                    <li class="flex items-center gap-3">
+                        <i data-lucide="check" class="w-5 h-5" style="color:var(--premium-gold)"></i>
+                        <span>Advanced SRS controls</span>
+                    </li>
+                    <li class="flex items-center gap-3">
+                        <i data-lucide="check" class="w-5 h-5" style="color:var(--premium-gold)"></i>
+                        <span>Full analytics &amp; insights</span>
+                    </li>
+                </ul>
+                <button onclick="simulateUpgrade()" class="w-full py-3 rounded-2xl text-white font-bold hover:opacity-90 transition-opacity" style="background: linear-gradient(135deg, var(--premium-gold), var(--premium-purple));">Upgrade Now</button>
+                <p class="text-center text-xs text-sec mt-3">Demo only — no real payment</p>
+            </div>
+        </div>
+
     </div>
 
     <script>
         // ============================================================
-        // YOUR APPS SCRIPT URL
+        //  DATA LAYER (localStorage)
         // ============================================================
-        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxmq6IDit8M1WwbIszr5b4iskC4j1CpuEkaIEvvSaWmg4CfKByT93z8HaUL8nZTyQ-tQQ/exec';
+        const STORAGE_KEY = 'flashmind_data';
+        const PLAN_KEY = 'flashmind_plan';
+        const THEME_KEY = 'flashmind_theme';
 
-        // ============================================================
-        // STATE
-        // ============================================================
-        const state = {
-            token: null,
-            nickname: null,
-            plan: null,
-            decks: [],
-            currentDeck: null,
-            cards: [],
-            currentCardIndex: 0,
-            progress: {},
-            isFlipped: false,
-        };
+        let allCards = [];
+        let userPlan = 'free';
+        let currentDeckId = null;
+        let studyQueue = [];
+        let studyIdx = 0;
+        let fcFlipped = false;
+        let tsCorrect = 0;
+        let tsIncorrect = 0;
+        let tsCurrentAnswer = '';
 
-        // ============================================================
-        // DOM REFS
-        // ============================================================
-        const $ = (sel) => document.querySelector(sel);
-        const $$ = (sel) => document.querySelectorAll(sel);
-
-        // Auth
-        const loginScreen = $('#loginScreen');
-        const registerScreen = $('#registerScreen');
-        const loginError = $('#loginError');
-        const registerError = $('#registerError');
-        const loginUsername = $('#loginUsername');
-        const loginPassword = $('#loginPassword');
-        const loginBtn = $('#loginBtn');
-        const registerNickname = $('#registerNickname');
-        const registerUsername = $('#registerUsername');
-        const registerPassword = $('#registerPassword');
-        const registerExamDate = $('#registerExamDate');
-        const registerPlan = $('#registerPlan');
-        const registerBtn = $('#registerBtn');
-        const switchToRegister = $('#switchToRegister');
-        const switchToLogin = $('#switchToLogin');
-
-        // Dashboard
-        const dashboardScreen = $('#dashboardScreen');
-        const userName = $('#userName');
-        const planBadge = $('#planBadge');
-        const examCountdown = $('#examCountdown');
-        const deckGrid = $('#deckGrid');
-        const deckLoading = $('#deckLoading');
-        const statAccuracy = $('#statAccuracy');
-        const statMastered = $('#statMastered');
-        const statStreak = $('#statStreak');
-        const notificationList = $('#notificationList');
-        const logoutBtn = $('#logoutBtn');
-
-        // Study
-        const studyScreen = $('#studyScreen');
-        const studyTitle = $('#studyTitle');
-        const studyProgressText = $('#studyProgressText');
-        const studyProgressFill = $('#studyProgressFill');
-        const flashcard = $('#flashcard');
-        const cardQuestion = $('#cardQuestion');
-        const cardAnswer = $('#cardAnswer');
-        const cardTag = $('#cardTag');
-        const flashcardContainer = $('#flashcardContainer');
-        const ratingRow = $('#ratingRow');
-        const studyEmpty = $('#studyEmpty');
-        const resetDeckBtn = $('#resetDeckBtn');
-        const backBtn = $('#backBtn');
-
-        // ============================================================
-        // HELPERS
-        // ============================================================
-        function showScreen(screenId) {
-            $$('.screen').forEach(el => el.classList.remove('active'));
-            $(`#${screenId}`).classList.add('active');
-        }
-
-        function formatDate() {
-            const d = new Date();
-            return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-        }
-
-        function shuffleArray(arr) {
-            for (let i = arr.length - 1; i > 0; i--) {
-                const j = Math.floor(Math.random() * (i + 1));
-                [arr[i], arr[j]] = [arr[j], arr[i]];
+        // ---- load / save ----
+        function loadData() {
+            try {
+                const raw = localStorage.getItem(STORAGE_KEY);
+                if (raw) {
+                    allCards = JSON.parse(raw);
+                    if (!Array.isArray(allCards)) allCards = [];
+                } else {
+                    // seed with sample data
+                    allCards = getSampleData();
+                    saveData();
+                }
+            } catch {
+                allCards = getSampleData();
+                saveData();
             }
-            return arr;
+            userPlan = localStorage.getItem(PLAN_KEY) || 'free';
+            if (localStorage.getItem(THEME_KEY) === 'dark') {
+                document.documentElement.classList.add('dark');
+            }
         }
 
-        function getCardConfidence(cardId) {
-            return state.progress[cardId] || null;
+        function saveData() {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(allCards));
         }
 
-        function getDaysUntil(dateStr) {
-            const target = new Date(dateStr);
-            const now = new Date();
-            const diff = target - now;
-            return Math.ceil(diff / (1000 * 60 * 60 * 24));
+        function getSampleData() {
+            const deckId = 'deck_sample';
+            return [{
+                __id: 'c1',
+                deck_id: deckId,
+                deck_name: 'Sample Deck',
+                card_front: 'What is the capital of France?',
+                card_back: 'Paris',
+                card_tags: '',
+                ease_factor: 2.5,
+                interval: 0,
+                repetitions: 0,
+                next_review: '',
+                last_review: '',
+                total_reviews: 0,
+                correct_count: 0
+            }, {
+                __id: 'c2',
+                deck_id: deckId,
+                deck_name: 'Sample Deck',
+                card_front: 'What is 2 + 2?',
+                card_back: '4',
+                card_tags: '',
+                ease_factor: 2.5,
+                interval: 0,
+                repetitions: 0,
+                next_review: '',
+                last_review: '',
+                total_reviews: 0,
+                correct_count: 0
+            }, {
+                __id: 'c3',
+                deck_id: deckId,
+                deck_name: 'Sample Deck',
+                card_front: 'What planet is known as the Red Planet?',
+                card_back: 'Mars',
+                card_tags: '',
+                ease_factor: 2.5,
+                interval: 0,
+                repetitions: 0,
+                next_review: '',
+                last_review: '',
+                total_reviews: 0,
+                correct_count: 0
+            }, {
+                __id: 'c4',
+                deck_id: deckId,
+                deck_name: 'Sample Deck',
+                card_front: 'Who wrote "Romeo and Juliet"?',
+                card_back: 'William Shakespeare',
+                card_tags: '',
+                ease_factor: 2.5,
+                interval: 0,
+                repetitions: 0,
+                next_review: '',
+                last_review: '',
+                total_reviews: 0,
+                correct_count: 0
+            }];
         }
 
-        // ============================================================
-        // API CALLS
-        // ============================================================
-        async function apiCall(action, params = {}) {
-            const url = new URL(SCRIPT_URL);
-            url.searchParams.set('action', action);
-            Object.entries(params).forEach(([k, v]) => {
-                if (v !== undefined && v !== null) url.searchParams.set(k, v);
+        // ---- helpers ----
+        function today() {
+            return new Date().toISOString().split('T')[0];
+        }
+
+        function getRealCards() {
+            return allCards.filter(c => c.card_front && c.card_front !== '__deck_placeholder__');
+        }
+
+        function getDecks() {
+            const map = {};
+            allCards.forEach(c => {
+                if (!map[c.deck_id]) {
+                    map[c.deck_id] = { id: c.deck_id, name: c.deck_name || 'Untitled', cards: [] };
+                }
+                if (c.card_front !== '__deck_placeholder__') {
+                    map[c.deck_id].cards.push(c);
+                }
             });
+            return Object.values(map);
+        }
 
-            const res = await fetch(url.toString());
-            return res.json();
+        function getDueCards(deckId) {
+            const now = today();
+            let cards = getRealCards();
+            if (deckId) cards = cards.filter(c => c.deck_id === deckId);
+            return cards.filter(c => !c.next_review || c.next_review <= now);
+        }
+
+        function getStreak() {
+            const reviews = [...new Set(
+                getRealCards()
+                .map(c => c.last_review ? c.last_review.split('T')[0] : null)
+                .filter(Boolean)
+            )].sort().reverse();
+            let s = 0;
+            let d = new Date();
+            for (let i = 0; i < 365; i++) {
+                const ds = d.toISOString().split('T')[0];
+                if (reviews.includes(ds)) { s++;
+                    d.setDate(d.getDate() - 1); } else if (i === 0) { d.setDate(d.getDate() - 1); } else break;
+            }
+            return s;
+        }
+
+        function generateId() {
+            return 'id_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6);
         }
 
         // ============================================================
-        // AUTH FUNCTIONS
+        //  SRS (SM-2 inspired)
         // ============================================================
-        async function handleLogin() {
-            const username = loginUsername.value.trim();
-            const password = loginPassword.value.trim();
+        function applySRS(card, quality) {
+            let ef = card.ease_factor || 2.5;
+            let interval = card.interval || 0;
+            let reps = card.repetitions || 0;
+            const mult = parseFloat(document.getElementById('interval-input')?.value) || 1.0;
 
-            if (!username || !password) {
-                loginError.textContent = 'Please enter username and password';
-                loginError.classList.add('visible');
+            if (quality < 1) {
+                reps = 0;
+                interval = 1;
+            } else {
+                if (reps === 0) interval = 1;
+                else if (reps === 1) interval = 6;
+                else interval = Math.round(interval * ef * mult);
+                if (interval < 1) interval = 1;
+                reps++;
+            }
+
+            ef = ef + (0.1 - (3 - quality) * (0.08 + (3 - quality) * 0.02));
+            if (ef < 1.3) ef = 1.3;
+
+            const next = new Date();
+            next.setDate(next.getDate() + interval);
+
+            return {
+                ...card,
+                ease_factor: Math.round(ef * 100) / 100,
+                interval: interval,
+                repetitions: reps,
+                next_review: next.toISOString().split('T')[0],
+                last_review: new Date().toISOString(),
+                total_reviews: (card.total_reviews || 0) + 1,
+                correct_count: (card.correct_count || 0) + (quality >= 2 ? 1 : 0)
+            };
+        }
+
+        // ============================================================
+        //  UI RENDERING
+        // ============================================================
+        function updateHome() {
+            const due = getDueCards();
+            document.getElementById('due-count').textContent = due.length;
+            const real = getRealCards();
+            const total = real.reduce((s, c) => s + (c.total_reviews || 0), 0);
+            const correct = real.reduce((s, c) => s + (c.correct_count || 0), 0);
+            const acc = total > 0 ? Math.round(correct / total * 100) : 0;
+            const mastered = real.filter(c => (c.interval || 0) >= 21).length;
+            document.getElementById('stat-streak').textContent = getStreak();
+            document.getElementById('stat-accuracy').textContent = acc + '%';
+            document.getElementById('stat-mastered').textContent = mastered;
+            // update review button
+            const btn = document.getElementById('home-review-btn');
+            if (due.length === 0) {
+                btn.textContent = '🎉 All caught up!';
+                btn.disabled = true;
+                btn.classList.add('opacity-60', 'cursor-not-allowed');
+            } else {
+                btn.textContent = 'Review Now →';
+                btn.disabled = false;
+                btn.classList.remove('opacity-60', 'cursor-not-allowed');
+            }
+            updatePlanUI();
+        }
+
+        function renderDecks() {
+            const decks = getDecks();
+            const container = document.getElementById('deck-list');
+            const noDecks = document.getElementById('no-decks');
+            if (decks.length === 0) {
+                container.innerHTML = '';
+                noDecks.classList.remove('hidden');
                 return;
             }
-
-            loginError.classList.remove('visible');
-            loginBtn.textContent = '⏳ Signing in...';
-            loginBtn.disabled = true;
-
-            try {
-                const result = await apiCall('login', { username, password });
-
-                if (result.error) {
-                    loginError.textContent = result.error;
-                    loginError.classList.add('visible');
-                    loginBtn.textContent = '🔑 Sign In';
-                    loginBtn.disabled = false;
-                    return;
-                }
-
-                if (result.success && result.user) {
-                    state.token = result.user.token;
-                    state.nickname = result.user.nickname || result.user.token;
-                    state.plan = result.user.plan;
-
-                    // Save session
-                    sessionStorage.setItem('pharmacore_token', state.token);
-                    sessionStorage.setItem('pharmacore_nickname', state.nickname);
-                    sessionStorage.setItem('pharmacore_plan', state.plan);
-
-                    showScreen('dashboardScreen');
-                    loadDashboard();
-                }
-            } catch (err) {
-                loginError.textContent = 'Network error. Please try again.';
-                loginError.classList.add('visible');
-            }
-
-            loginBtn.textContent = '🔑 Sign In';
-            loginBtn.disabled = false;
-        }
-
-        async function handleRegister() {
-            const nickname = registerNickname.value.trim();
-            const username = registerUsername.value.trim();
-            const password = registerPassword.value.trim();
-            const examDate = registerExamDate.value;
-            const plan = registerPlan.value;
-
-            if (!nickname || !username || !password) {
-                registerError.textContent = 'Please fill in all fields';
-                registerError.classList.add('visible');
-                return;
-            }
-
-            registerError.classList.remove('visible');
-            registerBtn.textContent = '⏳ Creating account...';
-            registerBtn.disabled = true;
-
-            try {
-                const result = await apiCall('register', {
-                    username,
-                    password,
-                    nickname,
-                    plan,
-                    examDate
-                });
-
-                if (result.error) {
-                    registerError.textContent = result.error;
-                    registerError.classList.add('visible');
-                    registerBtn.textContent = '🚀 Create Account';
-                    registerBtn.disabled = false;
-                    return;
-                }
-
-                if (result.success && result.user) {
-                    state.token = result.user.token;
-                    state.nickname = result.user.nickname || result.user.token;
-                    state.plan = result.user.plan;
-
-                    sessionStorage.setItem('pharmacore_token', state.token);
-                    sessionStorage.setItem('pharmacore_nickname', state.nickname);
-                    sessionStorage.setItem('pharmacore_plan', state.plan);
-
-                    showScreen('dashboardScreen');
-                    loadDashboard();
-                }
-            } catch (err) {
-                registerError.textContent = 'Network error. Please try again.';
-                registerError.classList.add('visible');
-            }
-
-            registerBtn.textContent = '🚀 Create Account';
-            registerBtn.disabled = false;
-        }
-
-        function logout() {
-            sessionStorage.removeItem('pharmacore_token');
-            sessionStorage.removeItem('pharmacore_nickname');
-            sessionStorage.removeItem('pharmacore_plan');
-            state.token = null;
-            state.nickname = null;
-            state.plan = null;
-            showScreen('loginScreen');
-            loginUsername.value = '';
-            loginPassword.value = '';
-        }
-
-        // ============================================================
-        // LOAD DASHBOARD
-        // ============================================================
-        async function loadDashboard() {
-            try {
-                const decksData = await apiCall('getDecks', { token: state.token });
-                state.decks = decksData.decks || [];
-                state.plan = decksData.plan || 'FREE';
-                state.nickname = decksData.nickname || state.nickname;
-
-                // Update UI
-                userName.textContent = state.nickname;
-
-                // Plan badge
-                const isPremium = state.plan === 'PREMIUM';
-                planBadge.innerHTML = isPremium ?
-                    '<span class="plan-badge premium">⭐ PREMIUM</span>' :
-                    '<span class="plan-badge free">FREE</span>';
-
-                // Get user for exam date
-                const userData = await apiCall('getUser', { token: state.token });
-                if (userData.user && userData.user.examDate) {
-                    const days = getDaysUntil(userData.user.examDate);
-                    examCountdown.textContent = days > 0 ? `📅 ${days} days until exam` : '📅 Exam day!';
-                }
-
-                const progData = await apiCall('getAllProgress', { token: state.token });
-                if (progData.progress) {
-                    progData.progress.forEach(p => {
-                        state.progress[p.cardId] = p.confidence;
-                    });
-                }
-
-                const statsData = await apiCall('getStats', { token: state.token });
-                const stats = statsData.stats || { accuracy: 0, mastered: 0, streak: 0 };
-
-                renderDashboard(stats);
-
-            } catch (err) {
-                console.error('Dashboard load error:', err);
-                deckGrid.innerHTML =
-                    `<div style="color:var(--red); text-align:center; padding:20px;">⚠️ Failed to load data. Check your connection.</div>`;
-            }
-        }
-
-        function renderDashboard(stats) {
-            statAccuracy.textContent = stats.accuracy + '%';
-            statMastered.textContent = stats.mastered || 0;
-            statStreak.textContent = stats.streak || 0;
-
-            deckLoading.classList.add('hidden');
-            deckGrid.innerHTML = '';
-
-            if (!state.decks.length) {
-                deckGrid.innerHTML =
-                    `<div style="grid-column:1/-1; text-align:center; color:var(--gray-400); padding:20px;">No decks available.</div>`;
-                return;
-            }
-
-            const isPremium = state.plan === 'PREMIUM';
-
-            state.decks.forEach(deck => {
-                const div = document.createElement('div');
-                div.className = 'deck-card';
-                div.dataset.deckId = deck.deckId;
-
-                let lockHtml = '';
-                if (deck.isPremium && !isPremium) {
-                    lockHtml = '<span class="premium-lock">🔒</span>';
-                }
-
-                div.innerHTML = `
-                    ${lockHtml}
-                    <span class="deck-icon">${deck.icon || '📚'}</span>
-                    <div class="deck-name">
-                        ${deck.deckName}
-                        ${deck.isPremium ? '<span class="premium-badge">PREMIUM</span>' : ''}
-                    </div>
-                    <div class="deck-subject">${deck.subTopics ? deck.subTopics.join(', ') : ''}</div>
-                    <div class="deck-meta">
-                        <span>${deck.cardCount} cards</span>
-                        <span id="deckProgressLabel_${deck.deckId}">0%</span>
-                    </div>
-                    <div class="deck-progress-bar">
-                        <div class="fill" id="deckProgressFill_${deck.deckId}" style="width:0%"></div>
+            noDecks.classList.add('hidden');
+            const colors = ['card-peach', 'card-green', 'card-blue', 'card-purple'];
+            container.innerHTML = decks.map((d, i) => {
+                const due = d.cards.filter(c => !c.next_review || c.next_review <= today()).length;
+                const mastered = d.cards.filter(c => (c.interval || 0) >= 21).length;
+                const pct = d.cards.length > 0 ? Math.round(mastered / d.cards.length * 100) : 0;
+                return `
+                    <div class="${colors[i % 4]} rounded-2xl p-4 shadow-card deck-card" onclick="openDeck('${d.id}')">
+                        <div class="flex justify-between items-center mb-2">
+                            <h3 class="font-bold truncate">${d.name}</h3>
+                            <div class="flex gap-1.5 flex-shrink-0" onclick="event.stopPropagation()">
+                                <button onclick="showAddCard('${d.id}')" class="text-sec hover:text-text transition-colors p-1" title="Add card">
+                                    <i data-lucide="plus" class="w-4 h-4"></i>
+                                </button>
+                                <button onclick="deleteDeck('${d.id}')" class="text-sec hover:text-red-500 transition-colors p-1" title="Delete deck">
+                                    <i data-lucide="trash-2" class="w-4 h-4"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="progress-bar h-1.5 mb-2"><div class="progress-fill" style="width:${pct}%"></div></div>
+                        <p class="text-xs text-sec">${d.cards.length} cards · ${due} due · ${pct}% mastered</p>
                     </div>
                 `;
-
-                div.addEventListener('click', () => {
-                    if (deck.isPremium && !isPremium) {
-                        alert('🔒 This is a PREMIUM deck. Upgrade your plan to access it!');
-                        return;
-                    }
-                    openDeck(deck.deckId);
-                });
-
-                deckGrid.appendChild(div);
-
-                // Only update progress for accessible decks
-                if (!deck.isPremium || isPremium) {
-                    updateDeckProgress(deck.deckId);
-                } else {
-                    // Show locked
-                    const fill = document.getElementById(`deckProgressFill_${deck.deckId}`);
-                    const label = document.getElementById(`deckProgressLabel_${deck.deckId}`);
-                    if (fill) fill.style.width = '0%';
-                    if (label) label.textContent = '🔒';
-                }
-            });
+            }).join('');
+            lucide.createIcons();
         }
 
-        async function updateDeckProgress(deckId) {
-            try {
-                const data = await apiCall('getCards', { mainTopic: deckId, token: state.token });
-                const cards = data.cards || [];
-                const total = cards.length;
-                if (total === 0) return;
+        function renderStats() {
+            const real = getRealCards();
+            const total = real.reduce((s, c) => s + (c.total_reviews || 0), 0);
+            const correct = real.reduce((s, c) => s + (c.correct_count || 0), 0);
+            const acc = total > 0 ? Math.round(correct / total * 100) : 0;
+            const mastered = real.filter(c => (c.interval || 0) >= 21).length;
+            document.getElementById('stats-streak-val').textContent = getStreak() + ' days';
+            document.getElementById('stats-total').textContent = total;
+            document.getElementById('stats-acc').textContent = acc + '%';
+            document.getElementById('stats-mastered-val').textContent = mastered;
 
-                let mastered = 0;
-                cards.forEach(c => {
-                    const conf = getCardConfidence(c.cardId);
-                    if (conf && conf >= 3) mastered++;
-                });
-
-                const pct = Math.round((mastered / total) * 100);
-                const fill = document.getElementById(`deckProgressFill_${deckId}`);
-                const label = document.getElementById(`deckProgressLabel_${deckId}`);
-                if (fill) fill.style.width = pct + '%';
-                if (label) label.textContent = pct + '%';
-            } catch (e) {}
+            const chart = document.getElementById('stats-chart');
+            const days = [];
+            for (let i = 6; i >= 0; i--) {
+                const d = new Date();
+                d.setDate(d.getDate() - i);
+                const ds = d.toISOString().split('T')[0];
+                const count = real.filter(c => c.last_review && c.last_review.startsWith(ds)).length;
+                days.push({ label: d.toLocaleDateString('en', { weekday: 'short' }), count });
+            }
+            const max = Math.max(...days.map(d => d.count), 1);
+            chart.innerHTML = days.map(d => `
+                    <div class="flex-1 flex flex-col items-center gap-1">
+                        <div class="w-full rounded-full accent-bg transition-all duration-300" style="height:${Math.max((d.count / max) * 72, 4)}px; min-height:4px;"></div>
+                        <span class="text-[10px] text-sec font-medium">${d.label}</span>
+                    </div>
+                `).join('');
         }
 
-        // ============================================================
-        // OPEN DECK
-        // ============================================================
-        async function openDeck(deckId) {
-            try {
-                const data = await apiCall('getCards', { mainTopic: deckId, token: state.token });
-                state.cards = data.cards || [];
-                state.currentDeck = deckId;
-                state.currentCardIndex = 0;
-                state.isFlipped = false;
-
-                if (state.cards.length === 0) {
-                    alert('No cards in this deck.');
-                    return;
-                }
-
-                state.cards = shuffleArray(state.cards);
-
-                studyTitle.textContent = deckId;
-                showScreen('studyScreen');
-                renderCard();
-            } catch (err) {
-                alert('Error loading cards: ' + err.message);
+        function updatePlanUI() {
+            const badge = document.getElementById('plan-badge');
+            const prompt = document.getElementById('upgrade-prompt');
+            const settingsBtn = document.getElementById('settings-upgrade-btn');
+            const settingsLabel = document.getElementById('settings-plan-label');
+            if (userPlan === 'premium') {
+                if (badge) { badge.className = 'premium-badge';
+                    badge.textContent = 'PRO'; }
+                if (prompt) prompt.style.display = 'none';
+                if (settingsBtn) settingsBtn.style.display = 'none';
+                if (settingsLabel) settingsLabel.textContent = 'Premium ✦';
+            } else {
+                if (badge) { badge.className = 'free-badge';
+                    badge.textContent = 'FREE'; }
+                if (prompt) prompt.style.display = 'flex';
+                if (settingsBtn) settingsBtn.style.display = 'inline-block';
+                if (settingsLabel) settingsLabel.textContent = 'Free';
             }
         }
 
-        // ============================================================
-        // RENDER CARD
-        // ============================================================
-        function renderCard() {
-            const cards = state.cards;
-            const index = state.currentCardIndex;
+        function updateThemeToggle() {
+            const dark = document.documentElement.classList.contains('dark');
+            const dot = document.getElementById('theme-toggle-dot');
+            if (dot) dot.style.transform = dark ? 'translateX(20px)' : 'translateX(0)';
+        }
 
-            if (index >= cards.length) {
-                flashcard.classList.add('hidden');
-                studyEmpty.classList.remove('hidden');
-                ratingRow.classList.add('hidden');
-                document.getElementById('flashcardWrapper').classList.add('hidden');
-                studyProgressText.textContent = `${cards.length}/${cards.length}`;
-                studyProgressFill.style.width = '100%';
+        // ============================================================
+        //  NAVIGATION
+        // ============================================================
+        function switchTab(tab) {
+            const allScreens = ['home', 'decks', 'study-select', 'flashcards', 'learn', 'test', 'stats', 'settings'];
+            allScreens.forEach(s => document.getElementById('screen-' + s).classList.remove('active'));
+            const el = document.getElementById('screen-' + tab);
+            if (el) el.classList.add('active');
+            document.querySelectorAll('.nav-btn').forEach(b => {
+                b.classList.toggle('active', b.dataset.tab === tab);
+            });
+            if (tab === 'stats') renderStats();
+            if (tab === 'home') updateHome();
+            if (tab === 'decks') renderDecks();
+            lucide.createIcons();
+        }
+
+        function continueStudying() {
+            const due = getDueCards();
+            if (due.length === 0) return;
+            const deckDue = {};
+            due.forEach(c => { deckDue[c.deck_id] = (deckDue[c.deck_id] || 0) + 1; });
+            const sorted = Object.entries(deckDue).sort((a, b) => b[1] - a[1]);
+            currentDeckId = sorted[0][0];
+            openStudySelect();
+        }
+
+        function openStudySelect() {
+            const deck = allCards.find(c => c.deck_id === currentDeckId);
+            document.getElementById('study-deck-name').textContent = deck ? deck.deck_name : 'Deck';
+            const allScreens = ['home', 'decks', 'study-select', 'flashcards', 'learn', 'test', 'stats', 'settings'];
+            allScreens.forEach(s => document.getElementById('screen-' + s).classList.remove('active'));
+            document.getElementById('screen-study-select').classList.add('active');
+            lucide.createIcons();
+        }
+
+        function exitStudy() {
+            switchTab('decks');
+        }
+
+        function showScreen(name) {
+            const allScreens = ['home', 'decks', 'study-select', 'flashcards', 'learn', 'test', 'stats', 'settings'];
+            allScreens.forEach(s => document.getElementById('screen-' + s).classList.remove('active'));
+            document.getElementById('screen-' + name).classList.add('active');
+            lucide.createIcons();
+        }
+
+        // ============================================================
+        //  DECKS
+        // ============================================================
+        function showCreateDeck() {
+            const decks = getDecks();
+            if (userPlan === 'free' && decks.length >= 5) {
+                showUpgradeModal();
+                return;
+            }
+            document.getElementById('deck-name-input').value = '';
+            document.getElementById('deck-modal').classList.remove('hidden');
+            setTimeout(() => document.getElementById('deck-name-input').focus(), 100);
+        }
+
+        function closeDeckModal() {
+            document.getElementById('deck-modal').classList.add('hidden');
+        }
+
+        async function saveDeck() {
+            const name = document.getElementById('deck-name-input').value.trim();
+            if (!name) return;
+            const id = 'deck_' + Date.now();
+            allCards.push({
+                __id: generateId(),
+                deck_id: id,
+                deck_name: name,
+                card_front: '__deck_placeholder__',
+                card_back: '',
+                card_tags: '',
+                ease_factor: 2.5,
+                interval: 0,
+                repetitions: 0,
+                next_review: '',
+                last_review: '',
+                total_reviews: 0,
+                correct_count: 0
+            });
+            saveData();
+            closeDeckModal();
+            renderDecks();
+            updateHome();
+        }
+
+        async function deleteDeck(deckId) {
+            if (!confirm('Delete this deck and all its cards?')) return;
+            allCards = allCards.filter(c => c.deck_id !== deckId);
+            saveData();
+            renderDecks();
+            updateHome();
+        }
+
+        function openDeck(deckId) {
+            currentDeckId = deckId;
+            openStudySelect();
+        }
+
+        // ============================================================
+        //  CARDS
+        // ============================================================
+        let addingToDeckId = null;
+
+        function showAddCard(deckId) {
+            const decks = getDecks();
+            const deck = decks.find(d => d.id === deckId);
+            if (userPlan === 'free') {
+                const totalCards = getRealCards().length;
+                if (totalCards >= 50) {
+                    showUpgradeModal();
+                    return;
+                }
+            }
+            addingToDeckId = deckId;
+            document.getElementById('card-front-input').value = '';
+            document.getElementById('card-back-input').value = '';
+            document.getElementById('card-modal').classList.remove('hidden');
+            setTimeout(() => document.getElementById('card-front-input').focus(), 100);
+        }
+
+        function closeCardModal() {
+            document.getElementById('card-modal').classList.add('hidden');
+        }
+
+        async function saveCard() {
+            const front = document.getElementById('card-front-input').value.trim();
+            const back = document.getElementById('card-back-input').value.trim();
+            if (!front || !back) return;
+            const deck = allCards.find(c => c.deck_id === addingToDeckId && c.card_front === '__deck_placeholder__');
+            allCards.push({
+                __id: generateId(),
+                deck_id: addingToDeckId,
+                deck_name: deck ? deck.deck_name : 'Untitled',
+                card_front: front,
+                card_back: back,
+                card_tags: '',
+                ease_factor: 2.5,
+                interval: 0,
+                repetitions: 0,
+                next_review: today(),
+                last_review: '',
+                total_reviews: 0,
+                correct_count: 0
+            });
+            saveData();
+            closeCardModal();
+            renderDecks();
+            updateHome();
+        }
+
+        // ============================================================
+        //  FLASHCARDS MODE
+        // ============================================================
+        function startFlashcardsMode() {
+            studyQueue = getDueCards(currentDeckId);
+            if (studyQueue.length === 0) {
+                studyQueue = getRealCards().filter(c => c.deck_id === currentDeckId);
+                if (studyQueue.length === 0) {
+                    alert('No cards in this deck! Add some first.');
+                    return;
+                }
+            }
+            // shuffle due cards for variety
+            for (let i = studyQueue.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [studyQueue[i], studyQueue[j]] = [studyQueue[j], studyQueue[i]];
+            }
+            studyIdx = 0;
+            fcFlipped = false;
+            showScreen('flashcards');
+            fcShowCard();
+        }
+
+        function fcShowCard() {
+            const card = document.getElementById('fc-card');
+            const done = document.getElementById('fc-done');
+            const btns = document.getElementById('fc-buttons');
+            const hint = document.getElementById('fc-hint');
+
+            if (studyIdx >= studyQueue.length) {
+                card.style.display = 'none';
+                btns.classList.add('hidden');
+                hint.style.display = 'none';
+                done.classList.remove('hidden');
+                done.style.display = 'flex';
+                document.getElementById('fc-progress').textContent = `${studyQueue.length}/${studyQueue.length}`;
+                document.getElementById('fc-progress-fill').style.width = '100%';
+                lucide.createIcons();
                 return;
             }
 
-            document.getElementById('flashcardWrapper').classList.remove('hidden');
-            flashcard.classList.remove('hidden');
-            studyEmpty.classList.add('hidden');
-            ratingRow.classList.remove('hidden');
+            card.style.display = '';
+            done.classList.add('hidden');
+            done.style.display = 'none';
+            const c = studyQueue[studyIdx];
+            document.getElementById('fc-front-text').textContent = c.card_front;
+            document.getElementById('fc-back-text').textContent = c.card_back;
+            card.classList.remove('flipped');
+            btns.classList.add('hidden');
+            hint.style.display = '';
+            fcFlipped = false;
+            document.getElementById('fc-progress').textContent = `${studyIdx + 1}/${studyQueue.length}`;
+            document.getElementById('fc-progress-fill').style.width = `${(studyIdx / studyQueue.length) * 100}%`;
+            lucide.createIcons();
+        }
 
-            const card = cards[index];
-            cardQuestion.textContent = card.front;
-            cardAnswer.textContent = card.back;
-            cardTag.textContent = card.subTopic || card.mainTopic;
+        function fcFlip() {
+            if (studyIdx >= studyQueue.length) return;
+            if (!fcFlipped) {
+                document.getElementById('fc-card').classList.add('flipped');
+                fcFlipped = true;
+                document.getElementById('fc-buttons').classList.remove('hidden');
+                document.getElementById('fc-hint').style.display = 'none';
+            }
+        }
 
-            flashcard.classList.remove('flipped');
-            state.isFlipped = false;
-
-            const total = cards.length;
-            const done = index;
-            studyProgressText.textContent = `${done}/${total}`;
-            studyProgressFill.style.width = `${(done/total)*100}%`;
+        async function fcRate(q) {
+            const c = studyQueue[studyIdx];
+            const updated = applySRS(c, q);
+            const idx = allCards.findIndex(x => x.__id === updated.__id);
+            if (idx !== -1) allCards[idx] = updated;
+            else allCards.push(updated);
+            saveData();
+            studyIdx++;
+            fcShowCard();
+            updateHome();
         }
 
         // ============================================================
-        // FLIP CARD
+        //  LEARN MODE
         // ============================================================
-        flashcardContainer.addEventListener('click', () => {
-            if (state.currentCardIndex >= state.cards.length) return;
-            state.isFlipped = !state.isFlipped;
-            flashcard.classList.toggle('flipped');
-        });
-
-        // ============================================================
-        // RATE CARD
-        // ============================================================
-        ratingRow.addEventListener('click', async (e) => {
-            const btn = e.target.closest('.btn-rate');
-            if (!btn) return;
-            if (state.currentCardIndex >= state.cards.length) return;
-
-            const confidence = parseInt(btn.dataset.confidence);
-            const card = state.cards[state.currentCardIndex];
-
-            try {
-                await apiCall('saveProgress', {
-                    token: state.token,
-                    cardId: card.cardId,
-                    confidence: confidence
-                });
-
-                state.progress[card.cardId] = confidence;
-                state.currentCardIndex++;
-                renderCard();
-                updateDeckProgress(state.currentDeck);
-
-            } catch (err) {
-                alert('Error saving progress: ' + err.message);
+        function startLearnMode() {
+            studyQueue = getDueCards(currentDeckId);
+            if (studyQueue.length === 0) {
+                studyQueue = getRealCards().filter(c => c.deck_id === currentDeckId);
+                if (studyQueue.length === 0) {
+                    alert('No cards in this deck! Add some first.');
+                    return;
+                }
             }
-        });
+            studyIdx = 0;
+            showScreen('learn');
+            lnShowQuestion();
+        }
+
+        function lnShowQuestion() {
+            const done = document.getElementById('ln-done');
+            const qBox = document.getElementById('ln-question');
+            const aBox = document.getElementById('ln-answer-box');
+            const showBtn = document.getElementById('ln-show-btn');
+            const gradeB = document.getElementById('ln-grade-btns');
+
+            if (studyIdx >= studyQueue.length) {
+                qBox.style.display = 'none';
+                aBox.classList.add('hidden');
+                showBtn.style.display = 'none';
+                gradeB.classList.add('hidden');
+                done.classList.remove('hidden');
+                done.style.display = 'flex';
+                document.getElementById('ln-progress-fill').style.width = '100%';
+                lucide.createIcons();
+                return;
+            }
+
+            qBox.style.display = '';
+            done.classList.add('hidden');
+            done.style.display = 'none';
+            aBox.classList.add('hidden');
+            showBtn.style.display = '';
+            gradeB.classList.add('hidden');
+
+            const c = studyQueue[studyIdx];
+            document.getElementById('ln-front-text').textContent = c.card_front;
+            document.getElementById('ln-back-text').textContent = c.card_back;
+            document.getElementById('ln-progress').textContent = `${studyIdx + 1}/${studyQueue.length}`;
+            document.getElementById('ln-progress-fill').style.width = `${(studyIdx / studyQueue.length) * 100}%`;
+            lucide.createIcons();
+        }
+
+        function lnShowAnswer() {
+            document.getElementById('ln-answer-box').classList.remove('hidden');
+            document.getElementById('ln-show-btn').style.display = 'none';
+            document.getElementById('ln-grade-btns').classList.remove('hidden');
+        }
+
+        async function lnGrade(correct) {
+            const c = studyQueue[studyIdx];
+            const updated = applySRS(c, correct ? 2 : 0);
+            const idx = allCards.findIndex(x => x.__id === updated.__id);
+            if (idx !== -1) allCards[idx] = updated;
+            else allCards.push(updated);
+            saveData();
+            studyIdx++;
+            lnShowQuestion();
+            updateHome();
+        }
 
         // ============================================================
-        // RESET DECK
+        //  TEST MODE
         // ============================================================
-        resetDeckBtn.addEventListener('click', () => {
-            state.currentCardIndex = 0;
-            state.cards = shuffleArray(state.cards);
-            renderCard();
-        });
+        function startTestMode() {
+            const all = getRealCards().filter(c => c.deck_id === currentDeckId);
+            if (all.length === 0) {
+                alert('No cards in this deck! Add some first.');
+                return;
+            }
+            // shuffle and take up to 10
+            const shuffled = [...all];
+            for (let i = shuffled.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+            }
+            studyQueue = shuffled.slice(0, 10);
+            studyIdx = 0;
+            tsCorrect = 0;
+            tsIncorrect = 0;
+            showScreen('test');
+            tsShowQuestion();
+        }
 
-        // ============================================================
-        // BACK BUTTON
-        // ============================================================
-        backBtn.addEventListener('click', () => {
-            showScreen('dashboardScreen');
-            loadDashboard();
-        });
+        function tsShowQuestion() {
+            const results = document.getElementById('ts-results');
+            const qArea = document.getElementById('ts-question-area');
+            const feedback = document.getElementById('ts-feedback');
+            const choices = document.getElementById('ts-choices');
+            const typeArea = document.getElementById('ts-type-area');
 
-        // ============================================================
-        // LOGOUT
-        // ============================================================
-        logoutBtn.addEventListener('click', logout);
+            if (studyIdx >= studyQueue.length) {
+                qArea.style.display = 'none';
+                results.classList.remove('hidden');
+                results.style.display = 'flex';
+                const pct = studyQueue.length > 0 ? Math.round(tsCorrect / studyQueue.length * 100) : 0;
+                document.getElementById('ts-score').textContent = pct + '%';
+                document.getElementById('ts-correct-count').textContent = tsCorrect;
+                document.getElementById('ts-incorrect-count').textContent = tsIncorrect;
+                document.getElementById('ts-progress-fill').style.width = '100%';
+                lucide.createIcons();
+                return;
+            }
 
-        // ============================================================
-        // AUTH UI SWITCHING
-        // ============================================================
-        switchToRegister.addEventListener('click', () => {
-            showScreen('registerScreen');
-            loginError.classList.remove('visible');
-            registerError.classList.remove('visible');
-        });
+            qArea.style.display = '';
+            results.classList.add('hidden');
+            results.style.display = 'none';
+            feedback.classList.add('hidden');
+            feedback.style.background = '';
 
-        switchToLogin.addEventListener('click', () => {
-            showScreen('loginScreen');
-            loginError.classList.remove('visible');
-            registerError.classList.remove('visible');
-        });
+            const c = studyQueue[studyIdx];
+            document.getElementById('ts-question').textContent = c.card_front;
+            tsCurrentAnswer = c.card_back;
+            document.getElementById('ts-progress').textContent = `${studyIdx + 1}/${studyQueue.length}`;
+            document.getElementById('ts-progress-fill').style.width = `${(studyIdx / studyQueue.length) * 100}%`;
 
-        loginBtn.addEventListener('click', handleLogin);
-        registerBtn.addEventListener('click', handleRegister);
-
-        loginUsername.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') loginPassword.focus();
-        });
-        loginPassword.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') handleLogin();
-        });
-
-        registerNickname.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') registerUsername.focus();
-        });
-        registerUsername.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') registerPassword.focus();
-        });
-        registerPassword.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') registerExamDate.focus();
-        });
-        registerExamDate.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') handleRegister();
-        });
-
-        // ============================================================
-        // CHECK SESSION ON LOAD
-        // ============================================================
-        (function init() {
-            const token = sessionStorage.getItem('pharmacore_token');
-            const nickname = sessionStorage.getItem('pharmacore_nickname');
-            const plan = sessionStorage.getItem('pharmacore_plan');
-
-            if (token) {
-                state.token = token;
-                state.nickname = nickname || token;
-                state.plan = plan || 'FREE';
-                showScreen('dashboardScreen');
-                loadDashboard();
+            // Randomly choose multiple choice or type
+            if (Math.random() > 0.4 && getRealCards().length >= 4) {
+                choices.classList.remove('hidden');
+                typeArea.classList.add('hidden');
+                const options = [c.card_back];
+                const others = getRealCards()
+                    .filter(x => x.__id !== c.__id && x.deck_id === currentDeckId)
+                    .map(x => x.card_back)
+                    .filter(Boolean);
+                while (options.length < 4 && others.length > 0) {
+                    const idx = Math.floor(Math.random() * others.length);
+                    if (!options.includes(others[idx])) options.push(others[idx]);
+                    others.splice(idx, 1);
+                }
+                // shuffle options
+                for (let i = options.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [options[i], options[j]] = [options[j], options[i]];
+                }
+                choices.innerHTML = options.map(o =>
+                    `<button onclick="tsChoose('${o.replace(/'/g, "\\'").replace(/"/g, '&quot;')}')" class="w-full py-3 px-4 rounded-2xl border border-theme text-left font-medium surface hover:bg-opacity-80 transition-colors shadow-sm">${o}</button>`
+                ).join('');
             } else {
-                showScreen('loginScreen');
+                choices.classList.add('hidden');
+                typeArea.classList.remove('hidden');
+                document.getElementById('ts-type-input').value = '';
+                setTimeout(() => document.getElementById('ts-type-input').focus(), 100);
             }
+            lucide.createIcons();
+        }
 
-            // Set default exam date to 3 months from now
-            const defaultDate = new Date();
-            defaultDate.setMonth(defaultDate.getMonth() + 3);
-            registerExamDate.value = defaultDate.toISOString().split('T')[0];
-        })();
+        function tsChoose(answer) {
+            const correct = answer === tsCurrentAnswer;
+            if (correct) tsCorrect++;
+            else tsIncorrect++;
+            tsShowFeedback(correct);
+        }
+
+        function tsSubmitTyped() {
+            const val = document.getElementById('ts-type-input').value.trim().toLowerCase();
+            const correct = val === tsCurrentAnswer.toLowerCase();
+            if (correct) tsCorrect++;
+            else tsIncorrect++;
+            tsShowFeedback(correct);
+        }
+
+        function tsShowFeedback(correct) {
+            document.getElementById('ts-choices').classList.add('hidden');
+            document.getElementById('ts-type-area').classList.add('hidden');
+            const fb = document.getElementById('ts-feedback');
+            fb.classList.remove('hidden');
+            fb.style.background = correct ? 'var(--card-green)' : 'var(--card-peach)';
+            document.getElementById('ts-feedback-text').textContent = correct ? '✅ Correct!' : '❌ Incorrect';
+            document.getElementById('ts-feedback-text').style.color = correct ? '#059669' : '#dc2626';
+            document.getElementById('ts-correct-answer').textContent = correct ? '' : 'Answer: ' + tsCurrentAnswer;
+
+            // SRS update
+            const c = studyQueue[studyIdx];
+            const updated = applySRS(c, correct ? 2 : 0);
+            const idx = allCards.findIndex(x => x.__id === updated.__id);
+            if (idx !== -1) allCards[idx] = updated;
+            else allCards.push(updated);
+            saveData();
+            updateHome();
+            lucide.createIcons();
+        }
+
+        function tsNext() {
+            studyIdx++;
+            tsShowQuestion();
+        }
+
+        // ============================================================
+        //  THEME
+        // ============================================================
+        function toggleTheme() {
+            document.documentElement.classList.toggle('dark');
+            localStorage.setItem(THEME_KEY, document.documentElement.classList.contains('dark') ? 'dark' : 'light');
+            updateThemeToggle();
+        }
+
+        // ============================================================
+        //  PLAN / UPGRADE
+        // ============================================================
+        function showUpgradeModal() {
+            document.getElementById('upgrade-modal').classList.remove('hidden');
+            lucide.createIcons();
+        }
+
+        function closeUpgradeModal() {
+            document.getElementById('upgrade-modal').classList.add('hidden');
+        }
+
+        function simulateUpgrade() {
+            userPlan = 'premium';
+            localStorage.setItem(PLAN_KEY, 'premium');
+            updatePlanUI();
+            closeUpgradeModal();
+            renderDecks();
+            updateHome();
+        }
+
+        // ============================================================
+        //  EXPORT / IMPORT
+        // ============================================================
+        function exportData() {
+            const blob = new Blob([JSON.stringify(allCards, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'flashmind-export-' + today() + '.json';
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        function importData() {
+            document.getElementById('import-input').click();
+        }
+
+        function handleImport(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(ev) {
+                try {
+                    const data = JSON.parse(ev.target.result);
+                    if (Array.isArray(data)) {
+                        if (!confirm(`Import ${data.length} cards? This will replace all current data.`)) return;
+                        allCards = data;
+                        saveData();
+                        renderDecks();
+                        updateHome();
+                        switchTab('home');
+                        alert('Import successful!');
+                    } else {
+                        alert('Invalid file format. Please export a valid JSON file.');
+                    }
+                } catch {
+                    alert('Error reading file.');
+                }
+            };
+            reader.readAsText(file);
+            e.target.value = '';
+        }
+
+        // ============================================================
+        //  KEYBOARD SHORTCUTS
+        // ============================================================
+        document.addEventListener('keydown', (e) => {
+            // Flashcards: 1-4 for rating
+            if (document.getElementById('screen-flashcards').classList.contains('active')) {
+                if (!document.getElementById('fc-buttons').classList.contains('hidden')) {
+                    if (e.key === '1') fcRate(0);
+                    else if (e.key === '2') fcRate(1);
+                    else if (e.key === '3') fcRate(2);
+                    else if (e.key === '4') fcRate(3);
+                }
+                if (e.key === ' ' || e.key === 'Enter') {
+                    e.preventDefault();
+                    fcFlip();
+                }
+            }
+            // Learn: Space to show answer, 1/2 for grade
+            if (document.getElementById('screen-learn').classList.contains('active')) {
+                if (e.key === ' ' || e.key === 'Enter') {
+                    e.preventDefault();
+                    if (document.getElementById('ln-show-btn').style.display !== 'none') {
+                        lnShowAnswer();
+                    }
+                }
+                if (!document.getElementById('ln-grade-btns').classList.contains('hidden')) {
+                    if (e.key === '1') lnGrade(false);
+                    else if (e.key === '2') lnGrade(true);
+                }
+            }
+            // Test: Enter to submit typed
+            if (document.getElementById('screen-test').classList.contains('active')) {
+                if (e.key === 'Enter' && !document.getElementById('ts-type-area').classList.contains('hidden')) {
+                    e.preventDefault();
+                    tsSubmitTyped();
+                }
+            }
+            // Escape to close modals
+            if (e.key === 'Escape') {
+                closeDeckModal();
+                closeCardModal();
+                closeUpgradeModal();
+            }
+        });
+
+        // ============================================================
+        //  INIT
+        // ============================================================
+        loadData();
+        updateThemeToggle();
+        updatePlanUI();
+        updateHome();
+        renderDecks();
+        lucide.createIcons();
+
+        // handle vh for mobile
+        const setVH = () => {
+            const vh = window.innerHeight * 0.01;
+            document.documentElement.style.setProperty('--vh', vh + 'px');
+        };
+        setVH();
+        window.addEventListener('resize', setVH);
+
+        console.log('🚀 FlashMind loaded!');
+        console.log(`📚 ${getRealCards().length} cards, ${getDecks().length} decks`);
+        console.log('💡 Shortcuts: Flashcards (1-4 rate, Space flip) · Learn (Space show, 1/2 grade)');
     </script>
+
 </body>
 </html>
