@@ -1918,20 +1918,35 @@
     //  DAILY GOAL & STUDY TIME
     // ============================================================
     function getDailyGoal() {
-      const goal = localStorage.getItem(GOAL_KEY + '_' + (currentUser || 'default'));
-      return goal ? parseInt(goal) : 20;
-    }
+  const goal = localStorage.getItem(GOAL_KEY + '_' + (currentUser || 'default'));
+  // Return the saved goal or default to 20
+  return goal ? parseInt(goal) : 20;
+}
 
     function setDailyGoal() {
-      const input = document.getElementById('goal-input');
-      const val = parseInt(input.value);
-      if (val > 0 && val <= 500) {
-        localStorage.setItem(GOAL_KEY + '_' + (currentUser || 'default'), val);
-        updateHome();
-        renderStats();
-        alert('✅ Daily goal updated to ' + val + ' cards!');
-      }
-    }
+  const input = document.getElementById('goal-input');
+  const val = parseInt(input.value);
+  
+  if (val > 0 && val <= 500) {
+    // Save to localStorage with the correct key
+    localStorage.setItem(GOAL_KEY + '_' + (currentUser || 'default'), val);
+    
+    // Immediately update the display
+    updateHome();
+    renderStats();
+    
+    // Also update the settings input to show the new value
+    document.getElementById('goal-input').value = val;
+    
+    // Update the daily goal text on home
+    document.getElementById('daily-goal-text').textContent = `Goal: ${val} cards`;
+    document.getElementById('today-goal').textContent = val;
+    
+    alert('✅ Daily goal updated to ' + val + ' cards!');
+  } else {
+    alert('Please enter a number between 1 and 500.');
+  }
+}
 
     function getStudyTime() {
       const data = JSON.parse(localStorage.getItem(STUDY_TIME_KEY + '_' + (currentUser || 'default')) || '{}');
