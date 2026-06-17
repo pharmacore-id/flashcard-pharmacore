@@ -22,9 +22,6 @@
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
   
   <style>
-    /* ============================================================
-       ALL STYLES (same as before - keep your existing styles)
-       ============================================================ */
     * {
       font-family: 'DM Sans', sans-serif;
       box-sizing: border-box;
@@ -216,14 +213,6 @@
       background: var(--card-green);
       transform: rotateY(180deg);
     }
-    #fc-done {
-  pointer-events: all;
-  cursor: pointer;
-}
-
-#fc-done .back-btn {
-  pointer-events: all;
-}
     .progress-bar {
       background: var(--border);
       border-radius: 99px;
@@ -1134,6 +1123,23 @@
       0%, 100% { opacity: 1; }
       50% { opacity: 0.3; }
     }
+
+    /* Flashcard done state fix */
+    #fc-done {
+      pointer-events: all;
+      cursor: pointer;
+    }
+    #fc-done .back-btn {
+      pointer-events: all;
+    }
+    
+    /* Admin card management */
+    .card-item {
+      transition: background 0.15s ease;
+    }
+    .card-item:hover {
+      background: var(--accent-light);
+    }
   </style>
 </head>
 <body>
@@ -1221,7 +1227,8 @@
       <!-- Daily Progress - ORANGE GRADIENT with Welcome Message -->
       <div class="daily-progress hero-gradient rounded-3xl p-6 mb-3 relative overflow-hidden shadow-card" style="background:linear-gradient(135deg,#f97316,#ea580c); min-height:160px;">
         <div class="relative z-10 h-full flex flex-col justify-center">
-          <p class="text-white/90 text-sm font-medium mb-1" id="welcome-msg">Welcome back!</p>
+          <!-- Welcome Message - 20px with customizable nickname -->
+          <p class="text-white/90 font-medium mb-1" id="welcome-msg" style="font-size:20px;">Welcome back, <span id="user-display-name">Student</span>! 👋</p>
           <div class="flex items-center justify-between">
             <div>
               <span class="text-white/80 text-xs font-medium">Today's Progress</span>
@@ -1275,7 +1282,6 @@
         <h2 class="text-xl font-bold">Your Decks</h2>
         <div class="flex gap-2">
           <button id="admin-import-btn" onclick="showAdminImport()" class="hidden accent-bg text-white w-10 h-10 rounded-full flex items-center justify-center shadow-md"><i data-lucide="upload" class="w-5 h-5"></i></button>
-          <button onclick="showContactAdmin()" class="accent-bg text-white w-10 h-10 rounded-full flex items-center justify-center shadow-md"><i data-lucide="plus" class="w-5 h-5"></i></button>
         </div>
       </div>
       <div class="view-scroll" id="deck-list-container">
@@ -1333,6 +1339,20 @@
       </div>
     </div>
 
+    <!-- ===== ADMIN MANAGE CARDS VIEW ===== -->
+    <div id="view-admin-cards" class="view">
+      <div class="flex items-center gap-3 mb-4">
+        <button onclick="switchTab('decks')" class="text-sec"><i data-lucide="arrow-left" class="w-6 h-6"></i></button>
+        <h2 id="manage-deck-name" class="text-xl font-bold flex-1 truncate">Manage Cards</h2>
+        <button onclick="showAddCardToDeck()" class="accent-bg text-white w-10 h-10 rounded-full flex items-center justify-center shadow-md"><i data-lucide="plus" class="w-5 h-5"></i></button>
+        <button id="manage-import-btn" onclick="document.getElementById('manage-excel-file').click()" class="accent-bg text-white w-10 h-10 rounded-full flex items-center justify-center shadow-md"><i data-lucide="upload" class="w-5 h-5"></i></button>
+        <input type="file" id="manage-excel-file" accept=".xlsx,.xls" class="hidden" onchange="importExcelToDeck(event)" />
+      </div>
+      <div class="view-scroll" id="manage-cards-list">
+        <!-- Cards rendered by JS -->
+      </div>
+    </div>
+
     <!-- ===== STUDY MODE SELECTOR ===== -->
     <div id="view-study-select" class="view">
       <div class="flex items-center gap-3 mb-4">
@@ -1372,7 +1392,11 @@
         <button onclick="fcRate(2)" class="py-3 rounded-2xl text-white font-semibold text-sm" style="background:#3b82f6">Good</button>
         <button onclick="fcRate(3)" class="py-3 rounded-2xl text-white font-semibold text-sm" style="background:#10b981">Easy</button>
       </div>
-      <div id="fc-done" class="hidden flex-1 flex-col items-center justify-center text-center"><i data-lucide="check-circle" class="w-16 h-16 accent-text mb-3"></i><p class="text-xl font-bold">All done! 🎉</p><button onclick="exitStudy()" class="mt-4 accent-bg text-white px-6 py-2.5 rounded-2xl font-bold">Back</button></div>
+      <div id="fc-done" class="hidden flex-1 flex-col items-center justify-center text-center">
+        <i data-lucide="check-circle" class="w-16 h-16 accent-text mb-3"></i>
+        <p class="text-xl font-bold">All done! 🎉</p>
+        <button onclick="exitStudy()" class="back-btn mt-4 accent-bg text-white px-6 py-2.5 rounded-2xl font-bold">Back</button>
+      </div>
     </div>
 
     <!-- ===== LEARN MODE ===== -->
@@ -1488,19 +1512,39 @@
     <div id="view-settings" class="view">
       <h2 class="text-xl font-bold mb-4">⚙️ Settings</h2>
       <div class="view-scroll space-y-3">
-        <div class="surface rounded-2xl border border-theme p-4 shadow-card"><p class="text-sm text-sec font-medium mb-1">Account</p><div class="flex items-center justify-between"><span id="settings-username" class="font-semibold">User</span><button onclick="handleLogout()" class="px-4 py-1.5 rounded-xl text-white text-sm font-medium bg-red-500">Logout</button></div></div>
+        
+        <!-- Account -->
+        <div class="surface rounded-2xl border border-theme p-4 shadow-card">
+          <p class="text-sm text-sec font-medium mb-1">Account</p>
+          <div class="flex items-center justify-between">
+            <span id="settings-username" class="font-semibold">User</span>
+            <button onclick="handleLogout()" class="px-4 py-1.5 rounded-xl text-white text-sm font-medium bg-red-500">Logout</button>
+          </div>
+        </div>
 
+        <!-- Display Name -->
+        <div class="surface rounded-2xl border border-theme p-4 shadow-card">
+          <p class="text-sm text-sec font-medium mb-2">👤 Display Name</p>
+          <div class="flex gap-2">
+            <input type="text" id="nickname-input" placeholder="Your name" class="flex-1 border rounded-xl px-3 py-2 surface text-sm" style="border-color:var(--border)" />
+            <button onclick="saveNickname()" class="accent-bg text-white px-4 py-2 rounded-xl text-sm font-medium">Save</button>
+          </div>
+          <p class="text-xs text-sec mt-1">This name will appear on your home screen.</p>
+        </div>
+
+        <!-- Daily Goal -->
         <div class="surface rounded-2xl border border-theme p-4 shadow-card">
           <p class="text-sm text-sec font-medium mb-2">🎯 Daily Goal</p>
           <div class="settings-goal">
             <span class="text-sm">Study</span>
-            <input type="number" id="goal-input" min="1" max="200" value="20" />
+            <input type="number" id="goal-input" min="1" max="500" value="20" />
             <span class="text-sm">cards per day</span>
             <button onclick="setDailyGoal()">Set</button>
           </div>
           <p class="text-xs text-sec mt-2">Set how many cards you want to study each day.</p>
         </div>
 
+        <!-- Plan -->
         <div class="surface rounded-2xl border border-theme p-4 shadow-card">
           <p class="text-sm text-sec font-medium mb-2">Plan</p>
           <div class="flex items-center justify-between mb-3">
@@ -1516,10 +1560,29 @@
           </div>
         </div>
 
-        <div class="surface rounded-2xl border border-theme p-4 flex items-center justify-between shadow-card"><span class="font-medium text-sm">Dark Mode</span><button onclick="toggleTheme()" id="theme-toggle-btn" class="w-12 h-7 rounded-full relative transition-colors border border-theme" style="background:var(--border)"><div id="theme-toggle-dot" class="w-5 h-5 rounded-full accent-bg absolute top-1 left-1 transition-transform shadow-sm"></div></button></div>
-        <div class="surface rounded-2xl border border-theme p-4 shadow-card"><label class="text-sm font-medium">Ease Factor</label><input id="ease-input" type="number" step="0.1" min="1.3" max="4.0" value="2.5" class="w-full border rounded-xl px-3 py-2 mt-2 surface text-sm" style="border-color:var(--border)" /></div>
-        <div class="surface rounded-2xl border border-theme p-4 shadow-card"><label class="text-sm font-medium">Interval Multiplier</label><input id="interval-input" type="number" step="0.1" min="0.5" max="3.0" value="1.0" class="w-full border rounded-xl px-3 py-2 mt-2 surface text-sm" style="border-color:var(--border)" /></div>
-        <button onclick="exportData()" class="w-full surface rounded-2xl border border-theme p-4 text-left flex items-center gap-3 shadow-card"><i data-lucide="download" class="w-5 h-5 text-sec"></i><span class="font-medium text-sm">Export Data</span></button>
+        <!-- Dark Mode -->
+        <div class="surface rounded-2xl border border-theme p-4 flex items-center justify-between shadow-card">
+          <span class="font-medium text-sm">Dark Mode</span>
+          <button onclick="toggleTheme()" id="theme-toggle-btn" class="w-12 h-7 rounded-full relative transition-colors border border-theme" style="background:var(--border)">
+            <div id="theme-toggle-dot" class="w-5 h-5 rounded-full accent-bg absolute top-1 left-1 transition-transform shadow-sm"></div>
+          </button>
+        </div>
+
+        <!-- SRS Controls -->
+        <div class="surface rounded-2xl border border-theme p-4 shadow-card">
+          <label class="text-sm font-medium">Ease Factor</label>
+          <input id="ease-input" type="number" step="0.1" min="1.3" max="4.0" value="2.5" class="w-full border rounded-xl px-3 py-2 mt-2 surface text-sm" style="border-color:var(--border)" />
+        </div>
+        <div class="surface rounded-2xl border border-theme p-4 shadow-card">
+          <label class="text-sm font-medium">Interval Multiplier</label>
+          <input id="interval-input" type="number" step="0.1" min="0.5" max="3.0" value="1.0" class="w-full border rounded-xl px-3 py-2 mt-2 surface text-sm" style="border-color:var(--border)" />
+        </div>
+
+        <!-- Export -->
+        <button onclick="exportData()" class="w-full surface rounded-2xl border border-theme p-4 text-left flex items-center gap-3 shadow-card">
+          <i data-lucide="download" class="w-5 h-5 text-sec"></i>
+          <span class="font-medium text-sm">Export Data</span>
+        </button>
       </div>
     </div>
 
@@ -1530,6 +1593,40 @@
         <button class="nav-item" data-tab="decks"><i data-lucide="layers"></i><span>Decks</span></button>
         <button class="nav-item" data-tab="stats"><i data-lucide="bar-chart-2"></i><span>Stats</span></button>
         <button class="nav-item" data-tab="settings"><i data-lucide="settings"></i><span>Settings</span></button>
+      </div>
+    </div>
+
+    <!-- ===== RENAME DECK MODAL ===== -->
+    <div id="rename-deck-modal" class="hidden fixed inset-0 z-50 flex items-end sm:items-center justify-center" style="background:rgba(0,0,0,0.4);" onclick="if(event.target===this) closeRenameDeck()">
+      <div class="surface rounded-t-3xl sm:rounded-3xl w-full max-w-md p-6" onclick="event.stopPropagation()">
+        <div class="flex justify-between items-center mb-4">
+          <h3 class="font-bold text-lg">✏️ Rename Deck</h3>
+          <button onclick="closeRenameDeck()" class="text-sec"><i data-lucide="x" class="w-6 h-6"></i></button>
+        </div>
+        <label class="text-sm text-sec font-medium">New Deck Name</label>
+        <input id="rename-deck-input" type="text" class="w-full border rounded-2xl px-4 py-3 mt-1 mb-4 surface text-base" style="border-color:var(--border)" placeholder="Enter new name" />
+        <div class="flex gap-3">
+          <button onclick="closeRenameDeck()" class="flex-1 py-3 rounded-2xl border border-theme font-medium" style="color:var(--text-secondary)">Cancel</button>
+          <button onclick="saveRenameDeck()" class="flex-1 py-3 rounded-2xl accent-bg text-white font-medium">Save</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== EDIT CARD MODAL ===== -->
+    <div id="edit-card-modal" class="hidden fixed inset-0 z-50 flex items-end sm:items-center justify-center" style="background:rgba(0,0,0,0.4);" onclick="if(event.target===this) closeEditCard()">
+      <div class="surface rounded-t-3xl sm:rounded-3xl w-full max-w-md p-6" onclick="event.stopPropagation()">
+        <div class="flex justify-between items-center mb-4">
+          <h3 class="font-bold text-lg">✏️ Edit Card</h3>
+          <button onclick="closeEditCard()" class="text-sec"><i data-lucide="x" class="w-6 h-6"></i></button>
+        </div>
+        <label class="text-sm text-sec font-medium">Front</label>
+        <input id="edit-card-front" type="text" class="w-full border rounded-2xl px-4 py-3 mt-1 mb-3 surface text-base" style="border-color:var(--border)" />
+        <label class="text-sm text-sec font-medium">Back</label>
+        <input id="edit-card-back" type="text" class="w-full border rounded-2xl px-4 py-3 mt-1 mb-4 surface text-base" style="border-color:var(--border)" />
+        <div class="flex gap-3">
+          <button onclick="closeEditCard()" class="flex-1 py-3 rounded-2xl border border-theme font-medium" style="color:var(--text-secondary)">Cancel</button>
+          <button onclick="saveEditCard()" class="flex-1 py-3 rounded-2xl accent-bg text-white font-medium">Save</button>
+        </div>
       </div>
     </div>
 
@@ -1607,7 +1704,7 @@
 
   <script>
     // ============================================================
-    //  FIREBASE CONFIG - YOUR CONFIG HERE
+    //  FIREBASE CONFIG
     // ============================================================
     const firebaseConfig = {
       apiKey: "AIzaSyB0m9NM3IxyQJuLEl9_C5C7aI-I-7BndsQ",
@@ -1644,6 +1741,7 @@
     const CODES_KEY = 'flashmind_codes';
     const GOAL_KEY = 'flashmind_goal';
     const STUDY_TIME_KEY = 'flashmind_study_time';
+    const NICKNAME_KEY = 'flashmind_nickname_';
 
     let currentUser = null;
     let allCards = [];
@@ -1662,6 +1760,11 @@
     let navTimeout = null;
     let progressPeriod = 'week';
     let isSyncing = false;
+
+    // Admin variables
+    let renameDeckId = null;
+    let manageDeckId = null;
+    let editCardId = null;
 
     // ============================================================
     //  SYNC STATUS FUNCTIONS
@@ -1686,6 +1789,35 @@
     }
 
     // ============================================================
+    //  NICKNAME FUNCTIONS
+    // ============================================================
+    function getNickname() {
+      const nick = localStorage.getItem(NICKNAME_KEY + (currentUser || 'default'));
+      return nick || 'Student';
+    }
+
+    function saveNickname() {
+      const input = document.getElementById('nickname-input');
+      const name = input.value.trim();
+      if (!name) {
+        alert('Please enter a name.');
+        return;
+      }
+      localStorage.setItem(NICKNAME_KEY + currentUser, name);
+      updateHome();
+      document.getElementById('nickname-input').value = name;
+      alert('✅ Display name updated to "' + name + '"!');
+    }
+
+    function loadNickname() {
+      const name = getNickname();
+      const displayElement = document.getElementById('user-display-name');
+      if (displayElement) displayElement.textContent = name;
+      const input = document.getElementById('nickname-input');
+      if (input) input.value = name;
+    }
+
+    // ============================================================
     //  FIREBASE SYNC FUNCTIONS
     // ============================================================
     async function saveToFirebase(email, cards, plan) {
@@ -1699,6 +1831,7 @@
           cards: cards,
           plan: plan || 'free',
           username: getUsers()[email]?.username || '',
+          nickname: getNickname(),
           updatedAt: firebase.firestore.FieldValue.serverTimestamp()
         }, { merge: true });
         
@@ -1721,6 +1854,10 @@
         
         if (doc.exists) {
           const data = doc.data();
+          // Load nickname from Firebase
+          if (data.nickname) {
+            localStorage.setItem(NICKNAME_KEY + email, data.nickname);
+          }
           updateSyncStatus('', 'Synced');
           return data;
         }
@@ -2088,12 +2225,10 @@
       currentUser = email;
       saveSession(email);
       
-      // Try load from Firebase first
       const cloudData = await loadFromFirebase(email);
       if (cloudData && cloudData.cards && cloudData.cards.length > 0) {
         allCards = cloudData.cards;
         userPlan = cloudData.plan || 'free';
-        // Save to localStorage as backup
         localStorage.setItem(DATA_PREFIX + email, JSON.stringify(allCards));
         localStorage.setItem('flashmind_plan_' + email, userPlan);
         if (cloudData.username) {
@@ -2102,7 +2237,6 @@
           saveUsers(u);
         }
       } else {
-        // Fallback to localStorage
         loadUserData(email);
       }
       
@@ -2172,7 +2306,6 @@
         savePlan(email, 'premium', expiry);
       }
       
-      // Save to Firebase
       await saveToFirebase(email, allCards, plan);
       
       isAdmin = isAdminUser;
@@ -2188,7 +2321,6 @@
 
     function saveUserData(email) {
       localStorage.setItem(DATA_PREFIX + email, JSON.stringify(allCards));
-      // Also save to Firebase in background
       saveToFirebase(email, allCards, userPlan);
     }
 
@@ -2196,7 +2328,6 @@
       localStorage.setItem('flashmind_plan_' + email, plan);
       if (expiry) localStorage.setItem('flashmind_expiry_' + email, expiry);
       userPlan = plan;
-      // Update Firebase
       saveToFirebase(email, allCards, plan);
     }
 
@@ -2241,6 +2372,8 @@
           document.getElementById('settings-username').textContent = users[currentUser].username;
           isAdmin = users[currentUser].isAdmin || ADMIN_EMAILS.includes(currentUser);
         }
+
+        loadNickname();
 
         if (userPlan === 'premium') {
           const expiry = getPlanExpiry(currentUser);
@@ -2394,10 +2527,8 @@
       const mastered = real.filter(c => (c.interval || 0) >= 21).length;
       const streak = getStreak();
 
-      const users = getUsers();
-      if (currentUser && users[currentUser]) {
-        document.getElementById('welcome-msg').textContent = 'Welcome back, ' + users[currentUser].username + '! 👋';
-      }
+      // Update nickname
+      loadNickname();
 
       document.getElementById('stat-streak').textContent = streak;
       document.getElementById('stat-accuracy').textContent = acc + '%';
@@ -2475,7 +2606,22 @@
             const mastered = d.cards.filter(c => (c.interval || 0) >= 21).length;
             const pct = d.cards.length > 0 ? Math.round(mastered / d.cards.length * 100) : 0;
             return `<div class="deck-item ${colors[i%4]}" onclick="openDeck('${d.id}')">
-                  <div class="flex justify-between items-center"><h3 class="font-bold truncate">${d.name}</h3></div>
+                  <div class="flex justify-between items-center">
+                    <h3 class="font-bold truncate">${d.name}</h3>
+                    <div class="flex gap-1" onclick="event.stopPropagation()">
+                      ${isAdmin ? `
+                        <button onclick="showRenameDeck('${d.id}')" class="text-sec p-1 hover:text-accent transition-colors" title="Rename Deck">
+                          <i data-lucide="pencil" class="w-4 h-4"></i>
+                        </button>
+                        <button onclick="showManageCards('${d.id}')" class="text-sec p-1 hover:text-blue-500 transition-colors" title="Manage Cards">
+                          <i data-lucide="list" class="w-4 h-4"></i>
+                        </button>
+                        <button onclick="deleteDeck('${d.id}')" class="text-sec p-1 hover:text-red-500 transition-colors" title="Delete Deck">
+                          <i data-lucide="trash-2" class="w-4 h-4"></i>
+                        </button>
+                      ` : ''}
+                    </div>
+                  </div>
                   <div class="progress-bar h-1.5 my-1"><div class="progress-fill" style="width:${pct}%"></div></div>
                   <p class="text-xs text-sec">${d.cards.length} cards · ${due} due · ${pct}% mastered</p>
                   ${d.subtopic ? `<p class="text-xs text-sec mt-0.5">📂 ${d.subtopic}</p>` : ''}
@@ -2508,12 +2654,19 @@
         const pct = d.cards.length > 0 ? Math.round(mastered / d.cards.length * 100) : 0;
         return `<div class="deck-item ${colors[i%4]}" onclick="openDeck('${d.id}')">
               <div class="flex justify-between items-center">
-                <div>
-                  <h3 class="font-bold truncate">${d.name}</h3>
-                  ${d.topic ? `<span class="text-xs text-sec">${d.topic}</span>` : ''}
-                </div>
+                <h3 class="font-bold truncate">${d.name}</h3>
                 <div class="flex gap-1" onclick="event.stopPropagation()">
-                  ${isAdmin ? `<button onclick="deleteDeck('${d.id}')" class="text-sec p-1"><i data-lucide="trash-2" class="w-4 h-4"></i></button>` : ''}
+                  ${isAdmin ? `
+                    <button onclick="showRenameDeck('${d.id}')" class="text-sec p-1 hover:text-accent transition-colors" title="Rename Deck">
+                      <i data-lucide="pencil" class="w-4 h-4"></i>
+                    </button>
+                    <button onclick="showManageCards('${d.id}')" class="text-sec p-1 hover:text-blue-500 transition-colors" title="Manage Cards">
+                      <i data-lucide="list" class="w-4 h-4"></i>
+                    </button>
+                    <button onclick="deleteDeck('${d.id}')" class="text-sec p-1 hover:text-red-500 transition-colors" title="Delete Deck">
+                      <i data-lucide="trash-2" class="w-4 h-4"></i>
+                    </button>
+                  ` : ''}
                 </div>
               </div>
               <div class="progress-bar h-1.5 my-1"><div class="progress-fill" style="width:${pct}%"></div></div>
@@ -2527,9 +2680,234 @@
     }
 
     // ============================================================
+    //  ADMIN FUNCTIONS - RENAME DECK
+    // ============================================================
+    function showRenameDeck(deckId) {
+      if (!isAdmin) return;
+      renameDeckId = deckId;
+      const deck = allCards.find(c => c.deck_id === deckId && c.card_front === '__deck_placeholder__');
+      document.getElementById('rename-deck-input').value = deck ? deck.deck_name : '';
+      document.getElementById('rename-deck-modal').classList.remove('hidden');
+      setTimeout(() => document.getElementById('rename-deck-input').focus(), 100);
+    }
+
+    function closeRenameDeck() {
+      document.getElementById('rename-deck-modal').classList.add('hidden');
+    }
+
+    function saveRenameDeck() {
+      const newName = document.getElementById('rename-deck-input').value.trim();
+      if (!newName || !renameDeckId) return;
+      
+      allCards.forEach(c => {
+        if (c.deck_id === renameDeckId) {
+          c.deck_name = newName;
+        }
+      });
+      
+      saveUserData(currentUser);
+      closeRenameDeck();
+      renderDecks();
+      updateHome();
+      alert('✅ Deck renamed successfully!');
+    }
+
+    // ============================================================
+    //  ADMIN FUNCTIONS - MANAGE CARDS
+    // ============================================================
+    function showManageCards(deckId) {
+      if (!isAdmin) return;
+      manageDeckId = deckId;
+      const deck = allCards.find(c => c.deck_id === deckId && c.card_front === '__deck_placeholder__');
+      document.getElementById('manage-deck-name').textContent = deck ? deck.deck_name : 'Manage Cards';
+      
+      document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+      document.getElementById('view-admin-cards').classList.add('active');
+      renderManageCards();
+      if (typeof lucide !== 'undefined' && lucide.createIcons) {
+        lucide.createIcons();
+      }
+    }
+
+    function renderManageCards() {
+      const container = document.getElementById('manage-cards-list');
+      const cards = allCards.filter(c => c.deck_id === manageDeckId && c.card_front !== '__deck_placeholder__');
+      
+      if (cards.length === 0) {
+        container.innerHTML = '<p class="text-sec text-center py-10">No cards in this deck.</p>';
+        return;
+      }
+      
+      container.innerHTML = cards.map((c, i) => `
+        <div class="card-item surface rounded-2xl p-3 border border-theme shadow-card mb-2">
+          <div class="flex items-center justify-between">
+            <div class="flex-1 min-w-0">
+              <p class="font-medium text-sm truncate">${c.card_front || 'Empty'}</p>
+              <p class="text-xs text-sec truncate">→ ${c.card_back || 'Empty'}</p>
+              <div class="text-[10px] text-sec mt-0.5">
+                Reviews: ${c.total_reviews || 0} · Correct: ${c.correct_count || 0}
+              </div>
+            </div>
+            <div class="flex gap-1 flex-shrink-0">
+              <button onclick="showEditCard('${c.__id}')" class="text-sec p-1 hover:text-accent transition-colors" title="Edit Card">
+                <i data-lucide="pencil" class="w-4 h-4"></i>
+              </button>
+              <button onclick="deleteCard('${c.__id}')" class="text-sec p-1 hover:text-red-500 transition-colors" title="Delete Card">
+                <i data-lucide="trash-2" class="w-4 h-4"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+      `).join('');
+      
+      if (typeof lucide !== 'undefined' && lucide.createIcons) {
+        lucide.createIcons();
+      }
+    }
+
+    function showAddCardToDeck() {
+      if (!isAdmin || !manageDeckId) return;
+      addingToDeckId = manageDeckId;
+      document.getElementById('card-front-input').value = '';
+      document.getElementById('card-back-input').value = '';
+      document.getElementById('card-modal').classList.remove('hidden');
+    }
+
+    // ============================================================
+    //  ADMIN FUNCTIONS - EDIT CARD
+    // ============================================================
+    function showEditCard(cardId) {
+      if (!isAdmin) return;
+      editCardId = cardId;
+      const card = allCards.find(c => c.__id === cardId);
+      if (!card) return;
+      document.getElementById('edit-card-front').value = card.card_front || '';
+      document.getElementById('edit-card-back').value = card.card_back || '';
+      document.getElementById('edit-card-modal').classList.remove('hidden');
+      setTimeout(() => document.getElementById('edit-card-front').focus(), 100);
+    }
+
+    function closeEditCard() {
+      document.getElementById('edit-card-modal').classList.add('hidden');
+    }
+
+    function saveEditCard() {
+      const front = document.getElementById('edit-card-front').value.trim();
+      const back = document.getElementById('edit-card-back').value.trim();
+      if (!front || !back || !editCardId) return;
+      
+      const card = allCards.find(c => c.__id === editCardId);
+      if (card) {
+        card.card_front = front;
+        card.card_back = back;
+        saveUserData(currentUser);
+        closeEditCard();
+        renderManageCards();
+        renderDecks();
+        updateHome();
+        alert('✅ Card updated successfully!');
+      }
+    }
+
+    function deleteCard(cardId) {
+      if (!isAdmin) return;
+      if (!confirm('Delete this card?')) return;
+      allCards = allCards.filter(c => c.__id !== cardId);
+      saveUserData(currentUser);
+      renderManageCards();
+      renderDecks();
+      updateHome();
+    }
+
+    // ============================================================
+    //  ADMIN FUNCTIONS - IMPORT EXCEL TO DECK
+    // ============================================================
+    function importExcelToDeck(event) {
+      if (!isAdmin || !manageDeckId) return;
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        try {
+          const data = new Uint8Array(e.target.result);
+          const workbook = XLSX.read(data, { type: 'array' });
+          const jsonData = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]]);
+          
+          if (jsonData.length === 0) {
+            alert('No data found in Excel file.');
+            return;
+          }
+          
+          let importedCount = 0;
+          const deck = allCards.find(c => c.deck_id === manageDeckId && c.card_front === '__deck_placeholder__');
+          
+          jsonData.forEach(row => {
+            const front = row['Front'] || row['front'] || row['Question'] || row['question'];
+            const back = row['Back'] || row['back'] || row['Answer'] || row['answer'];
+            
+            if (!front || !back) return;
+            
+            // Check for duplicates
+            const exists = allCards.some(c => 
+              c.deck_id === manageDeckId && 
+              c.card_front === front && 
+              c.card_back === back
+            );
+            
+            if (exists) return;
+            
+            allCards.push({
+              __id: generateId(),
+              deck_id: manageDeckId,
+              deck_name: deck ? deck.deck_name : 'Untitled',
+              card_front: front,
+              card_back: back,
+              card_tags: '',
+              ease_factor: 2.5,
+              interval: 0,
+              repetitions: 0,
+              next_review: today(),
+              last_review: '',
+              total_reviews: 0,
+              correct_count: 0
+            });
+            importedCount++;
+          });
+          
+          saveUserData(currentUser);
+          renderManageCards();
+          renderDecks();
+          alert(`✅ Imported ${importedCount} new cards to this deck!`);
+        } catch (error) {
+          alert('❌ Error importing file: ' + error.message);
+        }
+      };
+      reader.readAsArrayBuffer(file);
+      event.target.value = '';
+    }
+
+    // ============================================================
+    //  DECKS (Admin only for deletion)
+    // ============================================================
+    function deleteDeck(deckId) {
+      if (!isAdmin) {
+        alert('Only admins can delete decks.');
+        return;
+      }
+      if (!confirm('Delete this deck and all cards?')) return;
+      allCards = allCards.filter(c => c.deck_id !== deckId);
+      saveUserData(currentUser);
+      renderDecks();
+      updateHome();
+      if (document.getElementById('view-admin-import').classList.contains('active')) {
+        renderAdminDeckList();
+      }
+    }
+
+    // ============================================================
     //  STATS RENDERING
     // ============================================================
-
     function renderStats() {
       const real = getRealCards();
       const total = real.reduce((s, c) => s + (c.total_reviews || 0), 0);
@@ -2554,7 +2932,6 @@
     // ============================================================
     //  1. PROGRESS CHART
     // ============================================================
-
     function renderProgressChart() {
       const days = progressPeriod === 'week' ? 7 : progressPeriod === 'month' ? 30 : 60;
       const dates = getDateRange(days);
@@ -2663,7 +3040,6 @@
     // ============================================================
     //  2. DECK PERFORMANCE
     // ============================================================
-
     function renderDeckPerformance() {
       const perf = getDeckPerformance();
       const container = document.getElementById('deck-performance-list');
@@ -2684,7 +3060,6 @@
     // ============================================================
     //  3. RETENTION RATE
     // ============================================================
-
     function renderRetentionRate() {
       const ret = getRetentionRates();
       document.getElementById('ret-overall').textContent = ret.overall + '%';
@@ -2696,7 +3071,6 @@
     // ============================================================
     //  4. AVERAGE CARDS/DAY
     // ============================================================
-
     function renderAvgCards() {
       const avgWeek = getAvgCardsPerDay(7);
       const avgMonth = getAvgCardsPerDay(30);
@@ -2712,7 +3086,6 @@
     // ============================================================
     //  5. SUBJECT BREAKDOWN
     // ============================================================
-
     function renderSubjectBreakdown() {
       const subjects = getSubjectBreakdown();
       const container = document.getElementById('subject-breakdown-list');
@@ -2736,7 +3109,6 @@
     // ============================================================
     //  6. STUDY HEATMAP
     // ============================================================
-
     function renderHeatmap() {
       const container = document.getElementById('heatmap-container');
       const weeks = 4;
@@ -2798,7 +3170,7 @@
       if (currentTab === tab) return;
       currentTab = tab;
 
-      const allViews = ['home', 'decks', 'study-select', 'flashcards', 'learn', 'test', 'stats', 'settings', 'admin-import'];
+      const allViews = ['home', 'decks', 'study-select', 'flashcards', 'learn', 'test', 'stats', 'settings', 'admin-import', 'admin-cards'];
 
       requestAnimationFrame(() => {
         allViews.forEach(v => {
@@ -2906,17 +3278,317 @@
     }
 
     function exitStudy() {
-  addStudyTime(5);
-  // Reset flashcard state
-  studyQueue = [];
-  studyIdx = 0;
-  fcFlipped = false;
-  document.getElementById('fc-buttons').classList.add('hidden');
-  document.getElementById('fc-done').classList.add('hidden');
-  document.getElementById('fc-done').style.display = 'none';
-  document.getElementById('fc-card').style.display = '';
-  switchTab('decks');
-}
+      addStudyTime(5);
+      // Reset flashcard state
+      studyQueue = [];
+      studyIdx = 0;
+      fcFlipped = false;
+      
+      // Reset UI elements
+      const btns = document.getElementById('fc-buttons');
+      const done = document.getElementById('fc-done');
+      const card = document.getElementById('fc-card');
+      const hint = document.getElementById('fc-hint');
+      
+      if (btns) btns.classList.add('hidden');
+      if (done) {
+        done.classList.add('hidden');
+        done.style.display = 'none';
+      }
+      if (card) card.style.display = '';
+      if (hint) hint.style.display = '';
+      
+      // Reset progress
+      document.getElementById('fc-progress').textContent = '0/0';
+      document.getElementById('fc-progress-fill').style.width = '0%';
+      
+      switchTab('decks');
+    }
+
+    // ============================================================
+    //  FLASHCARDS
+    // ============================================================
+    function startFlashcards() {
+      studyQueue = getDueCards(currentDeckId);
+      if (studyQueue.length === 0) studyQueue = getRealCards().filter(c => c.deck_id === currentDeckId);
+      if (studyQueue.length === 0) { alert('No cards in this deck.'); return }
+      for (let i = studyQueue.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1));
+        [studyQueue[i], studyQueue[j]] = [studyQueue[j], studyQueue[i]] }
+      studyIdx = 0;
+      fcFlipped = false;
+      document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+      document.getElementById('view-flashcards').classList.add('active');
+      fcShowCard();
+    }
+
+    function fcShowCard() {
+      const card = document.getElementById('fc-card');
+      const done = document.getElementById('fc-done');
+      const btns = document.getElementById('fc-buttons');
+      const hint = document.getElementById('fc-hint');
+      
+      if (studyIdx >= studyQueue.length) {
+        card.style.display = 'none';
+        btns.classList.add('hidden');
+        hint.style.display = 'none';
+        done.classList.remove('hidden');
+        done.style.display = 'flex';
+        document.getElementById('fc-progress').textContent = `${studyQueue.length}/${studyQueue.length}`;
+        document.getElementById('fc-progress-fill').style.width = '100%';
+        if (typeof lucide !== 'undefined' && lucide.createIcons) {
+          lucide.createIcons();
+        }
+        return;
+      }
+      
+      card.style.display = '';
+      done.classList.add('hidden');
+      done.style.display = 'none';
+      btns.classList.add('hidden');
+      hint.style.display = '';
+      
+      const c = studyQueue[studyIdx];
+      document.getElementById('fc-front-text').textContent = c.card_front;
+      document.getElementById('fc-back-text').textContent = c.card_back;
+      document.getElementById('fc-card').classList.remove('flipped');
+      fcFlipped = false;
+      
+      document.getElementById('fc-progress').textContent = `${studyIdx + 1}/${studyQueue.length}`;
+      document.getElementById('fc-progress-fill').style.width = `${(studyIdx / studyQueue.length) * 100}%`;
+      
+      if (typeof lucide !== 'undefined' && lucide.createIcons) {
+        lucide.createIcons();
+      }
+    }
+
+    function fcFlip() {
+      if (studyIdx >= studyQueue.length) return;
+      if (!fcFlipped) {
+        document.getElementById('fc-card').classList.add('flipped');
+        fcFlipped = true;
+        document.getElementById('fc-buttons').classList.remove('hidden');
+      }
+    }
+
+    function fcRate(q) {
+      const c = studyQueue[studyIdx];
+      const updated = applySRS(c, q);
+      const idx = allCards.findIndex(x => x.__id === updated.__id);
+      if (idx !== -1) allCards[idx] = updated;
+      else allCards.push(updated);
+      saveUserData(currentUser);
+      addStudyTime(0.5);
+      studyIdx++;
+      fcShowCard();
+      updateHome();
+    }
+
+    // ============================================================
+    //  LEARN (Premium only)
+    // ============================================================
+    function startLearn() {
+      if (!isPremiumActive()) {
+        showUpgradeModal();
+        return;
+      }
+      studyQueue = getDueCards(currentDeckId);
+      if (studyQueue.length === 0) studyQueue = getRealCards().filter(c => c.deck_id === currentDeckId);
+      if (studyQueue.length === 0) { alert('No cards.'); return }
+      studyIdx = 0;
+      document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+      document.getElementById('view-learn').classList.add('active');
+      lnShowQuestion();
+    }
+
+    function lnShowQuestion() {
+      const done = document.getElementById('ln-done'),
+        qBox = document.getElementById('ln-question'),
+        aBox = document.getElementById('ln-answer-box'),
+        showBtn = document.getElementById('ln-show-btn'),
+        gradeB = document.getElementById('ln-grade-btns');
+      if (studyIdx >= studyQueue.length) {
+        qBox.style.display = 'none';
+        aBox.classList.add('hidden');
+        showBtn.style.display = 'none';
+        gradeB.classList.add('hidden');
+        done.classList.remove('hidden');
+        done.style.display = 'flex';
+        document.getElementById('ln-progress-fill').style.width = '100%';
+        if (typeof lucide !== 'undefined' && lucide.createIcons) {
+          lucide.createIcons();
+        }
+        return;
+      }
+      qBox.style.display = '';
+      done.classList.add('hidden');
+      done.style.display = 'none';
+      aBox.classList.add('hidden');
+      showBtn.style.display = '';
+      gradeB.classList.add('hidden');
+      const c = studyQueue[studyIdx];
+      document.getElementById('ln-front-text').textContent = c.card_front;
+      document.getElementById('ln-back-text').textContent = c.card_back;
+      document.getElementById('ln-progress').textContent = `${studyIdx+1}/${studyQueue.length}`;
+      document.getElementById('ln-progress-fill').style.width = `${(studyIdx/studyQueue.length)*100}%`;
+      if (typeof lucide !== 'undefined' && lucide.createIcons) {
+        lucide.createIcons();
+      }
+    }
+
+    function lnShowAnswer() {
+      document.getElementById('ln-answer-box').classList.remove('hidden');
+      document.getElementById('ln-show-btn').style.display = 'none';
+      document.getElementById('ln-grade-btns').classList.remove('hidden');
+    }
+
+    function lnGrade(correct) {
+      const c = studyQueue[studyIdx];
+      const updated = applySRS(c, correct ? 2 : 0);
+      const idx = allCards.findIndex(x => x.__id === updated.__id);
+      if (idx !== -1) allCards[idx] = updated;
+      else allCards.push(updated);
+      saveUserData(currentUser);
+      addStudyTime(0.5);
+      studyIdx++;
+      lnShowQuestion();
+      updateHome();
+    }
+
+    // ============================================================
+    //  TEST (Premium only)
+    // ============================================================
+    function startTest() {
+      if (!isPremiumActive()) {
+        showUpgradeModal();
+        return;
+      }
+      const all = getRealCards().filter(c => c.deck_id === currentDeckId);
+      if (all.length === 0) { alert('No cards.'); return }
+      const shuffled = [...all];
+      for (let i = shuffled.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1));
+        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]] }
+      studyQueue = shuffled.slice(0, 10);
+      studyIdx = 0;
+      tsCorrect = 0;
+      tsIncorrect = 0;
+      document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+      document.getElementById('view-test').classList.add('active');
+      tsShowQuestion();
+    }
+
+    function tsShowQuestion() {
+      const results = document.getElementById('ts-results'),
+        qArea = document.getElementById('ts-question-area'),
+        fb = document.getElementById('ts-feedback'),
+        choices = document.getElementById('ts-choices'),
+        typeArea = document.getElementById('ts-type-area');
+      if (studyIdx >= studyQueue.length) {
+        qArea.style.display = 'none';
+        results.classList.remove('hidden');
+        results.style.display = 'flex';
+        const pct = studyQueue.length > 0 ? Math.round(tsCorrect / studyQueue.length * 100) : 0;
+        document.getElementById('ts-score').textContent = pct + '%';
+        document.getElementById('ts-correct-count').textContent = tsCorrect;
+        document.getElementById('ts-incorrect-count').textContent = tsIncorrect;
+        document.getElementById('ts-progress-fill').style.width = '100%';
+        if (typeof lucide !== 'undefined' && lucide.createIcons) {
+          lucide.createIcons();
+        }
+        return;
+      }
+      qArea.style.display = '';
+      results.classList.add('hidden');
+      results.style.display = 'none';
+      fb.classList.add('hidden');
+      const c = studyQueue[studyIdx];
+      document.getElementById('ts-question').textContent = c.card_front;
+      tsCurrentAnswer = c.card_back;
+      document.getElementById('ts-progress').textContent = `${studyIdx+1}/${studyQueue.length}`;
+      document.getElementById('ts-progress-fill').style.width = `${(studyIdx/studyQueue.length)*100}%`;
+
+      if (Math.random() > 0.4 && getRealCards().length >= 4) {
+        choices.classList.remove('hidden');
+        typeArea.classList.add('hidden');
+        const options = [c.card_back];
+        const others = getRealCards().filter(x => x.__id !== c.__id && x.deck_id === currentDeckId).map(x => x.card_back)
+        .filter(Boolean);
+        while (options.length < 4 && others.length > 0) { const idx = Math.floor(Math.random() * others.length); if (!options
+            .includes(others[idx])) options.push(others[idx]);
+          others.splice(idx, 1) }
+        for (let i = options.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1));
+          [options[i], options[j]] = [options[j], options[i]] }
+        choices.innerHTML = options.map(o =>
+          `<button onclick="tsChoose('${o.replace(/'/g,"\\'").replace(/"/g,'&quot;')}')" class="choice-btn">${o}</button>`
+        ).join('');
+      } else {
+        choices.classList.add('hidden');
+        typeArea.classList.remove('hidden');
+        document.getElementById('ts-type-input').value = '';
+        setTimeout(() => document.getElementById('ts-type-input').focus(), 100);
+      }
+      if (typeof lucide !== 'undefined' && lucide.createIcons) {
+        lucide.createIcons();
+      }
+    }
+
+    function tsChoose(answer) { const c = answer === tsCurrentAnswer; if (c) tsCorrect++;
+      else tsIncorrect++;
+      tsShowFeedback(c) }
+
+    function tsSubmitTyped() {
+      const val = document.getElementById('ts-type-input').value.trim().toLowerCase();
+      const c = val === tsCurrentAnswer.toLowerCase();
+      if (c) tsCorrect++;
+      else tsIncorrect++;
+      tsShowFeedback(c);
+    }
+
+    function tsShowFeedback(correct) {
+      document.getElementById('ts-choices').classList.add('hidden');
+      document.getElementById('ts-type-area').classList.add('hidden');
+      const fb = document.getElementById('ts-feedback');
+      fb.classList.remove('hidden');
+      fb.style.background = correct ? 'var(--card-green)' : 'var(--card-peach)';
+      document.getElementById('ts-feedback-text').textContent = correct ? '✅ Correct!' : '❌ Incorrect';
+      document.getElementById('ts-feedback-text').style.color = correct ? '#059669' : '#dc2626';
+      document.getElementById('ts-correct-answer').textContent = correct ? '' : 'Answer: ' + tsCurrentAnswer;
+      const c = studyQueue[studyIdx];
+      const updated = applySRS(c, correct ? 2 : 0);
+      const idx = allCards.findIndex(x => x.__id === updated.__id);
+      if (idx !== -1) allCards[idx] = updated;
+      else allCards.push(updated);
+      saveUserData(currentUser);
+      addStudyTime(0.5);
+      updateHome();
+      if (typeof lucide !== 'undefined' && lucide.createIcons) {
+        lucide.createIcons();
+      }
+    }
+
+    function tsNext() { studyIdx++;
+      tsShowQuestion() }
+
+    // ============================================================
+    //  THEME
+    // ============================================================
+    function toggleTheme() {
+      document.documentElement.classList.toggle('dark');
+      localStorage.setItem('flashmind_theme', document.documentElement.classList.contains('dark') ? 'dark' : 'light');
+      updateThemeToggle();
+    }
+
+    // ============================================================
+    //  EXPORT
+    // ============================================================
+    function exportData() {
+      const blob = new Blob([JSON.stringify(allCards, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'flashmind-export-' + today() + '.json';
+      a.click();
+      URL.revokeObjectURL(url);
+    }
 
     // ============================================================
     //  CONTACT ADMIN
@@ -2955,38 +3627,6 @@
 
       alert('✅ Request sent! We\'ll review it and add new decks soon.');
       closeContactAdmin();
-    }
-
-    // ============================================================
-    //  DECKS (Admin only for deletion)
-    // ============================================================
-    function deleteDeck(deckId) {
-      if (!isAdmin) {
-        alert('Only admins can delete decks.');
-        return;
-      }
-      if (!confirm('Delete this deck and all cards?')) return;
-      allCards = allCards.filter(c => c.deck_id !== deckId);
-      saveUserData(currentUser);
-      renderDecks();
-      updateHome();
-      if (document.getElementById('view-admin-import').classList.contains('active')) {
-        renderAdminDeckList();
-      }
-    }
-
-    function openDeck(deckId) {
-      const decks = getDecks();
-      const deckIndex = decks.findIndex(d => d.id === deckId);
-      const isPremium = isPremiumActive();
-
-      if (!isPremium && deckIndex >= 5) {
-        showUpgradeModal();
-        return;
-      }
-
-      currentDeckId = deckId;
-      openStudySelect();
     }
 
     // ============================================================
@@ -3319,299 +3959,6 @@
     }
 
     // ============================================================
-    //  FLASHCARDS
-    // ============================================================
-    function startFlashcards() {
-      studyQueue = getDueCards(currentDeckId);
-      if (studyQueue.length === 0) studyQueue = getRealCards().filter(c => c.deck_id === currentDeckId);
-      if (studyQueue.length === 0) { alert('No cards in this deck.'); return }
-      for (let i = studyQueue.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1));
-        [studyQueue[i], studyQueue[j]] = [studyQueue[j], studyQueue[i]] }
-      studyIdx = 0;
-      fcFlipped = false;
-      document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
-      document.getElementById('view-flashcards').classList.add('active');
-      fcShowCard();
-    }
-
-   function fcShowCard() {
-  const card = document.getElementById('fc-card');
-  const done = document.getElementById('fc-done');
-  const btns = document.getElementById('fc-buttons');
-  const hint = document.getElementById('fc-hint');
-  
-  if (studyIdx >= studyQueue.length) {
-    // Hide the card
-    card.style.display = 'none';
-    // Hide buttons
-    btns.classList.add('hidden');
-    // Hide hint
-    hint.style.display = 'none';
-    // Show done message
-    done.classList.remove('hidden');
-    done.style.display = 'flex';
-    // Update progress
-    document.getElementById('fc-progress').textContent = `${studyQueue.length}/${studyQueue.length}`;
-    document.getElementById('fc-progress-fill').style.width = '100%';
-    // Re-enable navigation by allowing clicks
-    if (typeof lucide !== 'undefined' && lucide.createIcons) {
-      lucide.createIcons();
-    }
-    return;
-  }
-  
-  // Show card and hide done
-  card.style.display = '';
-  done.classList.add('hidden');
-  done.style.display = 'none';
-  // Hide buttons until flipped
-  btns.classList.add('hidden');
-  hint.style.display = '';
-  
-  const c = studyQueue[studyIdx];
-  document.getElementById('fc-front-text').textContent = c.card_front;
-  document.getElementById('fc-back-text').textContent = c.card_back;
-  document.getElementById('fc-card').classList.remove('flipped');
-  fcFlipped = false;
-  
-  document.getElementById('fc-progress').textContent = `${studyIdx + 1}/${studyQueue.length}`;
-  document.getElementById('fc-progress-fill').style.width = `${(studyIdx / studyQueue.length) * 100}%`;
-  
-  if (typeof lucide !== 'undefined' && lucide.createIcons) {
-    lucide.createIcons();
-  }
-}
-
-    function fcFlip() {
-      if (studyIdx >= studyQueue.length) return;
-      if (!fcFlipped) {
-        document.getElementById('fc-card').classList.add('flipped');
-        fcFlipped = true;
-        document.getElementById('fc-buttons').classList.remove('hidden');
-      }
-    }
-
-    function fcRate(q) {
-      const c = studyQueue[studyIdx];
-      const updated = applySRS(c, q);
-      const idx = allCards.findIndex(x => x.__id === updated.__id);
-      if (idx !== -1) allCards[idx] = updated;
-      else allCards.push(updated);
-      saveUserData(currentUser);
-      addStudyTime(0.5);
-      studyIdx++;
-      fcShowCard();
-      updateHome();
-    }
-
-    // ============================================================
-    //  LEARN (Premium only)
-    // ============================================================
-    function startLearn() {
-      if (!isPremiumActive()) {
-        showUpgradeModal();
-        return;
-      }
-      studyQueue = getDueCards(currentDeckId);
-      if (studyQueue.length === 0) studyQueue = getRealCards().filter(c => c.deck_id === currentDeckId);
-      if (studyQueue.length === 0) { alert('No cards.'); return }
-      studyIdx = 0;
-      document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
-      document.getElementById('view-learn').classList.add('active');
-      lnShowQuestion();
-    }
-
-    function lnShowQuestion() {
-      const done = document.getElementById('ln-done'),
-        qBox = document.getElementById('ln-question'),
-        aBox = document.getElementById('ln-answer-box'),
-        showBtn = document.getElementById('ln-show-btn'),
-        gradeB = document.getElementById('ln-grade-btns');
-      if (studyIdx >= studyQueue.length) {
-        qBox.style.display = 'none';
-        aBox.classList.add('hidden');
-        showBtn.style.display = 'none';
-        gradeB.classList.add('hidden');
-        done.classList.remove('hidden');
-        done.style.display = 'flex';
-        document.getElementById('ln-progress-fill').style.width = '100%';
-        if (typeof lucide !== 'undefined' && lucide.createIcons) {
-          lucide.createIcons();
-        }
-        return;
-      }
-      qBox.style.display = '';
-      done.classList.add('hidden');
-      done.style.display = 'none';
-      aBox.classList.add('hidden');
-      showBtn.style.display = '';
-      gradeB.classList.add('hidden');
-      const c = studyQueue[studyIdx];
-      document.getElementById('ln-front-text').textContent = c.card_front;
-      document.getElementById('ln-back-text').textContent = c.card_back;
-      document.getElementById('ln-progress').textContent = `${studyIdx+1}/${studyQueue.length}`;
-      document.getElementById('ln-progress-fill').style.width = `${(studyIdx/studyQueue.length)*100}%`;
-      if (typeof lucide !== 'undefined' && lucide.createIcons) {
-        lucide.createIcons();
-      }
-    }
-
-    function lnShowAnswer() {
-      document.getElementById('ln-answer-box').classList.remove('hidden');
-      document.getElementById('ln-show-btn').style.display = 'none';
-      document.getElementById('ln-grade-btns').classList.remove('hidden');
-    }
-
-    function lnGrade(correct) {
-      const c = studyQueue[studyIdx];
-      const updated = applySRS(c, correct ? 2 : 0);
-      const idx = allCards.findIndex(x => x.__id === updated.__id);
-      if (idx !== -1) allCards[idx] = updated;
-      else allCards.push(updated);
-      saveUserData(currentUser);
-      addStudyTime(0.5);
-      studyIdx++;
-      lnShowQuestion();
-      updateHome();
-    }
-
-    // ============================================================
-    //  TEST (Premium only)
-    // ============================================================
-    function startTest() {
-      if (!isPremiumActive()) {
-        showUpgradeModal();
-        return;
-      }
-      const all = getRealCards().filter(c => c.deck_id === currentDeckId);
-      if (all.length === 0) { alert('No cards.'); return }
-      const shuffled = [...all];
-      for (let i = shuffled.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1));
-        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]] }
-      studyQueue = shuffled.slice(0, 10);
-      studyIdx = 0;
-      tsCorrect = 0;
-      tsIncorrect = 0;
-      document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
-      document.getElementById('view-test').classList.add('active');
-      tsShowQuestion();
-    }
-
-    function tsShowQuestion() {
-      const results = document.getElementById('ts-results'),
-        qArea = document.getElementById('ts-question-area'),
-        fb = document.getElementById('ts-feedback'),
-        choices = document.getElementById('ts-choices'),
-        typeArea = document.getElementById('ts-type-area');
-      if (studyIdx >= studyQueue.length) {
-        qArea.style.display = 'none';
-        results.classList.remove('hidden');
-        results.style.display = 'flex';
-        const pct = studyQueue.length > 0 ? Math.round(tsCorrect / studyQueue.length * 100) : 0;
-        document.getElementById('ts-score').textContent = pct + '%';
-        document.getElementById('ts-correct-count').textContent = tsCorrect;
-        document.getElementById('ts-incorrect-count').textContent = tsIncorrect;
-        document.getElementById('ts-progress-fill').style.width = '100%';
-        if (typeof lucide !== 'undefined' && lucide.createIcons) {
-          lucide.createIcons();
-        }
-        return;
-      }
-      qArea.style.display = '';
-      results.classList.add('hidden');
-      results.style.display = 'none';
-      fb.classList.add('hidden');
-      const c = studyQueue[studyIdx];
-      document.getElementById('ts-question').textContent = c.card_front;
-      tsCurrentAnswer = c.card_back;
-      document.getElementById('ts-progress').textContent = `${studyIdx+1}/${studyQueue.length}`;
-      document.getElementById('ts-progress-fill').style.width = `${(studyIdx/studyQueue.length)*100}%`;
-
-      if (Math.random() > 0.4 && getRealCards().length >= 4) {
-        choices.classList.remove('hidden');
-        typeArea.classList.add('hidden');
-        const options = [c.card_back];
-        const others = getRealCards().filter(x => x.__id !== c.__id && x.deck_id === currentDeckId).map(x => x.card_back)
-        .filter(Boolean);
-        while (options.length < 4 && others.length > 0) { const idx = Math.floor(Math.random() * others.length); if (!options
-            .includes(others[idx])) options.push(others[idx]);
-          others.splice(idx, 1) }
-        for (let i = options.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1));
-          [options[i], options[j]] = [options[j], options[i]] }
-        choices.innerHTML = options.map(o =>
-          `<button onclick="tsChoose('${o.replace(/'/g,"\\'").replace(/"/g,'&quot;')}')" class="choice-btn">${o}</button>`
-        ).join('');
-      } else {
-        choices.classList.add('hidden');
-        typeArea.classList.remove('hidden');
-        document.getElementById('ts-type-input').value = '';
-        setTimeout(() => document.getElementById('ts-type-input').focus(), 100);
-      }
-      if (typeof lucide !== 'undefined' && lucide.createIcons) {
-        lucide.createIcons();
-      }
-    }
-
-    function tsChoose(answer) { const c = answer === tsCurrentAnswer; if (c) tsCorrect++;
-      else tsIncorrect++;
-      tsShowFeedback(c) }
-
-    function tsSubmitTyped() {
-      const val = document.getElementById('ts-type-input').value.trim().toLowerCase();
-      const c = val === tsCurrentAnswer.toLowerCase();
-      if (c) tsCorrect++;
-      else tsIncorrect++;
-      tsShowFeedback(c);
-    }
-
-    function tsShowFeedback(correct) {
-      document.getElementById('ts-choices').classList.add('hidden');
-      document.getElementById('ts-type-area').classList.add('hidden');
-      const fb = document.getElementById('ts-feedback');
-      fb.classList.remove('hidden');
-      fb.style.background = correct ? 'var(--card-green)' : 'var(--card-peach)';
-      document.getElementById('ts-feedback-text').textContent = correct ? '✅ Correct!' : '❌ Incorrect';
-      document.getElementById('ts-feedback-text').style.color = correct ? '#059669' : '#dc2626';
-      document.getElementById('ts-correct-answer').textContent = correct ? '' : 'Answer: ' + tsCurrentAnswer;
-      const c = studyQueue[studyIdx];
-      const updated = applySRS(c, correct ? 2 : 0);
-      const idx = allCards.findIndex(x => x.__id === updated.__id);
-      if (idx !== -1) allCards[idx] = updated;
-      else allCards.push(updated);
-      saveUserData(currentUser);
-      addStudyTime(0.5);
-      updateHome();
-      if (typeof lucide !== 'undefined' && lucide.createIcons) {
-        lucide.createIcons();
-      }
-    }
-
-    function tsNext() { studyIdx++;
-      tsShowQuestion() }
-
-    // ============================================================
-    //  THEME
-    // ============================================================
-    function toggleTheme() {
-      document.documentElement.classList.toggle('dark');
-      localStorage.setItem('flashmind_theme', document.documentElement.classList.contains('dark') ? 'dark' : 'light');
-      updateThemeToggle();
-    }
-
-    // ============================================================
-    //  EXPORT
-    // ============================================================
-    function exportData() {
-      const blob = new Blob([JSON.stringify(allCards, null, 2)], { type: 'application/json' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = 'flashmind-export-' + today() + '.json';
-      a.click();
-      URL.revokeObjectURL(url);
-    }
-
-    // ============================================================
     //  KEYBOARD SHORTCUTS
     // ============================================================
     document.addEventListener('keydown', (e) => {
@@ -3664,6 +4011,7 @@
         if (document.getElementById('view-learn').classList.contains('active')) return;
         if (document.getElementById('view-test').classList.contains('active')) return;
         if (document.getElementById('view-admin-import').classList.contains('active')) return;
+        if (document.getElementById('view-admin-cards').classList.contains('active')) return;
         switchTab(btn.dataset.tab);
       });
     });
@@ -3703,7 +4051,7 @@
       });
     });
 
-    console.log('🚀 FlashMind · Pharmacy Study App (Firebase Sync)');
+    console.log('🚀 FlashMind · Pharmacy Study App (Complete)');
     console.log('📊 Plan:', userPlan);
     console.log('👑 Admin:', isAdmin);
     console.log('📚 Cards:', getRealCards().length, 'Decks:', getDecks().length);
