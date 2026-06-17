@@ -12,7 +12,6 @@
   </script>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
   <style>
-    /* ... (styles same as before) ... */
     * {
       font-family: 'DM Sans', sans-serif;
       box-sizing: border-box;
@@ -202,7 +201,7 @@
       background: var(--border);
       border-radius: 99px;
       overflow: hidden;
-      height: 4px;
+      height: 6px;
     }
     .progress-fill {
       background: var(--accent);
@@ -632,6 +631,172 @@
       font-size: 1rem;
       font-weight: 400;
     }
+
+    /* --- HOME PAGE NEW STYLES --- */
+    .stat-card {
+      background: var(--surface);
+      border-radius: 1.25rem;
+      padding: 0.75rem 1rem;
+      border: 1px solid var(--border);
+      text-align: center;
+      box-shadow: var(--shadow);
+    }
+    .stat-card .number {
+      font-size: 1.5rem;
+      font-weight: 800;
+      line-height: 1.2;
+    }
+    .stat-card .label {
+      font-size: 0.65rem;
+      font-weight: 600;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+    }
+    .stat-card .icon {
+      margin-bottom: 2px;
+    }
+
+    .streak-dot {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      font-weight: 700;
+      transition: 0.15s;
+    }
+    .streak-dot.active {
+      background: var(--accent);
+      color: #fff;
+    }
+    .streak-dot.today {
+      border: 2px solid var(--accent);
+      background: var(--accent-light);
+      color: var(--accent);
+    }
+    .streak-dot.inactive {
+      background: var(--border);
+      color: var(--text-secondary);
+    }
+    .streak-dot.future {
+      background: transparent;
+      border: 1px dashed var(--border);
+      color: var(--text-secondary);
+    }
+
+    .daily-progress {
+      background: var(--surface);
+      border-radius: var(--radius);
+      padding: 1.25rem;
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow);
+    }
+    .daily-progress .goal-text {
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+    }
+    .daily-progress .big-number {
+      font-size: 2rem;
+      font-weight: 800;
+    }
+    .daily-progress .big-number small {
+      font-size: 0.875rem;
+      font-weight: 400;
+      color: var(--text-secondary);
+    }
+
+    .quick-stat-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 0.5rem;
+    }
+
+    .last-study-time {
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+      text-align: center;
+      padding: 0.5rem 0;
+    }
+
+    .goal-setting {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-top: 0.5rem;
+    }
+    .goal-setting input {
+      width: 70px;
+      padding: 0.25rem 0.5rem;
+      border-radius: 0.75rem;
+      border: 1px solid var(--border);
+      background: var(--bg);
+      color: var(--text);
+      font-size: 0.875rem;
+      text-align: center;
+      font-weight: 700;
+    }
+    .goal-setting input:focus {
+      outline: 2px solid var(--accent);
+      outline-offset: 2px;
+    }
+    .goal-setting button {
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      padding: 0.25rem 0.75rem;
+      border-radius: 0.75rem;
+      font-size: 0.75rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: 0.15s;
+    }
+    .goal-setting button:hover {
+      opacity: 0.8;
+    }
+
+    .home-quick-actions {
+      display: flex;
+      gap: 0.5rem;
+      margin-top: 0.5rem;
+    }
+    .home-quick-actions button {
+      flex: 1;
+      padding: 0.6rem;
+      border-radius: 1rem;
+      border: none;
+      font-weight: 600;
+      font-size: 0.8rem;
+      cursor: pointer;
+      transition: 0.15s;
+    }
+    .home-quick-actions button:active {
+      transform: scale(0.96);
+    }
+    .home-quick-actions .primary {
+      background: var(--accent);
+      color: #fff;
+    }
+    .home-quick-actions .secondary {
+      background: var(--border);
+      color: var(--text);
+    }
+
+    /* Badge animation */
+    .badge-glow {
+      animation: glow 2s ease-in-out infinite;
+    }
+    @keyframes glow {
+      0%,
+      100% {
+        box-shadow: 0 0 5px rgba(249, 115, 22, 0.2);
+      }
+      50% {
+        box-shadow: 0 0 20px rgba(249, 115, 22, 0.4);
+      }
+    }
   </style>
 </head>
 <body>
@@ -705,22 +870,68 @@
         <button onclick="toggleTheme()" class="w-10 h-10 rounded-full surface flex items-center justify-center shadow-card border border-theme"><i data-lucide="sun" class="w-5 h-5"></i></button>
       </div>
 
-      <div class="hero-gradient rounded-3xl p-6 mb-4 relative overflow-hidden shadow-card" style="background:linear-gradient(135deg,#f97316,#ea580c);">
-        <div class="relative z-10">
-          <p id="due-count" class="hero-number text-white">0</p>
-          <p class="text-white/80 text-sm font-medium">cards due for review</p>
-          <button onclick="continueStudying()" class="mt-3 bg-white text-orange-600 font-bold px-6 py-2.5 rounded-2xl shadow-md text-sm">Review Now</button>
+      <!-- Daily Progress -->
+      <div class="daily-progress mb-3">
+        <div class="flex items-center justify-between">
+          <div>
+            <span class="text-sm font-semibold">📚 Today's Progress</span>
+            <div class="goal-text mt-0.5" id="daily-goal-text">Goal: 20 cards</div>
+          </div>
+          <div class="text-right">
+            <span class="big-number" id="today-count">0</span>
+            <small> / <span id="today-goal">20</span></small>
+          </div>
         </div>
-        <div class="absolute right-0 bottom-0 opacity-20 text-7xl p-4">💊</div>
+        <div class="progress-bar mt-2">
+          <div id="daily-progress-fill" class="progress-fill" style="width:0%"></div>
+        </div>
+        <div class="goal-setting">
+          <span class="text-xs text-sec">Set daily goal:</span>
+          <input type="number" id="goal-input" min="1" max="200" value="20" />
+          <button onclick="setDailyGoal()">Set</button>
+        </div>
       </div>
 
-      <div class="grid grid-cols-3 gap-3 mb-3">
-        <div class="card-peach rounded-2xl p-3 text-center shadow-card"><p id="stat-streak" class="text-2xl font-bold accent-text">0</p><p class="text-sec text-xs">🔥 Streak</p></div>
-        <div class="card-green rounded-2xl p-3 text-center shadow-card"><p id="stat-accuracy" class="text-2xl font-bold" style="color:#059669">0%</p><p class="text-sec text-xs">🎯 Accuracy</p></div>
-        <div class="card-blue rounded-2xl p-3 text-center shadow-card"><p id="stat-mastered" class="text-2xl font-bold" style="color:#2563eb">0</p><p class="text-sec text-xs">🏆 Mastered</p></div>
+      <!-- Streak Calendar (7 days) -->
+      <div class="surface rounded-2xl p-3 border border-theme shadow-card mb-3">
+        <div class="flex items-center justify-between mb-2">
+          <span class="text-sm font-semibold">🔥 <span id="streak-number">0</span>-day streak</span>
+          <span class="text-xs text-sec" id="last-study-text">Last studied: Never</span>
+        </div>
+        <div class="flex justify-between" id="streak-calendar">
+          <!-- 7 days rendered by JS -->
+        </div>
       </div>
 
-      <div class="surface rounded-2xl p-3 flex items-center gap-3 border border-theme shadow-card cursor-pointer" onclick="showUpgradeModal()">
+      <!-- Quick Stats -->
+      <div class="quick-stat-grid mb-3">
+        <div class="stat-card">
+          <div class="icon accent-text"><i data-lucide="flame" class="w-5 h-5 mx-auto"></i></div>
+          <div class="number accent-text" id="stat-streak">0</div>
+          <div class="label">Streak</div>
+        </div>
+        <div class="stat-card">
+          <div class="icon" style="color:#059669;"><i data-lucide="target" class="w-5 h-5 mx-auto"></i></div>
+          <div class="number" style="color:#059669;" id="stat-accuracy">0%</div>
+          <div class="label">Accuracy</div>
+        </div>
+        <div class="stat-card">
+          <div class="icon" style="color:#2563eb;"><i data-lucide="trophy" class="w-5 h-5 mx-auto"></i></div>
+          <div class="number" style="color:#2563eb;" id="stat-mastered">0</div>
+          <div class="label">Mastered</div>
+        </div>
+      </div>
+
+      <!-- Study Time & Quick Actions -->
+      <div class="last-study-time" id="study-time-display">⏰ 0 min studied today</div>
+
+      <div class="home-quick-actions">
+        <button onclick="continueStudying()" class="primary" id="home-review-btn">📖 Continue Studying</button>
+        <button onclick="showUpgradeModal()" class="secondary">⬆️ Upgrade</button>
+      </div>
+
+      <!-- Upgrade Prompt (for free users) -->
+      <div id="home-upgrade-prompt" class="mt-3 surface rounded-2xl p-3 flex items-center gap-3 border border-theme shadow-card cursor-pointer" onclick="showUpgradeModal()">
         <div class="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0" style="background:linear-gradient(135deg,var(--premium-gold),var(--premium-purple));"><i data-lucide="crown" class="w-5 h-5 text-white"></i></div>
         <div class="flex-1"><p class="font-semibold text-sm">Unlock Full Pharmacy Library</p><p class="text-xs text-sec">Enter your book's access code or upgrade</p></div>
         <i data-lucide="chevron-right" class="w-5 h-5 text-sec"></i>
@@ -1066,6 +1277,8 @@
     const SESSION_KEY = 'flashmind_session';
     const DATA_PREFIX = 'flashmind_data_';
     const CODES_KEY = 'flashmind_codes';
+    const GOAL_KEY = 'flashmind_goal';
+    const STUDY_TIME_KEY = 'flashmind_study_time';
 
     let currentUser = null;
     let allCards = [];
@@ -1147,6 +1360,45 @@
       return new Date(expiry) > new Date();
     }
 
+    // ============================================================
+    //  DAILY GOAL & STUDY TIME
+    // ============================================================
+    function getDailyGoal() {
+      const goal = localStorage.getItem(GOAL_KEY + '_' + (currentUser || 'default'));
+      return goal ? parseInt(goal) : 20;
+    }
+
+    function setDailyGoal() {
+      const input = document.getElementById('goal-input');
+      const val = parseInt(input.value);
+      if (val > 0 && val <= 500) {
+        localStorage.setItem(GOAL_KEY + '_' + (currentUser || 'default'), val);
+        updateHome();
+      }
+    }
+
+    function getStudyTime() {
+      const data = JSON.parse(localStorage.getItem(STUDY_TIME_KEY + '_' + (currentUser || 'default')) || '{}');
+      const todayStr = today();
+      if (!data[todayStr]) data[todayStr] = 0;
+      return data[todayStr];
+    }
+
+    function addStudyTime(minutes) {
+      const data = JSON.parse(localStorage.getItem(STUDY_TIME_KEY + '_' + (currentUser || 'default')) || '{}');
+      const todayStr = today();
+      data[todayStr] = (data[todayStr] || 0) + minutes;
+      localStorage.setItem(STUDY_TIME_KEY + '_' + (currentUser || 'default'), JSON.stringify(data));
+    }
+
+    function getTodayStudyCount() {
+      const todayStr = today();
+      return allCards.filter(c => c.last_review && c.last_review.startsWith(todayStr)).length;
+    }
+
+    // ============================================================
+    //  SAMPLE DECKS
+    // ============================================================
     function getSampleDecks() {
       const decks = [];
       const topics = [
@@ -1218,6 +1470,23 @@
           d.setDate(d.getDate() - 1) } else if (i === 0) { d.setDate(d.getDate() - 1) } else break;
       }
       return s;
+    }
+
+    function getStreakDays() {
+      const reviews = [...new Set(getRealCards().map(c => c.last_review ? c.last_review.split('T')[0] : null).filter(Boolean))];
+      const days = [];
+      const d = new Date();
+      for (let i = 6; i >= 0; i--) {
+        const ds = d.toISOString().split('T')[0];
+        days.push({
+          date: ds,
+          active: reviews.includes(ds),
+          isToday: i === 0,
+          isFuture: false
+        });
+        d.setDate(d.getDate() - 1);
+      }
+      return days;
     }
 
     // ============================================================
@@ -1481,6 +1750,12 @@
       if (lockMsg) {
         lockMsg.classList.toggle('hidden', isPremium);
       }
+
+      // Hide upgrade prompt on home if premium
+      const prompt = document.getElementById('home-upgrade-prompt');
+      if (prompt) {
+        prompt.style.display = isPremium ? 'none' : 'flex';
+      }
     }
 
     // ============================================================
@@ -1494,9 +1769,66 @@
       const correct = real.reduce((s, c) => s + (c.correct_count || 0), 0);
       const acc = total > 0 ? Math.round(correct / total * 100) : 0;
       const mastered = real.filter(c => (c.interval || 0) >= 21).length;
-      document.getElementById('stat-streak').textContent = getStreak();
+      const streak = getStreak();
+      
+      document.getElementById('stat-streak').textContent = streak;
       document.getElementById('stat-accuracy').textContent = acc + '%';
       document.getElementById('stat-mastered').textContent = mastered;
+      document.getElementById('streak-number').textContent = streak;
+
+      // Daily progress
+      const goal = getDailyGoal();
+      const todayCount = getTodayStudyCount();
+      document.getElementById('today-count').textContent = todayCount;
+      document.getElementById('today-goal').textContent = goal;
+      document.getElementById('daily-goal-text').textContent = `Goal: ${goal} cards`;
+      document.getElementById('goal-input').value = goal;
+      
+      const pct = Math.min((todayCount / goal) * 100, 100);
+      document.getElementById('daily-progress-fill').style.width = pct + '%';
+
+      // Streak calendar
+      const days = getStreakDays();
+      const dayLabels = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
+      const calendar = document.getElementById('streak-calendar');
+      calendar.innerHTML = days.map((d, i) => {
+        let cls = 'streak-dot';
+        if (d.isToday) cls += ' today';
+        else if (d.active) cls += ' active';
+        else cls += ' inactive';
+        return `<div class="${cls}" title="${d.date}">${dayLabels[i]}</div>`;
+      }).join('');
+
+      // Last study time
+      const lastReview = real.filter(c => c.last_review).sort((a, b) => 
+        new Date(b.last_review) - new Date(a.last_review)
+      )[0];
+      if (lastReview) {
+        const diff = Math.floor((Date.now() - new Date(lastReview.last_review)) / (1000 * 60));
+        if (diff < 1) document.getElementById('last-study-text').textContent = 'Last studied: Just now';
+        else if (diff < 60) document.getElementById('last-study-text').textContent = `Last studied: ${diff} min ago`;
+        else if (diff < 1440) document.getElementById('last-study-text').textContent = `Last studied: ${Math.floor(diff/60)}h ${diff%60}m ago`;
+        else document.getElementById('last-study-text').textContent = `Last studied: ${Math.floor(diff/1440)} days ago`;
+      } else {
+        document.getElementById('last-study-text').textContent = 'Last studied: Never';
+      }
+
+      // Study time
+      const studyMins = getStudyTime();
+      document.getElementById('study-time-display').textContent = `⏰ ${studyMins} min studied today`;
+
+      // Review button
+      const btn = document.getElementById('home-review-btn');
+      if (due.length === 0) {
+        btn.textContent = '🎉 All caught up!';
+        btn.disabled = true;
+        btn.classList.add('opacity-60', 'cursor-not-allowed');
+      } else {
+        btn.textContent = '📖 Continue Studying';
+        btn.disabled = false;
+        btn.classList.remove('opacity-60', 'cursor-not-allowed');
+      }
+
       updatePlanUI();
     }
 
@@ -1656,7 +1988,10 @@
 
     function continueStudying() {
       const due = getDueCards();
-      if (due.length === 0) return;
+      if (due.length === 0) {
+        alert('🎉 All caught up! No cards due for review.');
+        return;
+      }
       const deckDue = {};
       due.forEach(c => { deckDue[c.deck_id] = (deckDue[c.deck_id] || 0) + 1 });
       currentDeckId = Object.entries(deckDue).sort((a, b) => b[1] - a[1])[0][0];
@@ -1687,7 +2022,11 @@
       lucide.createIcons();
     }
 
-    function exitStudy() { switchTab('decks') }
+    function exitStudy() { 
+      // Track study time when exiting
+      addStudyTime(5); // Assume ~5 min per session
+      switchTab('decks'); 
+    }
 
     // ============================================================
     //  CONTACT ADMIN
@@ -1710,7 +2049,6 @@
       const subtopic = document.getElementById('request-subtopic').value.trim();
       const notes = document.getElementById('request-notes').value.trim();
 
-      // Store request in localStorage (admin can view later)
       const requests = JSON.parse(localStorage.getItem('deck_requests') || '[]');
       requests.push({
         id: Date.now(),
@@ -1958,7 +2296,6 @@
       document.getElementById('book-buyer-card').style.borderColor = 'var(--border)';
       document.getElementById('regular-card').style.borderColor = 'var(--border)';
 
-      // Update pricing display
       const isPremium = isPremiumActive();
       if (isPremium) {
         document.getElementById('modal-price-display').textContent = '✅ Premium Active';
@@ -2147,6 +2484,8 @@
       if (idx !== -1) allCards[idx] = updated;
       else allCards.push(updated);
       saveUserData(currentUser);
+      // Track study time (30 sec per card)
+      addStudyTime(0.5);
       studyIdx++;
       fcShowCard();
       updateHome();
@@ -2213,6 +2552,7 @@
       if (idx !== -1) allCards[idx] = updated;
       else allCards.push(updated);
       saveUserData(currentUser);
+      addStudyTime(0.5);
       studyIdx++;
       lnShowQuestion();
       updateHome();
@@ -2318,6 +2658,7 @@
       if (idx !== -1) allCards[idx] = updated;
       else allCards.push(updated);
       saveUserData(currentUser);
+      addStudyTime(0.5);
       updateHome();
       lucide.createIcons();
     }
