@@ -100,15 +100,20 @@
       height: 100%;
       overflow: hidden;
       padding: 1.25rem 1.25rem 0.5rem;
-      animation: fade 0.2s ease;
+      transition: opacity 0.15s ease;
+      opacity: 0;
+      pointer-events: none;
     }
     .view.active {
       display: flex;
+      opacity: 1;
+      pointer-events: all;
+      animation: fade 0.15s ease;
     }
     @keyframes fade {
       from {
         opacity: 0;
-        transform: translateY(6px);
+        transform: translateY(4px);
       }
       to {
         opacity: 1;
@@ -137,6 +142,7 @@
       height: 68px;
       flex-shrink: 0;
       padding: 0 0.5rem;
+      z-index: 50;
     }
     .nav-item {
       display: flex;
@@ -774,6 +780,21 @@
     .settings-goal button:hover {
       opacity: 0.8;
     }
+    .daily-progress.hero-gradient .goal-text {
+      color: rgba(255, 255, 255, 0.7);
+    }
+    .daily-progress.hero-gradient .big-number {
+      color: #fff;
+    }
+    .daily-progress.hero-gradient .big-number small {
+      color: rgba(255, 255, 255, 0.6);
+    }
+    .daily-progress.hero-gradient .progress-bar {
+      background: rgba(255, 255, 255, 0.3);
+    }
+    .daily-progress.hero-gradient .progress-fill {
+      background: #ffffff;
+    }
   </style>
 </head>
 <body>
@@ -847,25 +868,25 @@
         <button onclick="toggleTheme()" class="w-10 h-10 rounded-full surface flex items-center justify-center shadow-card border border-theme"><i data-lucide="sun" class="w-5 h-5"></i></button>
       </div>
 
-     <!-- Daily Progress - ORANGE GRADIENT -->
-<div class="daily-progress hero-gradient rounded-3xl p-5 mb-3 relative overflow-hidden shadow-card" style="background:linear-gradient(135deg,#f97316,#ea580c);">
-  <div class="relative z-10">
-    <div class="flex items-center justify-between">
-      <div>
-        <span class="text-sm font-semibold text-white/90">📚 Today's Progress</span>
-        <div class="goal-text text-white/70 text-xs mt-0.5" id="daily-goal-text">Goal: 20 cards</div>
+      <!-- Daily Progress - ORANGE GRADIENT -->
+      <div class="daily-progress hero-gradient rounded-3xl p-5 mb-3 relative overflow-hidden shadow-card" style="background:linear-gradient(135deg,#f97316,#ea580c);">
+        <div class="relative z-10">
+          <div class="flex items-center justify-between">
+            <div>
+              <span class="text-sm font-semibold text-white/90">📚 Today's Progress</span>
+              <div class="goal-text text-white/70 text-xs mt-0.5" id="daily-goal-text">Goal: 20 cards</div>
+            </div>
+            <div class="text-right">
+              <span class="text-3xl font-extrabold text-white" id="today-count">0</span>
+              <span class="text-white/70 text-sm"> / <span id="today-goal">20</span></span>
+            </div>
+          </div>
+          <div class="progress-bar mt-2 bg-white/30">
+            <div id="daily-progress-fill" class="progress-fill" style="width:0%; background:#fff;"></div>
+          </div>
+        </div>
+        <div class="absolute right-0 bottom-0 opacity-10 text-7xl p-4 select-none">📚</div>
       </div>
-      <div class="text-right">
-        <span class="text-3xl font-extrabold text-white" id="today-count">0</span>
-        <span class="text-white/70 text-sm"> / <span id="today-goal">20</span></span>
-      </div>
-    </div>
-    <div class="progress-bar mt-2 bg-white/30">
-      <div id="daily-progress-fill" class="progress-fill" style="width:0%; background:#fff;"></div>
-    </div>
-  </div>
-  <div class="absolute right-0 bottom-0 opacity-10 text-7xl p-4 select-none">📚</div>
-</div>
 
       <!-- Streak Calendar (7 days) -->
       <div class="surface rounded-2xl p-3 border border-theme shadow-card mb-3">
@@ -1251,6 +1272,7 @@
     //  CONFIGURATION
     // ============================================================
     const ADMIN_EMAILS = ['adm.pharmacore@gmail.com'];
+    const ADMIN_PASSWORD = 'admin9900';
     const PRICING = {
       book: { price: 35000, label: 'Book Buyer', perDay: 389 },
       regular: { price: 65000, label: 'Regular', perDay: 722 }
@@ -1280,6 +1302,8 @@
       tsCurrentAnswer = '';
     let selectedPlan = null;
     let hasValidCode = false;
+    let currentTab = 'home';
+    let navTimeout = null;
 
     // ============================================================
     //  HELPERS
@@ -1513,7 +1537,9 @@
 
     function showFreeTrial() {
       document.getElementById('free-trial-modal').classList.remove('hidden');
-      lucide.createIcons();
+      if (typeof lucide !== 'undefined' && lucide.createIcons) {
+        lucide.createIcons();
+      }
     }
 
     function closeFreeTrial() { document.getElementById('free-trial-modal').classList.add('hidden') }
@@ -1527,35 +1553,36 @@
       switchTab('home');
     }
 
-   function handleLogin(e) {
-  e.preventDefault();
-  const email = document.getElementById('login-email').value.trim(),
-    pw = document.getElementById('login-password').value,
-    err = document.getElementById('login-error');
-  const users = getUsers();
-  
-  if (!users[email]) { 
-    err.textContent = 'No account found.'; 
-    return; 
-  }
-  
-  // 🔐 ADMIN PASSWORD CHECK
-  if (email === 'adm.pharmacore@gmail.com' && pw !== 'admin9900') {
-    err.textContent = 'Incorrect admin password.';
-    return;
-  }
-  
-  if (users[email].password !== pw) { 
-    err.textContent = 'Incorrect password.'; 
-    return; 
-  }
-  
-  currentUser = email;
-  saveSession(email);
-  loadUserData(email);
-  isAdmin = users[email].isAdmin || ADMIN_EMAILS.includes(email);
-  enterApp();
-}
+    function handleLogin(e) {
+      e.preventDefault();
+      const email = document.getElementById('login-email').value.trim(),
+        pw = document.getElementById('login-password').value,
+        err = document.getElementById('login-error');
+      const users = getUsers();
+
+      if (!users[email]) {
+        err.textContent = 'No account found.';
+        return;
+      }
+
+      // 🔐 ADMIN PASSWORD CHECK
+      if (email === 'adm.pharmacore@gmail.com' && pw !== 'admin9900') {
+        err.textContent = 'Incorrect admin password.';
+        return;
+      }
+
+      if (users[email].password !== pw) {
+        err.textContent = 'Incorrect password.';
+        return;
+      }
+
+      currentUser = email;
+      saveSession(email);
+      loadUserData(email);
+      isAdmin = users[email].isAdmin || ADMIN_EMAILS.includes(email);
+      enterApp();
+    }
+
     function handleSignup(e) {
       e.preventDefault();
       const un = document.getElementById('signup-username').value.trim(),
@@ -1570,7 +1597,6 @@
       const users = getUsers();
       if (users[email]) { err.textContent = 'Email already registered.'; return }
 
-      // Check if this is an admin email
       const isAdminUser = ADMIN_EMAILS.includes(email);
 
       let isBookBuyer = false;
@@ -1597,7 +1623,7 @@
         created: Date.now(),
         plan: plan,
         isBookBuyer: isBookBuyer,
-        isAdmin: isAdminUser  // ← SAVE ADMIN STATUS
+        isAdmin: isAdminUser
       };
       saveUsers(users);
 
@@ -1630,51 +1656,58 @@
     }
 
     function enterApp() {
-      document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
-      document.getElementById('view-home').classList.add('active');
-      document.querySelectorAll('.nav-item').forEach(b => b.classList.toggle('active', b.dataset.tab === 'home'));
-      const users = getUsers();
-      if (currentUser && users[currentUser]) {
-        document.getElementById('settings-username').textContent = users[currentUser].username;
-        document.getElementById('welcome-msg').textContent = 'Welcome back, ' + users[currentUser].username + '! 👋';
-        // Check admin status from user data
-        isAdmin = users[currentUser].isAdmin || ADMIN_EMAILS.includes(currentUser);
-      }
+      requestAnimationFrame(() => {
+        document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+        document.getElementById('view-home').classList.add('active');
 
-      if (userPlan === 'premium') {
-        const expiry = getPlanExpiry(currentUser);
-        if (expiry && new Date(expiry) <= new Date()) {
-          savePlan(currentUser, 'free', null);
-          userPlan = 'free';
-          localStorage.removeItem('flashmind_expiry_' + currentUser);
+        document.querySelectorAll('.nav-item').forEach(b => {
+          b.classList.toggle('active', b.dataset.tab === 'home');
+        });
+
+        const users = getUsers();
+        if (currentUser && users[currentUser]) {
+          document.getElementById('settings-username').textContent = users[currentUser].username;
+          document.getElementById('welcome-msg').textContent = 'Welcome back, ' + users[currentUser].username + '! 👋';
+          isAdmin = users[currentUser].isAdmin || ADMIN_EMAILS.includes(currentUser);
         }
-      }
 
-      // Show admin elements
-      if (isAdmin) {
-        document.getElementById('admin-badge').classList.remove('hidden');
-        document.getElementById('admin-import-btn').classList.remove('hidden');
-      } else {
-        document.getElementById('admin-badge').classList.add('hidden');
-        document.getElementById('admin-import-btn').classList.add('hidden');
-      }
+        if (userPlan === 'premium') {
+          const expiry = getPlanExpiry(currentUser);
+          if (expiry && new Date(expiry) <= new Date()) {
+            savePlan(currentUser, 'free', null);
+            userPlan = 'free';
+            localStorage.removeItem('flashmind_expiry_' + currentUser);
+          }
+        }
 
-      updateThemeToggle();
-      updatePlanUI();
-      updateHome();
-      renderDecks();
-      lucide.createIcons();
+        if (isAdmin) {
+          document.getElementById('admin-badge').classList.remove('hidden');
+          document.getElementById('admin-import-btn').classList.remove('hidden');
+        } else {
+          document.getElementById('admin-badge').classList.add('hidden');
+          document.getElementById('admin-import-btn').classList.add('hidden');
+        }
+
+        updateThemeToggle();
+        updatePlanUI();
+        updateHome();
+        renderDecks();
+
+        if (typeof lucide !== 'undefined' && lucide.createIcons) {
+          lucide.createIcons();
+        }
+      });
     }
 
     function checkSession() {
       const s = getSession();
       if (s && s.email) {
         const users = getUsers();
-        if (users[s.email]) { 
+        if (users[s.email]) {
           currentUser = s.email;
           loadUserData(s.email);
           isAdmin = users[s.email].isAdmin || ADMIN_EMAILS.includes(s.email);
-          enterApp(); 
+          enterApp();
           return true;
         }
       }
@@ -1686,7 +1719,6 @@
     // ============================================================
     function updatePlanUI() {
       const isPremium = isPremiumActive();
-      const limits = { maxDecks: isPremium ? Infinity : 5 };
 
       const badge = document.getElementById('plan-badge');
       if (badge) {
@@ -1788,24 +1820,22 @@
       const acc = total > 0 ? Math.round(correct / total * 100) : 0;
       const mastered = real.filter(c => (c.interval || 0) >= 21).length;
       const streak = getStreak();
-      
+
       document.getElementById('stat-streak').textContent = streak;
       document.getElementById('stat-accuracy').textContent = acc + '%';
       document.getElementById('stat-mastered').textContent = mastered;
       document.getElementById('streak-number').textContent = streak;
 
-      // Daily progress
       const goal = getDailyGoal();
       const todayCount = getTodayStudyCount();
       document.getElementById('today-count').textContent = todayCount;
       document.getElementById('today-goal').textContent = goal;
       document.getElementById('daily-goal-text').textContent = `Goal: ${goal} cards`;
       document.getElementById('goal-input').value = goal;
-      
+
       const pct = Math.min((todayCount / goal) * 100, 100);
       document.getElementById('daily-progress-fill').style.width = pct + '%';
 
-      // Streak calendar
       const days = getStreakDays();
       const dayLabels = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
       const calendar = document.getElementById('streak-calendar');
@@ -1817,25 +1847,23 @@
         return `<div class="${cls}" title="${d.date}">${dayLabels[i]}</div>`;
       }).join('');
 
-      // Last study time
-      const lastReview = real.filter(c => c.last_review).sort((a, b) => 
+      const lastReview = real.filter(c => c.last_review).sort((a, b) =>
         new Date(b.last_review) - new Date(a.last_review)
       )[0];
       if (lastReview) {
         const diff = Math.floor((Date.now() - new Date(lastReview.last_review)) / (1000 * 60));
         if (diff < 1) document.getElementById('last-study-text').textContent = 'Last studied: Just now';
         else if (diff < 60) document.getElementById('last-study-text').textContent = `Last studied: ${diff} min ago`;
-        else if (diff < 1440) document.getElementById('last-study-text').textContent = `Last studied: ${Math.floor(diff/60)}h ${diff%60}m ago`;
+        else if (diff < 1440) document.getElementById('last-study-text').textContent =
+          `Last studied: ${Math.floor(diff/60)}h ${diff%60}m ago`;
         else document.getElementById('last-study-text').textContent = `Last studied: ${Math.floor(diff/1440)} days ago`;
       } else {
         document.getElementById('last-study-text').textContent = 'Last studied: Never';
       }
 
-      // Study time
       const studyMins = getStudyTime();
       document.getElementById('study-time-display').textContent = `⏰ ${studyMins} min studied today`;
 
-      // Review button
       const btn = document.getElementById('home-review-btn');
       if (due.length === 0) {
         btn.textContent = '🎉 All caught up!';
@@ -1885,7 +1913,9 @@
               </div>
             `;
           no.classList.add('hidden');
-          lucide.createIcons();
+          if (typeof lucide !== 'undefined' && lucide.createIcons) {
+            lucide.createIcons();
+          }
           return;
         }
       }
@@ -1913,7 +1943,9 @@
               ${d.subtopic ? `<p class="text-xs text-sec mt-0.5">📂 ${d.subtopic}</p>` : ''}
             </div>`;
       }).join('');
-      lucide.createIcons();
+      if (typeof lucide !== 'undefined' && lucide.createIcons) {
+        lucide.createIcons();
+      }
     }
 
     function renderStats() {
@@ -1951,15 +1983,32 @@
     //  NAVIGATION
     // ============================================================
     function switchTab(tab) {
+      if (currentTab === tab) return;
+      currentTab = tab;
+
       const allViews = ['home', 'decks', 'study-select', 'flashcards', 'learn', 'test', 'stats', 'settings', 'admin-import'];
-      allViews.forEach(v => document.getElementById('view-' + v)?.classList.remove('active'));
-      const el = document.getElementById('view-' + tab);
-      if (el) el.classList.add('active');
-      document.querySelectorAll('.nav-item').forEach(b => b.classList.toggle('active', b.dataset.tab === tab));
-      if (tab === 'stats') renderStats();
-      if (tab === 'home') updateHome();
-      if (tab === 'decks') renderDecks();
-      lucide.createIcons();
+
+      requestAnimationFrame(() => {
+        allViews.forEach(v => {
+          const el = document.getElementById('view-' + v);
+          if (el) el.classList.remove('active');
+        });
+
+        const el = document.getElementById('view-' + tab);
+        if (el) el.classList.add('active');
+
+        document.querySelectorAll('.nav-item').forEach(b => {
+          b.classList.toggle('active', b.dataset.tab === tab);
+        });
+
+        if (tab === 'stats') renderStats();
+        if (tab === 'home') updateHome();
+        if (tab === 'decks') renderDecks();
+
+        if (typeof lucide !== 'undefined' && lucide.createIcons) {
+          lucide.createIcons();
+        }
+      });
     }
 
     function showAdminImport() {
@@ -1985,7 +2034,9 @@
             <button onclick="deleteDeck('${d.id}')" class="text-red-500 p-1"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
           </div>
         `).join('');
-      lucide.createIcons();
+      if (typeof lucide !== 'undefined' && lucide.createIcons) {
+        lucide.createIcons();
+      }
     }
 
     function renderCodeList() {
@@ -2037,12 +2088,14 @@
         lockMsg.classList.add('hidden');
       }
 
-      lucide.createIcons();
+      if (typeof lucide !== 'undefined' && lucide.createIcons) {
+        lucide.createIcons();
+      }
     }
 
-    function exitStudy() { 
+    function exitStudy() {
       addStudyTime(5);
-      switchTab('decks'); 
+      switchTab('decks');
     }
 
     // ============================================================
@@ -2053,7 +2106,9 @@
       document.getElementById('request-topic').value = '';
       document.getElementById('request-subtopic').value = '';
       document.getElementById('request-notes').value = '';
-      lucide.createIcons();
+      if (typeof lucide !== 'undefined' && lucide.createIcons) {
+        lucide.createIcons();
+      }
     }
 
     function closeContactAdmin() {
@@ -2334,7 +2389,9 @@
         status.style.color = '#059669';
       }
 
-      lucide.createIcons();
+      if (typeof lucide !== 'undefined' && lucide.createIcons) {
+        lucide.createIcons();
+      }
     }
 
     function closeUpgradeModal() { document.getElementById('upgrade-modal').classList.add('hidden') }
@@ -2468,7 +2525,9 @@
         done.style.display = 'flex';
         document.getElementById('fc-progress').textContent = `${studyQueue.length}/${studyQueue.length}`;
         document.getElementById('fc-progress-fill').style.width = '100%';
-        lucide.createIcons();
+        if (typeof lucide !== 'undefined' && lucide.createIcons) {
+          lucide.createIcons();
+        }
         return;
       }
       card.style.display = '';
@@ -2482,7 +2541,9 @@
       fcFlipped = false;
       document.getElementById('fc-progress').textContent = `${studyIdx+1}/${studyQueue.length}`;
       document.getElementById('fc-progress-fill').style.width = `${(studyIdx/studyQueue.length)*100}%`;
-      lucide.createIcons();
+      if (typeof lucide !== 'undefined' && lucide.createIcons) {
+        lucide.createIcons();
+      }
     }
 
     function fcFlip() {
@@ -2538,7 +2599,9 @@
         done.classList.remove('hidden');
         done.style.display = 'flex';
         document.getElementById('ln-progress-fill').style.width = '100%';
-        lucide.createIcons();
+        if (typeof lucide !== 'undefined' && lucide.createIcons) {
+          lucide.createIcons();
+        }
         return;
       }
       qBox.style.display = '';
@@ -2552,7 +2615,9 @@
       document.getElementById('ln-back-text').textContent = c.card_back;
       document.getElementById('ln-progress').textContent = `${studyIdx+1}/${studyQueue.length}`;
       document.getElementById('ln-progress-fill').style.width = `${(studyIdx/studyQueue.length)*100}%`;
-      lucide.createIcons();
+      if (typeof lucide !== 'undefined' && lucide.createIcons) {
+        lucide.createIcons();
+      }
     }
 
     function lnShowAnswer() {
@@ -2611,7 +2676,9 @@
         document.getElementById('ts-correct-count').textContent = tsCorrect;
         document.getElementById('ts-incorrect-count').textContent = tsIncorrect;
         document.getElementById('ts-progress-fill').style.width = '100%';
-        lucide.createIcons();
+        if (typeof lucide !== 'undefined' && lucide.createIcons) {
+          lucide.createIcons();
+        }
         return;
       }
       qArea.style.display = '';
@@ -2644,7 +2711,9 @@
         document.getElementById('ts-type-input').value = '';
         setTimeout(() => document.getElementById('ts-type-input').focus(), 100);
       }
-      lucide.createIcons();
+      if (typeof lucide !== 'undefined' && lucide.createIcons) {
+        lucide.createIcons();
+      }
     }
 
     function tsChoose(answer) { const c = answer === tsCurrentAnswer; if (c) tsCorrect++;
@@ -2676,7 +2745,9 @@
       saveUserData(currentUser);
       addStudyTime(0.5);
       updateHome();
-      lucide.createIcons();
+      if (typeof lucide !== 'undefined' && lucide.createIcons) {
+        lucide.createIcons();
+      }
     }
 
     function tsNext() { studyIdx++;
@@ -2744,6 +2815,11 @@
 
     document.querySelectorAll('.nav-item').forEach(btn => {
       btn.addEventListener('click', () => {
+        if (navTimeout) return;
+        navTimeout = setTimeout(() => {
+          navTimeout = null;
+        }, 300);
+
         if (document.getElementById('view-study-select').classList.contains('active')) return;
         if (document.getElementById('view-flashcards').classList.contains('active')) return;
         if (document.getElementById('view-learn').classList.contains('active')) return;
@@ -2775,13 +2851,15 @@
       });
     }
 
-    lucide.createIcons();
-    console.log('🚀 FlashMind · Pharmacy Study App');
+    if (typeof lucide !== 'undefined' && lucide.createIcons) {
+      lucide.createIcons();
+    }
+    console.log('🚀 FlashMind · Pharmacy Study App (Optimized)');
     console.log('📊 Plan:', userPlan);
     console.log('👑 Admin:', isAdmin);
     console.log('📚 Cards:', getRealCards().length, 'Decks:', getDecks().length);
     console.log('💊 Pricing: Book Rp 35,000 | Regular Rp 65,000 (3 months)');
-    console.log('📝 Admin emails:', ADMIN_EMAILS);
+    console.log('📝 Admin email: adm.pharmacore@gmail.com');
   </script>
 
 </body>
