@@ -631,8 +631,6 @@
       font-size: 1rem;
       font-weight: 400;
     }
-
-    /* --- HOME PAGE NEW STYLES --- */
     .stat-card {
       background: var(--surface);
       border-radius: 1.25rem;
@@ -656,7 +654,6 @@
     .stat-card .icon {
       margin-bottom: 2px;
     }
-
     .streak-dot {
       width: 28px;
       height: 28px;
@@ -686,7 +683,6 @@
       border: 1px dashed var(--border);
       color: var(--text-secondary);
     }
-
     .daily-progress {
       background: var(--surface);
       border-radius: var(--radius);
@@ -707,56 +703,17 @@
       font-weight: 400;
       color: var(--text-secondary);
     }
-
     .quick-stat-grid {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
       gap: 0.5rem;
     }
-
     .last-study-time {
       font-size: 0.75rem;
       color: var(--text-secondary);
       text-align: center;
       padding: 0.5rem 0;
     }
-
-    .goal-setting {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      margin-top: 0.5rem;
-    }
-    .goal-setting input {
-      width: 70px;
-      padding: 0.25rem 0.5rem;
-      border-radius: 0.75rem;
-      border: 1px solid var(--border);
-      background: var(--bg);
-      color: var(--text);
-      font-size: 0.875rem;
-      text-align: center;
-      font-weight: 700;
-    }
-    .goal-setting input:focus {
-      outline: 2px solid var(--accent);
-      outline-offset: 2px;
-    }
-    .goal-setting button {
-      background: var(--accent);
-      color: #fff;
-      border: none;
-      padding: 0.25rem 0.75rem;
-      border-radius: 0.75rem;
-      font-size: 0.75rem;
-      font-weight: 600;
-      cursor: pointer;
-      transition: 0.15s;
-    }
-    .goal-setting button:hover {
-      opacity: 0.8;
-    }
-
     .home-quick-actions {
       display: flex;
       gap: 0.5rem;
@@ -783,19 +740,39 @@
       background: var(--border);
       color: var(--text);
     }
-
-    /* Badge animation */
-    .badge-glow {
-      animation: glow 2s ease-in-out infinite;
+    .settings-goal {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
     }
-    @keyframes glow {
-      0%,
-      100% {
-        box-shadow: 0 0 5px rgba(249, 115, 22, 0.2);
-      }
-      50% {
-        box-shadow: 0 0 20px rgba(249, 115, 22, 0.4);
-      }
+    .settings-goal input {
+      width: 80px;
+      padding: 0.5rem 0.75rem;
+      border-radius: 0.75rem;
+      border: 1px solid var(--border);
+      background: var(--bg);
+      color: var(--text);
+      font-size: 0.875rem;
+      text-align: center;
+      font-weight: 700;
+    }
+    .settings-goal input:focus {
+      outline: 2px solid var(--accent);
+      outline-offset: 2px;
+    }
+    .settings-goal button {
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      padding: 0.5rem 1rem;
+      border-radius: 0.75rem;
+      font-size: 0.8rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: 0.15s;
+    }
+    .settings-goal button:hover {
+      opacity: 0.8;
     }
   </style>
 </head>
@@ -884,11 +861,6 @@
         </div>
         <div class="progress-bar mt-2">
           <div id="daily-progress-fill" class="progress-fill" style="width:0%"></div>
-        </div>
-        <div class="goal-setting">
-          <span class="text-xs text-sec">Set daily goal:</span>
-          <input type="number" id="goal-input" min="1" max="200" value="20" />
-          <button onclick="setDailyGoal()">Set</button>
         </div>
       </div>
 
@@ -1095,6 +1067,18 @@
       <div class="view-scroll space-y-3">
         <div class="surface rounded-2xl border border-theme p-4 shadow-card"><p class="text-sm text-sec font-medium mb-1">Account</p><div class="flex items-center justify-between"><span id="settings-username" class="font-semibold">User</span><button onclick="handleLogout()" class="px-4 py-1.5 rounded-xl text-white text-sm font-medium bg-red-500">Logout</button></div></div>
         
+        <!-- Daily Goal Setting -->
+        <div class="surface rounded-2xl border border-theme p-4 shadow-card">
+          <p class="text-sm text-sec font-medium mb-2">🎯 Daily Goal</p>
+          <div class="settings-goal">
+            <span class="text-sm">Study</span>
+            <input type="number" id="goal-input" min="1" max="200" value="20" />
+            <span class="text-sm">cards per day</span>
+            <button onclick="setDailyGoal()">Set</button>
+          </div>
+          <p class="text-xs text-sec mt-2">Set how many cards you want to study each day.</p>
+        </div>
+
         <div class="surface rounded-2xl border border-theme p-4 shadow-card">
           <p class="text-sm text-sec font-medium mb-2">Plan</p>
           <div class="flex items-center justify-between mb-3">
@@ -1374,6 +1358,7 @@
       if (val > 0 && val <= 500) {
         localStorage.setItem(GOAL_KEY + '_' + (currentUser || 'default'), val);
         updateHome();
+        alert('✅ Daily goal updated to ' + val + ' cards!');
       }
     }
 
@@ -1550,6 +1535,8 @@
       currentUser = email;
       saveSession(email);
       loadUserData(email);
+      // Check admin status from user data
+      isAdmin = users[email].isAdmin || ADMIN_EMAILS.includes(email);
       enterApp();
     }
 
@@ -1567,6 +1554,9 @@
       const users = getUsers();
       if (users[email]) { err.textContent = 'Email already registered.'; return }
 
+      // Check if this is an admin email
+      const isAdminUser = ADMIN_EMAILS.includes(email);
+
       let isBookBuyer = false;
       if (code) {
         const codes = getCodes();
@@ -1581,8 +1571,8 @@
         }
       }
 
-      const plan = isBookBuyer ? 'premium' : 'free';
-      const expiry = isBookBuyer ? addMonths(new Date(), PLAN_DURATION_MONTHS).toISOString() : null;
+      const plan = (isBookBuyer || isAdminUser) ? 'premium' : 'free';
+      const expiry = (isBookBuyer || isAdminUser) ? addMonths(new Date(), PLAN_DURATION_MONTHS).toISOString() : null;
 
       users[email] = {
         username: un,
@@ -1590,7 +1580,8 @@
         password: pw,
         created: Date.now(),
         plan: plan,
-        isBookBuyer: isBookBuyer
+        isBookBuyer: isBookBuyer,
+        isAdmin: isAdminUser  // ← SAVE ADMIN STATUS
       };
       saveUsers(users);
 
@@ -1598,12 +1589,16 @@
       saveSession(email);
       allCards = getSampleDecks();
       saveUserData(email);
-      if (isBookBuyer) {
+      if (isBookBuyer || isAdminUser) {
         savePlan(email, 'premium', expiry);
       }
+      isAdmin = isAdminUser;
       enterApp();
       if (isBookBuyer) {
         alert('🎉 Access code validated! You now have Premium access for 3 months.');
+      }
+      if (isAdminUser) {
+        alert('👑 Admin account created! You have full admin access.');
       }
     }
 
@@ -1611,6 +1606,7 @@
       if (confirm('Logout?')) { clearSession();
         currentUser = null;
         allCards = [];
+        isAdmin = false;
         document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
         document.getElementById('view-login').classList.add('active');
         document.getElementById('login-email').value = '';
@@ -1625,6 +1621,8 @@
       if (currentUser && users[currentUser]) {
         document.getElementById('settings-username').textContent = users[currentUser].username;
         document.getElementById('welcome-msg').textContent = 'Welcome back, ' + users[currentUser].username + '! 👋';
+        // Check admin status from user data
+        isAdmin = users[currentUser].isAdmin || ADMIN_EMAILS.includes(currentUser);
       }
 
       if (userPlan === 'premium') {
@@ -1636,6 +1634,7 @@
         }
       }
 
+      // Show admin elements
       if (isAdmin) {
         document.getElementById('admin-badge').classList.remove('hidden');
         document.getElementById('admin-import-btn').classList.remove('hidden');
@@ -1655,9 +1654,13 @@
       const s = getSession();
       if (s && s.email) {
         const users = getUsers();
-        if (users[s.email]) { currentUser = s.email;
+        if (users[s.email]) { 
+          currentUser = s.email;
           loadUserData(s.email);
-          enterApp(); return true }
+          isAdmin = users[s.email].isAdmin || ADMIN_EMAILS.includes(s.email);
+          enterApp(); 
+          return true;
+        }
       }
       return false;
     }
@@ -1751,7 +1754,6 @@
         lockMsg.classList.toggle('hidden', isPremium);
       }
 
-      // Hide upgrade prompt on home if premium
       const prompt = document.getElementById('home-upgrade-prompt');
       if (prompt) {
         prompt.style.display = isPremium ? 'none' : 'flex';
@@ -2023,8 +2025,7 @@
     }
 
     function exitStudy() { 
-      // Track study time when exiting
-      addStudyTime(5); // Assume ~5 min per session
+      addStudyTime(5);
       switchTab('decks'); 
     }
 
@@ -2484,7 +2485,6 @@
       if (idx !== -1) allCards[idx] = updated;
       else allCards.push(updated);
       saveUserData(currentUser);
-      // Track study time (30 sec per card)
       addStudyTime(0.5);
       studyIdx++;
       fcShowCard();
