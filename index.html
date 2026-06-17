@@ -2930,12 +2930,15 @@
       const acc = total > 0 ? Math.round(correct / total * 100) : 0;
       const mastered = real.filter(c => (c.interval || 0) >= 21).length;
       const streak = getStreak();
+      const goal = getDailyGoal();
+
 
       document.getElementById('stats-streak-val').textContent = streak + ' days';
       document.getElementById('stats-acc').textContent = acc + '%';
       document.getElementById('stats-total').textContent = total;
       document.getElementById('stats-mastered-val').textContent = mastered;
-
+      document.getElementById('avg-goal').textContent = goal;
+      
       renderProgressChart();
       renderDeckPerformance();
       renderRetentionRate();
