@@ -868,25 +868,25 @@
         <button onclick="toggleTheme()" class="w-10 h-10 rounded-full surface flex items-center justify-center shadow-card border border-theme"><i data-lucide="sun" class="w-5 h-5"></i></button>
       </div>
 
-      <!-- Daily Progress - ORANGE GRADIENT -->
-      <div class="daily-progress hero-gradient rounded-3xl p-5 mb-3 relative overflow-hidden shadow-card" style="background:linear-gradient(135deg,#f97316,#ea580c);">
-        <div class="relative z-10">
-          <div class="flex items-center justify-between">
-            <div>
-              <span class="text-sm font-semibold text-white/90">📚 Today's Progress</span>
-              <div class="goal-text text-white/70 text-xs mt-0.5" id="daily-goal-text">Goal: 20 cards</div>
-            </div>
-            <div class="text-right">
-              <span class="text-3xl font-extrabold text-white" id="today-count">0</span>
-              <span class="text-white/70 text-sm"> / <span id="today-goal">20</span></span>
-            </div>
-          </div>
-          <div class="progress-bar mt-2 bg-white/30">
-            <div id="daily-progress-fill" class="progress-fill" style="width:0%; background:#fff;"></div>
-          </div>
-        </div>
-        <div class="absolute right-0 bottom-0 opacity-10 text-7xl p-4 select-none">📚</div>
+      <!-- Daily Progress - ORANGE GRADIENT (TALLER & BIGGER) -->
+<div class="daily-progress hero-gradient rounded-3xl p-6 mb-3 relative overflow-hidden shadow-card" style="background:linear-gradient(135deg,#f97316,#ea580c); min-height:140px;">
+  <div class="relative z-10 h-full flex flex-col justify-center">
+    <div class="flex items-center justify-between">
+      <div>
+        <span class="text-base font-bold text-white">📚 Today's Progress</span>
+        <div class="text-white text-sm mt-1 font-medium" id="daily-goal-text">Goal: 20 cards</div>
       </div>
+      <div class="text-right">
+        <span class="text-4xl font-extrabold text-white" id="today-count">0</span>
+        <span class="text-white/80 text-base font-semibold"> / <span id="today-goal">20</span></span>
+      </div>
+    </div>
+    <div class="progress-bar mt-3 bg-white/30" style="height:8px;">
+      <div id="daily-progress-fill" class="progress-fill" style="width:0%; background:#fff; height:8px;"></div>
+    </div>
+  </div>
+  <div class="absolute right-0 bottom-0 opacity-10 text-8xl p-4 select-none">📚</div>
+</div>
 
       <!-- Streak Calendar (7 days) -->
       <div class="surface rounded-2xl p-3 border border-theme shadow-card mb-3">
