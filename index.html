@@ -10,8 +10,21 @@
   </script>
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js">
   </script>
+  
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js">
+  </script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js">
+  </script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js">
+  </script>
+  
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  
   <style>
+    /* ============================================================
+       ALL STYLES (same as before - keep your existing styles)
+       ============================================================ */
     * {
       font-family: 'DM Sans', sans-serif;
       box-sizing: border-box;
@@ -796,14 +809,13 @@
       background: #ffffff;
     }
 
-    /* ===== STATS PAGE STYLES ===== */
+    /* Stats Styles */
     .stats-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 0.5rem;
       margin-bottom: 0.75rem;
     }
-
     .stat-item {
       background: var(--surface);
       border-radius: 0.75rem;
@@ -812,7 +824,6 @@
       text-align: center;
       box-shadow: var(--shadow);
     }
-
     .stat-item .label {
       font-size: 0.6rem;
       font-weight: 600;
@@ -820,13 +831,11 @@
       text-transform: uppercase;
       letter-spacing: 0.3px;
     }
-
     .stat-item .value {
       font-size: 1.25rem;
       font-weight: 800;
       line-height: 1.3;
     }
-
     .stats-card {
       background: var(--surface);
       border-radius: 0.75rem;
@@ -835,7 +844,6 @@
       margin-bottom: 0.75rem;
       box-shadow: var(--shadow);
     }
-
     .stats-card .card-title {
       font-size: 0.85rem;
       font-weight: 700;
@@ -843,8 +851,6 @@
       align-items: center;
       gap: 0.5rem;
     }
-
-    /* Progress chart - scrollable */
     .progress-chart-wrapper {
       overflow-x: auto;
       overflow-y: hidden;
@@ -853,20 +859,16 @@
       scrollbar-width: thin;
       scrollbar-color: var(--border) transparent;
     }
-
     .progress-chart-wrapper::-webkit-scrollbar {
       height: 4px;
     }
-
     .progress-chart-wrapper::-webkit-scrollbar-track {
       background: transparent;
     }
-
     .progress-chart-wrapper::-webkit-scrollbar-thumb {
       background: var(--border);
       border-radius: 99px;
     }
-
     #progress-chart {
       display: flex;
       align-items: flex-end;
@@ -876,7 +878,6 @@
       width: max-content;
       min-width: 100%;
     }
-
     #progress-chart .bar-group {
       display: flex;
       flex-direction: column;
@@ -885,7 +886,6 @@
       flex-shrink: 0;
       min-width: 24px;
     }
-
     #progress-chart .bar-value {
       font-size: 8px;
       font-weight: 700;
@@ -893,7 +893,6 @@
       line-height: 1;
       min-height: 12px;
     }
-
     #progress-chart .bar {
       width: 18px;
       border-radius: 3px 3px 0 0;
@@ -901,16 +900,13 @@
       transition: height 0.4s ease, background 0.3s ease;
       min-height: 3px;
     }
-
     #progress-chart .bar.filled {
       background: var(--accent);
     }
-
     #progress-chart .bar.today {
       background: var(--premium-gold);
       box-shadow: 0 0 8px rgba(217, 119, 6, 0.3);
     }
-
     #progress-chart .bar-label {
       font-size: 7px;
       font-weight: 600;
@@ -920,30 +916,22 @@
       min-height: 10px;
       white-space: nowrap;
     }
-
-    /* Month view - smaller bars */
     #progress-chart.month .bar-group {
       min-width: 18px;
     }
-
     #progress-chart.month .bar {
       width: 12px;
     }
-
-    /* All view - even smaller */
     #progress-chart.all .bar-group {
       min-width: 14px;
     }
-
     #progress-chart.all .bar {
       width: 8px;
     }
-
     #progress-chart.all .bar-value {
       font-size: 7px;
       min-height: 10px;
     }
-
     .progress-toggle {
       display: flex;
       gap: 2px;
@@ -952,7 +940,6 @@
       padding: 2px;
       flex-shrink: 0;
     }
-
     .progress-toggle button {
       padding: 4px 12px;
       border-radius: 6px;
@@ -964,17 +951,13 @@
       background: transparent;
       color: var(--text-secondary);
     }
-
     .progress-toggle button.active {
       background: var(--accent);
       color: #fff;
     }
-
     .progress-toggle button:hover:not(.active) {
       background: var(--border);
     }
-
-    /* ===== SCROLLABLE HORIZONTAL CONTAINERS ===== */
     .scrollable-horizontal {
       overflow-x: auto;
       overflow-y: hidden;
@@ -983,21 +966,16 @@
       scrollbar-width: thin;
       scrollbar-color: var(--border) transparent;
     }
-
     .scrollable-horizontal::-webkit-scrollbar {
       height: 4px;
     }
-
     .scrollable-horizontal::-webkit-scrollbar-track {
       background: transparent;
     }
-
     .scrollable-horizontal::-webkit-scrollbar-thumb {
       background: var(--border);
       border-radius: 99px;
     }
-
-    /* Deck Performance - wider names */
     .deck-perf-bar {
       display: flex;
       align-items: center;
@@ -1005,7 +983,6 @@
       margin-bottom: 0.3rem;
       min-width: 280px;
     }
-
     .deck-perf-bar .name {
       font-size: 0.7rem;
       font-weight: 600;
@@ -1015,7 +992,6 @@
       text-overflow: ellipsis;
       white-space: nowrap;
     }
-
     .deck-perf-bar .bar-track {
       flex: 1;
       min-width: 80px;
@@ -1024,13 +1000,11 @@
       border-radius: 99px;
       overflow: hidden;
     }
-
     .deck-perf-bar .bar-fill {
       height: 100%;
       border-radius: 99px;
       transition: width 0.3s;
     }
-
     .deck-perf-bar .pct {
       font-size: 0.65rem;
       font-weight: 600;
@@ -1038,8 +1012,6 @@
       text-align: right;
       flex-shrink: 0;
     }
-
-    /* Subject Breakdown - wider names */
     .subject-item {
       display: flex;
       align-items: center;
@@ -1047,7 +1019,6 @@
       margin-bottom: 0.3rem;
       min-width: 280px;
     }
-
     .subject-item .name {
       font-size: 0.7rem;
       font-weight: 600;
@@ -1057,7 +1028,6 @@
       text-overflow: ellipsis;
       white-space: nowrap;
     }
-
     .subject-item .bar-track {
       flex: 1;
       min-width: 80px;
@@ -1066,14 +1036,12 @@
       border-radius: 99px;
       overflow: hidden;
     }
-
     .subject-item .bar-fill {
       height: 100%;
       border-radius: 99px;
       background: var(--accent);
       transition: width 0.3s;
     }
-
     .subject-item .pct {
       font-size: 0.65rem;
       font-weight: 600;
@@ -1081,36 +1049,28 @@
       text-align: right;
       flex-shrink: 0;
     }
-
-    /* Retention rate */
     .retention-dots {
       display: flex;
       gap: 0.5rem;
       justify-content: center;
     }
-
     .retention-dots .dot-item {
       text-align: center;
     }
-
     .retention-dots .dot-item .value {
       font-size: 1rem;
       font-weight: 800;
     }
-
     .retention-dots .dot-item .label {
       font-size: 0.55rem;
       color: var(--text-secondary);
       font-weight: 600;
     }
-
-    /* Heatmap */
     .heatmap-grid {
       display: grid;
       grid-template-columns: repeat(7, 1fr);
       gap: 3px;
     }
-
     .heatmap-grid .day-label {
       font-size: 0.5rem;
       font-weight: 600;
@@ -1118,7 +1078,6 @@
       text-align: center;
       padding: 2px 0;
     }
-
     .heatmap-grid .heat-cell {
       aspect-ratio: 1;
       border-radius: 4px;
@@ -1129,19 +1088,43 @@
       font-weight: 700;
       transition: 0.15s;
     }
-
     .heatmap-grid .heat-cell.studied {
       background: var(--accent);
       color: #fff;
     }
-
     .heatmap-grid .heat-cell.empty {
       background: var(--border);
       color: var(--text-secondary);
     }
-
     .heatmap-grid .heat-cell.today {
       border: 2px solid var(--accent);
+    }
+    
+    /* Cloud sync indicator */
+    .sync-status {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.6rem;
+      color: var(--text-secondary);
+      padding: 0.25rem 0.5rem;
+    }
+    .sync-status .dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #22c55e;
+    }
+    .sync-status .dot.syncing {
+      background: #f59e0b;
+      animation: pulse 1s infinite;
+    }
+    .sync-status .dot.offline {
+      background: #ef4444;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.3; }
     }
   </style>
 </head>
@@ -1155,6 +1138,10 @@
         <div class="text-center mb-6">
           <h1 class="text-3xl font-extrabold tracking-tight">FlashMind</h1>
           <p class="text-sec text-sm mt-1">Pharmacy Study Companion</p>
+          <div id="sync-status" class="sync-status justify-center mt-1">
+            <span class="dot" id="sync-dot"></span>
+            <span id="sync-text">Ready</span>
+          </div>
         </div>
         <form onsubmit="handleLogin(event)" class="space-y-4">
           <div><label class="text-sm font-medium text-sec">Email</label><input type="email" id="login-email" placeholder="you@example.com" required /></div>
@@ -1173,6 +1160,10 @@
         <div class="text-center mb-6">
           <h1 class="text-3xl font-extrabold tracking-tight">FlashMind</h1>
           <p class="text-sec text-sm mt-1">Create your account</p>
+          <div id="sync-status-signup" class="sync-status justify-center mt-1">
+            <span class="dot" id="sync-dot-signup"></span>
+            <span id="sync-text-signup">Ready</span>
+          </div>
         </div>
         <form onsubmit="handleSignup(event)" class="space-y-4">
           <div><label class="text-sm font-medium text-sec">Username</label><input type="text" id="signup-username" placeholder="johndoe" required /></div>
@@ -1211,6 +1202,10 @@
             <span id="plan-badge" class="free-badge">FREE</span>
             <span id="admin-badge" class="admin-badge hidden">ADMIN</span>
           </div>
+          <div id="sync-status-home" class="sync-status">
+            <span class="dot" id="sync-dot-home"></span>
+            <span id="sync-text-home">Synced</span>
+          </div>
         </div>
         <button onclick="toggleTheme()" class="w-10 h-10 rounded-full surface flex items-center justify-center shadow-card border border-theme"><i data-lucide="sun" class="w-5 h-5"></i></button>
       </div>
@@ -1218,10 +1213,7 @@
       <!-- Daily Progress - ORANGE GRADIENT with Welcome Message -->
       <div class="daily-progress hero-gradient rounded-3xl p-6 mb-3 relative overflow-hidden shadow-card" style="background:linear-gradient(135deg,#f97316,#ea580c); min-height:160px;">
         <div class="relative z-10 h-full flex flex-col justify-center">
-          <!-- Welcome Message -->
           <p class="text-white/90 text-sm font-medium mb-1" id="welcome-msg">Welcome back!</p>
-          
-          <!-- Today's Progress -->
           <div class="flex items-center justify-between">
             <div>
               <span class="text-white/80 text-xs font-medium">Today's Progress</span>
@@ -1232,8 +1224,6 @@
               <span class="text-white/80 text-base font-semibold"> / <span id="today-goal">20</span></span>
             </div>
           </div>
-          
-          <!-- Progress Bar -->
           <div class="progress-bar mt-2 bg-white/30" style="height:8px;">
             <div id="daily-progress-fill" class="progress-fill" style="width:0%; background:#fff; height:8px;"></div>
           </div>
@@ -1241,37 +1231,22 @@
         <div class="absolute right-0 bottom-0 opacity-10 text-8xl p-4 select-none">📚</div>
       </div>
 
-      <!-- Streak Calendar (7 days) -->
+      <!-- Streak Calendar -->
       <div class="surface rounded-2xl p-3 border border-theme shadow-card mb-3">
         <div class="flex items-center justify-between mb-2">
           <span class="text-sm font-semibold">🔥 <span id="streak-number">0</span>-day streak</span>
           <span class="text-xs text-sec" id="last-study-text">Last studied: Never</span>
         </div>
-        <div class="flex justify-between" id="streak-calendar">
-          <!-- 7 days rendered by JS -->
-        </div>
+        <div class="flex justify-between" id="streak-calendar"></div>
       </div>
 
       <!-- Quick Stats -->
       <div class="quick-stat-grid mb-3">
-        <div class="stat-card">
-          <div class="icon accent-text"><i data-lucide="flame" class="w-5 h-5 mx-auto"></i></div>
-          <div class="number accent-text" id="stat-streak">0</div>
-          <div class="label">Streak</div>
-        </div>
-        <div class="stat-card">
-          <div class="icon" style="color:#059669;"><i data-lucide="target" class="w-5 h-5 mx-auto"></i></div>
-          <div class="number" style="color:#059669;" id="stat-accuracy">0%</div>
-          <div class="label">Accuracy</div>
-        </div>
-        <div class="stat-card">
-          <div class="icon" style="color:#2563eb;"><i data-lucide="trophy" class="w-5 h-5 mx-auto"></i></div>
-          <div class="number" style="color:#2563eb;" id="stat-mastered">0</div>
-          <div class="label">Mastered</div>
-        </div>
+        <div class="stat-card"><div class="icon accent-text"><i data-lucide="flame" class="w-5 h-5 mx-auto"></i></div><div class="number accent-text" id="stat-streak">0</div><div class="label">Streak</div></div>
+        <div class="stat-card"><div class="icon" style="color:#059669;"><i data-lucide="target" class="w-5 h-5 mx-auto"></i></div><div class="number" style="color:#059669;" id="stat-accuracy">0%</div><div class="label">Accuracy</div></div>
+        <div class="stat-card"><div class="icon" style="color:#2563eb;"><i data-lucide="trophy" class="w-5 h-5 mx-auto"></i></div><div class="number" style="color:#2563eb;" id="stat-mastered">0</div><div class="label">Mastered</div></div>
       </div>
 
-      <!-- Study Time & Quick Actions -->
       <div class="last-study-time" id="study-time-display">⏰ 0 min studied today</div>
 
       <div class="home-quick-actions">
@@ -1279,7 +1254,6 @@
         <button onclick="showUpgradeModal()" class="secondary">⬆️ Upgrade</button>
       </div>
 
-      <!-- Upgrade Prompt (for free users) -->
       <div id="home-upgrade-prompt" class="mt-3 surface rounded-2xl p-3 flex items-center gap-3 border border-theme shadow-card cursor-pointer" onclick="showUpgradeModal()">
         <div class="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0" style="background:linear-gradient(135deg,var(--premium-gold),var(--premium-purple));"><i data-lucide="crown" class="w-5 h-5 text-white"></i></div>
         <div class="flex-1"><p class="font-semibold text-sm">Unlock Full Pharmacy Library</p><p class="text-xs text-sec">Enter your book's access code or upgrade</p></div>
@@ -1432,31 +1406,13 @@
       <h2 class="text-xl font-bold mb-3">📊 Statistics</h2>
       <div class="view-scroll">
 
-        <!-- Quick Stats Grid -->
         <div class="stats-grid">
-          <div class="stat-item">
-            <div class="label">🔥 Streak</div>
-            <div class="value accent-text" id="stats-streak-val">0 days</div>
-            <div class="text-[10px] text-sec mt-0.5">Consecutive study days</div>
-          </div>
-          <div class="stat-item">
-            <div class="label">🎯 Accuracy</div>
-            <div class="value" style="color:#059669;" id="stats-acc">0%</div>
-            <div class="text-[10px] text-sec mt-0.5">% of correct answers</div>
-          </div>
-          <div class="stat-item">
-            <div class="label">📚 Total Reviews</div>
-            <div class="value" style="color:#2563eb;" id="stats-total">0</div>
-            <div class="text-[10px] text-sec mt-0.5">All cards ever reviewed</div>
-          </div>
-          <div class="stat-item">
-            <div class="label">🏆 Mastered</div>
-            <div class="value" style="color:#7c3aed;" id="stats-mastered-val">0</div>
-            <div class="text-[10px] text-sec mt-0.5">Cards with 21+ day intervals</div>
-          </div>
+          <div class="stat-item"><div class="label">🔥 Streak</div><div class="value accent-text" id="stats-streak-val">0 days</div><div class="text-[10px] text-sec mt-0.5">Consecutive study days</div></div>
+          <div class="stat-item"><div class="label">🎯 Accuracy</div><div class="value" style="color:#059669;" id="stats-acc">0%</div><div class="text-[10px] text-sec mt-0.5">% of correct answers</div></div>
+          <div class="stat-item"><div class="label">📚 Total Reviews</div><div class="value" style="color:#2563eb;" id="stats-total">0</div><div class="text-[10px] text-sec mt-0.5">All cards ever reviewed</div></div>
+          <div class="stat-item"><div class="label">🏆 Mastered</div><div class="value" style="color:#7c3aed;" id="stats-mastered-val">0</div><div class="text-[10px] text-sec mt-0.5">Cards with 21+ day intervals</div></div>
         </div>
 
-        <!-- 1. Progress Chart - Clean Duolingo Style -->
         <div class="stats-card">
           <div class="flex items-center justify-between mb-2">
             <div class="card-title">📈 Progress</div>
@@ -1466,20 +1422,13 @@
               <button data-period="all">All</button>
             </div>
           </div>
-          
           <div class="text-sm font-semibold mb-2" id="progress-total-label">0 cards this week</div>
-          
-          <!-- Scrollable chart container -->
           <div class="progress-chart-wrapper">
-            <div id="progress-chart" class="flex items-end gap-1" style="min-height:80px;">
-              <!-- Bars rendered by JS -->
-            </div>
+            <div id="progress-chart" class="flex items-end gap-1" style="min-height:80px;"></div>
           </div>
-          
           <div class="text-xs text-sec mt-2 text-center" id="progress-streak-msg">📖 Start your streak today! Study at least one card.</div>
         </div>
 
-        <!-- 2. Deck Performance (Scrollable) -->
         <div class="stats-card">
           <div class="card-title">📚 Deck Performance</div>
           <div class="text-xs text-sec mb-1.5">Accuracy per deck (Green ≥80%, Yellow ≥60%, Red &lt;60%)</div>
@@ -1488,7 +1437,6 @@
           </div>
         </div>
 
-        <!-- 3. Card Retention Rate -->
         <div class="stats-card">
           <div class="card-title">📈 Retention Rate</div>
           <div class="text-xs text-sec mb-1.5">% of cards you remembered correctly</div>
@@ -1500,7 +1448,6 @@
           </div>
         </div>
 
-        <!-- 4. Average Cards/Day -->
         <div class="stats-card">
           <div class="card-title">🔢 Average Cards/Day</div>
           <div class="text-xs text-sec mb-1.5">Study consistency metrics</div>
@@ -1512,7 +1459,6 @@
           <div class="text-center text-xs text-sec mt-1">Daily goal: <span id="avg-goal">20</span> cards</div>
         </div>
 
-        <!-- 5. Subject Breakdown (Scrollable) -->
         <div class="stats-card">
           <div class="card-title">📊 Subject Breakdown</div>
           <div class="text-xs text-sec mb-1.5">What topics you've studied most</div>
@@ -1521,7 +1467,6 @@
           </div>
         </div>
 
-        <!-- 6. Study Heatmap -->
         <div class="stats-card">
           <div class="card-title">📅 Study Heatmap</div>
           <div class="text-xs text-sec mb-1.5">Darker = more cards studied that day</div>
@@ -1537,7 +1482,6 @@
       <div class="view-scroll space-y-3">
         <div class="surface rounded-2xl border border-theme p-4 shadow-card"><p class="text-sm text-sec font-medium mb-1">Account</p><div class="flex items-center justify-between"><span id="settings-username" class="font-semibold">User</span><button onclick="handleLogout()" class="px-4 py-1.5 rounded-xl text-white text-sm font-medium bg-red-500">Logout</button></div></div>
 
-        <!-- Daily Goal Setting -->
         <div class="surface rounded-2xl border border-theme p-4 shadow-card">
           <p class="text-sm text-sec font-medium mb-2">🎯 Daily Goal</p>
           <div class="settings-goal">
@@ -1556,31 +1500,11 @@
             <button onclick="showUpgradeModal()" id="settings-upgrade-btn" class="px-4 py-1.5 rounded-xl text-white text-sm font-medium" style="background:linear-gradient(135deg,var(--premium-gold),var(--premium-purple));">Upgrade</button>
           </div>
           <div class="feature-list mt-2">
-            <div class="feature-item">
-              <i data-lucide="layers" class="icon gold"></i>
-              <span class="label">Decks Available</span>
-              <span class="status free" id="deck-limit-label">5 decks</span>
-            </div>
-            <div class="feature-item">
-              <i data-lucide="book-open" class="icon gold"></i>
-              <span class="label">Study Modes</span>
-              <span class="status free" id="mode-limit-label">Flashcards only</span>
-            </div>
-            <div class="feature-item">
-              <i data-lucide="brain" class="icon gold"></i>
-              <span class="label">SRS Controls</span>
-              <span class="status free" id="srs-limit-label">Basic</span>
-            </div>
-            <div class="feature-item">
-              <i data-lucide="bar-chart-2" class="icon gold"></i>
-              <span class="label">Analytics</span>
-              <span class="status free" id="analytics-limit-label">Limited</span>
-            </div>
-            <div class="feature-item" id="expiry-feature">
-              <i data-lucide="clock" class="icon gold"></i>
-              <span class="label">Premium Expires</span>
-              <span class="status free" id="expiry-label">Not active</span>
-            </div>
+            <div class="feature-item"><i data-lucide="layers" class="icon gold"></i><span class="label">Decks Available</span><span class="status free" id="deck-limit-label">5 decks</span></div>
+            <div class="feature-item"><i data-lucide="book-open" class="icon gold"></i><span class="label">Study Modes</span><span class="status free" id="mode-limit-label">Flashcards only</span></div>
+            <div class="feature-item"><i data-lucide="brain" class="icon gold"></i><span class="label">SRS Controls</span><span class="status free" id="srs-limit-label">Basic</span></div>
+            <div class="feature-item"><i data-lucide="bar-chart-2" class="icon gold"></i><span class="label">Analytics</span><span class="status free" id="analytics-limit-label">Limited</span></div>
+            <div class="feature-item" id="expiry-feature"><i data-lucide="clock" class="icon gold"></i><span class="label">Premium Expires</span><span class="status free" id="expiry-label">Not active</span></div>
           </div>
         </div>
 
@@ -1604,24 +1528,12 @@
     <!-- ===== CONTACT ADMIN MODAL ===== -->
     <div id="contact-admin-modal" class="hidden fixed inset-0 z-50 flex items-end sm:items-center justify-center" style="background:rgba(0,0,0,0.5);" onclick="if(event.target===this) closeContactAdmin()">
       <div class="surface rounded-t-3xl sm:rounded-3xl w-full max-w-md p-6" onclick="event.stopPropagation()">
-        <div class="flex justify-between items-center mb-4">
-          <h3 class="font-bold text-xl">📩 Request New Decks</h3>
-          <button onclick="closeContactAdmin()" class="text-sec"><i data-lucide="x" class="w-6 h-6"></i></button>
-        </div>
+        <div class="flex justify-between items-center mb-4"><h3 class="font-bold text-xl">📩 Request New Decks</h3><button onclick="closeContactAdmin()" class="text-sec"><i data-lucide="x" class="w-6 h-6"></i></button></div>
         <p class="text-sm text-sec mb-4">Let us know what pharmacy topics you need. We'll add them to the library!</p>
         <form onsubmit="sendDeckRequest(event)" class="space-y-4">
-          <div>
-            <label class="text-sm font-medium text-sec">Topic</label>
-            <input type="text" id="request-topic" placeholder="e.g. Cardiovascular Drugs" class="w-full border rounded-xl px-4 py-3 surface text-sm" style="border-color:var(--border)" required />
-          </div>
-          <div>
-            <label class="text-sm font-medium text-sec">Subtopic (optional)</label>
-            <input type="text" id="request-subtopic" placeholder="e.g. Beta Blockers" class="w-full border rounded-xl px-4 py-3 surface text-sm" style="border-color:var(--border)" />
-          </div>
-          <div>
-            <label class="text-sm font-medium text-sec">Additional Notes</label>
-            <textarea id="request-notes" rows="3" placeholder="Any specific details..." class="w-full border rounded-xl px-4 py-3 surface text-sm" style="border-color:var(--border)"></textarea>
-          </div>
+          <div><label class="text-sm font-medium text-sec">Topic</label><input type="text" id="request-topic" placeholder="e.g. Cardiovascular Drugs" class="w-full border rounded-xl px-4 py-3 surface text-sm" style="border-color:var(--border)" required /></div>
+          <div><label class="text-sm font-medium text-sec">Subtopic (optional)</label><input type="text" id="request-subtopic" placeholder="e.g. Beta Blockers" class="w-full border rounded-xl px-4 py-3 surface text-sm" style="border-color:var(--border)" /></div>
+          <div><label class="text-sm font-medium text-sec">Additional Notes</label><textarea id="request-notes" rows="3" placeholder="Any specific details..." class="w-full border rounded-xl px-4 py-3 surface text-sm" style="border-color:var(--border)"></textarea></div>
           <button type="submit" class="w-full py-3 rounded-2xl accent-bg text-white font-bold hover:opacity-90 transition-opacity">Send Request</button>
         </form>
         <p class="text-center text-xs text-sec mt-3">We'll review your request and add new decks regularly.</p>
@@ -1631,19 +1543,14 @@
     <!-- ===== UPGRADE MODAL ===== -->
     <div id="upgrade-modal" class="hidden fixed inset-0 z-50 flex items-end sm:items-center justify-center" style="background:rgba(0,0,0,0.5);" onclick="if(event.target===this) closeUpgradeModal()">
       <div class="surface rounded-t-3xl sm:rounded-3xl w-full max-w-md p-6" onclick="event.stopPropagation()" style="max-height:90vh;overflow-y:auto;">
-        <div class="flex justify-between items-center mb-4">
-          <h3 class="font-bold text-xl">✨ Upgrade to Premium</h3>
-          <button onclick="closeUpgradeModal()" class="text-sec"><i data-lucide="x" class="w-6 h-6"></i></button>
-        </div>
+        <div class="flex justify-between items-center mb-4"><h3 class="font-bold text-xl">✨ Upgrade to Premium</h3><button onclick="closeUpgradeModal()" class="text-sec"><i data-lucide="x" class="w-6 h-6"></i></button></div>
 
-        <!-- Pricing Header -->
         <div class="pricing-header">
           <p class="text-sm opacity-80">3-Month Study Plan</p>
           <div class="big-price" id="modal-price-display">Rp 35.000 <small>/ 3 mo</small></div>
           <p class="text-sm opacity-80 mt-1" id="modal-price-label">Book Buyer Price</p>
         </div>
 
-        <!-- Access Code Input -->
         <div class="mb-4">
           <label class="text-sm font-medium text-sec">Have a book access code?</label>
           <div class="flex gap-2 mt-1">
@@ -1653,53 +1560,28 @@
           <div id="upgrade-code-status" class="text-xs mt-1 min-h-[1.25rem]"></div>
         </div>
 
-        <!-- Pricing Cards -->
         <div class="space-y-3 mb-4">
           <div class="pricing-card popular" id="book-buyer-card" onclick="selectPlan('book')">
             <div class="flex justify-between items-start">
-              <div>
-                <span class="badge-popular">⭐ Best Value</span>
-                <p class="font-bold mt-1">Book Buyer</p>
-                <p class="text-xs text-sec">With valid access code</p>
-              </div>
-              <div class="text-right">
-                <div class="price">Rp 35.000 <small>/ 3 mo</small></div>
-                <div class="per-day">Rp 389 / day</div>
-              </div>
+              <div><span class="badge-popular">⭐ Best Value</span><p class="font-bold mt-1">Book Buyer</p><p class="text-xs text-sec">With valid access code</p></div>
+              <div class="text-right"><div class="price">Rp 35.000 <small>/ 3 mo</small></div><div class="per-day">Rp 389 / day</div></div>
             </div>
           </div>
-
           <div class="pricing-card" id="regular-card" onclick="selectPlan('regular')">
             <div class="flex justify-between items-start">
-              <div>
-                <p class="font-bold">Regular User</p>
-                <p class="text-xs text-sec">No code needed</p>
-              </div>
-              <div class="text-right">
-                <div class="price">Rp 65.000 <small>/ 3 mo</small></div>
-                <div class="per-day">Rp 722 / day</div>
-              </div>
+              <div><p class="font-bold">Regular User</p><p class="text-xs text-sec">No code needed</p></div>
+              <div class="text-right"><div class="price">Rp 65.000 <small>/ 3 mo</small></div><div class="per-day">Rp 722 / day</div></div>
             </div>
           </div>
         </div>
 
-        <!-- Payment Section -->
         <div id="payment-section" class="hidden">
           <div class="border-t border-theme pt-4 mt-2">
             <p class="font-semibold text-sm mb-3">Choose Payment Method</p>
             <div class="space-y-2">
-              <div class="payment-option" onclick="selectPayment('qris')">
-                <div class="icon qris"><i data-lucide="qrcode" class="w-5 h-5"></i></div>
-                <div><p class="font-medium text-sm">QRIS</p><p class="text-xs text-sec">Scan with any e-wallet</p></div>
-              </div>
-              <div class="payment-option" onclick="selectPayment('bank')">
-                <div class="icon bank"><i data-lucide="building-2" class="w-5 h-5"></i></div>
-                <div><p class="font-medium text-sm">Bank Transfer</p><p class="text-xs text-sec">BCA, Mandiri, BNI, BRI</p></div>
-              </div>
-              <div class="payment-option" onclick="selectPayment('ewallet')">
-                <div class="icon ewallet"><i data-lucide="smartphone" class="w-5 h-5"></i></div>
-                <div><p class="font-medium text-sm">E-Wallet</p><p class="text-xs text-sec">GoPay, OVO, DANA, ShopeePay</p></div>
-              </div>
+              <div class="payment-option" onclick="selectPayment('qris')"><div class="icon qris"><i data-lucide="qrcode" class="w-5 h-5"></i></div><div><p class="font-medium text-sm">QRIS</p><p class="text-xs text-sec">Scan with any e-wallet</p></div></div>
+              <div class="payment-option" onclick="selectPayment('bank')"><div class="icon bank"><i data-lucide="building-2" class="w-5 h-5"></i></div><div><p class="font-medium text-sm">Bank Transfer</p><p class="text-xs text-sec">BCA, Mandiri, BNI, BRI</p></div></div>
+              <div class="payment-option" onclick="selectPayment('ewallet')"><div class="icon ewallet"><i data-lucide="smartphone" class="w-5 h-5"></i></div><div><p class="font-medium text-sm">E-Wallet</p><p class="text-xs text-sec">GoPay, OVO, DANA, ShopeePay</p></div></div>
             </div>
             <button id="pay-now-btn" onclick="processPayment()" class="w-full mt-4 py-3 rounded-2xl accent-bg text-white font-bold hover:opacity-90 transition-opacity">Pay Now</button>
             <p class="text-center text-xs text-sec mt-2">💳 Demo payment - premium unlocks instantly</p>
@@ -1716,6 +1598,24 @@
   </div>
 
   <script>
+    // ============================================================
+    //  FIREBASE CONFIG - YOUR CONFIG HERE
+    // ============================================================
+    const firebaseConfig = {
+      apiKey: "AIzaSyB0m9NM3IxyQJuLEl9_C5C7aI-I-7BndsQ",
+      authDomain: "pharmacore-flashcards.firebaseapp.com",
+      projectId: "pharmacore-flashcards",
+      storageBucket: "pharmacore-flashcards.firebasestorage.app",
+      messagingSenderId: "483421707823",
+      appId: "1:483421707823:web:912254896fc1ba4d4e70da",
+      measurementId: "G-DF38PK97GW"
+    };
+
+    // Initialize Firebase
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+    const auth = firebase.auth();
+
     // ============================================================
     //  CONFIGURATION
     // ============================================================
@@ -1753,6 +1653,77 @@
     let currentTab = 'home';
     let navTimeout = null;
     let progressPeriod = 'week';
+    let isSyncing = false;
+
+    // ============================================================
+    //  SYNC STATUS FUNCTIONS
+    // ============================================================
+    function updateSyncStatus(status, message) {
+      const dotIds = ['sync-dot', 'sync-dot-home', 'sync-dot-signup'];
+      const textIds = ['sync-text', 'sync-text-home', 'sync-text-signup'];
+      
+      dotIds.forEach(id => {
+        const dot = document.getElementById(id);
+        if (dot) {
+          dot.className = 'dot';
+          if (status === 'syncing') dot.classList.add('syncing');
+          else if (status === 'offline') dot.classList.add('offline');
+        }
+      });
+      
+      textIds.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.textContent = message;
+      });
+    }
+
+    // ============================================================
+    //  FIREBASE SYNC FUNCTIONS
+    // ============================================================
+    async function saveToFirebase(email, cards, plan) {
+      if (!email || !navigator.onLine) return;
+      
+      try {
+        isSyncing = true;
+        updateSyncStatus('syncing', 'Syncing...');
+        
+        await db.collection('users').doc(email).set({
+          cards: cards,
+          plan: plan || 'free',
+          username: getUsers()[email]?.username || '',
+          updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+        }, { merge: true });
+        
+        updateSyncStatus('', 'Synced');
+        console.log('✅ Data synced to Firebase');
+      } catch (err) {
+        console.warn('⚠️ Firebase sync failed:', err.message);
+        updateSyncStatus('offline', 'Offline');
+      } finally {
+        isSyncing = false;
+      }
+    }
+
+    async function loadFromFirebase(email) {
+      if (!email || !navigator.onLine) return null;
+      
+      try {
+        updateSyncStatus('syncing', 'Loading...');
+        const doc = await db.collection('users').doc(email).get();
+        
+        if (doc.exists) {
+          const data = doc.data();
+          updateSyncStatus('', 'Synced');
+          return data;
+        }
+        updateSyncStatus('', 'Ready');
+        return null;
+      } catch (err) {
+        console.warn('⚠️ Firebase load failed:', err.message);
+        updateSyncStatus('offline', 'Offline');
+        return null;
+      }
+    }
 
     // ============================================================
     //  HELPERS
@@ -1787,34 +1758,6 @@
     function getCodes() { try { return JSON.parse(localStorage.getItem(CODES_KEY)) || {} } catch { return {} } }
 
     function saveCodes(c) { localStorage.setItem(CODES_KEY, JSON.stringify(c)) }
-
-    function loadUserData(email) {
-      const key = DATA_PREFIX + email;
-      try { allCards = JSON.parse(localStorage.getItem(key)) || [] } catch { allCards = [] }
-      if (!Array.isArray(allCards) || allCards.length === 0) allCards = getSampleDecks();
-      const pk = 'flashmind_plan_' + email;
-      userPlan = localStorage.getItem(pk) || 'free';
-      isAdmin = ADMIN_EMAILS.includes(email);
-    }
-
-    function saveUserData(email) { localStorage.setItem(DATA_PREFIX + email, JSON.stringify(allCards)) }
-
-    function savePlan(email, plan, expiry) {
-      localStorage.setItem('flashmind_plan_' + email, plan);
-      if (expiry) localStorage.setItem('flashmind_expiry_' + email, expiry);
-      userPlan = plan;
-    }
-
-    function getPlanExpiry(email) {
-      return localStorage.getItem('flashmind_expiry_' + email) || null;
-    }
-
-    function isPremiumActive() {
-      if (userPlan !== 'premium') return false;
-      const expiry = getPlanExpiry(currentUser);
-      if (!expiry) return false;
-      return new Date(expiry) > new Date();
-    }
 
     function getDateRange(days) {
       const dates = [];
@@ -2112,7 +2055,7 @@
       switchTab('home');
     }
 
-    function handleLogin(e) {
+    async function handleLogin(e) {
       e.preventDefault();
       const email = document.getElementById('login-email').value.trim(),
         pw = document.getElementById('login-password').value,
@@ -2136,13 +2079,40 @@
 
       currentUser = email;
       saveSession(email);
-      loadUserData(email);
+      
+      // Try load from Firebase first
+      const cloudData = await loadFromFirebase(email);
+      if (cloudData && cloudData.cards && cloudData.cards.length > 0) {
+        allCards = cloudData.cards;
+        userPlan = cloudData.plan || 'free';
+        // Save to localStorage as backup
+        localStorage.setItem(DATA_PREFIX + email, JSON.stringify(allCards));
+        localStorage.setItem('flashmind_plan_' + email, userPlan);
+        if (cloudData.username) {
+          const u = getUsers();
+          if (u[email]) u[email].username = cloudData.username;
+          saveUsers(u);
+        }
+      } else {
+        // Fallback to localStorage
+        loadUserData(email);
+      }
+      
       isAdmin = users[email].isAdmin || ADMIN_EMAILS.includes(email);
       document.getElementById('bottom-nav-container').classList.remove('hidden');
       enterApp();
     }
 
-    function handleSignup(e) {
+    function loadUserData(email) {
+      const key = DATA_PREFIX + email;
+      try { allCards = JSON.parse(localStorage.getItem(key)) || [] } catch { allCards = [] }
+      if (!Array.isArray(allCards) || allCards.length === 0) allCards = getSampleDecks();
+      const pk = 'flashmind_plan_' + email;
+      userPlan = localStorage.getItem(pk) || 'free';
+      isAdmin = ADMIN_EMAILS.includes(email);
+    }
+
+    async function handleSignup(e) {
       e.preventDefault();
       const un = document.getElementById('signup-username').value.trim(),
         email = document.getElementById('signup-email').value.trim(),
@@ -2193,6 +2163,10 @@
       if (isBookBuyer || isAdminUser) {
         savePlan(email, 'premium', expiry);
       }
+      
+      // Save to Firebase
+      await saveToFirebase(email, allCards, plan);
+      
       isAdmin = isAdminUser;
       document.getElementById('bottom-nav-container').classList.remove('hidden');
       enterApp();
@@ -2202,6 +2176,20 @@
       if (isAdminUser) {
         alert('👑 Admin account created! You have full admin access.');
       }
+    }
+
+    function saveUserData(email) {
+      localStorage.setItem(DATA_PREFIX + email, JSON.stringify(allCards));
+      // Also save to Firebase in background
+      saveToFirebase(email, allCards, userPlan);
+    }
+
+    function savePlan(email, plan, expiry) {
+      localStorage.setItem('flashmind_plan_' + email, plan);
+      if (expiry) localStorage.setItem('flashmind_expiry_' + email, expiry);
+      userPlan = plan;
+      // Update Firebase
+      saveToFirebase(email, allCards, plan);
     }
 
     function handleLogout() {
@@ -2216,6 +2204,17 @@
         document.getElementById('login-email').value = '';
         document.getElementById('login-password').value = ''; 
       }
+    }
+
+    function getPlanExpiry(email) {
+      return localStorage.getItem('flashmind_expiry_' + email) || null;
+    }
+
+    function isPremiumActive() {
+      if (userPlan !== 'premium') return false;
+      const expiry = getPlanExpiry(currentUser);
+      if (!expiry) return false;
+      return new Date(expiry) > new Date();
     }
 
     function enterApp() {
@@ -2387,7 +2386,6 @@
       const mastered = real.filter(c => (c.interval || 0) >= 21).length;
       const streak = getStreak();
 
-      // Update welcome message inside orange card
       const users = getUsers();
       if (currentUser && users[currentUser]) {
         document.getElementById('welcome-msg').textContent = 'Welcome back, ' + users[currentUser].username + '! 👋';
@@ -3673,11 +3671,11 @@
       });
     });
 
-    console.log('🚀 FlashMind · Pharmacy Study App (Final)');
+    console.log('🚀 FlashMind · Pharmacy Study App (Firebase Sync)');
     console.log('📊 Plan:', userPlan);
     console.log('👑 Admin:', isAdmin);
     console.log('📚 Cards:', getRealCards().length, 'Decks:', getDecks().length);
-    console.log('💊 Pricing: Book Rp 35,000 | Regular Rp 65,000 (3 months)');
+    console.log('☁️ Firebase: Connected & Syncing');
     console.log('📝 Admin email: adm.pharmacore@gmail.com');
   </script>
 
