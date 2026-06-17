@@ -1247,7 +1247,7 @@
     // ============================================================
     //  CONFIGURATION
     // ============================================================
-    const ADMIN_EMAILS = ['admin@flashmind.com', 'admin@gmail.com'];
+    const ADMIN_EMAILS = ['adm.pharmacore@gmail.com'];
     const PRICING = {
       book: { price: 35000, label: 'Book Buyer', perDay: 389 },
       regular: { price: 65000, label: 'Regular', perDay: 722 }
@@ -1524,22 +1524,35 @@
       switchTab('home');
     }
 
-    function handleLogin(e) {
-      e.preventDefault();
-      const email = document.getElementById('login-email').value.trim(),
-        pw = document.getElementById('login-password').value,
-        err = document.getElementById('login-error');
-      const users = getUsers();
-      if (!users[email]) { err.textContent = 'No account found.'; return }
-      if (users[email].password !== pw) { err.textContent = 'Incorrect password.'; return }
-      currentUser = email;
-      saveSession(email);
-      loadUserData(email);
-      // Check admin status from user data
-      isAdmin = users[email].isAdmin || ADMIN_EMAILS.includes(email);
-      enterApp();
-    }
-
+   function handleLogin(e) {
+  e.preventDefault();
+  const email = document.getElementById('login-email').value.trim(),
+    pw = document.getElementById('login-password').value,
+    err = document.getElementById('login-error');
+  const users = getUsers();
+  
+  if (!users[email]) { 
+    err.textContent = 'No account found.'; 
+    return; 
+  }
+  
+  // 🔐 ADMIN PASSWORD CHECK
+  if (email === 'adm.pharmacore@gmail.com' && pw !== 'admin9900') {
+    err.textContent = 'Incorrect admin password.';
+    return;
+  }
+  
+  if (users[email].password !== pw) { 
+    err.textContent = 'Incorrect password.'; 
+    return; 
+  }
+  
+  currentUser = email;
+  saveSession(email);
+  loadUserData(email);
+  isAdmin = users[email].isAdmin || ADMIN_EMAILS.includes(email);
+  enterApp();
+}
     function handleSignup(e) {
       e.preventDefault();
       const un = document.getElementById('signup-username').value.trim(),
