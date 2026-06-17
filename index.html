@@ -12,6 +12,7 @@
   </script>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
   <style>
+    /* ... (styles same as before) ... */
     * {
       font-family: 'DM Sans', sans-serif;
       box-sizing: border-box;
@@ -542,7 +543,7 @@
     }
     .pricing-card {
       border-radius: var(--radius);
-      padding: 1.5rem;
+      padding: 1.25rem;
       border: 2px solid var(--border);
       transition: 0.2s;
       cursor: pointer;
@@ -555,33 +556,32 @@
       background: var(--accent-light);
     }
     .pricing-card .price {
-      font-size: 2rem;
+      font-size: 1.75rem;
       font-weight: 800;
     }
     .pricing-card .price small {
-      font-size: 0.875rem;
+      font-size: 0.75rem;
       font-weight: 400;
     }
     .pricing-card .per-day {
-      font-size: 0.75rem;
+      font-size: 0.7rem;
       color: var(--text-secondary);
     }
     .pricing-card .badge-popular {
       background: linear-gradient(135deg, var(--premium-gold), var(--premium-purple));
       color: #fff;
-      padding: 0.15rem 0.75rem;
+      padding: 0.1rem 0.6rem;
       border-radius: 99px;
-      font-size: 10px;
+      font-size: 9px;
       font-weight: 700;
       text-transform: uppercase;
       display: inline-block;
     }
-    /* Payment modal */
     .payment-option {
       display: flex;
       align-items: center;
       gap: 1rem;
-      padding: 1rem;
+      padding: 0.75rem 1rem;
       border-radius: 1rem;
       border: 1px solid var(--border);
       cursor: pointer;
@@ -596,9 +596,9 @@
       background: var(--accent-light);
     }
     .payment-option .icon {
-      width: 40px;
-      height: 40px;
-      border-radius: 12px;
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -615,6 +615,22 @@
     .payment-option .icon.ewallet {
       background: #7c3aed;
       color: #fff;
+    }
+    .pricing-header {
+      background: linear-gradient(135deg, var(--premium-gold), var(--premium-purple));
+      color: #fff;
+      padding: 1.5rem;
+      border-radius: var(--radius);
+      text-align: center;
+      margin-bottom: 1rem;
+    }
+    .pricing-header .big-price {
+      font-size: 2.5rem;
+      font-weight: 800;
+    }
+    .pricing-header .big-price small {
+      font-size: 1rem;
+      font-weight: 400;
     }
   </style>
 </head>
@@ -717,6 +733,7 @@
         <h2 class="text-xl font-bold">Your Decks</h2>
         <div class="flex gap-2">
           <button id="admin-import-btn" onclick="showAdminImport()" class="hidden accent-bg text-white w-10 h-10 rounded-full flex items-center justify-center shadow-md"><i data-lucide="upload" class="w-5 h-5"></i></button>
+          <button onclick="showContactAdmin()" class="accent-bg text-white w-10 h-10 rounded-full flex items-center justify-center shadow-md"><i data-lucide="plus" class="w-5 h-5"></i></button>
         </div>
       </div>
       <div class="view-scroll" id="deck-list-container">
@@ -917,7 +934,32 @@
       <button class="nav-item" data-tab="settings"><i data-lucide="settings"></i><span>Settings</span></button>
     </div>
 
-    <!-- ===== MODALS ===== -->
+    <!-- ===== CONTACT ADMIN MODAL ===== -->
+    <div id="contact-admin-modal" class="hidden fixed inset-0 z-50 flex items-end sm:items-center justify-center" style="background:rgba(0,0,0,0.5);" onclick="if(event.target===this) closeContactAdmin()">
+      <div class="surface rounded-t-3xl sm:rounded-3xl w-full max-w-md p-6" onclick="event.stopPropagation()">
+        <div class="flex justify-between items-center mb-4">
+          <h3 class="font-bold text-xl">📩 Request New Decks</h3>
+          <button onclick="closeContactAdmin()" class="text-sec"><i data-lucide="x" class="w-6 h-6"></i></button>
+        </div>
+        <p class="text-sm text-sec mb-4">Let us know what pharmacy topics you need. We'll add them to the library!</p>
+        <form onsubmit="sendDeckRequest(event)" class="space-y-4">
+          <div>
+            <label class="text-sm font-medium text-sec">Topic</label>
+            <input type="text" id="request-topic" placeholder="e.g. Cardiovascular Drugs" class="w-full border rounded-xl px-4 py-3 surface text-sm" style="border-color:var(--border)" required />
+          </div>
+          <div>
+            <label class="text-sm font-medium text-sec">Subtopic (optional)</label>
+            <input type="text" id="request-subtopic" placeholder="e.g. Beta Blockers" class="w-full border rounded-xl px-4 py-3 surface text-sm" style="border-color:var(--border)" />
+          </div>
+          <div>
+            <label class="text-sm font-medium text-sec">Additional Notes</label>
+            <textarea id="request-notes" rows="3" placeholder="Any specific details..." class="w-full border rounded-xl px-4 py-3 surface text-sm" style="border-color:var(--border)"></textarea>
+          </div>
+          <button type="submit" class="w-full py-3 rounded-2xl accent-bg text-white font-bold hover:opacity-90 transition-opacity">Send Request</button>
+        </form>
+        <p class="text-center text-xs text-sec mt-3">We'll review your request and add new decks regularly.</p>
+      </div>
+    </div>
 
     <!-- ===== UPGRADE MODAL ===== -->
     <div id="upgrade-modal" class="hidden fixed inset-0 z-50 flex items-end sm:items-center justify-center" style="background:rgba(0,0,0,0.5);" onclick="if(event.target===this) closeUpgradeModal()">
@@ -925,6 +967,13 @@
         <div class="flex justify-between items-center mb-4">
           <h3 class="font-bold text-xl">✨ Upgrade to Premium</h3>
           <button onclick="closeUpgradeModal()" class="text-sec"><i data-lucide="x" class="w-6 h-6"></i></button>
+        </div>
+
+        <!-- Pricing Header -->
+        <div class="pricing-header">
+          <p class="text-sm opacity-80">3-Month Study Plan</p>
+          <div class="big-price" id="modal-price-display">Rp 35.000 <small>/ 3 mo</small></div>
+          <p class="text-sm opacity-80 mt-1" id="modal-price-label">Book Buyer Price</p>
         </div>
 
         <!-- Access Code Input -->
@@ -939,8 +988,8 @@
 
         <!-- Pricing Cards -->
         <div class="space-y-3 mb-4">
-          <div class="pricing-card popular" id="book-buyer-card">
-            <div class="flex justify-between items-start mb-1">
+          <div class="pricing-card popular" id="book-buyer-card" onclick="selectPlan('book')">
+            <div class="flex justify-between items-start">
               <div>
                 <span class="badge-popular">⭐ Best Value</span>
                 <p class="font-bold mt-1">Book Buyer</p>
@@ -951,11 +1000,10 @@
                 <div class="per-day">Rp 389 / day</div>
               </div>
             </div>
-            <button onclick="selectPlan('book')" class="w-full mt-2 py-2 rounded-xl accent-bg text-white font-medium text-sm">Select Plan</button>
           </div>
 
-          <div class="pricing-card" id="regular-card">
-            <div class="flex justify-between items-start mb-1">
+          <div class="pricing-card" id="regular-card" onclick="selectPlan('regular')">
+            <div class="flex justify-between items-start">
               <div>
                 <p class="font-bold">Regular User</p>
                 <p class="text-xs text-sec">No code needed</p>
@@ -965,7 +1013,6 @@
                 <div class="per-day">Rp 722 / day</div>
               </div>
             </div>
-            <button onclick="selectPlan('regular')" class="w-full mt-2 py-2 rounded-xl border border-theme font-medium text-sm">Select Plan</button>
           </div>
         </div>
 
@@ -1217,11 +1264,9 @@
     function startFreeTrial() {
       closeFreeTrial();
       if (!currentUser) {
-        // Redirect to signup
         showSignup();
         return;
       }
-      // User already logged in, just go to home
       switchTab('home');
     }
 
@@ -1253,24 +1298,20 @@
       const users = getUsers();
       if (users[email]) { err.textContent = 'Email already registered.'; return }
 
-      // Check code if provided
       let isBookBuyer = false;
       if (code) {
         const codes = getCodes();
         if (codes[code] && !codes[code].used) {
           isBookBuyer = true;
-          // Mark code as used
           codes[code].used = true;
           codes[code].usedBy = email;
           codes[code].usedAt = new Date().toISOString();
           saveCodes(codes);
         } else if (code) {
           err.textContent = 'Invalid or already used access code. You can still create a free account.';
-          // Allow signup but without premium discount
         }
       }
 
-      // Create account
       const plan = isBookBuyer ? 'premium' : 'free';
       const expiry = isBookBuyer ? addMonths(new Date(), PLAN_DURATION_MONTHS).toISOString() : null;
 
@@ -1317,11 +1358,9 @@
         document.getElementById('welcome-msg').textContent = 'Welcome back, ' + users[currentUser].username + '! 👋';
       }
 
-      // Check if premium expired
       if (userPlan === 'premium') {
         const expiry = getPlanExpiry(currentUser);
         if (expiry && new Date(expiry) <= new Date()) {
-          // Premium expired
           savePlan(currentUser, 'free', null);
           userPlan = 'free';
           localStorage.removeItem('flashmind_expiry_' + currentUser);
@@ -1388,7 +1427,6 @@
         upgradeBtn.style.display = isPremium ? 'none' : 'inline-block';
       }
 
-      // Update expiry in settings
       const expiryLabel = document.getElementById('expiry-label');
       if (expiryLabel) {
         if (isPremium) {
@@ -1432,7 +1470,6 @@
         currentPlanLabel.className = isPremium ? 'premium-badge' : 'free-badge';
       }
 
-      // Enable/disable SRS controls
       const easeInput = document.getElementById('ease-input');
       const intervalInput = document.getElementById('interval-input');
       if (easeInput) easeInput.disabled = !isPremium;
@@ -1440,7 +1477,6 @@
       if (easeInput) easeInput.style.opacity = isPremium ? '1' : '0.5';
       if (intervalInput) intervalInput.style.opacity = isPremium ? '1' : '0.5';
 
-      // Show/hide premium lock message
       const lockMsg = document.getElementById('premium-lock-msg');
       if (lockMsg) {
         lockMsg.classList.toggle('hidden', isPremium);
@@ -1654,7 +1690,45 @@
     function exitStudy() { switchTab('decks') }
 
     // ============================================================
-    //  DECKS (Admin only for creation)
+    //  CONTACT ADMIN
+    // ============================================================
+    function showContactAdmin() {
+      document.getElementById('contact-admin-modal').classList.remove('hidden');
+      document.getElementById('request-topic').value = '';
+      document.getElementById('request-subtopic').value = '';
+      document.getElementById('request-notes').value = '';
+      lucide.createIcons();
+    }
+
+    function closeContactAdmin() {
+      document.getElementById('contact-admin-modal').classList.add('hidden');
+    }
+
+    function sendDeckRequest(e) {
+      e.preventDefault();
+      const topic = document.getElementById('request-topic').value.trim();
+      const subtopic = document.getElementById('request-subtopic').value.trim();
+      const notes = document.getElementById('request-notes').value.trim();
+
+      // Store request in localStorage (admin can view later)
+      const requests = JSON.parse(localStorage.getItem('deck_requests') || '[]');
+      requests.push({
+        id: Date.now(),
+        user: currentUser || 'anonymous',
+        topic: topic,
+        subtopic: subtopic,
+        notes: notes,
+        date: new Date().toISOString(),
+        status: 'pending'
+      });
+      localStorage.setItem('deck_requests', JSON.stringify(requests));
+
+      alert('✅ Request sent! We\'ll review it and add new decks soon.');
+      closeContactAdmin();
+    }
+
+    // ============================================================
+    //  DECKS (Admin only for deletion)
     // ============================================================
     function deleteDeck(deckId) {
       if (!isAdmin) {
@@ -1884,15 +1958,23 @@
       document.getElementById('book-buyer-card').style.borderColor = 'var(--border)';
       document.getElementById('regular-card').style.borderColor = 'var(--border)';
 
+      // Update pricing display
+      const isPremium = isPremiumActive();
+      if (isPremium) {
+        document.getElementById('modal-price-display').textContent = '✅ Premium Active';
+        document.getElementById('modal-price-label').textContent = 'You already have premium!';
+      } else {
+        document.getElementById('modal-price-display').textContent = 'Rp 35.000';
+        document.getElementById('modal-price-label').textContent = 'Book Buyer Price';
+      }
+
       const currentPlanLabel = document.getElementById('upgrade-current-plan');
       if (currentPlanLabel) {
-        const isPremium = isPremiumActive();
         currentPlanLabel.textContent = isPremium ? 'Premium ✦' : 'Free';
         currentPlanLabel.className = isPremium ? 'premium-badge' : 'free-badge';
       }
 
-      // If already premium, show message
-      if (isPremiumActive()) {
+      if (isPremium) {
         const status = document.getElementById('upgrade-code-status');
         status.textContent = '✅ You already have Premium access!';
         status.style.color = '#059669';
@@ -1919,7 +2001,8 @@
         status.textContent = '✅ Valid access code! You get the book buyer discount.';
         status.style.color = '#059669';
         document.getElementById('book-buyer-card').style.borderColor = '#d97706';
-        // Auto-select book buyer plan
+        document.getElementById('modal-price-display').textContent = 'Rp 35.000';
+        document.getElementById('modal-price-label').textContent = 'Book Buyer Price (Discounted)';
         selectPlan('book');
       } else if (codes[code] && codes[code].used) {
         hasValidCode = false;
@@ -1929,24 +2012,30 @@
         hasValidCode = false;
         status.textContent = '❌ Invalid access code. You can still upgrade at regular price.';
         status.style.color = '#ef4444';
+        document.getElementById('modal-price-display').textContent = 'Rp 65.000';
+        document.getElementById('modal-price-label').textContent = 'Regular Price';
       }
     }
 
     function selectPlan(type) {
+      if (isPremiumActive()) {
+        alert('You already have Premium access!');
+        return;
+      }
       selectedPlan = type;
       document.getElementById('payment-section').classList.remove('hidden');
 
-      // Highlight selected card
       document.getElementById('book-buyer-card').style.borderColor = type === 'book' ? '#d97706' : 'var(--border)';
       document.getElementById('regular-card').style.borderColor = type === 'regular' ? '#d97706' : 'var(--border)';
 
       const price = type === 'book' ? PRICING.book.price : PRICING.regular.price;
       const label = type === 'book' ? 'Book Buyer' : 'Regular';
       document.getElementById('pay-now-btn').textContent = `Pay Rp ${price.toLocaleString()} (${label})`;
+      document.getElementById('modal-price-display').textContent = `Rp ${price.toLocaleString()}`;
+      document.getElementById('modal-price-label').textContent = type === 'book' ? 'Book Buyer Price' : 'Regular Price';
     }
 
     function selectPayment(method) {
-      // Visual feedback
       document.querySelectorAll('.payment-option').forEach(el => el.classList.remove('selected'));
       event.currentTarget.classList.add('selected');
     }
@@ -1957,28 +2046,23 @@
         return;
       }
 
-      // Check if already premium
       if (isPremiumActive()) {
         alert('You already have Premium access!');
         closeUpgradeModal();
         return;
       }
 
-      // Simulate payment
       const price = selectedPlan === 'book' ? PRICING.book.price : PRICING.regular.price;
       const label = selectedPlan === 'book' ? 'Book Buyer' : 'Regular';
 
-      // Show processing
       const btn = document.getElementById('pay-now-btn');
       btn.textContent = 'Processing...';
       btn.disabled = true;
 
       setTimeout(() => {
-        // Unlock premium
         const expiry = addMonths(new Date(), PLAN_DURATION_MONTHS).toISOString();
         savePlan(currentUser, 'premium', expiry);
 
-        // If book buyer, mark code as used
         if (selectedPlan === 'book' && hasValidCode) {
           const code = document.getElementById('upgrade-code-input').value.trim().toUpperCase();
           const codes = getCodes();
@@ -1990,7 +2074,6 @@
           }
         }
 
-        // Update UI
         userPlan = 'premium';
         updatePlanUI();
         updateHome();
@@ -2291,7 +2374,8 @@
             .preventDefault();
           tsSubmitTyped() }
       }
-      if (e.key === 'Escape') { closeUpgradeModal() }
+      if (e.key === 'Escape') { closeUpgradeModal();
+        closeContactAdmin() }
     });
 
     // ============================================================
@@ -2312,7 +2396,6 @@
       });
     });
 
-    // Drag and drop for Excel upload
     const uploadZone = document.getElementById('upload-zone');
     if (uploadZone) {
       uploadZone.addEventListener('dragover', (e) => {
