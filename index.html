@@ -4858,11 +4858,13 @@ Science       | Biology       | What is DNA?             | Deoxyribonucleic acid
       enterApp();
     }
 
-    // Initialize nav click handlers
-    document.querySelectorAll('.nav-item').forEach(btn => {
-      btn.removeEventListener('click', navClickHandler);
-      btn.addEventListener('click', navClickHandler);
-    });
+    // Use event delegation on the nav container
+document.getElementById('bottomNav').addEventListener('click', function(e) {
+  const btn = e.target.closest('.nav-item');
+  if (!btn) return;
+  // Call the navClickHandler with the button context
+  navClickHandler.call(btn, e);
+});
 
     // Drag and drop for Excel upload
     const uploadZone = document.getElementById('upload-zone');
