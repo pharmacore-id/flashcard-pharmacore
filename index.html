@@ -40,7 +40,6 @@
       --card-purple: #ede9fe;
       --premium-gold: #d97706;
       --premium-purple: #7c3aed;
-      --discount-green: #059669;
       --shadow: 0 8px 30px rgba(0, 0, 0, 0.06);
       --radius: 2rem;
     }
@@ -58,7 +57,6 @@
       --card-purple: #2a1a40;
       --premium-gold: #fbbf24;
       --premium-purple: #a78bfa;
-      --discount-green: #34d399;
       --shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
     }
     html,
@@ -322,10 +320,28 @@
       background: var(--bg);
       color: var(--text);
       font-size: 1rem;
+      padding-right: 2.5rem;
     }
     .auth-card input:focus {
       outline: 2px solid var(--accent);
       outline-offset: 2px;
+    }
+    .password-wrapper {
+      position: relative;
+    }
+    .password-wrapper .toggle-eye {
+      position: absolute;
+      right: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: var(--text-secondary);
+      padding: 4px;
+    }
+    .password-wrapper .toggle-eye:hover {
+      color: var(--text);
     }
     .btn-block {
       width: 100%;
@@ -759,11 +775,12 @@
     .settings-goal {
       display: flex;
       align-items: center;
-      gap: 0.75rem;
+      gap: 0.5rem;
+      flex-wrap: wrap;
     }
     .settings-goal input {
-      width: 80px;
-      padding: 0.5rem 0.75rem;
+      width: 70px;
+      padding: 0.4rem 0.5rem;
       border-radius: 0.75rem;
       border: 1px solid var(--border);
       background: var(--bg);
@@ -780,9 +797,9 @@
       background: var(--accent);
       color: #fff;
       border: none;
-      padding: 0.5rem 1rem;
+      padding: 0.4rem 1rem;
       border-radius: 0.75rem;
-      font-size: 0.8rem;
+      font-size: 0.75rem;
       font-weight: 600;
       cursor: pointer;
       transition: 0.15s;
@@ -805,8 +822,6 @@
     .daily-progress.hero-gradient .progress-fill {
       background: #ffffff;
     }
-
-    /* Stats Styles */
     .stats-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -848,110 +863,92 @@
       align-items: center;
       gap: 0.5rem;
     }
-    /* Progress chart - fit to width */
-.progress-chart-wrapper {
-  overflow-x: auto;
-  overflow-y: hidden;
-  padding-bottom: 4px;
-  -webkit-overflow-scrolling: touch;
-  scrollbar-width: thin;
-  scrollbar-color: var(--border) transparent;
-  width: 100%;
-}
-
-.progress-chart-wrapper::-webkit-scrollbar {
-  height: 4px;
-}
-
-.progress-chart-wrapper::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-.progress-chart-wrapper::-webkit-scrollbar-thumb {
-  background: var(--border);
-  border-radius: 99px;
-}
-
-#progress-chart {
-  display: flex;
-  align-items: flex-end;
-  gap: 3px;
-  padding: 4px 4px 4px 4px;
-  min-height: 80px;
-  width: 100%;
-}
-
-#progress-chart .bar-group {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 3px;
-  flex-shrink: 1;
-  flex: 1;
-  min-width: 12px;
-  max-width: 40px;
-}
-
-#progress-chart .bar-value {
-  font-size: 8px;
-  font-weight: 700;
-  color: var(--text-secondary);
-  line-height: 1;
-  min-height: 12px;
-}
-
-#progress-chart .bar {
-  width: 100%;
-  max-width: 24px;
-  border-radius: 3px 3px 0 0;
-  background: var(--border);
-  transition: height 0.4s ease, background 0.3s ease;
-  min-height: 3px;
-}
-
-#progress-chart .bar.filled {
-  background: var(--accent);
-}
-
-#progress-chart .bar.today {
-  background: var(--premium-gold);
-  box-shadow: 0 0 8px rgba(217, 119, 6, 0.3);
-}
-
-#progress-chart .bar-label {
-  font-size: 7px;
-  font-weight: 600;
-  color: var(--text-secondary);
-  text-align: center;
-  line-height: 1;
-  min-height: 10px;
-  white-space: nowrap;
-}
-
-/* Month view - smaller bars */
-#progress-chart.month .bar-group {
-  min-width: 10px;
-  max-width: 24px;
-}
-
-#progress-chart.month .bar {
-  max-width: 14px;
-}
-
-/* All view - even smaller */
-#progress-chart.all .bar-group {
-  min-width: 8px;
-  max-width: 18px;
-}
-
-#progress-chart.all .bar {
-  max-width: 8px;
-}
-
-#progress-chart.all .bar-value {
-  font-size: 7px;
-  min-height: 10px;
-}
+    .progress-chart-wrapper {
+      overflow-x: auto;
+      overflow-y: hidden;
+      padding-bottom: 4px;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: thin;
+      scrollbar-color: var(--border) transparent;
+      width: 100%;
+    }
+    .progress-chart-wrapper::-webkit-scrollbar {
+      height: 4px;
+    }
+    .progress-chart-wrapper::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    .progress-chart-wrapper::-webkit-scrollbar-thumb {
+      background: var(--border);
+      border-radius: 99px;
+    }
+    #progress-chart {
+      display: flex;
+      align-items: flex-end;
+      gap: 3px;
+      padding: 4px 4px 4px 4px;
+      min-height: 80px;
+      width: 100%;
+    }
+    #progress-chart .bar-group {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 3px;
+      flex-shrink: 1;
+      flex: 1;
+      min-width: 12px;
+      max-width: 40px;
+    }
+    #progress-chart .bar-value {
+      font-size: 8px;
+      font-weight: 700;
+      color: var(--text-secondary);
+      line-height: 1;
+      min-height: 12px;
+    }
+    #progress-chart .bar {
+      width: 100%;
+      max-width: 24px;
+      border-radius: 3px 3px 0 0;
+      background: var(--border);
+      transition: height 0.4s ease, background 0.3s ease;
+      min-height: 3px;
+    }
+    #progress-chart .bar.filled {
+      background: var(--accent);
+    }
+    #progress-chart .bar.today {
+      background: var(--premium-gold);
+      box-shadow: 0 0 8px rgba(217, 119, 6, 0.3);
+    }
+    #progress-chart .bar-label {
+      font-size: 7px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      text-align: center;
+      line-height: 1;
+      min-height: 10px;
+      white-space: nowrap;
+    }
+    #progress-chart.month .bar-group {
+      min-width: 10px;
+      max-width: 24px;
+    }
+    #progress-chart.month .bar {
+      max-width: 14px;
+    }
+    #progress-chart.all .bar-group {
+      min-width: 8px;
+      max-width: 18px;
+    }
+    #progress-chart.all .bar {
+      max-width: 8px;
+    }
+    #progress-chart.all .bar-value {
+      font-size: 7px;
+      min-height: 10px;
+    }
     .progress-toggle {
       display: flex;
       gap: 2px;
@@ -1119,8 +1116,6 @@
     .heatmap-grid .heat-cell.today {
       border: 2px solid var(--accent);
     }
-    
-    /* Cloud sync indicator */
     .sync-status {
       display: flex;
       align-items: center;
@@ -1143,11 +1138,14 @@
       background: #ef4444;
     }
     @keyframes pulse {
-      0%, 100% { opacity: 1; }
-      50% { opacity: 0.3; }
+      0%,
+      100% {
+        opacity: 1;
+      }
+      50% {
+        opacity: 0.3;
+      }
     }
-
-    /* Flashcard done state fix */
     #fc-done {
       pointer-events: all;
       cursor: pointer;
@@ -1155,13 +1153,21 @@
     #fc-done .back-btn {
       pointer-events: all;
     }
-    
-    /* Admin card management */
     .card-item {
       transition: background 0.15s ease;
     }
     .card-item:hover {
       background: var(--accent-light);
+    }
+    .forgot-link {
+      font-size: 0.75rem;
+      color: var(--accent);
+      cursor: pointer;
+      font-weight: 500;
+      text-decoration: none;
+    }
+    .forgot-link:hover {
+      text-decoration: underline;
     }
   </style>
 </head>
@@ -1181,9 +1187,23 @@
           </div>
         </div>
         <form onsubmit="handleLogin(event)" class="space-y-4">
-          <div><label class="text-sm font-medium text-sec">Email</label><input type="email" id="login-email" placeholder="you@example.com" required /></div>
-          <div><label class="text-sm font-medium text-sec">Password</label><input type="password" id="login-password" placeholder="••••••••" required /></div>
-          <div id="login-error" class="text-sm text-red-500 min-h-[1.5rem]"></div>
+          <div>
+            <label class="text-sm font-medium text-sec">Email</label>
+            <input type="email" id="login-email" placeholder="you@example.com" required />
+          </div>
+          <div>
+            <label class="text-sm font-medium text-sec">Password</label>
+            <div class="password-wrapper">
+              <input type="password" id="login-password" placeholder="••••••••" required />
+              <button type="button" class="toggle-eye" onclick="togglePassword('login-password', this)">
+                <i data-lucide="eye" class="w-5 h-5"></i>
+              </button>
+            </div>
+          </div>
+          <div class="flex items-center justify-between mt-1">
+            <div id="login-error" class="text-sm text-red-500 min-h-[1.5rem]"></div>
+            <a href="#" onclick="showForgotPassword()" class="forgot-link">Forgot Password?</a>
+          </div>
           <button type="submit" class="btn-block accent-bg text-white">Sign In</button>
         </form>
         <div class="text-center mt-4 text-sm text-sec">or</div>
@@ -1205,8 +1225,24 @@
         <form onsubmit="handleSignup(event)" class="space-y-4">
           <div><label class="text-sm font-medium text-sec">Username</label><input type="text" id="signup-username" placeholder="johndoe" required /></div>
           <div><label class="text-sm font-medium text-sec">Email</label><input type="email" id="signup-email" placeholder="you@example.com" required /></div>
-          <div><label class="text-sm font-medium text-sec">Password</label><input type="password" id="signup-password" placeholder="min 6 chars" required minlength="6" /></div>
-          <div><label class="text-sm font-medium text-sec">Confirm</label><input type="password" id="signup-confirm" placeholder="••••••••" required /></div>
+          <div>
+            <label class="text-sm font-medium text-sec">Password</label>
+            <div class="password-wrapper">
+              <input type="password" id="signup-password" placeholder="min 6 chars" required minlength="6" />
+              <button type="button" class="toggle-eye" onclick="togglePassword('signup-password', this)">
+                <i data-lucide="eye" class="w-5 h-5"></i>
+              </button>
+            </div>
+          </div>
+          <div>
+            <label class="text-sm font-medium text-sec">Confirm</label>
+            <div class="password-wrapper">
+              <input type="password" id="signup-confirm" placeholder="••••••••" required />
+              <button type="button" class="toggle-eye" onclick="togglePassword('signup-confirm', this)">
+                <i data-lucide="eye" class="w-5 h-5"></i>
+              </button>
+            </div>
+          </div>
           <div><label class="text-sm font-medium text-sec">Book Access Code (optional)</label><input type="text" id="signup-code" placeholder="e.g. PHARM-2024-ABCD" class="code-input" /></div>
           <div id="signup-error" class="text-sm text-red-500 min-h-[1.5rem]"></div>
           <button type="submit" class="btn-block accent-bg text-white">Create Account</button>
@@ -1216,6 +1252,48 @@
         <div class="text-center mt-3 text-xs text-sec">
           <p>📖 Enter the access code from your pharmacy book</p>
           <p class="mt-1">No code? <a href="#" onclick="showFreeTrial()" class="text-accent font-medium">Start with free decks →</a></p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== FORGOT PASSWORD MODAL ===== -->
+    <div id="forgot-password-modal" class="hidden fixed inset-0 z-50 flex items-end sm:items-center justify-center" style="background:rgba(0,0,0,0.5);" onclick="if(event.target===this) closeForgotPassword()">
+      <div class="surface rounded-t-3xl sm:rounded-3xl w-full max-w-md p-6" onclick="event.stopPropagation()">
+        <div class="flex justify-between items-center mb-4">
+          <h3 class="font-bold text-xl">🔑 Reset Password</h3>
+          <button onclick="closeForgotPassword()" class="text-sec"><i data-lucide="x" class="w-6 h-6"></i></button>
+        </div>
+        <div id="fp-step-1">
+          <p class="text-sm text-sec mb-4">Enter your email to receive a reset code.</p>
+          <input type="email" id="fp-email" placeholder="you@example.com" class="w-full border rounded-2xl px-4 py-3 mb-4 surface text-base" style="border-color:var(--border)" />
+          <button onclick="sendResetCode()" class="w-full py-3 rounded-2xl accent-bg text-white font-bold hover:opacity-90 transition-opacity">Send Reset Code</button>
+        </div>
+        <div id="fp-step-2" class="hidden">
+          <p class="text-sm text-sec mb-2">Enter the reset code and your new password.</p>
+          <div class="bg-green-50 dark:bg-green-900/20 p-3 rounded-xl mb-4 border border-green-200 dark:border-green-800">
+            <p class="text-sm font-medium text-green-700 dark:text-green-300">📧 Reset code sent to: <span id="fp-email-display" class="font-bold"></span></p>
+          </div>
+          <label class="text-sm text-sec font-medium">Reset Code</label>
+          <input type="text" id="fp-code" placeholder="e.g. 123456" class="w-full border rounded-2xl px-4 py-3 mb-3 surface text-base" style="border-color:var(--border)" />
+          <label class="text-sm text-sec font-medium">New Password</label>
+          <div class="password-wrapper">
+            <input type="password" id="fp-new-password" placeholder="Min 6 characters" class="w-full border rounded-2xl px-4 py-3 mb-3 surface text-base" style="border-color:var(--border)" />
+            <button type="button" class="toggle-eye" onclick="togglePassword('fp-new-password', this)">
+              <i data-lucide="eye" class="w-5 h-5"></i>
+            </button>
+          </div>
+          <label class="text-sm text-sec font-medium">Confirm Password</label>
+          <div class="password-wrapper">
+            <input type="password" id="fp-confirm-password" placeholder="Confirm new password" class="w-full border rounded-2xl px-4 py-3 mb-4 surface text-base" style="border-color:var(--border)" />
+            <button type="button" class="toggle-eye" onclick="togglePassword('fp-confirm-password', this)">
+              <i data-lucide="eye" class="w-5 h-5"></i>
+            </button>
+          </div>
+          <div id="fp-error" class="text-sm text-red-500 min-h-[1.5rem]"></div>
+          <button onclick="resetPassword()" class="w-full py-3 rounded-2xl accent-bg text-white font-bold hover:opacity-90 transition-opacity">Reset Password</button>
+        </div>
+        <div class="text-center mt-3">
+          <button onclick="closeForgotPassword()" class="text-xs text-sec hover:text-text transition-colors">Back to Login</button>
         </div>
       </div>
     </div>
@@ -1247,11 +1325,9 @@
         <button onclick="toggleTheme()" class="w-10 h-10 rounded-full surface flex items-center justify-center shadow-card border border-theme"><i data-lucide="sun" class="w-5 h-5"></i></button>
       </div>
 
-      <!-- Daily Progress - ORANGE GRADIENT with Welcome Message -->
       <div class="daily-progress hero-gradient rounded-3xl p-6 mb-3 relative overflow-hidden shadow-card" style="background:linear-gradient(135deg,#f97316,#ea580c); min-height:160px;">
         <div class="relative z-10 h-full flex flex-col justify-center">
-          <!-- Welcome Message - 20px with customizable nickname -->
-          <p class="text-white/90 font-medium mb-1" id="welcome-msg" style="font-size:26px;">Welcome back, <span id="user-display-name">Student</span>! 👋</p>
+          <p class="text-white/90 font-medium mb-1" id="welcome-msg" style="font-size:20px;">Welcome back, <span id="user-display-name">Student</span>! 👋</p>
           <div class="flex items-center justify-between">
             <div>
               <span class="text-white/80 text-xs font-medium">Today's Progress</span>
@@ -1269,7 +1345,6 @@
         <div class="absolute right-0 bottom-0 opacity-10 text-8xl p-4 select-none">📚</div>
       </div>
 
-      <!-- Streak Calendar -->
       <div class="surface rounded-2xl p-3 border border-theme shadow-card mb-3">
         <div class="flex items-center justify-between mb-2">
           <span class="text-sm font-semibold">🔥 <span id="streak-number">0</span>-day streak</span>
@@ -1278,7 +1353,6 @@
         <div class="flex justify-between" id="streak-calendar"></div>
       </div>
 
-      <!-- Quick Stats -->
       <div class="quick-stat-grid mb-3">
         <div class="stat-card"><div class="icon accent-text"><i data-lucide="flame" class="w-5 h-5 mx-auto"></i></div><div class="number accent-text" id="stat-streak">0</div><div class="label">Streak</div></div>
         <div class="stat-card"><div class="icon" style="color:#059669;"><i data-lucide="target" class="w-5 h-5 mx-auto"></i></div><div class="number" style="color:#059669;" id="stat-accuracy">0%</div><div class="label">Accuracy</div></div>
@@ -1535,13 +1609,49 @@
     <div id="view-settings" class="view">
       <h2 class="text-xl font-bold mb-4">⚙️ Settings</h2>
       <div class="view-scroll space-y-3">
-        
+
         <!-- Account -->
         <div class="surface rounded-2xl border border-theme p-4 shadow-card">
           <p class="text-sm text-sec font-medium mb-1">Account</p>
           <div class="flex items-center justify-between">
             <span id="settings-username" class="font-semibold">User</span>
             <button onclick="handleLogout()" class="px-4 py-1.5 rounded-xl text-white text-sm font-medium bg-red-500">Logout</button>
+          </div>
+        </div>
+
+        <!-- Change Password -->
+        <div class="surface rounded-2xl border border-theme p-4 shadow-card">
+          <p class="text-sm text-sec font-medium mb-2">🔑 Change Password</p>
+          <div class="space-y-3">
+            <div>
+              <label class="text-xs text-sec font-medium">Current Password</label>
+              <div class="password-wrapper">
+                <input type="password" id="current-password" placeholder="Enter current password" class="w-full border rounded-xl px-3 py-2 surface text-sm" style="border-color:var(--border)" />
+                <button type="button" class="toggle-eye" onclick="togglePassword('current-password', this)">
+                  <i data-lucide="eye" class="w-4 h-4"></i>
+                </button>
+              </div>
+            </div>
+            <div>
+              <label class="text-xs text-sec font-medium">New Password</label>
+              <div class="password-wrapper">
+                <input type="password" id="new-password" placeholder="Min 6 characters" class="w-full border rounded-xl px-3 py-2 surface text-sm" style="border-color:var(--border)" />
+                <button type="button" class="toggle-eye" onclick="togglePassword('new-password', this)">
+                  <i data-lucide="eye" class="w-4 h-4"></i>
+                </button>
+              </div>
+            </div>
+            <div>
+              <label class="text-xs text-sec font-medium">Confirm New Password</label>
+              <div class="password-wrapper">
+                <input type="password" id="confirm-new-password" placeholder="Confirm new password" class="w-full border rounded-xl px-3 py-2 surface text-sm" style="border-color:var(--border)" />
+                <button type="button" class="toggle-eye" onclick="togglePassword('confirm-new-password', this)">
+                  <i data-lucide="eye" class="w-4 h-4"></i>
+                </button>
+              </div>
+            </div>
+            <div id="change-password-error" class="text-xs text-red-500 min-h-[1.25rem]"></div>
+            <button onclick="changePassword()" class="w-full accent-bg text-white py-2 rounded-xl text-sm font-medium hover:opacity-90 transition-opacity">Change Password</button>
           </div>
         </div>
 
@@ -1562,7 +1672,7 @@
             <span class="text-sm">Study</span>
             <input type="number" id="goal-input" min="1" max="500" value="20" />
             <span class="text-sm">cards per day</span>
-            <button onclick="setDailyGoal()">Set</button>
+            <button onclick="setDailyGoal()" class="accent-bg text-white px-4 py-2 rounded-xl text-sm font-medium">Set</button>
           </div>
           <p class="text-xs text-sec mt-2">Set how many cards you want to study each day.</p>
         </div>
@@ -1665,6 +1775,24 @@
           <button type="submit" class="w-full py-3 rounded-2xl accent-bg text-white font-bold hover:opacity-90 transition-opacity">Send Request</button>
         </form>
         <p class="text-center text-xs text-sec mt-3">We'll review your request and add new decks regularly.</p>
+      </div>
+    </div>
+
+    <!-- ===== CARD MODAL (Add Card) ===== -->
+    <div id="card-modal" class="hidden fixed inset-0 z-50 flex items-end sm:items-center justify-center" style="background:rgba(0,0,0,0.4);" onclick="if(event.target===this) closeCardModal()">
+      <div class="surface rounded-t-3xl sm:rounded-3xl w-full max-w-md p-6" onclick="event.stopPropagation()">
+        <div class="flex justify-between items-center mb-4">
+          <h3 class="font-bold text-lg">➕ Add Card</h3>
+          <button onclick="closeCardModal()" class="text-sec"><i data-lucide="x" class="w-6 h-6"></i></button>
+        </div>
+        <label class="text-sm text-sec font-medium">Front</label>
+        <input id="card-front-input" type="text" class="w-full border rounded-2xl px-4 py-3 mt-1 mb-3 surface text-base" style="border-color:var(--border)" placeholder="Question" />
+        <label class="text-sm text-sec font-medium">Back</label>
+        <input id="card-back-input" type="text" class="w-full border rounded-2xl px-4 py-3 mt-1 mb-4 surface text-base" style="border-color:var(--border)" placeholder="Answer" />
+        <div class="flex gap-3">
+          <button onclick="closeCardModal()" class="flex-1 py-3 rounded-2xl border border-theme font-medium" style="color:var(--text-secondary)">Cancel</button>
+          <button onclick="saveCard()" class="flex-1 py-3 rounded-2xl accent-bg text-white font-medium">Save</button>
+        </div>
       </div>
     </div>
 
@@ -1783,11 +1911,29 @@
     let navTimeout = null;
     let progressPeriod = 'week';
     let isSyncing = false;
-
-    // Admin variables
     let renameDeckId = null;
     let manageDeckId = null;
     let editCardId = null;
+    let addingToDeckId = null;
+    let resetCode = '';
+    let resetEmail = '';
+
+    // ============================================================
+    //  PASSWORD TOGGLE FUNCTION
+    // ============================================================
+    function togglePassword(inputId, button) {
+      const input = document.getElementById(inputId);
+      if (!input) return;
+      const icon = button.querySelector('i');
+      if (input.type === 'password') {
+        input.type = 'text';
+        if (icon) icon.setAttribute('data-lucide', 'eye-off');
+      } else {
+        input.type = 'password';
+        if (icon) icon.setAttribute('data-lucide', 'eye');
+      }
+      if (typeof lucide !== 'undefined') lucide.createIcons();
+    }
 
     // ============================================================
     //  SYNC STATUS FUNCTIONS
@@ -1795,7 +1941,7 @@
     function updateSyncStatus(status, message) {
       const dotIds = ['sync-dot', 'sync-dot-home', 'sync-dot-signup'];
       const textIds = ['sync-text', 'sync-text-home', 'sync-text-signup'];
-      
+
       dotIds.forEach(id => {
         const dot = document.getElementById(id);
         if (dot) {
@@ -1804,7 +1950,7 @@
           else if (status === 'offline') dot.classList.add('offline');
         }
       });
-      
+
       textIds.forEach(id => {
         const el = document.getElementById(id);
         if (el) el.textContent = message;
@@ -1841,15 +1987,150 @@
     }
 
     // ============================================================
+    //  CHANGE PASSWORD
+    // ============================================================
+    function changePassword() {
+      const current = document.getElementById('current-password').value;
+      const newPw = document.getElementById('new-password').value;
+      const confirmPw = document.getElementById('confirm-new-password').value;
+      const err = document.getElementById('change-password-error');
+
+      err.textContent = '';
+
+      const users = getUsers();
+      if (!users[currentUser]) {
+        err.textContent = 'User not found.';
+        return;
+      }
+
+      if (users[currentUser].password !== current) {
+        err.textContent = 'Current password is incorrect.';
+        return;
+      }
+
+      if (newPw.length < 6) {
+        err.textContent = 'New password must be at least 6 characters.';
+        return;
+      }
+
+      if (newPw !== confirmPw) {
+        err.textContent = 'Passwords do not match.';
+        return;
+      }
+
+      users[currentUser].password = newPw;
+      saveUsers(users);
+
+      // Clear password fields
+      document.getElementById('current-password').value = '';
+      document.getElementById('new-password').value = '';
+      document.getElementById('confirm-new-password').value = '';
+
+      alert('✅ Password changed successfully!');
+    }
+
+    // ============================================================
+    //  FORGOT PASSWORD
+    // ============================================================
+    function showForgotPassword() {
+      document.getElementById('forgot-password-modal').classList.remove('hidden');
+      document.getElementById('fp-step-1').classList.remove('hidden');
+      document.getElementById('fp-step-2').classList.add('hidden');
+      document.getElementById('fp-email').value = '';
+      document.getElementById('fp-code').value = '';
+      document.getElementById('fp-new-password').value = '';
+      document.getElementById('fp-confirm-password').value = '';
+      document.getElementById('fp-error').textContent = '';
+      if (typeof lucide !== 'undefined') lucide.createIcons();
+    }
+
+    function closeForgotPassword() {
+      document.getElementById('forgot-password-modal').classList.add('hidden');
+    }
+
+    function sendResetCode() {
+      const email = document.getElementById('fp-email').value.trim();
+      const err = document.getElementById('fp-error');
+      const users = getUsers();
+
+      err.textContent = '';
+
+      if (!email) {
+        err.textContent = 'Please enter your email.';
+        return;
+      }
+
+      if (!users[email]) {
+        err.textContent = 'No account found with this email.';
+        return;
+      }
+
+      resetCode = Math.floor(100000 + Math.random() * 900000).toString();
+      resetEmail = email;
+
+      document.getElementById('fp-email-display').textContent = email;
+      document.getElementById('fp-step-1').classList.add('hidden');
+      document.getElementById('fp-step-2').classList.remove('hidden');
+
+      alert('📧 Reset code sent!\n\nYour reset code is: ' + resetCode + '\n\n(For demo purposes, the code is shown here.)');
+    }
+
+    function resetPassword() {
+      const code = document.getElementById('fp-code').value.trim();
+      const newPassword = document.getElementById('fp-new-password').value;
+      const confirmPassword = document.getElementById('fp-confirm-password').value;
+      const err = document.getElementById('fp-error');
+
+      err.textContent = '';
+
+      if (!code) {
+        err.textContent = 'Please enter the reset code.';
+        return;
+      }
+
+      if (code !== resetCode) {
+        err.textContent = 'Invalid reset code. Please try again.';
+        return;
+      }
+
+      if (newPassword.length < 6) {
+        err.textContent = 'Password must be at least 6 characters.';
+        return;
+      }
+
+      if (newPassword !== confirmPassword) {
+        err.textContent = 'Passwords do not match.';
+        return;
+      }
+
+      const users = getUsers();
+      if (users[resetEmail]) {
+        users[resetEmail].password = newPassword;
+        saveUsers(users);
+
+        alert('✅ Password reset successfully! Please login with your new password.');
+        closeForgotPassword();
+
+        document.getElementById('login-email').value = resetEmail;
+        document.getElementById('login-password').value = newPassword;
+
+        resetCode = '';
+        resetEmail = '';
+
+        handleLogin(new Event('submit'));
+      } else {
+        err.textContent = 'Account not found. Please try again.';
+      }
+    }
+
+    // ============================================================
     //  FIREBASE SYNC FUNCTIONS
     // ============================================================
     async function saveToFirebase(email, cards, plan) {
       if (!email || !navigator.onLine) return;
-      
       try {
         isSyncing = true;
         updateSyncStatus('syncing', 'Syncing...');
-        
         await db.collection('users').doc(email).set({
           cards: cards,
           plan: plan || 'free',
@@ -1857,7 +2138,6 @@
           nickname: getNickname(),
           updatedAt: firebase.firestore.FieldValue.serverTimestamp()
         }, { merge: true });
-        
         updateSyncStatus('', 'Synced');
         console.log('✅ Data synced to Firebase');
       } catch (err) {
@@ -1870,14 +2150,11 @@
 
     async function loadFromFirebase(email) {
       if (!email || !navigator.onLine) return null;
-      
       try {
         updateSyncStatus('syncing', 'Loading...');
         const doc = await db.collection('users').doc(email).get();
-        
         if (doc.exists) {
           const data = doc.data();
-          // Load nickname from Firebase
           if (data.nickname) {
             localStorage.setItem(NICKNAME_KEY + email, data.nickname);
           }
@@ -1929,48 +2206,85 @@
 
     function getDateRange(days) {
       const dates = [];
-      for (let i = days - 1; i >= 0; i--) {
-        const d = new Date();
-        d.setDate(d.getDate() - i);
-        dates.push(d.toISOString().split('T')[0]);
+      const now = new Date();
+
+      if (days === 7) {
+        for (let i = 6; i >= 0; i--) {
+          const d = new Date(now);
+          d.setDate(d.getDate() - i);
+          dates.push(d.toISOString().split('T')[0]);
+        }
+      } else if (days === 30) {
+        const year = now.getFullYear();
+        const month = now.getMonth();
+        const todayDate = now.getDate();
+        for (let day = 1; day <= todayDate; day++) {
+          const d = new Date(year, month, day);
+          dates.push(d.toISOString().split('T')[0]);
+        }
+      } else {
+        for (let i = 59; i >= 0; i--) {
+          const d = new Date(now);
+          d.setDate(d.getDate() - i);
+          dates.push(d.toISOString().split('T')[0]);
+        }
       }
       return dates;
     }
 
+    function getDateRangeForPeriod(days) {
+      return getDateRange(days);
+    }
+
+    function getDaysInMonth() {
+      const now = new Date();
+      return new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+    }
+
     // ============================================================
-    //  DAILY GOAL & STUDY TIME
+    //  DAILY GOAL FUNCTIONS
     // ============================================================
     function getDailyGoal() {
-  const goal = localStorage.getItem(GOAL_KEY + '_' + (currentUser || 'default'));
-  // Return the saved goal or default to 20
-  return goal ? parseInt(goal) : 20;
-}
+      const key = 'flashmind_goal_' + (currentUser || 'default');
+      const saved = localStorage.getItem(key);
+      if (saved) {
+        const val = parseInt(saved);
+        if (val > 0 && val <= 500) return val;
+      }
+      return 20;
+    }
 
     function setDailyGoal() {
-  const input = document.getElementById('goal-input');
-  const val = parseInt(input.value);
-  
-  if (val > 0 && val <= 500) {
-    // Save to localStorage with the correct key
-    localStorage.setItem(GOAL_KEY + '_' + (currentUser || 'default'), val);
-    
-    // Immediately update the display
-    updateHome();
-    renderStats();
-    
-    // Also update the settings input to show the new value
-    document.getElementById('goal-input').value = val;
-    
-    // Update the daily goal text on home
-    document.getElementById('daily-goal-text').textContent = `Goal: ${val} cards`;
-    document.getElementById('today-goal').textContent = val;
-    
-    alert('✅ Daily goal updated to ' + val + ' cards!');
-  } else {
-    alert('Please enter a number between 1 and 500.');
-  }
-}
+      const input = document.getElementById('goal-input');
+      if (!input) return;
+      const val = parseInt(input.value);
+      if (isNaN(val) || val < 1 || val > 500) {
+        alert('Please enter a number between 1 and 500.');
+        return;
+      }
+      const key = 'flashmind_goal_' + (currentUser || 'default');
+      localStorage.setItem(key, val);
+      loadDailyGoal();
+      updateHome();
+      renderStats();
+      alert('✅ Daily goal updated to ' + val + ' cards!');
+    }
 
+    function loadDailyGoal() {
+      const goal = getDailyGoal();
+      const todayGoal = document.getElementById('today-goal');
+      if (todayGoal) todayGoal.textContent = goal;
+      const dailyGoalText = document.getElementById('daily-goal-text');
+      if (dailyGoalText) dailyGoalText.textContent = 'Goal: ' + goal + ' cards';
+      const goalInput = document.getElementById('goal-input');
+      if (goalInput) goalInput.value = goal;
+      const avgGoal = document.getElementById('avg-goal');
+      if (avgGoal) avgGoal.textContent = goal;
+    }
+
+    // ============================================================
+    //  STUDY TIME
+    // ============================================================
     function getStudyTime() {
       const data = JSON.parse(localStorage.getItem(STUDY_TIME_KEY + '_' + (currentUser || 'default')) || '{}');
       const todayStr = today();
@@ -2073,7 +2387,7 @@
       dates.forEach(d => {
         total += getTotalReviewsForDate(d);
       });
-      return Math.round(total / days);
+      return Math.round(total / dates.length);
     }
 
     function getBestDay(days) {
@@ -2207,13 +2521,13 @@
     // ============================================================
     //  AUTH
     // ============================================================
-    function showLogin() { 
+    function showLogin() {
       document.getElementById('view-login').classList.add('active');
       document.getElementById('view-signup').classList.remove('active');
       document.getElementById('bottom-nav-container').classList.add('hidden');
     }
 
-    function showSignup() { 
+    function showSignup() {
       document.getElementById('view-signup').classList.add('active');
       document.getElementById('view-login').classList.remove('active');
       document.getElementById('bottom-nav-container').classList.add('hidden');
@@ -2240,13 +2554,15 @@
 
     async function handleLogin(e) {
       e.preventDefault();
-      const email = document.getElementById('login-email').value.trim(),
-        pw = document.getElementById('login-password').value,
-        err = document.getElementById('login-error');
+      const email = document.getElementById('login-email').value.trim();
+      const pw = document.getElementById('login-password').value;
+      const err = document.getElementById('login-error');
       const users = getUsers();
 
+      err.textContent = '';
+
       if (!users[email]) {
-        err.textContent = 'No account found.';
+        err.textContent = 'No account found. Please sign up first.';
         return;
       }
 
@@ -2262,7 +2578,7 @@
 
       currentUser = email;
       saveSession(email);
-      
+
       const cloudData = await loadFromFirebase(email);
       if (cloudData && cloudData.cards && cloudData.cards.length > 0) {
         allCards = cloudData.cards;
@@ -2277,7 +2593,7 @@
       } else {
         loadUserData(email);
       }
-      
+
       isAdmin = users[email].isAdmin || ADMIN_EMAILS.includes(email);
       document.getElementById('bottom-nav-container').classList.remove('hidden');
       enterApp();
@@ -2294,15 +2610,19 @@
 
     async function handleSignup(e) {
       e.preventDefault();
-      const un = document.getElementById('signup-username').value.trim(),
-        email = document.getElementById('signup-email').value.trim(),
-        pw = document.getElementById('signup-password').value,
-        cf = document.getElementById('signup-confirm').value,
-        code = document.getElementById('signup-code').value.trim().toUpperCase(),
-        err = document.getElementById('signup-error');
+      const un = document.getElementById('signup-username').value.trim();
+      const email = document.getElementById('signup-email').value.trim();
+      const pw = document.getElementById('signup-password').value;
+      const cf = document.getElementById('signup-confirm').value;
+      const code = document.getElementById('signup-code').value.trim().toUpperCase();
+      const err = document.getElementById('signup-error');
+
+      err.textContent = '';
+
       if (!un || !email || !pw || !cf) { err.textContent = 'All fields required.'; return }
       if (pw.length < 6) { err.textContent = 'Password min 6 chars.'; return }
       if (pw !== cf) { err.textContent = 'Passwords do not match.'; return }
+
       const users = getUsers();
       if (users[email]) { err.textContent = 'Email already registered.'; return }
 
@@ -2343,9 +2663,9 @@
       if (isBookBuyer || isAdminUser) {
         savePlan(email, 'premium', expiry);
       }
-      
+
       await saveToFirebase(email, allCards, plan);
-      
+
       isAdmin = isAdminUser;
       document.getElementById('bottom-nav-container').classList.remove('hidden');
       enterApp();
@@ -2370,7 +2690,7 @@
     }
 
     function handleLogout() {
-      if (confirm('Logout?')) { 
+      if (confirm('Logout?')) {
         clearSession();
         currentUser = null;
         allCards = [];
@@ -2379,7 +2699,7 @@
         document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
         document.getElementById('view-login').classList.add('active');
         document.getElementById('login-email').value = '';
-        document.getElementById('login-password').value = ''; 
+        document.getElementById('login-password').value = '';
       }
     }
 
@@ -2397,7 +2717,7 @@
     function enterApp() {
       requestAnimationFrame(() => {
         document.getElementById('bottom-nav-container').classList.remove('hidden');
-        
+
         document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
         document.getElementById('view-home').classList.add('active');
 
@@ -2412,6 +2732,7 @@
         }
 
         loadNickname();
+        loadDailyGoal();
 
         if (userPlan === 'premium') {
           const expiry = getPlanExpiry(currentUser);
@@ -2565,8 +2886,8 @@
       const mastered = real.filter(c => (c.interval || 0) >= 21).length;
       const streak = getStreak();
 
-      // Update nickname
       loadNickname();
+      loadDailyGoal();
 
       document.getElementById('stat-streak').textContent = streak;
       document.getElementById('stat-accuracy').textContent = acc + '%';
@@ -2575,13 +2896,10 @@
 
       const goal = getDailyGoal();
       const todayCount = getTodayStudyCount();
-      document.getElementById('today-count').textContent = todayCount;
-      document.getElementById('today-goal').textContent = goal;
-      document.getElementById('daily-goal-text').textContent = `Goal: ${goal} cards`;
-      document.getElementById('goal-input').value = goal;
 
       const pct = Math.min((todayCount / goal) * 100, 100);
       document.getElementById('daily-progress-fill').style.width = pct + '%';
+      document.getElementById('today-count').textContent = todayCount;
 
       const days = getStreakDays();
       const dayLabels = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
@@ -2602,8 +2920,8 @@
         if (diff < 1) document.getElementById('last-study-text').textContent = 'Last studied: Just now';
         else if (diff < 60) document.getElementById('last-study-text').textContent = `Last studied: ${diff} min ago`;
         else if (diff < 1440) document.getElementById('last-study-text').textContent =
-          `Last studied: ${Math.floor(diff/60)}h ${diff%60}m ago`;
-        else document.getElementById('last-study-text').textContent = `Last studied: ${Math.floor(diff/1440)} days ago`;
+          `Last studied: ${Math.floor(diff / 60)}h ${diff % 60}m ago`;
+        else document.getElementById('last-study-text').textContent = `Last studied: ${Math.floor(diff / 1440)} days ago`;
       } else {
         document.getElementById('last-study-text').textContent = 'Last studied: Never';
       }
@@ -2643,37 +2961,37 @@
             const due = d.cards.filter(c => !c.next_review || c.next_review <= today()).length;
             const mastered = d.cards.filter(c => (c.interval || 0) >= 21).length;
             const pct = d.cards.length > 0 ? Math.round(mastered / d.cards.length * 100) : 0;
-            return `<div class="deck-item ${colors[i%4]}" onclick="openDeck('${d.id}')">
-                  <div class="flex justify-between items-center">
-                    <h3 class="font-bold truncate">${d.name}</h3>
-                    <div class="flex gap-1" onclick="event.stopPropagation()">
-                      ${isAdmin ? `
-                        <button onclick="showRenameDeck('${d.id}')" class="text-sec p-1 hover:text-accent transition-colors" title="Rename Deck">
-                          <i data-lucide="pencil" class="w-4 h-4"></i>
-                        </button>
-                        <button onclick="showManageCards('${d.id}')" class="text-sec p-1 hover:text-blue-500 transition-colors" title="Manage Cards">
-                          <i data-lucide="list" class="w-4 h-4"></i>
-                        </button>
-                        <button onclick="deleteDeck('${d.id}')" class="text-sec p-1 hover:text-red-500 transition-colors" title="Delete Deck">
-                          <i data-lucide="trash-2" class="w-4 h-4"></i>
-                        </button>
-                      ` : ''}
-                    </div>
-                  </div>
-                  <div class="progress-bar h-1.5 my-1"><div class="progress-fill" style="width:${pct}%"></div></div>
-                  <p class="text-xs text-sec">${d.cards.length} cards · ${due} due · ${pct}% mastered</p>
-                  ${d.subtopic ? `<p class="text-xs text-sec mt-0.5">📂 ${d.subtopic}</p>` : ''}
-                </div>`;
+            return `<div class="deck-item ${colors[i % 4]}" onclick="openDeck('${d.id}')">
+                      <div class="flex justify-between items-center">
+                        <h3 class="font-bold truncate">${d.name}</h3>
+                        <div class="flex gap-1" onclick="event.stopPropagation()">
+                          ${isAdmin ? `
+                            <button onclick="showRenameDeck('${d.id}')" class="text-sec p-1 hover:text-accent transition-colors" title="Rename Deck">
+                              <i data-lucide="pencil" class="w-4 h-4"></i>
+                            </button>
+                            <button onclick="showManageCards('${d.id}')" class="text-sec p-1 hover:text-blue-500 transition-colors" title="Manage Cards">
+                              <i data-lucide="list" class="w-4 h-4"></i>
+                            </button>
+                            <button onclick="deleteDeck('${d.id}')" class="text-sec p-1 hover:text-red-500 transition-colors" title="Delete Deck">
+                              <i data-lucide="trash-2" class="w-4 h-4"></i>
+                            </button>
+                          ` : ''}
+                        </div>
+                      </div>
+                      <div class="progress-bar h-1.5 my-1"><div class="progress-fill" style="width:${pct}%"></div></div>
+                      <p class="text-xs text-sec">${d.cards.length} cards · ${due} due · ${pct}% mastered</p>
+                      ${d.subtopic ? `<p class="text-xs text-sec mt-0.5">📂 ${d.subtopic}</p>` : ''}
+                    </div>`;
           }).join('');
 
           container.innerHTML += `
-              <div class="rounded-2xl p-4 text-center border-2 border-dashed border-orange-300 dark:border-orange-700 bg-orange-50 dark:bg-orange-900/20 cursor-pointer" onclick="showUpgradeModal()">
-                <i data-lucide="lock" class="w-8 h-8 mx-auto text-orange-500 mb-2"></i>
-                <p class="font-semibold text-orange-600 dark:text-orange-400">${premiumCount} more decks locked</p>
-                <p class="text-xs text-sec">Upgrade to Premium to unlock all decks</p>
-                <button class="mt-2 accent-bg text-white px-6 py-2 rounded-xl text-sm font-medium">Upgrade Now</button>
-              </div>
-            `;
+                <div class="rounded-2xl p-4 text-center border-2 border-dashed border-orange-300 dark:border-orange-700 bg-orange-50 dark:bg-orange-900/20 cursor-pointer" onclick="showUpgradeModal()">
+                  <i data-lucide="lock" class="w-8 h-8 mx-auto text-orange-500 mb-2"></i>
+                  <p class="font-semibold text-orange-600 dark:text-orange-400">${premiumCount} more decks locked</p>
+                  <p class="text-xs text-sec">Upgrade to Premium to unlock all decks</p>
+                  <button class="mt-2 accent-bg text-white px-6 py-2 rounded-xl text-sm font-medium">Upgrade Now</button>
+                </div>
+              `;
           no.classList.add('hidden');
           if (typeof lucide !== 'undefined' && lucide.createIcons) {
             lucide.createIcons();
@@ -2690,27 +3008,27 @@
         const due = d.cards.filter(c => !c.next_review || c.next_review <= today()).length;
         const mastered = d.cards.filter(c => (c.interval || 0) >= 21).length;
         const pct = d.cards.length > 0 ? Math.round(mastered / d.cards.length * 100) : 0;
-        return `<div class="deck-item ${colors[i%4]}" onclick="openDeck('${d.id}')">
-              <div class="flex justify-between items-center">
-                <h3 class="font-bold truncate">${d.name}</h3>
-                <div class="flex gap-1" onclick="event.stopPropagation()">
-                  ${isAdmin ? `
-                    <button onclick="showRenameDeck('${d.id}')" class="text-sec p-1 hover:text-accent transition-colors" title="Rename Deck">
-                      <i data-lucide="pencil" class="w-4 h-4"></i>
-                    </button>
-                    <button onclick="showManageCards('${d.id}')" class="text-sec p-1 hover:text-blue-500 transition-colors" title="Manage Cards">
-                      <i data-lucide="list" class="w-4 h-4"></i>
-                    </button>
-                    <button onclick="deleteDeck('${d.id}')" class="text-sec p-1 hover:text-red-500 transition-colors" title="Delete Deck">
-                      <i data-lucide="trash-2" class="w-4 h-4"></i>
-                    </button>
-                  ` : ''}
+        return `<div class="deck-item ${colors[i % 4]}" onclick="openDeck('${d.id}')">
+                <div class="flex justify-between items-center">
+                  <h3 class="font-bold truncate">${d.name}</h3>
+                  <div class="flex gap-1" onclick="event.stopPropagation()">
+                    ${isAdmin ? `
+                      <button onclick="showRenameDeck('${d.id}')" class="text-sec p-1 hover:text-accent transition-colors" title="Rename Deck">
+                        <i data-lucide="pencil" class="w-4 h-4"></i>
+                      </button>
+                      <button onclick="showManageCards('${d.id}')" class="text-sec p-1 hover:text-blue-500 transition-colors" title="Manage Cards">
+                        <i data-lucide="list" class="w-4 h-4"></i>
+                      </button>
+                      <button onclick="deleteDeck('${d.id}')" class="text-sec p-1 hover:text-red-500 transition-colors" title="Delete Deck">
+                        <i data-lucide="trash-2" class="w-4 h-4"></i>
+                      </button>
+                    ` : ''}
+                  </div>
                 </div>
-              </div>
-              <div class="progress-bar h-1.5 my-1"><div class="progress-fill" style="width:${pct}%"></div></div>
-              <p class="text-xs text-sec">${d.cards.length} cards · ${due} due · ${pct}% mastered</p>
-              ${d.subtopic ? `<p class="text-xs text-sec mt-0.5">📂 ${d.subtopic}</p>` : ''}
-            </div>`;
+                <div class="progress-bar h-1.5 my-1"><div class="progress-fill" style="width:${pct}%"></div></div>
+                <p class="text-xs text-sec">${d.cards.length} cards · ${due} due · ${pct}% mastered</p>
+                ${d.subtopic ? `<p class="text-xs text-sec mt-0.5">📂 ${d.subtopic}</p>` : ''}
+              </div>`;
       }).join('');
       if (typeof lucide !== 'undefined' && lucide.createIcons) {
         lucide.createIcons();
@@ -2736,13 +3054,13 @@
     function saveRenameDeck() {
       const newName = document.getElementById('rename-deck-input').value.trim();
       if (!newName || !renameDeckId) return;
-      
+
       allCards.forEach(c => {
         if (c.deck_id === renameDeckId) {
           c.deck_name = newName;
         }
       });
-      
+
       saveUserData(currentUser);
       closeRenameDeck();
       renderDecks();
@@ -2758,7 +3076,7 @@
       manageDeckId = deckId;
       const deck = allCards.find(c => c.deck_id === deckId && c.card_front === '__deck_placeholder__');
       document.getElementById('manage-deck-name').textContent = deck ? deck.deck_name : 'Manage Cards';
-      
+
       document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
       document.getElementById('view-admin-cards').classList.add('active');
       renderManageCards();
@@ -2770,34 +3088,34 @@
     function renderManageCards() {
       const container = document.getElementById('manage-cards-list');
       const cards = allCards.filter(c => c.deck_id === manageDeckId && c.card_front !== '__deck_placeholder__');
-      
+
       if (cards.length === 0) {
         container.innerHTML = '<p class="text-sec text-center py-10">No cards in this deck.</p>';
         return;
       }
-      
+
       container.innerHTML = cards.map((c, i) => `
-        <div class="card-item surface rounded-2xl p-3 border border-theme shadow-card mb-2">
-          <div class="flex items-center justify-between">
-            <div class="flex-1 min-w-0">
-              <p class="font-medium text-sm truncate">${c.card_front || 'Empty'}</p>
-              <p class="text-xs text-sec truncate">→ ${c.card_back || 'Empty'}</p>
-              <div class="text-[10px] text-sec mt-0.5">
-                Reviews: ${c.total_reviews || 0} · Correct: ${c.correct_count || 0}
+          <div class="card-item surface rounded-2xl p-3 border border-theme shadow-card mb-2">
+            <div class="flex items-center justify-between">
+              <div class="flex-1 min-w-0">
+                <p class="font-medium text-sm truncate">${c.card_front || 'Empty'}</p>
+                <p class="text-xs text-sec truncate">→ ${c.card_back || 'Empty'}</p>
+                <div class="text-[10px] text-sec mt-0.5">
+                  Reviews: ${c.total_reviews || 0} · Correct: ${c.correct_count || 0}
+                </div>
+              </div>
+              <div class="flex gap-1 flex-shrink-0">
+                <button onclick="showEditCard('${c.__id}')" class="text-sec p-1 hover:text-accent transition-colors" title="Edit Card">
+                  <i data-lucide="pencil" class="w-4 h-4"></i>
+                </button>
+                <button onclick="deleteCard('${c.__id}')" class="text-sec p-1 hover:text-red-500 transition-colors" title="Delete Card">
+                  <i data-lucide="trash-2" class="w-4 h-4"></i>
+                </button>
               </div>
             </div>
-            <div class="flex gap-1 flex-shrink-0">
-              <button onclick="showEditCard('${c.__id}')" class="text-sec p-1 hover:text-accent transition-colors" title="Edit Card">
-                <i data-lucide="pencil" class="w-4 h-4"></i>
-              </button>
-              <button onclick="deleteCard('${c.__id}')" class="text-sec p-1 hover:text-red-500 transition-colors" title="Delete Card">
-                <i data-lucide="trash-2" class="w-4 h-4"></i>
-              </button>
-            </div>
           </div>
-        </div>
-      `).join('');
-      
+        `).join('');
+
       if (typeof lucide !== 'undefined' && lucide.createIcons) {
         lucide.createIcons();
       }
@@ -2809,6 +3127,38 @@
       document.getElementById('card-front-input').value = '';
       document.getElementById('card-back-input').value = '';
       document.getElementById('card-modal').classList.remove('hidden');
+    }
+
+    function saveCard() {
+      const front = document.getElementById('card-front-input').value.trim();
+      const back = document.getElementById('card-back-input').value.trim();
+      if (!front || !back) return;
+
+      const deck = allCards.find(c => c.deck_id === addingToDeckId && c.card_front === '__deck_placeholder__');
+      allCards.push({
+        __id: generateId(),
+        deck_id: addingToDeckId,
+        deck_name: deck ? deck.deck_name : 'Untitled',
+        card_front: front,
+        card_back: back,
+        card_tags: '',
+        ease_factor: 2.5,
+        interval: 0,
+        repetitions: 0,
+        next_review: today(),
+        last_review: '',
+        total_reviews: 0,
+        correct_count: 0
+      });
+      saveUserData(currentUser);
+      closeCardModal();
+      renderManageCards();
+      renderDecks();
+      updateHome();
+    }
+
+    function closeCardModal() {
+      document.getElementById('card-modal').classList.add('hidden');
     }
 
     // ============================================================
@@ -2833,7 +3183,7 @@
       const front = document.getElementById('edit-card-front').value.trim();
       const back = document.getElementById('edit-card-back').value.trim();
       if (!front || !back || !editCardId) return;
-      
+
       const card = allCards.find(c => c.__id === editCardId);
       if (card) {
         card.card_front = front;
@@ -2871,30 +3221,29 @@
           const data = new Uint8Array(e.target.result);
           const workbook = XLSX.read(data, { type: 'array' });
           const jsonData = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]]);
-          
+
           if (jsonData.length === 0) {
             alert('No data found in Excel file.');
             return;
           }
-          
+
           let importedCount = 0;
           const deck = allCards.find(c => c.deck_id === manageDeckId && c.card_front === '__deck_placeholder__');
-          
+
           jsonData.forEach(row => {
             const front = row['Front'] || row['front'] || row['Question'] || row['question'];
             const back = row['Back'] || row['back'] || row['Answer'] || row['answer'];
-            
+
             if (!front || !back) return;
-            
-            // Check for duplicates
-            const exists = allCards.some(c => 
-              c.deck_id === manageDeckId && 
-              c.card_front === front && 
+
+            const exists = allCards.some(c =>
+              c.deck_id === manageDeckId &&
+              c.card_front === front &&
               c.card_back === back
             );
-            
+
             if (exists) return;
-            
+
             allCards.push({
               __id: generateId(),
               deck_id: manageDeckId,
@@ -2912,7 +3261,7 @@
             });
             importedCount++;
           });
-          
+
           saveUserData(currentUser);
           renderManageCards();
           renderDecks();
@@ -2943,6 +3292,20 @@
       }
     }
 
+    function openDeck(deckId) {
+      const decks = getDecks();
+      const deckIndex = decks.findIndex(d => d.id === deckId);
+      const isPremium = isPremiumActive();
+
+      if (!isPremium && deckIndex >= 5) {
+        showUpgradeModal();
+        return;
+      }
+
+      currentDeckId = deckId;
+      openStudySelect();
+    }
+
     // ============================================================
     //  STATS RENDERING
     // ============================================================
@@ -2953,15 +3316,13 @@
       const acc = total > 0 ? Math.round(correct / total * 100) : 0;
       const mastered = real.filter(c => (c.interval || 0) >= 21).length;
       const streak = getStreak();
-      const goal = getDailyGoal();
-
 
       document.getElementById('stats-streak-val').textContent = streak + ' days';
       document.getElementById('stats-acc').textContent = acc + '%';
       document.getElementById('stats-total').textContent = total;
       document.getElementById('stats-mastered-val').textContent = mastered;
-      document.getElementById('avg-goal').textContent = goal;
-      
+
+      loadDailyGoal();
       renderProgressChart();
       renderDeckPerformance();
       renderRetentionRate();
@@ -2973,163 +3334,149 @@
     // ============================================================
     //  1. PROGRESS CHART
     // ============================================================
-    // ============================================================
-//  DATE HELPER FUNCTIONS
-// ============================================================
-
-function getDaysInMonth() {
-  const now = new Date();
-  return new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
-}
-
-function getDateRangeForPeriod(days) {
-  const dates = [];
-  const now = new Date();
-  
-  if (days === 7) {
-    // Week: last 7 days
-    for (let i = 6; i >= 0; i--) {
-      const d = new Date(now);
-      d.setDate(d.getDate() - i);
-      dates.push(d.toISOString().split('T')[0]);
-    }
-  } else if (days === 30) {
-    // Month: current month from 1st to today
-    const year = now.getFullYear();
-    const month = now.getMonth();
-    const firstDay = new Date(year, month, 1);
-    const todayDate = now.getDate();
-    
-    // Build from 1st of month to today
-    for (let day = 1; day <= todayDate; day++) {
-      const d = new Date(year, month, day);
-      dates.push(d.toISOString().split('T')[0]);
-    }
-  } else {
-    // All time: last 60 days
-    for (let i = 59; i >= 0; i--) {
-      const d = new Date(now);
-      d.setDate(d.getDate() - i);
-      dates.push(d.toISOString().split('T')[0]);
-    }
-  }
-  
-  return dates;
-}
-    
     function renderProgressChart() {
-  const days = progressPeriod === 'week' ? 7 : progressPeriod === 'month' ? getDaysInMonth() : 60;
-  const dates = getDateRangeForPeriod(days);
-  const counts = dates.map(d => getTotalReviewsForDate(d));
-  const maxCount = Math.max(...counts, 1);
+      const days = progressPeriod === 'week' ? 7 : progressPeriod === 'month' ? getDaysInMonth() : 60;
+      const dates = getDateRangeForPeriod(days);
+      const counts = dates.map(d => getTotalReviewsForDate(d));
+      const maxCount = Math.max(...counts, 1);
 
-  const container = document.getElementById('progress-chart');
+      const container = document.getElementById('progress-chart');
 
-  // Reset classes - REMOVE width: max-content to fit container
-  container.className = 'flex items-end gap-1';
-  container.style.minHeight = '80px';
-  container.style.width = '100%';  // ← FIX: Fit to container width
-  container.style.padding = '4px 8px 4px 4px';
-  container.style.flexWrap = 'nowrap';
+      container.className = 'flex items-end gap-1';
+      container.style.minHeight = '80px';
+      container.style.width = '100%';
+      container.style.padding = '4px 8px 4px 4px';
+      container.style.flexWrap = 'nowrap';
 
-  if (days > 14) container.classList.add('month');
-  if (days > 40) container.classList.add('all');
+      if (days > 14) container.classList.add('month');
+      if (days > 40) container.classList.add('all');
 
-  let labelStep = 1;
-  if (days === 30) labelStep = 5;
-  if (days === 60) labelStep = 10;
+      let labelStep = 1;
+      if (days === 30) labelStep = 5;
+      if (days === 60) labelStep = 10;
 
-  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+      const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
-  const getWeekLabels = () => {
-    const todayDate = new Date();
-    const dayOfWeek = todayDate.getDay();
-    const mondayOffset = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
-    const startOfWeek = new Date(todayDate);
-    startOfWeek.setDate(todayDate.getDate() - mondayOffset);
-    const dayNames = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-    const labels = [];
-    for (let i = 0; i < 7; i++) {
-      const d = new Date(startOfWeek);
-      d.setDate(d.getDate() + i);
-      labels.push({
-        label: dayNames[i],
-        date: d.toISOString().split('T')[0]
-      });
-    }
-    return labels;
-  };
+      const getWeekLabels = () => {
+        const todayDate = new Date();
+        const dayOfWeek = todayDate.getDay();
+        const mondayOffset = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
+        const startOfWeek = new Date(todayDate);
+        startOfWeek.setDate(todayDate.getDate() - mondayOffset);
+        const dayNames = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+        const labels = [];
+        for (let i = 0; i < 7; i++) {
+          const d = new Date(startOfWeek);
+          d.setDate(d.getDate() + i);
+          labels.push({
+            label: dayNames[i],
+            date: d.toISOString().split('T')[0]
+          });
+        }
+        return labels;
+      };
 
-  // Calculate bar width to fit container
-  const barCount = dates.length;
-  const containerWidth = container.parentElement?.offsetWidth || 320;
-  const gapTotal = (barCount - 1) * 3;
-  const availableWidth = containerWidth - 16 - gapTotal;
-  let barWidth = Math.max(Math.min(availableWidth / barCount, 30), 6);
-  
-  // For month view, make bars smaller
-  if (days > 14) barWidth = Math.min(barWidth, 14);
-  if (days > 40) barWidth = Math.min(barWidth, 8);
+      const barCount = dates.length;
+      const containerWidth = container.parentElement?.offsetWidth || 320;
+      const gapTotal = (barCount - 1) * 3;
+      const availableWidth = containerWidth - 16 - gapTotal;
+      let barWidth = Math.max(Math.min(availableWidth / barCount, 30), 6);
 
-  container.innerHTML = dates.map((d, i) => {
-    const height = Math.max((counts[i] / maxCount) * 55, 3);
-    const isToday = d === today();
-    const hasValue = counts[i] > 0;
-    const dateObj = new Date(d);
-    const day = dateObj.getDate();
-    const month = months[dateObj.getMonth()];
-    const dayOfWeek = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][dateObj.getDay()];
+      if (days > 14) barWidth = Math.min(barWidth, 14);
+      if (days > 40) barWidth = Math.min(barWidth, 8);
 
-    let showLabel = false;
-    let labelText = '';
+      container.innerHTML = dates.map((d, i) => {
+        const height = Math.max((counts[i] / maxCount) * 55, 3);
+        const isToday = d === today();
+        const hasValue = counts[i] > 0;
+        const dateObj = new Date(d);
+        const day = dateObj.getDate();
+        const month = months[dateObj.getMonth()];
+        const dayOfWeek = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][dateObj.getDay()];
 
-    if (days === 7) {
-      const weekLabels = getWeekLabels();
-      showLabel = true;
-      labelText = weekLabels[i]?.label || dayOfWeek.substring(0, 3);
-    } else {
-      if (i % labelStep === 0 || i === dates.length - 1) {
-        showLabel = true;
-        labelText = `${month} ${day}`;
+        let showLabel = false;
+        let labelText = '';
+
+        if (days === 7) {
+          const weekLabels = getWeekLabels();
+          showLabel = true;
+          labelText = weekLabels[i]?.label || dayOfWeek.substring(0, 3);
+        } else {
+          if (i % labelStep === 0 || i === dates.length - 1) {
+            showLabel = true;
+            labelText = `${month} ${day}`;
+          }
+        }
+
+        const minWidth = Math.max(barWidth, 6);
+
+        return `<div class="bar-group" style="min-width:${minWidth}px; max-width:${barWidth + 4}px; flex:1;">
+                  <span class="bar-value">${counts[i] > 0 ? counts[i] : ''}</span>
+                  <div class="bar ${hasValue ? 'filled' : ''} ${isToday ? 'today' : ''}" 
+                       style="height:${height}px; width:100%; max-width:${barWidth}px;"></div>
+                  <span class="bar-label">${showLabel ? labelText : ''}</span>
+                </div>`;
+      }).join('');
+
+      const totalInPeriod = counts.reduce((a, b) => a + b, 0);
+      const periodLabel = progressPeriod === 'week' ? 'this week' : progressPeriod === 'month' ? 'this month' : 'all time';
+      document.getElementById('progress-total-label').textContent = `${totalInPeriod} cards ${periodLabel}`;
+
+      const streak = getStreak();
+      const streakMsg = document.getElementById('progress-streak-msg');
+      if (streak >= 30) {
+        streakMsg.textContent = `🔥 ${streak}-day streak! Unstoppable! 🔥`;
+        streakMsg.style.color = 'var(--premium-gold)';
+      } else if (streak >= 14) {
+        streakMsg.textContent = `🔥 ${streak}-day streak! You're on fire! 🔥`;
+        streakMsg.style.color = 'var(--accent)';
+      } else if (streak >= 7) {
+        streakMsg.textContent = `🔥 ${streak}-day streak! Amazing! Keep going!`;
+        streakMsg.style.color = 'var(--accent)';
+      } else if (streak >= 3) {
+        streakMsg.textContent = `🔥 ${streak}-day streak! You're building momentum!`;
+        streakMsg.style.color = 'var(--accent)';
+      } else if (streak > 0) {
+        streakMsg.textContent = `🔥 ${streak}-day streak! Every day counts!`;
+        streakMsg.style.color = 'var(--accent)';
+      } else {
+        streakMsg.textContent = '📖 Start your streak today! Study at least one card.';
+        streakMsg.style.color = 'var(--text-secondary)';
       }
     }
 
-    const minWidth = Math.max(barWidth, 6);
+    function getDateRangeForPeriod(days) {
+      const dates = [];
+      const now = new Date();
 
-    return `<div class="bar-group" style="min-width:${minWidth}px; max-width:${barWidth + 4}px; flex:1;">
-              <span class="bar-value">${counts[i] > 0 ? counts[i] : ''}</span>
-              <div class="bar ${hasValue ? 'filled' : ''} ${isToday ? 'today' : ''}" 
-                   style="height:${height}px; width:100%; max-width:${barWidth}px;"></div>
-              <span class="bar-label">${showLabel ? labelText : ''}</span>
-            </div>`;
-  }).join('');
+      if (days === 7) {
+        for (let i = 6; i >= 0; i--) {
+          const d = new Date(now);
+          d.setDate(d.getDate() - i);
+          dates.push(d.toISOString().split('T')[0]);
+        }
+      } else if (days === 30) {
+        const year = now.getFullYear();
+        const month = now.getMonth();
+        const todayDate = now.getDate();
+        for (let day = 1; day <= todayDate; day++) {
+          const d = new Date(year, month, day);
+          dates.push(d.toISOString().split('T')[0]);
+        }
+      } else {
+        for (let i = 59; i >= 0; i--) {
+          const d = new Date(now);
+          d.setDate(d.getDate() - i);
+          dates.push(d.toISOString().split('T')[0]);
+        }
+      }
+      return dates;
+    }
 
-  const totalInPeriod = counts.reduce((a, b) => a + b, 0);
-  const periodLabel = progressPeriod === 'week' ? 'this week' : progressPeriod === 'month' ? 'this month' : 'all time';
-  document.getElementById('progress-total-label').textContent = `${totalInPeriod} cards ${periodLabel}`;
-
-  const streak = getStreak();
-  const streakMsg = document.getElementById('progress-streak-msg');
-  if (streak >= 30) {
-    streakMsg.textContent = `🔥 ${streak}-day streak! Unstoppable! 🔥`;
-    streakMsg.style.color = 'var(--premium-gold)';
-  } else if (streak >= 14) {
-    streakMsg.textContent = `🔥 ${streak}-day streak! You're on fire! 🔥`;
-    streakMsg.style.color = 'var(--accent)';
-  } else if (streak >= 7) {
-    streakMsg.textContent = `🔥 ${streak}-day streak! Amazing! Keep going!`;
-    streakMsg.style.color = 'var(--accent)';
-  } else if (streak >= 3) {
-    streakMsg.textContent = `🔥 ${streak}-day streak! You're building momentum!`;
-    streakMsg.style.color = 'var(--accent)';
-  } else if (streak > 0) {
-    streakMsg.textContent = `🔥 ${streak}-day streak! Every day counts!`;
-    streakMsg.style.color = 'var(--accent)';
-  } else {
-    streakMsg.textContent = '📖 Start your streak today! Study at least one card.';
-    streakMsg.style.color = 'var(--text-secondary)';
-  }
-}
+    function getDaysInMonth() {
+      const now = new Date();
+      return new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+    }
 
     // ============================================================
     //  2. DECK PERFORMANCE
@@ -3241,14 +3588,17 @@ function getDateRangeForPeriod(days) {
     //  PROGRESS TOGGLE
     // ============================================================
     document.addEventListener('DOMContentLoaded', function() {
-      document.getElementById('progress-toggle')?.addEventListener('click', function(e) {
-        const btn = e.target.closest('button');
-        if (!btn || !btn.dataset.period) return;
-        document.querySelectorAll('#progress-toggle button').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-        progressPeriod = btn.dataset.period;
-        renderStats();
-      });
+      const toggle = document.getElementById('progress-toggle');
+      if (toggle) {
+        toggle.addEventListener('click', function(e) {
+          const btn = e.target.closest('button');
+          if (!btn || !btn.dataset.period) return;
+          document.querySelectorAll('#progress-toggle button').forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          progressPeriod = btn.dataset.period;
+          renderStats();
+        });
+      }
     });
 
     function updateThemeToggle() {
@@ -3264,7 +3614,9 @@ function getDateRangeForPeriod(days) {
       if (currentTab === tab) return;
       currentTab = tab;
 
-      const allViews = ['home', 'decks', 'study-select', 'flashcards', 'learn', 'test', 'stats', 'settings', 'admin-import', 'admin-cards'];
+      const allViews = ['home', 'decks', 'study-select', 'flashcards', 'learn', 'test', 'stats', 'settings', 'admin-import',
+        'admin-cards'
+      ];
 
       requestAnimationFrame(() => {
         allViews.forEach(v => {
@@ -3304,14 +3656,14 @@ function getDateRangeForPeriod(days) {
         return;
       }
       container.innerHTML = decks.map(d => `
-          <div class="flex items-center justify-between p-2 rounded-lg bg-gray-50 dark:bg-gray-800">
-            <div>
-              <span class="font-medium text-sm">${d.name}</span>
-              <span class="text-xs text-sec ml-2">${d.cards.length} cards</span>
+            <div class="flex items-center justify-between p-2 rounded-lg bg-gray-50 dark:bg-gray-800">
+              <div>
+                <span class="font-medium text-sm">${d.name}</span>
+                <span class="text-xs text-sec ml-2">${d.cards.length} cards</span>
+              </div>
+              <button onclick="deleteDeck('${d.id}')" class="text-red-500 p-1"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
             </div>
-            <button onclick="deleteDeck('${d.id}')" class="text-red-500 p-1"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
-          </div>
-        `).join('');
+          `).join('');
       if (typeof lucide !== 'undefined' && lucide.createIcons) {
         lucide.createIcons();
       }
@@ -3326,11 +3678,11 @@ function getDateRangeForPeriod(days) {
         return;
       }
       container.innerHTML = entries.map(([code, data]) => `
-          <div class="flex items-center justify-between p-1.5 rounded bg-gray-50 dark:bg-gray-800">
-            <span class="font-mono text-xs">${code}</span>
-            <span class="text-xs ${data.used ? 'text-red-500' : 'text-green-500'}">${data.used ? '✓ Used by ' + data.usedBy : 'Available'}</span>
-          </div>
-        `).join('');
+            <div class="flex items-center justify-between p-1.5 rounded bg-gray-50 dark:bg-gray-800">
+              <span class="font-mono text-xs">${code}</span>
+              <span class="text-xs ${data.used ? 'text-red-500' : 'text-green-500'}">${data.used ? '✓ Used by ' + data.usedBy : 'Available'}</span>
+            </div>
+          `).join('');
     }
 
     function continueStudying() {
@@ -3373,17 +3725,15 @@ function getDateRangeForPeriod(days) {
 
     function exitStudy() {
       addStudyTime(5);
-      // Reset flashcard state
       studyQueue = [];
       studyIdx = 0;
       fcFlipped = false;
-      
-      // Reset UI elements
+
       const btns = document.getElementById('fc-buttons');
       const done = document.getElementById('fc-done');
       const card = document.getElementById('fc-card');
       const hint = document.getElementById('fc-hint');
-      
+
       if (btns) btns.classList.add('hidden');
       if (done) {
         done.classList.add('hidden');
@@ -3391,11 +3741,10 @@ function getDateRangeForPeriod(days) {
       }
       if (card) card.style.display = '';
       if (hint) hint.style.display = '';
-      
-      // Reset progress
+
       document.getElementById('fc-progress').textContent = '0/0';
       document.getElementById('fc-progress-fill').style.width = '0%';
-      
+
       switchTab('decks');
     }
 
@@ -3420,7 +3769,7 @@ function getDateRangeForPeriod(days) {
       const done = document.getElementById('fc-done');
       const btns = document.getElementById('fc-buttons');
       const hint = document.getElementById('fc-hint');
-      
+
       if (studyIdx >= studyQueue.length) {
         card.style.display = 'none';
         btns.classList.add('hidden');
@@ -3434,22 +3783,22 @@ function getDateRangeForPeriod(days) {
         }
         return;
       }
-      
+
       card.style.display = '';
       done.classList.add('hidden');
       done.style.display = 'none';
       btns.classList.add('hidden');
       hint.style.display = '';
-      
+
       const c = studyQueue[studyIdx];
       document.getElementById('fc-front-text').textContent = c.card_front;
       document.getElementById('fc-back-text').textContent = c.card_back;
       document.getElementById('fc-card').classList.remove('flipped');
       fcFlipped = false;
-      
+
       document.getElementById('fc-progress').textContent = `${studyIdx + 1}/${studyQueue.length}`;
       document.getElementById('fc-progress-fill').style.width = `${(studyIdx / studyQueue.length) * 100}%`;
-      
+
       if (typeof lucide !== 'undefined' && lucide.createIcons) {
         lucide.createIcons();
       }
@@ -3522,8 +3871,8 @@ function getDateRangeForPeriod(days) {
       const c = studyQueue[studyIdx];
       document.getElementById('ln-front-text').textContent = c.card_front;
       document.getElementById('ln-back-text').textContent = c.card_back;
-      document.getElementById('ln-progress').textContent = `${studyIdx+1}/${studyQueue.length}`;
-      document.getElementById('ln-progress-fill').style.width = `${(studyIdx/studyQueue.length)*100}%`;
+      document.getElementById('ln-progress').textContent = `${studyIdx + 1}/${studyQueue.length}`;
+      document.getElementById('ln-progress-fill').style.width = `${(studyIdx / studyQueue.length) * 100}%`;
       if (typeof lucide !== 'undefined' && lucide.createIcons) {
         lucide.createIcons();
       }
@@ -3597,22 +3946,22 @@ function getDateRangeForPeriod(days) {
       const c = studyQueue[studyIdx];
       document.getElementById('ts-question').textContent = c.card_front;
       tsCurrentAnswer = c.card_back;
-      document.getElementById('ts-progress').textContent = `${studyIdx+1}/${studyQueue.length}`;
-      document.getElementById('ts-progress-fill').style.width = `${(studyIdx/studyQueue.length)*100}%`;
+      document.getElementById('ts-progress').textContent = `${studyIdx + 1}/${studyQueue.length}`;
+      document.getElementById('ts-progress-fill').style.width = `${(studyIdx / studyQueue.length) * 100}%`;
 
       if (Math.random() > 0.4 && getRealCards().length >= 4) {
         choices.classList.remove('hidden');
         typeArea.classList.add('hidden');
         const options = [c.card_back];
         const others = getRealCards().filter(x => x.__id !== c.__id && x.deck_id === currentDeckId).map(x => x.card_back)
-        .filter(Boolean);
+          .filter(Boolean);
         while (options.length < 4 && others.length > 0) { const idx = Math.floor(Math.random() * others.length); if (!options
             .includes(others[idx])) options.push(others[idx]);
           others.splice(idx, 1) }
         for (let i = options.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1));
           [options[i], options[j]] = [options[j], options[i]] }
         choices.innerHTML = options.map(o =>
-          `<button onclick="tsChoose('${o.replace(/'/g,"\\'").replace(/"/g,'&quot;')}')" class="choice-btn">${o}</button>`
+          `<button onclick="tsChoose('${o.replace(/'/g, "\\'").replace(/"/g, '&quot;')}')" class="choice-btn">${o}</button>`
         ).join('');
       } else {
         choices.classList.add('hidden');
@@ -3832,9 +4181,11 @@ function getDateRangeForPeriod(days) {
       statusText.textContent = message;
 
       if (type === 'success') {
-        statusBox.className = 'flex items-center gap-2 p-3 rounded-xl bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800';
+        statusBox.className =
+          'flex items-center gap-2 p-3 rounded-xl bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800';
       } else {
-        statusBox.className = 'flex items-center gap-2 p-3 rounded-xl bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800';
+        statusBox.className =
+          'flex items-center gap-2 p-3 rounded-xl bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800';
       }
 
       setTimeout(() => {
@@ -4080,7 +4431,7 @@ function getDateRangeForPeriod(days) {
           tsSubmitTyped() }
       }
       if (e.key === 'Escape') { closeUpgradeModal();
-        closeContactAdmin() }
+        closeContactAdmin(); }
     });
 
     // ============================================================
@@ -4093,22 +4444,26 @@ function getDateRangeForPeriod(days) {
       document.getElementById('bottom-nav-container').classList.add('hidden');
     }
 
+    // Only attach nav listeners once
     document.querySelectorAll('.nav-item').forEach(btn => {
-      btn.addEventListener('click', () => {
-        if (navTimeout) return;
-        navTimeout = setTimeout(() => {
-          navTimeout = null;
-        }, 300);
-
-        if (document.getElementById('view-study-select').classList.contains('active')) return;
-        if (document.getElementById('view-flashcards').classList.contains('active')) return;
-        if (document.getElementById('view-learn').classList.contains('active')) return;
-        if (document.getElementById('view-test').classList.contains('active')) return;
-        if (document.getElementById('view-admin-import').classList.contains('active')) return;
-        if (document.getElementById('view-admin-cards').classList.contains('active')) return;
-        switchTab(btn.dataset.tab);
-      });
+      btn.removeEventListener('click', navClickHandler);
+      btn.addEventListener('click', navClickHandler);
     });
+
+    function navClickHandler() {
+      if (navTimeout) return;
+      navTimeout = setTimeout(() => {
+        navTimeout = null;
+      }, 300);
+
+      if (document.getElementById('view-study-select').classList.contains('active')) return;
+      if (document.getElementById('view-flashcards').classList.contains('active')) return;
+      if (document.getElementById('view-learn').classList.contains('active')) return;
+      if (document.getElementById('view-test').classList.contains('active')) return;
+      if (document.getElementById('view-admin-import').classList.contains('active')) return;
+      if (document.getElementById('view-admin-cards').classList.contains('active')) return;
+      switchTab(this.dataset.tab);
+    }
 
     const uploadZone = document.getElementById('upload-zone');
     if (uploadZone) {
@@ -4136,28 +4491,17 @@ function getDateRangeForPeriod(days) {
       lucide.createIcons();
     }
 
-   // When switching to month view, update the label
-document.querySelectorAll('#progress-toggle button')?.forEach(btn => {
-  btn.addEventListener('click', function() {
-    document.querySelectorAll('#progress-toggle button').forEach(b => b.classList.remove('active'));
-    this.classList.add('active');
-    progressPeriod = this.dataset.period;
-    
-    // Update label for month view
-    const label = document.getElementById('progress-period-label');
-    if (label) {
-      const now = new Date();
-      const monthName = ['January', 'February', 'March', 'April', 'May', 'June', 
-                         'July', 'August', 'September', 'October', 'November', 'December'][now.getMonth()];
-      label.textContent = progressPeriod === 'week' ? 'This Week' : 
-                          progressPeriod === 'month' ? monthName : 'All Time';
-    }
-    
-    renderStats();
-  });
-});
+    // Progress toggle initialization
+    document.querySelectorAll('#progress-toggle button')?.forEach(btn => {
+      btn.addEventListener('click', function() {
+        document.querySelectorAll('#progress-toggle button').forEach(b => b.classList.remove('active'));
+        this.classList.add('active');
+        progressPeriod = this.dataset.period;
+        renderStats();
+      });
+    });
 
-    console.log('🚀 FlashMind · Pharmacy Study App (Complete)');
+    console.log('🚀 FlashMind · Pharmacy Study App (Optimized)');
     console.log('📊 Plan:', userPlan);
     console.log('👑 Admin:', isAdmin);
     console.log('📚 Cards:', getRealCards().length, 'Decks:', getDecks().length);
