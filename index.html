@@ -2356,21 +2356,37 @@ Science       | Biology       | What is DNA?             | Deoxyribonucleic acid
       return decks;
     }
 
-    function getRealCards() { return allCards.filter(c => c.card_front && c.card_front !== '__deck_placeholder__') }
-
+   function getRealCards() {
+  const cards = allCards.filter(c => c.card_front && c.card_front !== '__deck_placeholder__');
+  console.log('🔍 getRealCards: found', cards.length, 'cards');
+  if (cards.length > 0) {
+    console.log('📝 First card:', cards[0].card_front);
+  }
+  return cards;
+}
     function getDecks() {
-      const map = {};
-      allCards.forEach(c => {
-        if (!map[c.deck_id]) {
-          map[c.deck_id] = { id: c.deck_id, name: c.deck_name || 'Untitled', cards: [], topic: c.topic || 'General',
-            subtopic: c.subtopic || '' };
-        }
-        if (c.card_front !== '__deck_placeholder__') {
-          map[c.deck_id].cards.push(c);
-        }
-      });
-      return Object.values(map);
+  const map = {};
+  allCards.forEach(c => {
+    if (!map[c.deck_id]) {
+      map[c.deck_id] = { 
+        id: c.deck_id, 
+        name: c.deck_name || 'Untitled', 
+        cards: [], 
+        topic: c.topic || 'General',
+        subtopic: c.subtopic || '' 
+      };
     }
+    if (c.card_front !== '__deck_placeholder__') {
+      map[c.deck_id].cards.push(c);
+    }
+  });
+  const result = Object.values(map);
+  console.log('📚 getDecks: found', result.length, 'decks');
+  result.forEach(d => {
+    console.log('  -', d.name, ':', d.cards.length, 'cards');
+  });
+  return result;
+}
 
     function getDueCards(deckId) {
       const now = today();
@@ -3633,118 +3649,134 @@ Science       | Biology       | What is DNA?             | Deoxyribonucleic acid
     // ============================================================
     //  FLASHCARDS MODE - COMPLETE FIX
     // ============================================================
-    function startFlashcards() {
-      console.log('🃏 Starting flashcards for deck:', currentDeckId);
+   function startFlashcards() {
+  console.log('🃏 Starting flashcards for deck:', currentDeckId);
+  console.log('📊 allCards length:', allCards.length);
+  console.log('📊 allCards sample:', allCards.slice(0, 3));
+  
+  // Get all real cards from the current deck
+  const allCardsInDeck = getRealCards().filter(c => c.deck_id === currentDeckId);
+  console.log('📚 All cards in deck:', allCardsInDeck.length);
+  
+  if (allCardsInDeck.length === 0) {
+    // Try to find if there's any card with this deck_id
+    const anyCard = allCards.find(c => c.deck_id === currentDeckId);
+    console.log('🔍 Any card with this deck_id?', anyCard);
+    alert('❌ No cards in this deck. Please add some cards first.');
+    return;
+  }
+  
+  // Get due cards first, if none, use all cards
+  const dueCards = getDueCards(currentDeckId);
+  console.log('📅 Due cards:', dueCards.length);
+  
+  studyQueue = dueCards.length > 0 ? dueCards : allCardsInDeck;
+  console.log('📖 Study queue:', studyQueue.length);
+  
+  if (studyQueue.length > 0) {
+    console.log('📝 First card in queue:', studyQueue[0]);
+  }
+  
+  // Shuffle for variety
+  for (let i = studyQueue.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [studyQueue[i], studyQueue[j]] = [studyQueue[j], studyQueue[i]];
+  }
+  
+  studyIdx = 0;
+  fcFlipped = false;
+  
+  // Show the flashcards view
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.getElementById('view-flashcards').classList.add('active');
+  fcShowCard();
+}
 
-      const allCardsInDeck = getRealCards().filter(c => c.deck_id === currentDeckId);
-      console.log('📚 All cards in deck:', allCardsInDeck.length);
-
-      if (allCardsInDeck.length === 0) {
-        alert('❌ No cards in this deck. Please add some cards first.');
-        return;
-      }
-
-      const dueCards = getDueCards(currentDeckId);
-      console.log('📅 Due cards:', dueCards.length);
-
-      studyQueue = dueCards.length > 0 ? dueCards : allCardsInDeck;
-      console.log('📖 Study queue:', studyQueue.length);
-
-      if (studyQueue.length > 0) {
-        console.log('📝 First card:', studyQueue[0].card_front, '→', studyQueue[0].card_back);
-      }
-
-      for (let i = studyQueue.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [studyQueue[i], studyQueue[j]] = [studyQueue[j], studyQueue[i]];
-      }
-
-      studyIdx = 0;
-      fcFlipped = false;
-
-      document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
-      document.getElementById('view-flashcards').classList.add('active');
-      fcShowCard();
+   function fcShowCard() {
+  console.log('🔄 fcShowCard called, studyQueue length:', studyQueue ? studyQueue.length : 0, 'studyIdx:', studyIdx);
+  
+  const card = document.getElementById('fc-card');
+  const done = document.getElementById('fc-done');
+  const btns = document.getElementById('fc-buttons');
+  const hint = document.getElementById('fc-hint');
+  
+  // Ensure back button works
+  const backBtn = done ? done.querySelector('.back-btn') : null;
+  if (backBtn) {
+    backBtn.onclick = function(e) {
+      e.stopPropagation();
+      exitStudy();
+      return false;
+    };
+  }
+  
+  // Ensure X button works
+  const xBtn = document.querySelector('#view-flashcards .flex button');
+  if (xBtn) {
+    xBtn.onclick = function(e) {
+      e.stopPropagation();
+      exitStudy();
+      return false;
+    };
+  }
+  
+  // Check if we're done
+  if (!studyQueue || studyQueue.length === 0 || studyIdx >= studyQueue.length) {
+    console.log('✅ All cards done!');
+    if (card) card.style.display = 'none';
+    if (btns) {
+      btns.classList.add('hidden');
+      btns.style.display = 'none';
     }
-
-    function fcShowCard() {
-      const card = document.getElementById('fc-card');
-      const done = document.getElementById('fc-done');
-      const btns = document.getElementById('fc-buttons');
-      const hint = document.getElementById('fc-hint');
-
-      const backBtn = done ? done.querySelector('.back-btn') : null;
-      if (backBtn) {
-        backBtn.onclick = function(e) {
-          e.stopPropagation();
-          exitStudy();
-          return false;
-        };
-      }
-
-      const xBtn = document.querySelector('#view-flashcards .flex button');
-      if (xBtn) {
-        xBtn.onclick = function(e) {
-          e.stopPropagation();
-          exitStudy();
-          return false;
-        };
-      }
-
-      if (!studyQueue || studyQueue.length === 0 || studyIdx >= studyQueue.length) {
-        if (card) card.style.display = 'none';
-        if (btns) {
-          btns.classList.add('hidden');
-          btns.style.display = 'none';
-        }
-        if (hint) hint.style.display = 'none';
-        if (done) {
-          done.classList.remove('hidden');
-          done.style.display = 'flex';
-        }
-        document.getElementById('fc-progress').textContent = `${studyQueue ? studyQueue.length : 0}/${studyQueue ? studyQueue.length : 0}`;
-        document.getElementById('fc-progress-fill').style.width = '100%';
-
-        if (typeof lucide !== 'undefined' && lucide.createIcons) {
-          lucide.createIcons();
-        }
-        return;
-      }
-
-      if (card) {
-        card.style.display = '';
-        card.classList.remove('flipped');
-      }
-      if (done) {
-        done.classList.add('hidden');
-        done.style.display = 'none';
-      }
-      if (btns) {
-        btns.classList.add('hidden');
-        btns.style.display = 'none';
-      }
-      if (hint) hint.style.display = '';
-
-      const c = studyQueue[studyIdx];
-      if (!c) {
-        console.error('❌ Card not found at index', studyIdx);
-        studyIdx++;
-        fcShowCard();
-        return;
-      }
-
-      document.getElementById('fc-front-text').textContent = c.card_front || 'Empty';
-      document.getElementById('fc-back-text').textContent = c.card_back || 'Empty';
-      fcFlipped = false;
-
-      document.getElementById('fc-progress').textContent = `${studyIdx + 1}/${studyQueue.length}`;
-      document.getElementById('fc-progress-fill').style.width = `${(studyIdx / studyQueue.length) * 100}%`;
-
-      if (typeof lucide !== 'undefined' && lucide.createIcons) {
-        lucide.createIcons();
-      }
+    if (hint) hint.style.display = 'none';
+    if (done) {
+      done.classList.remove('hidden');
+      done.style.display = 'flex';
     }
-
+    document.getElementById('fc-progress').textContent = `${studyQueue ? studyQueue.length : 0}/${studyQueue ? studyQueue.length : 0}`;
+    document.getElementById('fc-progress-fill').style.width = '100%';
+    
+    if (typeof lucide !== 'undefined' && lucide.createIcons) {
+      lucide.createIcons();
+    }
+    return;
+  }
+  
+  // Show card
+  if (card) {
+    card.style.display = '';
+    card.classList.remove('flipped');
+  }
+  if (done) {
+    done.classList.add('hidden');
+    done.style.display = 'none';
+  }
+  if (btns) {
+    btns.classList.add('hidden');
+    btns.style.display = 'none';
+  }
+  if (hint) hint.style.display = '';
+  
+  const c = studyQueue[studyIdx];
+  if (!c) {
+    console.error('❌ Card not found at index', studyIdx);
+    studyIdx++;
+    fcShowCard();
+    return;
+  }
+  
+  console.log('📝 Showing card:', c.card_front, '→', c.card_back);
+  document.getElementById('fc-front-text').textContent = c.card_front || 'Empty';
+  document.getElementById('fc-back-text').textContent = c.card_back || 'Empty';
+  fcFlipped = false;
+  
+  document.getElementById('fc-progress').textContent = `${studyIdx + 1}/${studyQueue.length}`;
+  document.getElementById('fc-progress-fill').style.width = `${(studyIdx / studyQueue.length) * 100}%`;
+  
+  if (typeof lucide !== 'undefined' && lucide.createIcons) {
+    lucide.createIcons();
+  }
+}
     function fcFlip() {
       if (studyIdx >= studyQueue.length) return;
       if (!fcFlipped) {
