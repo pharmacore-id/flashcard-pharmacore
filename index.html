@@ -4,20 +4,14 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>FlashMind · Pharmacy Study</title>
-  <script src="https://cdn.tailwindcss.com/3.4.17">
-  </script>
-  <script src="https://cdn.jsdelivr.net/npm/lucide@0.263.0/dist/umd/lucide.min.js">
-  </script>
-  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js">
-  </script>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="https://cdn.jsdelivr.net/npm/lucide@0.263.0/dist/umd/lucide.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   
   <!-- Firebase SDK -->
-  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js">
-  </script>
-  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js">
-  </script>
-  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js">
-  </script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
   
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
   
@@ -128,7 +122,7 @@
     .view-scroll::-webkit-scrollbar { width: 3px; }
     .view-scroll::-webkit-scrollbar-thumb { background: var(--border); border-radius: 99px; }
     
-    /* ===== BOTTOM NAV - ALWAYS CLICKABLE ===== */
+    /* ===== BOTTOM NAV ===== */
     .bottom-nav {
       display: flex;
       justify-content: space-around;
@@ -166,7 +160,7 @@
     .nav-item.active:hover { color: var(--accent); }
     .nav-item:active { transform: scale(0.95); }
     
-    /* ===== AUTH VIEWS - ON TOP ===== */
+    /* ===== AUTH VIEWS ===== */
     #view-login, #view-signup {
       z-index: 200 !important;
       background: var(--bg) !important;
@@ -260,12 +254,6 @@
     }
     .deck-item:active { transform: scale(0.98); }
     
-    .hero-number {
-      font-size: 4.5rem;
-      font-weight: 800;
-      line-height: 1;
-    }
-    
     .choice-btn {
       width: 100%;
       padding: 0.9rem 1.25rem;
@@ -354,25 +342,17 @@
       to { opacity: 1; transform: translateY(0); }
     }
     
-    /* ===== RESPONSIVE TOUCH ===== */
+    /* ===== RESPONSIVE ===== */
     @media (max-width: 430px) {
       .view { padding: 0.75rem 0.75rem 0.25rem; }
       .auth-card { padding: 1.5rem; }
-      .hero-number { font-size: 3.5rem; }
       .mode-btn { padding: 0.75rem 1rem; }
     }
     
-    /* ===== DONE BUTTON ===== */
-    #fc-done {
-      pointer-events: all;
-      cursor: pointer;
-    }
-    #fc-done .back-btn {
-      pointer-events: all;
-      touch-action: manipulation;
-    }
+    /* ===== OTHER COMPONENTS ===== */
+    #fc-done { pointer-events: all; cursor: pointer; }
+    #fc-done .back-btn { pointer-events: all; touch-action: manipulation; }
     
-    /* ===== DARK MODE ===== */
     .dark .upload-zone { border-color: var(--border); background: var(--surface); }
     .dark .upload-zone:hover { border-color: var(--accent); background: var(--accent-light); }
     .dark .upload-zone.dragover { border-color: var(--accent); background: var(--accent-light); }
@@ -386,11 +366,6 @@
     .dark #admin-deck-list .bg-gray-50 { background: var(--surface); }
     .dark #admin-deck-list .bg-gray-800 { background: var(--bg); }
     
-    /* ===== SCROLLBAR ===== */
-    .view-scroll::-webkit-scrollbar { width: 3px; }
-    .view-scroll::-webkit-scrollbar-thumb { background: var(--border); border-radius: 99px; }
-    
-    /* ===== OTHER ===== */
     .code-input {
       font-family: 'Courier New', monospace;
       letter-spacing: 2px;
@@ -795,8 +770,7 @@
       flex-direction: column;
       align-items: center;
       gap: 3px;
-      flex-shrink: 1;
-      flex: 1;
+      flex: 1 1 0;
       min-width: 12px;
       max-width: 40px;
     }
@@ -1286,6 +1260,71 @@ Science       | Biology       | What is DNA?             | Deoxyribonucleic acid
         <p class="text-xs text-sec mt-1">Enter your pharmacy book's access code or upgrade to unlock Learn and Test modes.</p>
         <button onclick="showUpgradeModal()" class="mt-2 text-sm accent-bg text-white px-4 py-1.5 rounded-xl font-medium">Upgrade Now</button>
       </div>
+
+      <!-- ===== DECK STATS (NEW) ===== -->
+      <div id="deck-stats-container" class="surface rounded-2xl p-4 border border-theme shadow-card mt-4">
+        <p class="text-sm font-semibold mb-3">📊 Performance Summary</p>
+        <div class="grid grid-cols-4 gap-2">
+          <div class="text-center">
+            <p class="text-lg font-extrabold accent-text" id="deck-retention">0%</p>
+            <p class="text-[10px] text-sec">Retention</p>
+          </div>
+          <div class="text-center">
+            <p class="text-lg font-extrabold" style="color:#059669;" id="deck-mastered">0%</p>
+            <p class="text-[10px] text-sec">Mastered</p>
+          </div>
+          <div class="text-center">
+            <p class="text-lg font-extrabold" style="color:#2563eb;" id="deck-avg-time">0s</p>
+            <p class="text-[10px] text-sec">Avg Time</p>
+          </div>
+          <div class="text-center">
+            <p class="text-lg font-extrabold" style="color:#7c3aed;" id="deck-reviews">0</p>
+            <p class="text-[10px] text-sec">Reviews</p>
+          </div>
+        </div>
+        <div class="text-center mt-2">
+          <span class="text-xs text-sec" id="deck-trend">📈 +0% from last week</span>
+        </div>
+      </div>
+
+      <!-- ===== DUE CARDS ===== -->
+      <div class="surface rounded-2xl p-3 border border-theme shadow-card mt-3">
+        <p class="text-sm font-semibold mb-2">📅 Due Cards</p>
+        <div class="flex justify-around">
+          <div class="text-center">
+            <p class="text-xl font-extrabold text-red-500" id="deck-due-today">0</p>
+            <p class="text-[10px] text-sec">Today</p>
+          </div>
+          <div class="text-center">
+            <p class="text-xl font-extrabold text-orange-500" id="deck-due-tomorrow">0</p>
+            <p class="text-[10px] text-sec">Tomorrow</p>
+          </div>
+          <div class="text-center">
+            <p class="text-xl font-extrabold text-blue-500" id="deck-due-week">0</p>
+            <p class="text-[10px] text-sec">This Week</p>
+          </div>
+          <div class="text-center">
+            <p class="text-xl font-extrabold text-green-500" id="deck-total-cards">0</p>
+            <p class="text-[10px] text-sec">Total</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== WEAKEST CARDS ===== -->
+      <div id="weak-cards-container" class="surface rounded-2xl p-3 border border-theme shadow-card mt-3">
+        <div class="flex items-center justify-between mb-2">
+          <p class="text-sm font-semibold">⚠️ Weakest Cards</p>
+          <span class="text-xs text-sec" id="weak-count">0 cards</span>
+        </div>
+        <div id="weak-cards-list" class="space-y-1 max-h-24 overflow-y-auto">
+          <p class="text-xs text-sec text-center py-2">No weak cards yet! 🎉</p>
+        </div>
+      </div>
+
+      <!-- ===== STUDY WEAK CARDS BUTTON ===== -->
+      <button id="study-weak-btn" onclick="studyWeakCards()" class="w-full bg-red-500 text-white py-2.5 rounded-2xl font-bold text-sm mt-3 hover:opacity-90 transition-opacity">
+        🔴 Study Weak Cards First
+      </button>
     </div>
 
     <!-- ===== FLASHCARDS MODE ===== -->
@@ -1539,7 +1578,7 @@ Science       | Biology       | What is DNA?             | Deoxyribonucleic acid
     </div>
 
     <!-- ===== MODALS ===== -->
-    <div id="rename-deck-modal" class="hidden fixed inset-0 z-50 flex items-end sm:items-center justify-center" style="background:rgba(0,0,0,0.4);" onclick="if(event.target===this) closeRenameDeck()">
+    <div id="rename-deck-modal" class="hidden fixed inset-0 z-[9999] flex items-end sm:items-center justify-center" style="background:rgba(0,0,0,0.5);" onclick="if(event.target===this) closeRenameDeck()">
       <div class="surface rounded-t-3xl sm:rounded-3xl w-full max-w-md p-6" onclick="event.stopPropagation()">
         <div class="flex justify-between items-center mb-4">
           <h3 class="font-bold text-lg">✏️ Rename Deck</h3>
@@ -1554,7 +1593,7 @@ Science       | Biology       | What is DNA?             | Deoxyribonucleic acid
       </div>
     </div>
 
-    <div id="edit-card-modal" class="hidden fixed inset-0 z-50 flex items-end sm:items-center justify-center" style="background:rgba(0,0,0,0.4);" onclick="if(event.target===this) closeEditCard()">
+    <div id="edit-card-modal" class="hidden fixed inset-0 z-[9999] flex items-end sm:items-center justify-center" style="background:rgba(0,0,0,0.5);" onclick="if(event.target===this) closeEditCard()">
       <div class="surface rounded-t-3xl sm:rounded-3xl w-full max-w-md p-6" onclick="event.stopPropagation()">
         <div class="flex justify-between items-center mb-4">
           <h3 class="font-bold text-lg">✏️ Edit Card</h3>
@@ -1571,7 +1610,7 @@ Science       | Biology       | What is DNA?             | Deoxyribonucleic acid
       </div>
     </div>
 
-    <div id="contact-admin-modal" class="hidden fixed inset-0 z-50 flex items-end sm:items-center justify-center" style="background:rgba(0,0,0,0.5);" onclick="if(event.target===this) closeContactAdmin()">
+    <div id="contact-admin-modal" class="hidden fixed inset-0 z-[9999] flex items-end sm:items-center justify-center" style="background:rgba(0,0,0,0.5);" onclick="if(event.target===this) closeContactAdmin()">
       <div class="surface rounded-t-3xl sm:rounded-3xl w-full max-w-md p-6" onclick="event.stopPropagation()">
         <div class="flex justify-between items-center mb-4"><h3 class="font-bold text-xl">📩 Request New Decks</h3><button onclick="closeContactAdmin()" class="text-sec"><i data-lucide="x" class="w-6 h-6"></i></button></div>
         <p class="text-sm text-sec mb-4">Let us know what pharmacy topics you need. We'll add them to the library!</p>
@@ -1585,7 +1624,7 @@ Science       | Biology       | What is DNA?             | Deoxyribonucleic acid
       </div>
     </div>
 
-    <div id="card-modal" class="hidden fixed inset-0 z-50 flex items-end sm:items-center justify-center" style="background:rgba(0,0,0,0.4);" onclick="if(event.target===this) closeCardModal()">
+    <div id="card-modal" class="hidden fixed inset-0 z-[9999] flex items-end sm:items-center justify-center" style="background:rgba(0,0,0,0.5);" onclick="if(event.target===this) closeCardModal()">
       <div class="surface rounded-t-3xl sm:rounded-3xl w-full max-w-md p-6" onclick="event.stopPropagation()">
         <div class="flex justify-between items-center mb-4">
           <h3 class="font-bold text-lg">➕ Add Card</h3>
@@ -1602,7 +1641,7 @@ Science       | Biology       | What is DNA?             | Deoxyribonucleic acid
       </div>
     </div>
 
-    <div id="upgrade-modal" class="hidden fixed inset-0 z-50 flex items-end sm:items-center justify-center" style="background:rgba(0,0,0,0.5);" onclick="if(event.target===this) closeUpgradeModal()">
+    <div id="upgrade-modal" class="hidden fixed inset-0 z-[9999] flex items-end sm:items-center justify-center" style="background:rgba(0,0,0,0.5);" onclick="if(event.target===this) closeUpgradeModal()">
       <div class="surface rounded-t-3xl sm:rounded-3xl w-full max-w-md p-6" onclick="event.stopPropagation()" style="max-height:90vh;overflow-y:auto;">
         <div class="flex justify-between items-center mb-4"><h3 class="font-bold text-xl">✨ Upgrade to Premium</h3><button onclick="closeUpgradeModal()" class="text-sec"><i data-lucide="x" class="w-6 h-6"></i></button></div>
         <div class="pricing-header">
@@ -1636,7 +1675,7 @@ Science       | Biology       | What is DNA?             | Deoxyribonucleic acid
           <div class="border-t border-theme pt-4 mt-2">
             <p class="font-semibold text-sm mb-3">Choose Payment Method</p>
             <div class="space-y-2">
-              <div class="payment-option" onclick="selectPayment('qris')"><div class="icon qris"><i data-lucide="qrcode" class="w-5 h-5"></i></div><div><p class="font-medium text-sm">QRIS</p><p class="text-xs text-sec">Scan with any e-wallet</p></div></div>
+              <div class="payment-option" onclick="selectPayment('qris')"><div class="icon qris"><i data-lucide="smartphone" class="w-5 h-5"></i></div><div><p class="font-medium text-sm">QRIS</p><p class="text-xs text-sec">Scan with any e-wallet</p></div></div>
               <div class="payment-option" onclick="selectPayment('bank')"><div class="icon bank"><i data-lucide="building-2" class="w-5 h-5"></i></div><div><p class="font-medium text-sm">Bank Transfer</p><p class="text-xs text-sec">BCA, Mandiri, BNI, BRI</p></div></div>
               <div class="payment-option" onclick="selectPayment('ewallet')"><div class="icon ewallet"><i data-lucide="smartphone" class="w-5 h-5"></i></div><div><p class="font-medium text-sm">E-Wallet</p><p class="text-xs text-sec">GoPay, OVO, DANA, ShopeePay</p></div></div>
             </div>
@@ -1773,6 +1812,12 @@ Science       | Biology       | What is DNA?             | Deoxyribonucleic acid
         return;
       }
       localStorage.setItem(NICKNAME_KEY + currentUser, name);
+      if (db) {
+        db.collection('users').doc(currentUser).set({
+          nickname: name,
+          updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+        }, { merge: true }).catch(err => console.warn('⚠️ Could not save nickname to Firebase:', err));
+      }
       updateHome();
       document.getElementById('nickname-input').value = name;
       alert('✅ Display name updated to "' + name + '"!');
@@ -1784,6 +1829,13 @@ Science       | Biology       | What is DNA?             | Deoxyribonucleic acid
       if (displayElement) displayElement.textContent = name;
       const input = document.getElementById('nickname-input');
       if (input) input.value = name;
+      const settingsUsername = document.getElementById('settings-username');
+      if (settingsUsername && currentUser) {
+        const users = getUsers();
+        if (users[currentUser] && users[currentUser].username) {
+          settingsUsername.textContent = users[currentUser].username;
+        }
+      }
     }
 
     // ============================================================
@@ -1886,11 +1938,6 @@ Science       | Biology       | What is DNA?             | Deoxyribonucleic acid
           err.textContent = 'Failed to send reset email: ' + error.message;
         }
       }
-    }
-
-    async function resetPassword() {
-      closeForgotPassword();
-      alert('📧 Please check your email for the password reset link.');
     }
 
     // ============================================================
@@ -3557,11 +3604,110 @@ Science       | Biology       | What is DNA?             | Deoxyribonucleic acid
 
       currentTab = 'study-select';
 
+      // Update deck stats
+      updateDeckStats();
+
       if (typeof lucide !== 'undefined' && lucide.createIcons) {
         lucide.createIcons();
       }
     }
 
+    // ============================================================
+    //  DECK STATS (for study select)
+    // ============================================================
+    function updateDeckStats() {
+      const deckCards = getRealCards().filter(c => c.deck_id === currentDeckId);
+      const total = deckCards.length;
+
+      // Retention
+      const totalReviews = deckCards.reduce((s, c) => s + (c.total_reviews || 0), 0);
+      const correctReviews = deckCards.reduce((s, c) => s + (c.correct_count || 0), 0);
+      const retention = totalReviews > 0 ? Math.round((correctReviews / totalReviews) * 100) : 0;
+      document.getElementById('deck-retention').textContent = retention + '%';
+
+      // Mastered
+      const mastered = deckCards.filter(c => (c.interval || 0) >= 21).length;
+      const masteredPct = total > 0 ? Math.round((mastered / total) * 100) : 0;
+      document.getElementById('deck-mastered').textContent = masteredPct + '%';
+
+      // Avg time (just a mock – we don't track time per card)
+      const avgTime = totalReviews > 0 ? Math.round(totalReviews / total * 2) : 0;
+      document.getElementById('deck-avg-time').textContent = avgTime + 's';
+
+      // Total reviews
+      document.getElementById('deck-reviews').textContent = totalReviews;
+
+      // Trend (mock)
+      document.getElementById('deck-trend').textContent = '📈 +0% from last week';
+
+      // Due cards
+      const due = getDueCards(currentDeckId);
+      const todayStr = today();
+      const dueToday = due.filter(c => c.next_review === todayStr || !c.next_review).length;
+      const tomorrow = new Date();
+      tomorrow.setDate(tomorrow.getDate() + 1);
+      const tomorrowStr = tomorrow.toISOString().split('T')[0];
+      const dueTomorrow = due.filter(c => c.next_review === tomorrowStr).length;
+      const nextWeek = new Date();
+      nextWeek.setDate(nextWeek.getDate() + 7);
+      const dueWeek = due.filter(c => c.next_review && c.next_review >= todayStr && c.next_review <= nextWeek.toISOString()
+        .split('T')[0]).length;
+
+      document.getElementById('deck-due-today').textContent = dueToday;
+      document.getElementById('deck-due-tomorrow').textContent = dueTomorrow;
+      document.getElementById('deck-due-week').textContent = dueWeek;
+      document.getElementById('deck-total-cards').textContent = total;
+
+      // Weakest cards
+      const weak = deckCards.filter(c => (c.total_reviews || 0) >= 2 && (c.correct_count || 0) / (c.total_reviews || 1) < 0.5)
+        .sort((a, b) => (a.correct_count / (a.total_reviews || 1)) - (b.correct_count / (b.total_reviews || 1)))
+        .slice(0, 5);
+
+      const weakContainer = document.getElementById('weak-cards-list');
+      const weakCount = document.getElementById('weak-count');
+      if (weakContainer) {
+        if (weak.length === 0) {
+          weakContainer.innerHTML = '<p class="text-xs text-sec text-center py-2">No weak cards yet! 🎉</p>';
+          if (weakCount) weakCount.textContent = '0 cards';
+        } else {
+          weakContainer.innerHTML = weak.map(c => `
+              <div class="weak-card-item">
+                <span class="card-text">${c.card_front || 'Untitled'}</span>
+                <span class="wrong-count">${Math.round((1 - (c.correct_count / (c.total_reviews || 1))) * 100)}% wrong</span>
+              </div>
+            `).join('');
+          if (weakCount) weakCount.textContent = weak.length + ' cards';
+        }
+      }
+
+      // Study weak button
+      const weakBtn = document.getElementById('study-weak-btn');
+      if (weakBtn) {
+        weakBtn.style.display = weak.length > 0 ? 'block' : 'none';
+      }
+    }
+
+    function studyWeakCards() {
+      const weak = getRealCards().filter(c =>
+        c.deck_id === currentDeckId &&
+        (c.total_reviews || 0) >= 2 &&
+        (c.correct_count || 0) / (c.total_reviews || 1) < 0.5
+      );
+      if (weak.length === 0) {
+        alert('No weak cards in this deck!');
+        return;
+      }
+      studyQueue = weak;
+      studyIdx = 0;
+      fcFlipped = false;
+      document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+      document.getElementById('view-flashcards').classList.add('active');
+      fcShowCard();
+    }
+
+    // ============================================================
+    //  CONTINUE STUDYING
+    // ============================================================
     function continueStudying() {
       const due = getDueCards();
       if (due.length === 0) {
@@ -3614,27 +3760,7 @@ Science       | Biology       | What is DNA?             | Deoxyribonucleic acid
       const card = document.getElementById('fc-card');
       const done = document.getElementById('fc-done');
       const btns = document.getElementById('fc-buttons');
-      const hint = document.getElementById('fc-hint');
-
-      // Ensure back button works
-      const backBtn = done ? done.querySelector('.back-btn') : null;
-      if (backBtn) {
-        backBtn.onclick = function(e) {
-          e.stopPropagation();
-          exitStudy();
-          return false;
-        };
-      }
-
-      // Ensure X button works
-      const xBtn = document.querySelector('#view-flashcards .flex button');
-      if (xBtn) {
-        xBtn.onclick = function(e) {
-          e.stopPropagation();
-          exitStudy();
-          return false;
-        };
-      }
+      const hint = document.querySelector('.swipe-hint');
 
       if (!studyQueue || studyQueue.length === 0 || studyIdx >= studyQueue.length) {
         if (card) card.style.display = 'none';
@@ -3779,7 +3905,7 @@ Science       | Biology       | What is DNA?             | Deoxyribonucleic acid
       const btns = document.getElementById('fc-buttons');
       const done = document.getElementById('fc-done');
       const card = document.getElementById('fc-card');
-      const hint = document.getElementById('fc-hint');
+      const hint = document.querySelector('.swipe-hint');
       const fcProgress = document.getElementById('fc-progress');
       const fcProgressFill = document.getElementById('fc-progress-fill');
 
@@ -4169,36 +4295,7 @@ Science       | Biology       | What is DNA?             | Deoxyribonucleic acid
     }
 
     function getDateRangeForPeriod(days) {
-      const dates = [];
-      const now = new Date();
-
-      if (days === 7) {
-        for (let i = 6; i >= 0; i--) {
-          const d = new Date(now);
-          d.setDate(d.getDate() - i);
-          dates.push(d.toISOString().split('T')[0]);
-        }
-      } else if (days === 30) {
-        const year = now.getFullYear();
-        const month = now.getMonth();
-        const todayDate = now.getDate();
-        for (let day = 1; day <= todayDate; day++) {
-          const d = new Date(year, month, day);
-          dates.push(d.toISOString().split('T')[0]);
-        }
-      } else {
-        for (let i = 59; i >= 0; i--) {
-          const d = new Date(now);
-          d.setDate(d.getDate() - i);
-          dates.push(d.toISOString().split('T')[0]);
-        }
-      }
-      return dates;
-    }
-
-    function getDaysInMonth() {
-      const now = new Date();
-      return new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+      return getDateRange(days);
     }
 
     // ============================================================
@@ -4771,22 +4868,12 @@ Science       | Biology       | What is DNA?             | Deoxyribonucleic acid
       lucide.createIcons();
     }
 
-    document.querySelectorAll('#progress-toggle button')?.forEach(btn => {
-      btn.addEventListener('click', function() {
-        document.querySelectorAll('#progress-toggle button').forEach(b => b.classList.remove('active'));
-        this.classList.add('active');
-        progressPeriod = this.dataset.period;
-        renderStats();
-      });
-    });
-
-    console.log('🚀 FlashMind · Pharmacy Study App (Optimized & Responsive)');
+    console.log('🚀 FlashMind · Pharmacy Study App (Optimized & Error-Free)');
     console.log('📊 Plan:', userPlan);
     console.log('👑 Admin:', isAdmin);
     console.log('📚 Cards:', getRealCards().length, 'Decks:', getDecks().length);
     console.log('☁️ Firebase: Connected & Syncing');
     console.log('📝 Admin email: adm.pharmacore@gmail.com');
   </script>
-
 </body>
 </html>
