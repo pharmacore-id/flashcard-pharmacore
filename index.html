@@ -22,6 +22,9 @@
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
   
   <style>
+    /* ============================================================
+       ALL STYLES
+       ============================================================ */
     * {
       font-family: 'DM Sans', sans-serif;
       box-sizing: border-box;
@@ -308,7 +311,22 @@
     .btn-block:active { transform: scale(0.96); }
     .btn-block:disabled { opacity: 0.5; cursor: not-allowed; }
     
-    /* Stats Styles */
+    /* Topic Header */
+    .topic-header {
+      transition: background 0.15s ease;
+    }
+    .topic-header:hover {
+      background: var(--accent-light);
+    }
+    .topic-content {
+      animation: slideDown 0.25s ease;
+    }
+    @keyframes slideDown {
+      from { opacity: 0; transform: translateY(-8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    /* Stats */
     .stats-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -701,6 +719,50 @@
       background: var(--accent-light);
     }
     
+    /* Dark mode fixes for import page */
+    .dark .upload-zone {
+      border-color: var(--border);
+      background: var(--surface);
+    }
+    .dark .upload-zone:hover {
+      border-color: var(--accent);
+      background: var(--accent-light);
+    }
+    .dark .upload-zone.dragover {
+      border-color: var(--accent);
+      background: var(--accent-light);
+    }
+    .dark .sample-excel-box {
+      background: var(--surface);
+      border-color: var(--border);
+    }
+    .dark .sample-excel-box pre {
+      background: var(--bg);
+      color: var(--text);
+    }
+    .dark .bg-gray-50 {
+      background: var(--surface);
+    }
+    .dark .bg-gray-100 {
+      background: var(--bg);
+    }
+    .dark #code-list .rounded {
+      background: var(--surface);
+      border-color: var(--border);
+    }
+    .dark #code-list .bg-gray-50 {
+      background: var(--surface);
+    }
+    .dark #code-list .bg-gray-800 {
+      background: var(--bg);
+    }
+    .dark #admin-deck-list .bg-gray-50 {
+      background: var(--surface);
+    }
+    .dark #admin-deck-list .bg-gray-800 {
+      background: var(--bg);
+    }
+    
     .code-input {
       font-family: 'Courier New', monospace;
       letter-spacing: 2px;
@@ -986,20 +1048,54 @@
       color: var(--premium-gold);
     }
     
-    /* Flashcard done state */
-    #fc-done {
-      pointer-events: all;
-      cursor: pointer;
-    }
-    #fc-done .back-btn {
-      pointer-events: all;
-    }
-    
     .swipe-hint {
       font-size: 0.75rem;
       color: var(--text-secondary);
       text-align: center;
       padding: 0.25rem 0;
+    }
+    
+    /* Bulk delete checkbox styles */
+    .select-all-container {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.5rem;
+      border-radius: 0.75rem;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      margin-bottom: 0.5rem;
+    }
+    .select-all-container input[type="checkbox"] {
+      width: 18px;
+      height: 18px;
+      accent-color: var(--accent);
+      cursor: pointer;
+    }
+    .select-all-container .delete-selected-btn {
+      background: #ef4444;
+      color: #fff;
+      border: none;
+      padding: 0.25rem 0.75rem;
+      border-radius: 0.5rem;
+      font-size: 0.75rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: 0.15s;
+    }
+    .select-all-container .delete-selected-btn:hover {
+      opacity: 0.8;
+    }
+    .select-all-container .delete-selected-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+    .card-checkbox {
+      width: 16px;
+      height: 16px;
+      accent-color: var(--accent);
+      cursor: pointer;
+      flex-shrink: 0;
     }
   </style>
 </head>
@@ -1219,7 +1315,7 @@
             <input type="file" id="excel-file" accept=".xlsx,.xls" class="hidden" onchange="handleExcelImport(event)" />
           </div>
           <div id="import-status" class="mt-4 hidden">
-            <div class="flex items-center gap-2 p-3 rounded-xl" id="import-status-box">
+            <div class="flex items-center gap-2 p-3 rounded-xl import-status-box" id="import-status-box" style="background:var(--bg);border:1px solid var(--border);">
               <i data-lucide="check-circle" class="w-5 h-5 text-green-500"></i>
               <span id="import-status-text">Import successful!</span>
             </div>
@@ -1231,7 +1327,7 @@
           <div class="flex gap-2 mb-3 flex-wrap">
             <button onclick="generateCodes(10)" class="accent-bg text-white px-4 py-2 rounded-xl text-sm font-medium">Generate 10 Codes</button>
             <button onclick="generateCodes(50)" class="accent-bg text-white px-4 py-2 rounded-xl text-sm font-medium">Generate 50 Codes</button>
-            <button onclick="exportCodes()" class="border border-theme px-4 py-2 rounded-xl text-sm font-medium">Export Codes</button>
+            <button onclick="exportCodes()" class="border border-theme px-4 py-2 rounded-xl text-sm font-medium" style="background:var(--bg);color:var(--text);">Export Codes</button>
           </div>
           <div id="code-list" class="max-h-40 overflow-y-auto text-xs space-y-1"></div>
         </div>
@@ -1243,8 +1339,12 @@
 
         <div class="surface rounded-2xl p-4 border border-theme shadow-card mt-4">
           <h3 class="font-bold mb-2">📝 Sample Excel Format</h3>
-          <div class="bg-gray-100 dark:bg-gray-800 p-3 rounded-xl text-xs font-mono overflow-x-auto">
-            <pre>Topic          | Subtopic      | Front                    | Back           | Tags<br>─────────────|───────────────|──────────────────────────|────────────────|────────<br>Pharmacy      | Basics        | What is a drug?          | A substance that alters body function | pharmacology<br>Pharmacy      | Dosage        | What is 1 gram in mg?    | 1000 mg        | calculations<br>Science       | Biology       | What is DNA?             | Deoxyribonucleic acid | genetics</pre>
+          <div class="sample-excel-box rounded-xl p-3" style="background:var(--bg);border:1px solid var(--border);">
+            <pre class="text-xs font-mono overflow-x-auto" style="color:var(--text);">Topic          | Subtopic      | Front                    | Back           | Tags
+─────────────|───────────────|──────────────────────────|────────────────|────────
+Pharmacy      | Basics        | What is a drug?          | A substance that alters body function | pharmacology
+Pharmacy      | Dosage        | What is 1 gram in mg?    | 1000 mg        | calculations
+Science       | Biology       | What is DNA?             | Deoxyribonucleic acid | genetics</pre>
           </div>
           <button onclick="downloadSampleExcel()" class="mt-3 text-sm accent-bg text-white px-4 py-2 rounded-xl font-medium">Download Sample</button>
         </div>
@@ -1256,9 +1356,19 @@
       <div class="flex items-center gap-3 mb-4">
         <button onclick="switchTab('decks')" class="text-sec"><i data-lucide="arrow-left" class="w-6 h-6"></i></button>
         <h2 id="manage-deck-name" class="text-xl font-bold flex-1 truncate">Manage Cards</h2>
-        <button onclick="showAddCardToDeck()" class="accent-bg text-white w-10 h-10 rounded-full flex items-center justify-center shadow-md"><i data-lucide="plus" class="w-5 h-5"></i></button>
-        <button id="manage-import-btn" onclick="document.getElementById('manage-excel-file').click()" class="accent-bg text-white w-10 h-10 rounded-full flex items-center justify-center shadow-md"><i data-lucide="upload" class="w-5 h-5"></i></button>
+        <div class="flex gap-2">
+          <button onclick="showAddCardToDeck()" class="accent-bg text-white w-10 h-10 rounded-full flex items-center justify-center shadow-md"><i data-lucide="plus" class="w-5 h-5"></i></button>
+          <button id="manage-import-btn" onclick="document.getElementById('manage-excel-file').click()" class="accent-bg text-white w-10 h-10 rounded-full flex items-center justify-center shadow-md"><i data-lucide="upload" class="w-5 h-5"></i></button>
+          <button onclick="bulkDeleteCards()" id="bulk-delete-cards-btn" class="bg-red-500 text-white w-10 h-10 rounded-full flex items-center justify-center shadow-md hover:opacity-80 transition-opacity hidden"><i data-lucide="trash-2" class="w-5 h-5"></i></button>
+        </div>
         <input type="file" id="manage-excel-file" accept=".xlsx,.xls" class="hidden" onchange="importExcelToDeck(event)" />
+      </div>
+      <!-- Select All -->
+      <div class="select-all-container">
+        <input type="checkbox" id="select-all-cards" onchange="toggleAllCards()" />
+        <label for="select-all-cards" class="text-sm font-medium">Select All</label>
+        <button class="delete-selected-btn" id="delete-selected-cards-btn" onclick="deleteSelectedCards()" disabled>Delete Selected</button>
+        <span class="text-xs text-sec ml-auto" id="selected-cards-count">0 selected</span>
       </div>
       <div class="view-scroll" id="manage-cards-list">
         <!-- Cards rendered by JS -->
@@ -1732,6 +1842,7 @@
     let addingToDeckId = null;
     let resetCode = '';
     let resetEmail = '';
+    let selectedCardIds = [];
 
     // ============================================================
     //  PASSWORD TOGGLE
@@ -1972,10 +2083,6 @@
         }
       } else {
         console.log('❌ Firebase Auth: User signed out');
-        // Only reset if we're not in the middle of a login
-        if (!currentUser) {
-          // Do nothing - login page will handle it
-        }
       }
     });
 
@@ -2218,7 +2325,7 @@
         { name: 'Clinical Pharmacy', subtopics: ['Drug Interactions', 'Dosage Calculations', 'Therapeutics'] },
         { name: 'Science', subtopics: ['Biology', 'Chemistry', 'Physics'] },
         { name: 'Languages', subtopics: ['Spanish', 'French', 'German'] },
-        { name: 'History', subtopics: ['World History', 'US History'] }
+        { name: 'History', subtopics: ['World History', 'US History', 'Ancient Civilizations'] }
       ];
       let deckId = 1;
       topics.forEach(topic => {
@@ -2229,7 +2336,7 @@
               __id: 'card_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6),
               deck_id: 'deck_' + deckId,
               deck_name: topic.name + ' - ' + subtopic,
-              card_front: `Question ${i+1} about ${subtopic} in ${topic.name}?`,
+              card_front: `Question ${i+1} about ${subtopic}?`,
               card_back: `Answer ${i+1} for ${subtopic}`,
               card_tags: `${topic.name.toLowerCase()},${subtopic.toLowerCase()}`,
               ease_factor: 2.5,
@@ -2771,45 +2878,131 @@
     }
 
     // ============================================================
-    //  RENDER DECKS
+    //  RENDER DECKS - HIERARCHICAL
     // ============================================================
-   function getSampleDecks() {
-  const decks = [];
-  const topics = [
-    { name: 'Pharmacy Basics', subtopics: ['Introduction', 'Drug Classifications', 'Pharmacology'] },
-    { name: 'Clinical Pharmacy', subtopics: ['Drug Interactions', 'Dosage Calculations', 'Therapeutics'] },
-    { name: 'Science', subtopics: ['Biology', 'Chemistry', 'Physics'] },
-    { name: 'Languages', subtopics: ['Spanish', 'French', 'German'] },
-    { name: 'History', subtopics: ['World History', 'US History', 'Ancient Civilizations'] }
-  ];
-  let deckId = 1;
-  topics.forEach(topic => {
-    topic.subtopics.forEach(subtopic => {
-      const cardCount = 5;
-      for (let i = 0; i < cardCount; i++) {
-        decks.push({
-          __id: 'card_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6),
-          deck_id: 'deck_' + deckId,
-          deck_name: topic.name + ' - ' + subtopic,
-          card_front: `Question ${i+1} about ${subtopic}?`,
-          card_back: `Answer ${i+1} for ${subtopic}`,
-          card_tags: `${topic.name.toLowerCase()},${subtopic.toLowerCase()}`,
-          ease_factor: 2.5,
-          interval: 0,
-          repetitions: 0,
-          next_review: '',
-          last_review: '',
-          total_reviews: 0,
-          correct_count: 0,
-          topic: topic.name,
-          subtopic: subtopic
-        });
+    function renderDecks() {
+      const container = document.getElementById('deck-list');
+      const no = document.getElementById('no-decks');
+
+      const isPremium = isPremiumActive();
+      const maxFreeDecks = 5;
+
+      const decks = getDecks();
+      const topicMap = {};
+
+      decks.forEach(d => {
+        const topic = d.topic || 'General';
+        if (!topicMap[topic]) {
+          topicMap[topic] = [];
+        }
+        topicMap[topic].push(d);
+      });
+
+      const sortedTopics = Object.keys(topicMap).sort();
+
+      if (decks.length === 0) {
+        container.innerHTML = '';
+        no.classList.remove('hidden');
+        return;
       }
-      deckId++;
-    });
-  });
-  return decks;
-}
+      no.classList.add('hidden');
+
+      let html = '';
+      let deckCount = 0;
+      let topicCount = 0;
+
+      sortedTopics.forEach((topic, topicIndex) => {
+        const subtopics = topicMap[topic];
+        const totalCardsInTopic = subtopics.reduce((sum, d) => sum + d.cards.length, 0);
+
+        html += `
+          <div class="topic-group mb-3">
+            <div class="topic-header surface rounded-2xl p-4 border border-theme shadow-card cursor-pointer flex items-center justify-between" 
+                 onclick="toggleTopic('topic-${topicIndex}')" 
+                 style="background:var(--bg);">
+              <div class="flex items-center gap-3">
+                <span class="text-xl">📚</span>
+                <div>
+                  <span class="font-bold text-base">${topic}</span>
+                  <span class="text-xs text-sec ml-2">${totalCardsInTopic} cards · ${subtopics.length} subtopics</span>
+                </div>
+              </div>
+              <div class="flex items-center gap-2">
+                <span id="topic-arrow-${topicIndex}" class="text-sec transition-transform duration-200">▼</span>
+              </div>
+            </div>
+            <div id="topic-${topicIndex}" class="topic-content mt-2 ml-4 space-y-2 hidden">
+        `;
+
+        subtopics.forEach((d, i) => {
+          const due = d.cards.filter(c => !c.next_review || c.next_review <= today()).length;
+          const mastered = d.cards.filter(c => (c.interval || 0) >= 21).length;
+          const pct = d.cards.length > 0 ? Math.round(mastered / d.cards.length * 100) : 0;
+          const colors = ['card-peach', 'card-green', 'card-blue', 'card-purple'];
+
+          const isLocked = !isPremium && deckCount >= maxFreeDecks;
+          const displayName = d.subtopic || d.name;
+
+          html += `
+            <div class="deck-item ${colors[i % 4]} ${isLocked ? 'opacity-60' : ''}" 
+                 onclick="${isLocked ? "showUpgradeModal()" : "openDeck('" + d.id + "')"}"
+                 style="${isLocked ? 'cursor:not-allowed;' : ''}">
+              <div class="flex justify-between items-center">
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="text-lg">${isLocked ? '🔒' : '💊'}</span>
+                    <h3 class="font-bold truncate">${displayName}</h3>
+                    ${isLocked ? '<span class="text-xs text-orange-500 font-medium">Premium</span>' : ''}
+                  </div>
+                  ${d.subtopic ? `<span class="text-xs text-sec">${d.topic || ''}</span>` : ''}
+                </div>
+                <div class="flex gap-1" onclick="event.stopPropagation()">
+                  ${isAdmin && !isLocked ? `
+                    <button onclick="showRenameDeck('${d.id}')" class="text-sec p-1 hover:text-accent transition-colors" title="Rename Deck">
+                      <i data-lucide="pencil" class="w-4 h-4"></i>
+                    </button>
+                    <button onclick="showManageCards('${d.id}')" class="text-sec p-1 hover:text-blue-500 transition-colors" title="Manage Cards">
+                      <i data-lucide="list" class="w-4 h-4"></i>
+                    </button>
+                    <button onclick="deleteDeck('${d.id}')" class="text-sec p-1 hover:text-red-500 transition-colors" title="Delete Deck">
+                      <i data-lucide="trash-2" class="w-4 h-4"></i>
+                    </button>
+                  ` : ''}
+                </div>
+              </div>
+              <div class="progress-bar h-1.5 my-1"><div class="progress-fill" style="width:${pct}%"></div></div>
+              <p class="text-xs text-sec">${d.cards.length} cards · ${due} due · ${pct}% mastered</p>
+            </div>
+          `;
+
+          deckCount++;
+        });
+
+        html += `
+            </div>
+          </div>
+        `;
+        topicCount++;
+      });
+
+      container.innerHTML = html;
+
+      if (typeof lucide !== 'undefined' && lucide.createIcons) {
+        lucide.createIcons();
+      }
+    }
+
+    function toggleTopic(topicId) {
+      const content = document.getElementById(topicId);
+      const arrow = document.getElementById('topic-arrow-' + topicId.split('-')[1]);
+
+      if (content) {
+        content.classList.toggle('hidden');
+        if (arrow) {
+          arrow.style.transform = content.classList.contains('hidden') ? 'rotate(0deg)' : 'rotate(180deg)';
+        }
+      }
+    }
 
     // ============================================================
     //  ADMIN FUNCTIONS - RENAME DECK
@@ -2845,13 +3038,22 @@
     }
 
     // ============================================================
-    //  ADMIN FUNCTIONS - MANAGE CARDS
+    //  ADMIN FUNCTIONS - MANAGE CARDS (with Bulk Delete)
     // ============================================================
     function showManageCards(deckId) {
       if (!isAdmin) return;
       manageDeckId = deckId;
       const deck = allCards.find(c => c.deck_id === deckId && c.card_front === '__deck_placeholder__');
       document.getElementById('manage-deck-name').textContent = deck ? deck.deck_name : 'Manage Cards';
+
+      // Show bulk delete button
+      document.getElementById('bulk-delete-cards-btn').classList.remove('hidden');
+
+      // Reset selections
+      selectedCardIds = [];
+      document.getElementById('select-all-cards').checked = false;
+      document.getElementById('delete-selected-cards-btn').disabled = true;
+      document.getElementById('selected-cards-count').textContent = '0 selected';
 
       document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
       document.getElementById('view-admin-cards').classList.add('active');
@@ -2870,24 +3072,26 @@
         return;
       }
 
+      // Reset selected IDs for rendering
+      selectedCardIds = [];
+
       container.innerHTML = cards.map((c, i) => `
-          <div class="card-item surface rounded-2xl p-3 border border-theme shadow-card mb-2">
-            <div class="flex items-center justify-between">
-              <div class="flex-1 min-w-0">
-                <p class="font-medium text-sm truncate">${c.card_front || 'Empty'}</p>
-                <p class="text-xs text-sec truncate">→ ${c.card_back || 'Empty'}</p>
-                <div class="text-[10px] text-sec mt-0.5">
-                  Reviews: ${c.total_reviews || 0} · Correct: ${c.correct_count || 0}
-                </div>
+          <div class="card-item surface rounded-2xl p-3 border border-theme shadow-card mb-2 flex items-center gap-3">
+            <input type="checkbox" class="card-checkbox" data-card-id="${c.__id}" onchange="toggleCardSelection('${c.__id}', this)" />
+            <div class="flex-1 min-w-0">
+              <p class="font-medium text-sm truncate">${c.card_front || 'Empty'}</p>
+              <p class="text-xs text-sec truncate">→ ${c.card_back || 'Empty'}</p>
+              <div class="text-[10px] text-sec mt-0.5">
+                Reviews: ${c.total_reviews || 0} · Correct: ${c.correct_count || 0}
               </div>
-              <div class="flex gap-1 flex-shrink-0">
-                <button onclick="showEditCard('${c.__id}')" class="text-sec p-1 hover:text-accent transition-colors" title="Edit Card">
-                  <i data-lucide="pencil" class="w-4 h-4"></i>
-                </button>
-                <button onclick="deleteCard('${c.__id}')" class="text-sec p-1 hover:text-red-500 transition-colors" title="Delete Card">
-                  <i data-lucide="trash-2" class="w-4 h-4"></i>
-                </button>
-              </div>
+            </div>
+            <div class="flex gap-1 flex-shrink-0">
+              <button onclick="showEditCard('${c.__id}')" class="text-sec p-1 hover:text-accent transition-colors" title="Edit Card">
+                <i data-lucide="pencil" class="w-4 h-4"></i>
+              </button>
+              <button onclick="deleteCard('${c.__id}')" class="text-sec p-1 hover:text-red-500 transition-colors" title="Delete Card">
+                <i data-lucide="trash-2" class="w-4 h-4"></i>
+              </button>
             </div>
           </div>
         `).join('');
@@ -2895,6 +3099,66 @@
       if (typeof lucide !== 'undefined' && lucide.createIcons) {
         lucide.createIcons();
       }
+    }
+
+    function toggleCardSelection(cardId, checkbox) {
+      if (checkbox.checked) {
+        if (!selectedCardIds.includes(cardId)) {
+          selectedCardIds.push(cardId);
+        }
+      } else {
+        selectedCardIds = selectedCardIds.filter(id => id !== cardId);
+      }
+      updateCardSelectionUI();
+    }
+
+    function toggleAllCards() {
+      const checkboxes = document.querySelectorAll('.card-checkbox');
+      const isChecked = document.getElementById('select-all-cards').checked;
+
+      checkboxes.forEach(cb => {
+        cb.checked = isChecked;
+        const cardId = cb.dataset.cardId;
+        if (isChecked) {
+          if (!selectedCardIds.includes(cardId)) {
+            selectedCardIds.push(cardId);
+          }
+        } else {
+          selectedCardIds = selectedCardIds.filter(id => id !== cardId);
+        }
+      });
+      updateCardSelectionUI();
+    }
+
+    function updateCardSelectionUI() {
+      const count = selectedCardIds.length;
+      document.getElementById('selected-cards-count').textContent = count + ' selected';
+      document.getElementById('delete-selected-cards-btn').disabled = count === 0;
+
+      // Update select all checkbox
+      const totalCheckboxes = document.querySelectorAll('.card-checkbox').length;
+      const checkedCheckboxes = document.querySelectorAll('.card-checkbox:checked').length;
+      document.getElementById('select-all-cards').checked = totalCheckboxes > 0 && checkedCheckboxes === totalCheckboxes;
+    }
+
+    function deleteSelectedCards() {
+      if (selectedCardIds.length === 0) {
+        alert('No cards selected.');
+        return;
+      }
+
+      if (!confirm(`Delete ${selectedCardIds.length} selected cards?`)) return;
+
+      allCards = allCards.filter(c => !selectedCardIds.includes(c.__id));
+      saveUserData(currentUser);
+      selectedCardIds = [];
+      renderManageCards();
+      renderDecks();
+      updateHome();
+      document.getElementById('select-all-cards').checked = false;
+      document.getElementById('delete-selected-cards-btn').disabled = true;
+      document.getElementById('selected-cards-count').textContent = '0 selected';
+      alert('✅ Selected cards deleted successfully!');
     }
 
     function showAddCardToDeck() {
@@ -3095,7 +3359,7 @@
         return;
       }
       container.innerHTML = decks.map(d => `
-          <div class="flex items-center justify-between p-2 rounded-lg bg-gray-50 dark:bg-gray-800">
+          <div class="admin-deck-item flex items-center justify-between p-2 rounded-lg" style="background:var(--surface);border:1px solid var(--border);">
             <div>
               <span class="font-medium text-sm">${d.name}</span>
               <span class="text-xs text-sec ml-2">${d.cards.length} cards</span>
@@ -3117,7 +3381,7 @@
         return;
       }
       container.innerHTML = entries.map(([code, data]) => `
-          <div class="flex items-center justify-between p-1.5 rounded bg-gray-50 dark:bg-gray-800">
+          <div class="flex items-center justify-between p-1.5 rounded" style="background:var(--surface);border:1px solid var(--border);">
             <span class="font-mono text-xs">${code}</span>
             <span class="text-xs ${data.used ? 'text-red-500' : 'text-green-500'}">${data.used ? '✓ Used by ' + data.usedBy : 'Available'}</span>
           </div>
@@ -3265,12 +3529,10 @@
     }
 
     function showImportStatus(message, type) {
-      // Try to update the UI elements
       const statusDiv = document.getElementById('import-status');
       const statusBox = document.getElementById('import-status-box');
       const statusText = document.getElementById('import-status-text');
 
-      // If elements don't exist, use alert
       if (!statusDiv || !statusBox || !statusText) {
         console.log('📊 Import status:', message);
         if (type === 'success') {
@@ -3372,15 +3634,25 @@
     //  FLASHCARDS MODE - COMPLETE FIX
     // ============================================================
     function startFlashcards() {
+      console.log('🃏 Starting flashcards for deck:', currentDeckId);
+
       const allCardsInDeck = getRealCards().filter(c => c.deck_id === currentDeckId);
+      console.log('📚 All cards in deck:', allCardsInDeck.length);
 
       if (allCardsInDeck.length === 0) {
-        alert('No cards in this deck.');
+        alert('❌ No cards in this deck. Please add some cards first.');
         return;
       }
 
       const dueCards = getDueCards(currentDeckId);
+      console.log('📅 Due cards:', dueCards.length);
+
       studyQueue = dueCards.length > 0 ? dueCards : allCardsInDeck;
+      console.log('📖 Study queue:', studyQueue.length);
+
+      if (studyQueue.length > 0) {
+        console.log('📝 First card:', studyQueue[0].card_front, '→', studyQueue[0].card_back);
+      }
 
       for (let i = studyQueue.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
@@ -3401,16 +3673,25 @@
       const btns = document.getElementById('fc-buttons');
       const hint = document.getElementById('fc-hint');
 
-      // Ensure back button works
       const backBtn = done ? done.querySelector('.back-btn') : null;
       if (backBtn) {
-        backBtn.onclick = function() {
+        backBtn.onclick = function(e) {
+          e.stopPropagation();
           exitStudy();
+          return false;
+        };
+      }
+
+      const xBtn = document.querySelector('#view-flashcards .flex button');
+      if (xBtn) {
+        xBtn.onclick = function(e) {
+          e.stopPropagation();
+          exitStudy();
+          return false;
         };
       }
 
       if (!studyQueue || studyQueue.length === 0 || studyIdx >= studyQueue.length) {
-        // Done state
         if (card) card.style.display = 'none';
         if (btns) {
           btns.classList.add('hidden');
@@ -3421,7 +3702,7 @@
           done.classList.remove('hidden');
           done.style.display = 'flex';
         }
-        document.getElementById('fc-progress').textContent = `${studyQueue.length || 0}/${studyQueue.length || 0}`;
+        document.getElementById('fc-progress').textContent = `${studyQueue ? studyQueue.length : 0}/${studyQueue ? studyQueue.length : 0}`;
         document.getElementById('fc-progress-fill').style.width = '100%';
 
         if (typeof lucide !== 'undefined' && lucide.createIcons) {
@@ -3430,8 +3711,10 @@
         return;
       }
 
-      // Show card
-      if (card) card.style.display = '';
+      if (card) {
+        card.style.display = '';
+        card.classList.remove('flipped');
+      }
       if (done) {
         done.classList.add('hidden');
         done.style.display = 'none';
@@ -3444,13 +3727,14 @@
 
       const c = studyQueue[studyIdx];
       if (!c) {
-        console.error('Card not found at index', studyIdx);
+        console.error('❌ Card not found at index', studyIdx);
+        studyIdx++;
+        fcShowCard();
         return;
       }
 
       document.getElementById('fc-front-text').textContent = c.card_front || 'Empty';
       document.getElementById('fc-back-text').textContent = c.card_back || 'Empty';
-      if (card) card.classList.remove('flipped');
       fcFlipped = false;
 
       document.getElementById('fc-progress').textContent = `${studyIdx + 1}/${studyQueue.length}`;
@@ -3472,6 +3756,11 @@
     }
 
     function fcRate(q) {
+      if (!studyQueue || studyIdx >= studyQueue.length) {
+        exitStudy();
+        return;
+      }
+
       const c = studyQueue[studyIdx];
       const updated = applySRS(c, q);
       const idx = allCards.findIndex(x => x.__id === updated.__id);
@@ -3485,19 +3774,61 @@
     }
 
     // ============================================================
-    //  EXIT STUDY - COMPLETE FIX
+    //  EXIT STUDY - COMPLETE RESET
     // ============================================================
     function exitStudy() {
-      // Reset all flashcard state
+      console.log('🔄 exitStudy called');
+
       studyQueue = [];
       studyIdx = 0;
       fcFlipped = false;
 
-      // Reset UI elements
+      // Reset LEARN
+      const lnAnswerBox = document.getElementById('ln-answer-box');
+      const lnShowBtn = document.getElementById('ln-show-btn');
+      const lnGradeBtns = document.getElementById('ln-grade-btns');
+      const lnDone = document.getElementById('ln-done');
+      const lnProgressFill = document.getElementById('ln-progress-fill');
+      const lnProgress = document.getElementById('ln-progress');
+
+      if (lnAnswerBox) lnAnswerBox.classList.add('hidden');
+      if (lnShowBtn) lnShowBtn.style.display = '';
+      if (lnGradeBtns) lnGradeBtns.classList.add('hidden');
+      if (lnDone) {
+        lnDone.classList.add('hidden');
+        lnDone.style.display = 'none';
+      }
+      if (lnProgressFill) lnProgressFill.style.width = '0%';
+      if (lnProgress) lnProgress.textContent = '0/0';
+
+      // Reset TEST
+      const tsResults = document.getElementById('ts-results');
+      const tsQuestionArea = document.getElementById('ts-question-area');
+      const tsProgressFill = document.getElementById('ts-progress-fill');
+      const tsProgress = document.getElementById('ts-progress');
+
+      if (tsResults) {
+        tsResults.classList.add('hidden');
+        tsResults.style.display = 'none';
+      }
+      if (tsQuestionArea) tsQuestionArea.style.display = '';
+      if (tsProgressFill) tsProgressFill.style.width = '0%';
+      if (tsProgress) tsProgress.textContent = '0/0';
+
+      // Reset STUDY SELECT
+      const studySelect = document.getElementById('view-study-select');
+      if (studySelect) {
+        studySelect.classList.remove('active');
+        studySelect.style.display = 'none';
+      }
+
+      // Reset FLASHCARDS
       const btns = document.getElementById('fc-buttons');
       const done = document.getElementById('fc-done');
       const card = document.getElementById('fc-card');
       const hint = document.getElementById('fc-hint');
+      const fcProgress = document.getElementById('fc-progress');
+      const fcProgressFill = document.getElementById('fc-progress-fill');
 
       if (btns) {
         btns.classList.add('hidden');
@@ -3511,33 +3842,48 @@
         card.style.display = '';
         card.classList.remove('flipped');
       }
-      if (hint) {
-        hint.style.display = '';
+      if (hint) hint.style.display = '';
+      if (fcProgress) fcProgress.textContent = '0/0';
+      if (fcProgressFill) fcProgressFill.style.width = '0%';
+
+      // HIDE ALL STUDY VIEWS
+      const studyViews = ['view-flashcards', 'view-learn', 'view-test'];
+      studyViews.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) {
+          el.classList.remove('active');
+          el.style.display = 'none';
+          el.style.opacity = '0';
+          el.style.pointerEvents = 'none';
+        }
+      });
+
+      // Show DECKS view
+      const decksView = document.getElementById('view-decks');
+      if (decksView) {
+        decksView.classList.add('active');
+        decksView.style.display = 'flex';
+        decksView.style.opacity = '1';
+        decksView.style.pointerEvents = 'all';
       }
 
-      // Reset progress
-      document.getElementById('fc-progress').textContent = '0/0';
-      document.getElementById('fc-progress-fill').style.width = '0%';
-
-      // Hide flashcard view and show decks
-      document.getElementById('view-flashcards').classList.remove('active');
-      document.getElementById('view-decks').classList.add('active');
-
-      // Update nav active state
       document.querySelectorAll('.nav-item').forEach(b => {
         b.classList.toggle('active', b.dataset.tab === 'decks');
       });
 
-      // Re-render decks
+      currentTab = 'decks';
       renderDecks();
 
-      // Refresh icons
       if (typeof lucide !== 'undefined' && lucide.createIcons) {
         lucide.createIcons();
       }
 
-      // Reset currentTab to decks so nav works
-      currentTab = 'decks';
+      if (navTimeout) {
+        clearTimeout(navTimeout);
+        navTimeout = null;
+      }
+
+      console.log('✅ exitStudy complete');
     }
 
     // ============================================================
@@ -4037,27 +4383,31 @@
         'admin-cards'
       ];
 
-      requestAnimationFrame(() => {
-        allViews.forEach(v => {
-          const el = document.getElementById('view-' + v);
-          if (el) el.classList.remove('active');
-        });
-
-        const el = document.getElementById('view-' + tab);
-        if (el) el.classList.add('active');
-
-        document.querySelectorAll('.nav-item').forEach(b => {
-          b.classList.toggle('active', b.dataset.tab === tab);
-        });
-
-        if (tab === 'stats') renderStats();
-        if (tab === 'home') updateHome();
-        if (tab === 'decks') renderDecks();
-
-        if (typeof lucide !== 'undefined' && lucide.createIcons) {
-          lucide.createIcons();
+      allViews.forEach(v => {
+        const el = document.getElementById('view-' + v);
+        if (el) {
+          el.classList.remove('active');
+          el.style.display = 'none';
         }
       });
+
+      const targetView = document.getElementById('view-' + tab);
+      if (targetView) {
+        targetView.classList.add('active');
+        targetView.style.display = 'flex';
+      }
+
+      document.querySelectorAll('.nav-item').forEach(b => {
+        b.classList.toggle('active', b.dataset.tab === tab);
+      });
+
+      if (tab === 'stats') renderStats();
+      if (tab === 'home') updateHome();
+      if (tab === 'decks') renderDecks();
+
+      if (typeof lucide !== 'undefined' && lucide.createIcons) {
+        lucide.createIcons();
+      }
     }
 
     // ============================================================
@@ -4375,7 +4725,6 @@
       document.getElementById('bottom-nav-container').classList.add('hidden');
     }
 
-    // Nav click handler
     function navClickHandler() {
       if (navTimeout) return;
       navTimeout = setTimeout(() => {
@@ -4423,7 +4772,6 @@
       lucide.createIcons();
     }
 
-    // Progress toggle initialization
     document.querySelectorAll('#progress-toggle button')?.forEach(btn => {
       btn.addEventListener('click', function() {
         document.querySelectorAll('#progress-toggle button').forEach(b => b.classList.remove('active'));
