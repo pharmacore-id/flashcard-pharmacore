@@ -23,11 +23,12 @@
   
   <style>
     /* ============================================================
-       ALL STYLES
+       OPTIMIZED STYLES - FAST & RESPONSIVE
        ============================================================ */
     * {
       font-family: 'DM Sans', sans-serif;
       box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
     }
     :root {
       --bg: #fdf6ec;
@@ -67,6 +68,8 @@
       overflow: hidden;
       background: var(--bg);
       color: var(--text);
+      margin: 0;
+      padding: 0;
     }
     body {
       display: flex;
@@ -92,28 +95,27 @@
     .accent-text { color: var(--accent); }
     .shadow-card { box-shadow: var(--shadow); }
     
-    /* View styles */
+    /* ===== VIEWS - PROPER STACKING ===== */
     .view {
       display: none;
       flex-direction: column;
-      flex: 1;
-      height: 100%;
-      overflow: hidden;
+      position: absolute;
+      inset: 0;
+      bottom: 68px;
       padding: 1.25rem 1.25rem 0.5rem;
-      transition: opacity 0.15s ease;
+      background: var(--bg);
       opacity: 0;
       pointer-events: none;
-      background: var(--bg);
+      transition: opacity 0.15s ease;
+      z-index: 1;
+      overflow: hidden;
+      will-change: opacity;
     }
     .view.active {
       display: flex !important;
       opacity: 1;
       pointer-events: all;
-      animation: fade 0.15s ease;
-    }
-    @keyframes fade {
-      from { opacity: 0; transform: translateY(4px); }
-      to { opacity: 1; transform: translateY(0); }
+      z-index: 2;
     }
     
     .view-scroll {
@@ -121,10 +123,12 @@
       overflow-y: auto;
       padding-bottom: 0.5rem;
       -webkit-overflow-scrolling: touch;
+      overscroll-behavior: contain;
     }
     .view-scroll::-webkit-scrollbar { width: 3px; }
     .view-scroll::-webkit-scrollbar-thumb { background: var(--border); border-radius: 99px; }
     
+    /* ===== BOTTOM NAV - ALWAYS CLICKABLE ===== */
     .bottom-nav {
       display: flex;
       justify-content: space-around;
@@ -134,7 +138,9 @@
       height: 68px;
       flex-shrink: 0;
       padding: 0 0.5rem;
-      z-index: 50;
+      z-index: 100;
+      position: relative;
+      pointer-events: all;
     }
     .nav-item {
       display: flex;
@@ -150,17 +156,31 @@
       border-radius: 16px;
       transition: 0.15s;
       cursor: pointer;
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
+      pointer-events: all;
     }
     .nav-item.active { color: var(--accent); }
-    .nav-item i { width: 24px; height: 24px; }
+    .nav-item i { width: 24px; height: 24px; pointer-events: none; }
+    .nav-item:hover { color: var(--text); }
+    .nav-item.active:hover { color: var(--accent); }
+    .nav-item:active { transform: scale(0.95); }
     
-    /* Flashcard styles */
+    /* ===== AUTH VIEWS - ON TOP ===== */
+    #view-login, #view-signup {
+      z-index: 200 !important;
+      background: var(--bg) !important;
+      bottom: 0 !important;
+    }
+    
+    /* ===== FLASHCARD ===== */
     .flip-card {
       perspective: 1000px;
       width: 100%;
       height: 260px;
       max-width: 340px;
       margin: 0 auto;
+      touch-action: manipulation;
     }
     .flip-inner {
       transition: transform 0.4s cubic-bezier(0.23, 1, 0.32, 1);
@@ -195,10 +215,9 @@
       background: var(--accent);
       height: 100%;
       border-radius: 99px;
-      transition: width 0.3s;
+      transition: width 0.3s ease;
     }
     
-    /* Mode buttons */
     .mode-btn {
       display: flex;
       align-items: center;
@@ -213,8 +232,9 @@
       text-align: left;
       color: var(--text);
       box-shadow: var(--shadow);
+      touch-action: manipulation;
     }
-    .mode-btn:hover { transform: scale(0.98); }
+    .mode-btn:active { transform: scale(0.98); }
     .mode-btn .icon-wrap {
       width: 48px;
       height: 48px;
@@ -228,7 +248,6 @@
     .mode-btn .icon-wrap.green { background: #059669; color: #fff; }
     .mode-btn .icon-wrap.blue { background: #2563eb; color: #fff; }
     
-    /* Deck item */
     .deck-item {
       padding: 1rem 1.25rem;
       border-radius: var(--radius);
@@ -237,10 +256,33 @@
       cursor: pointer;
       transition: 0.15s;
       box-shadow: var(--shadow);
+      touch-action: manipulation;
     }
-    .deck-item:hover { transform: scale(0.99); }
+    .deck-item:active { transform: scale(0.98); }
     
-    /* Auth */
+    .hero-number {
+      font-size: 4.5rem;
+      font-weight: 800;
+      line-height: 1;
+    }
+    
+    .choice-btn {
+      width: 100%;
+      padding: 0.9rem 1.25rem;
+      border-radius: 1.25rem;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      text-align: left;
+      font-weight: 500;
+      transition: 0.12s;
+      color: var(--text);
+      cursor: pointer;
+      touch-action: manipulation;
+    }
+    .choice-btn:active { transform: scale(0.96); }
+    .choice-btn.correct { background: #d1fae5; border-color: #059669; }
+    .choice-btn.wrong { background: #fee2e2; border-color: #dc2626; }
+    
     .auth-card {
       background: var(--surface);
       border-radius: var(--radius);
@@ -260,11 +302,13 @@
       color: var(--text);
       font-size: 1rem;
       padding-right: 2.5rem;
+      outline: none;
     }
     .auth-card input:focus {
       outline: 2px solid var(--accent);
       outline-offset: 2px;
     }
+    
     .password-wrapper {
       position: relative;
     }
@@ -278,8 +322,9 @@
       cursor: pointer;
       color: var(--text-secondary);
       padding: 4px;
+      touch-action: manipulation;
     }
-    .password-wrapper .toggle-eye:hover { color: var(--text); }
+    .password-wrapper .toggle-eye:active { color: var(--text); }
     
     .btn-block {
       width: 100%;
@@ -290,24 +335,395 @@
       cursor: pointer;
       transition: 0.15s;
       text-align: center;
+      touch-action: manipulation;
     }
     .btn-block:active { transform: scale(0.96); }
     .btn-block:disabled { opacity: 0.5; cursor: not-allowed; }
     
-    /* Topic header */
     .topic-header {
       transition: background 0.15s ease;
       cursor: pointer;
+      touch-action: manipulation;
     }
-    .topic-header:hover {
-      background: var(--accent-light);
-    }
+    .topic-header:active { background: var(--accent-light); }
     .topic-content {
       animation: slideDown 0.25s ease;
     }
     @keyframes slideDown {
       from { opacity: 0; transform: translateY(-8px); }
       to { opacity: 1; transform: translateY(0); }
+    }
+    
+    /* ===== RESPONSIVE TOUCH ===== */
+    @media (max-width: 430px) {
+      .view { padding: 0.75rem 0.75rem 0.25rem; }
+      .auth-card { padding: 1.5rem; }
+      .hero-number { font-size: 3.5rem; }
+      .mode-btn { padding: 0.75rem 1rem; }
+    }
+    
+    /* ===== DONE BUTTON ===== */
+    #fc-done {
+      pointer-events: all;
+      cursor: pointer;
+    }
+    #fc-done .back-btn {
+      pointer-events: all;
+      touch-action: manipulation;
+    }
+    
+    /* ===== DARK MODE ===== */
+    .dark .upload-zone { border-color: var(--border); background: var(--surface); }
+    .dark .upload-zone:hover { border-color: var(--accent); background: var(--accent-light); }
+    .dark .upload-zone.dragover { border-color: var(--accent); background: var(--accent-light); }
+    .dark .sample-excel-box { background: var(--surface); border-color: var(--border); }
+    .dark .sample-excel-box pre { background: var(--bg); color: var(--text); }
+    .dark .bg-gray-50 { background: var(--surface); }
+    .dark .bg-gray-100 { background: var(--bg); }
+    .dark #code-list .rounded { background: var(--surface); border-color: var(--border); }
+    .dark #code-list .bg-gray-50 { background: var(--surface); }
+    .dark #code-list .bg-gray-800 { background: var(--bg); }
+    .dark #admin-deck-list .bg-gray-50 { background: var(--surface); }
+    .dark #admin-deck-list .bg-gray-800 { background: var(--bg); }
+    
+    /* ===== SCROLLBAR ===== */
+    .view-scroll::-webkit-scrollbar { width: 3px; }
+    .view-scroll::-webkit-scrollbar-thumb { background: var(--border); border-radius: 99px; }
+    
+    /* ===== OTHER ===== */
+    .code-input {
+      font-family: 'Courier New', monospace;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+    }
+    .code-input::placeholder { letter-spacing: 0; text-transform: none; }
+    
+    .card-item { transition: background 0.15s ease; }
+    .card-item:hover { background: var(--accent-light); }
+    
+    .forgot-link {
+      font-size: 0.75rem;
+      color: var(--accent);
+      cursor: pointer;
+      font-weight: 500;
+      text-decoration: none;
+    }
+    .forgot-link:hover { text-decoration: underline; }
+    
+    .settings-goal {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+    .settings-goal input {
+      width: 70px;
+      padding: 0.4rem 0.5rem;
+      border-radius: 0.75rem;
+      border: 1px solid var(--border);
+      background: var(--bg);
+      color: var(--text);
+      font-size: 0.875rem;
+      text-align: center;
+      font-weight: 700;
+      outline: none;
+    }
+    .settings-goal input:focus { outline: 2px solid var(--accent); outline-offset: 2px; }
+    .settings-goal button {
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      padding: 0.4rem 1rem;
+      border-radius: 0.75rem;
+      font-size: 0.75rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: 0.15s;
+      touch-action: manipulation;
+    }
+    .settings-goal button:hover { opacity: 0.8; }
+    
+    .daily-progress.hero-gradient .goal-text { color: rgba(255, 255, 255, 0.7); }
+    .daily-progress.hero-gradient .big-number { color: #fff; }
+    .daily-progress.hero-gradient .big-number small { color: rgba(255, 255, 255, 0.6); }
+    .daily-progress.hero-gradient .progress-bar { background: rgba(255, 255, 255, 0.3); }
+    .daily-progress.hero-gradient .progress-fill { background: #ffffff; }
+    
+    .upload-zone {
+      border: 2px dashed var(--border);
+      border-radius: var(--radius);
+      padding: 2rem;
+      text-align: center;
+      cursor: pointer;
+      transition: 0.2s;
+      touch-action: manipulation;
+    }
+    .upload-zone:hover { border-color: var(--accent); background: var(--accent-light); }
+    .upload-zone.dragover { border-color: var(--accent); background: var(--accent-light); }
+    
+    .select-all-container {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.5rem 0.75rem;
+      border-radius: 0.75rem;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      margin-bottom: 0.5rem;
+      flex-shrink: 0;
+    }
+    .select-all-container input[type="checkbox"] {
+      width: 18px;
+      height: 18px;
+      accent-color: var(--accent);
+      cursor: pointer;
+    }
+    .select-all-container .delete-selected-btn {
+      background: #ef4444;
+      color: #fff;
+      border: none;
+      padding: 0.25rem 0.75rem;
+      border-radius: 0.5rem;
+      font-size: 0.75rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: 0.15s;
+      touch-action: manipulation;
+    }
+    .select-all-container .delete-selected-btn:hover { opacity: 0.8; }
+    .select-all-container .delete-selected-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    .card-checkbox {
+      width: 16px;
+      height: 16px;
+      accent-color: var(--accent);
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+    
+    .sync-status {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.6rem;
+      color: var(--text-secondary);
+      padding: 0.25rem 0.5rem;
+    }
+    .sync-status .dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #22c55e;
+    }
+    .sync-status .dot.syncing {
+      background: #f59e0b;
+      animation: pulse 1s infinite;
+    }
+    .sync-status .dot.offline { background: #ef4444; }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.3; }
+    }
+    
+    .pricing-card {
+      border-radius: var(--radius);
+      padding: 1.25rem;
+      border: 2px solid var(--border);
+      transition: 0.2s;
+      cursor: pointer;
+      touch-action: manipulation;
+    }
+    .pricing-card:active { transform: scale(0.98); }
+    .pricing-card.popular { border-color: var(--premium-gold); background: var(--accent-light); }
+    .pricing-card .price { font-size: 1.75rem; font-weight: 800; }
+    .pricing-card .price small { font-size: 0.75rem; font-weight: 400; }
+    .pricing-card .per-day { font-size: 0.7rem; color: var(--text-secondary); }
+    .pricing-card .badge-popular {
+      background: linear-gradient(135deg, var(--premium-gold), var(--premium-purple));
+      color: #fff;
+      padding: 0.1rem 0.6rem;
+      border-radius: 99px;
+      font-size: 9px;
+      font-weight: 700;
+      text-transform: uppercase;
+      display: inline-block;
+    }
+    
+    .payment-option {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      padding: 0.75rem 1rem;
+      border-radius: 1rem;
+      border: 1px solid var(--border);
+      cursor: pointer;
+      transition: 0.15s;
+      touch-action: manipulation;
+    }
+    .payment-option:active { border-color: var(--accent); background: var(--accent-light); }
+    .payment-option.selected { border-color: var(--accent); background: var(--accent-light); }
+    .payment-option .icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    .payment-option .icon.bank { background: #2563eb; color: #fff; }
+    .payment-option .icon.qris { background: #059669; color: #fff; }
+    .payment-option .icon.ewallet { background: #7c3aed; color: #fff; }
+    
+    .pricing-header {
+      background: linear-gradient(135deg, var(--premium-gold), var(--premium-purple));
+      color: #fff;
+      padding: 1.5rem;
+      border-radius: var(--radius);
+      text-align: center;
+      margin-bottom: 1rem;
+    }
+    .pricing-header .big-price { font-size: 2.5rem; font-weight: 800; }
+    .pricing-header .big-price small { font-size: 1rem; font-weight: 400; }
+    
+    .stat-card {
+      background: var(--surface);
+      border-radius: 1.25rem;
+      padding: 0.75rem 1rem;
+      border: 1px solid var(--border);
+      text-align: center;
+      box-shadow: var(--shadow);
+    }
+    .stat-card .number { font-size: 1.5rem; font-weight: 800; line-height: 1.2; }
+    .stat-card .label {
+      font-size: 0.65rem;
+      font-weight: 600;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+    }
+    .stat-card .icon { margin-bottom: 2px; }
+    
+    .streak-dot {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      font-weight: 700;
+      transition: 0.15s;
+    }
+    .streak-dot.active { background: var(--accent); color: #fff; }
+    .streak-dot.today {
+      border: 2px solid var(--accent);
+      background: var(--accent-light);
+      color: var(--accent);
+    }
+    .streak-dot.inactive { background: var(--border); color: var(--text-secondary); }
+    .streak-dot.future {
+      background: transparent;
+      border: 1px dashed var(--border);
+      color: var(--text-secondary);
+    }
+    
+    .daily-progress {
+      background: var(--surface);
+      border-radius: var(--radius);
+      padding: 1.25rem;
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow);
+    }
+    .daily-progress .goal-text { font-size: 0.75rem; color: var(--text-secondary); }
+    .daily-progress .big-number { font-size: 2rem; font-weight: 800; }
+    .daily-progress .big-number small { font-size: 0.875rem; font-weight: 400; color: var(--text-secondary); }
+    
+    .quick-stat-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 0.5rem;
+    }
+    .last-study-time {
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+      text-align: center;
+      padding: 0.5rem 0;
+    }
+    .home-quick-actions {
+      display: flex;
+      gap: 0.5rem;
+      margin-top: 0.5rem;
+    }
+    .home-quick-actions button {
+      flex: 1;
+      padding: 0.6rem;
+      border-radius: 1rem;
+      border: none;
+      font-weight: 600;
+      font-size: 0.8rem;
+      cursor: pointer;
+      transition: 0.15s;
+      touch-action: manipulation;
+    }
+    .home-quick-actions button:active { transform: scale(0.96); }
+    .home-quick-actions .primary { background: var(--accent); color: #fff; }
+    .home-quick-actions .secondary { background: var(--border); color: var(--text); }
+    
+    .premium-badge {
+      background: linear-gradient(135deg, var(--premium-gold), var(--premium-purple));
+      color: #fff;
+      padding: 0.15rem 0.75rem;
+      border-radius: 99px;
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+    .free-badge {
+      background: var(--border);
+      color: var(--text-secondary);
+      padding: 0.15rem 0.75rem;
+      border-radius: 99px;
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+    .admin-badge {
+      background: #ef4444;
+      color: #fff;
+      padding: 0.15rem 0.75rem;
+      border-radius: 99px;
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+    
+    .feature-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+    .feature-item {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.75rem 1rem;
+      border-radius: 1rem;
+      background: var(--bg);
+      border: 1px solid var(--border);
+    }
+    .feature-item .icon { width: 24px; height: 24px; flex-shrink: 0; }
+    .feature-item .icon.gold { color: var(--premium-gold); }
+    .feature-item .icon.gray { color: var(--text-secondary); }
+    .feature-item .label { flex: 1; font-size: 0.875rem; }
+    .feature-item .status { font-size: 0.75rem; font-weight: 600; }
+    .feature-item .status.free { color: var(--text-secondary); }
+    .feature-item .status.premium { color: var(--premium-gold); }
+    
+    .swipe-hint {
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+      text-align: center;
+      padding: 0.25rem 0;
     }
     
     /* Stats */
@@ -353,7 +769,6 @@
       gap: 0.5rem;
     }
     
-    /* Progress chart */
     .progress-chart-wrapper {
       overflow-x: auto;
       overflow-y: hidden;
@@ -438,6 +853,7 @@
       transition: 0.15s;
       background: transparent;
       color: var(--text-secondary);
+      touch-action: manipulation;
     }
     .progress-toggle button.active {
       background: var(--accent);
@@ -581,503 +997,6 @@
     .heatmap-grid .heat-cell.today {
       border: 2px solid var(--accent);
     }
-    
-    .sync-status {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      font-size: 0.6rem;
-      color: var(--text-secondary);
-      padding: 0.25rem 0.5rem;
-    }
-    .sync-status .dot {
-      width: 6px;
-      height: 6px;
-      border-radius: 50%;
-      background: #22c55e;
-    }
-    .sync-status .dot.syncing {
-      background: #f59e0b;
-      animation: pulse 1s infinite;
-    }
-    .sync-status .dot.offline {
-      background: #ef4444;
-    }
-    @keyframes pulse {
-      0%, 100% { opacity: 1; }
-      50% { opacity: 0.3; }
-    }
-    
-    #fc-done {
-      pointer-events: all;
-      cursor: pointer;
-    }
-    #fc-done .back-btn {
-      pointer-events: all;
-    }
-    
-    .card-item {
-      transition: background 0.15s ease;
-    }
-    .card-item:hover {
-      background: var(--accent-light);
-    }
-    
-    .forgot-link {
-      font-size: 0.75rem;
-      color: var(--accent);
-      cursor: pointer;
-      font-weight: 500;
-      text-decoration: none;
-    }
-    .forgot-link:hover {
-      text-decoration: underline;
-    }
-    
-    .settings-goal {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      flex-wrap: wrap;
-    }
-    .settings-goal input {
-      width: 70px;
-      padding: 0.4rem 0.5rem;
-      border-radius: 0.75rem;
-      border: 1px solid var(--border);
-      background: var(--bg);
-      color: var(--text);
-      font-size: 0.875rem;
-      text-align: center;
-      font-weight: 700;
-    }
-    .settings-goal input:focus {
-      outline: 2px solid var(--accent);
-      outline-offset: 2px;
-    }
-    .settings-goal button {
-      background: var(--accent);
-      color: #fff;
-      border: none;
-      padding: 0.4rem 1rem;
-      border-radius: 0.75rem;
-      font-size: 0.75rem;
-      font-weight: 600;
-      cursor: pointer;
-      transition: 0.15s;
-    }
-    .settings-goal button:hover {
-      opacity: 0.8;
-    }
-    
-    .daily-progress.hero-gradient .goal-text {
-      color: rgba(255, 255, 255, 0.7);
-    }
-    .daily-progress.hero-gradient .big-number {
-      color: #fff;
-    }
-    .daily-progress.hero-gradient .big-number small {
-      color: rgba(255, 255, 255, 0.6);
-    }
-    .daily-progress.hero-gradient .progress-bar {
-      background: rgba(255, 255, 255, 0.3);
-    }
-    .daily-progress.hero-gradient .progress-fill {
-      background: #ffffff;
-    }
-    
-    .upload-zone {
-      border: 2px dashed var(--border);
-      border-radius: var(--radius);
-      padding: 2rem;
-      text-align: center;
-      cursor: pointer;
-      transition: 0.2s;
-    }
-    .upload-zone:hover {
-      border-color: var(--accent);
-      background: var(--accent-light);
-    }
-    .upload-zone.dragover {
-      border-color: var(--accent);
-      background: var(--accent-light);
-    }
-    
-    /* Dark mode fixes */
-    .dark .upload-zone {
-      border-color: var(--border);
-      background: var(--surface);
-    }
-    .dark .upload-zone:hover {
-      border-color: var(--accent);
-      background: var(--accent-light);
-    }
-    .dark .upload-zone.dragover {
-      border-color: var(--accent);
-      background: var(--accent-light);
-    }
-    .dark .sample-excel-box {
-      background: var(--surface);
-      border-color: var(--border);
-    }
-    .dark .sample-excel-box pre {
-      background: var(--bg);
-      color: var(--text);
-    }
-    .dark .bg-gray-50 {
-      background: var(--surface);
-    }
-    .dark .bg-gray-100 {
-      background: var(--bg);
-    }
-    .dark #code-list .rounded {
-      background: var(--surface);
-      border-color: var(--border);
-    }
-    .dark #code-list .bg-gray-50 {
-      background: var(--surface);
-    }
-    .dark #code-list .bg-gray-800 {
-      background: var(--bg);
-    }
-    .dark #admin-deck-list .bg-gray-50 {
-      background: var(--surface);
-    }
-    .dark #admin-deck-list .bg-gray-800 {
-      background: var(--bg);
-    }
-    
-    .code-input {
-      font-family: 'Courier New', monospace;
-      letter-spacing: 2px;
-      text-transform: uppercase;
-    }
-    .code-input::placeholder {
-      letter-spacing: 0;
-      text-transform: none;
-    }
-    
-    /* Pricing */
-    .pricing-card {
-      border-radius: var(--radius);
-      padding: 1.25rem;
-      border: 2px solid var(--border);
-      transition: 0.2s;
-      cursor: pointer;
-    }
-    .pricing-card:hover {
-      transform: scale(0.98);
-    }
-    .pricing-card.popular {
-      border-color: var(--premium-gold);
-      background: var(--accent-light);
-    }
-    .pricing-card .price {
-      font-size: 1.75rem;
-      font-weight: 800;
-    }
-    .pricing-card .price small {
-      font-size: 0.75rem;
-      font-weight: 400;
-    }
-    .pricing-card .per-day {
-      font-size: 0.7rem;
-      color: var(--text-secondary);
-    }
-    .pricing-card .badge-popular {
-      background: linear-gradient(135deg, var(--premium-gold), var(--premium-purple));
-      color: #fff;
-      padding: 0.1rem 0.6rem;
-      border-radius: 99px;
-      font-size: 9px;
-      font-weight: 700;
-      text-transform: uppercase;
-      display: inline-block;
-    }
-    
-    .payment-option {
-      display: flex;
-      align-items: center;
-      gap: 1rem;
-      padding: 0.75rem 1rem;
-      border-radius: 1rem;
-      border: 1px solid var(--border);
-      cursor: pointer;
-      transition: 0.15s;
-    }
-    .payment-option:hover {
-      border-color: var(--accent);
-      background: var(--accent-light);
-    }
-    .payment-option.selected {
-      border-color: var(--accent);
-      background: var(--accent-light);
-    }
-    .payment-option .icon {
-      width: 36px;
-      height: 36px;
-      border-radius: 10px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-shrink: 0;
-    }
-    .payment-option .icon.bank {
-      background: #2563eb;
-      color: #fff;
-    }
-    .payment-option .icon.qris {
-      background: #059669;
-      color: #fff;
-    }
-    .payment-option .icon.ewallet {
-      background: #7c3aed;
-      color: #fff;
-    }
-    
-    .pricing-header {
-      background: linear-gradient(135deg, var(--premium-gold), var(--premium-purple));
-      color: #fff;
-      padding: 1.5rem;
-      border-radius: var(--radius);
-      text-align: center;
-      margin-bottom: 1rem;
-    }
-    .pricing-header .big-price {
-      font-size: 2.5rem;
-      font-weight: 800;
-    }
-    .pricing-header .big-price small {
-      font-size: 1rem;
-      font-weight: 400;
-    }
-    
-    .stat-card {
-      background: var(--surface);
-      border-radius: 1.25rem;
-      padding: 0.75rem 1rem;
-      border: 1px solid var(--border);
-      text-align: center;
-      box-shadow: var(--shadow);
-    }
-    .stat-card .number {
-      font-size: 1.5rem;
-      font-weight: 800;
-      line-height: 1.2;
-    }
-    .stat-card .label {
-      font-size: 0.65rem;
-      font-weight: 600;
-      color: var(--text-secondary);
-      text-transform: uppercase;
-      letter-spacing: 0.3px;
-    }
-    .stat-card .icon {
-      margin-bottom: 2px;
-    }
-    
-    .streak-dot {
-      width: 28px;
-      height: 28px;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 11px;
-      font-weight: 700;
-      transition: 0.15s;
-    }
-    .streak-dot.active {
-      background: var(--accent);
-      color: #fff;
-    }
-    .streak-dot.today {
-      border: 2px solid var(--accent);
-      background: var(--accent-light);
-      color: var(--accent);
-    }
-    .streak-dot.inactive {
-      background: var(--border);
-      color: var(--text-secondary);
-    }
-    .streak-dot.future {
-      background: transparent;
-      border: 1px dashed var(--border);
-      color: var(--text-secondary);
-    }
-    
-    .daily-progress {
-      background: var(--surface);
-      border-radius: var(--radius);
-      padding: 1.25rem;
-      border: 1px solid var(--border);
-      box-shadow: var(--shadow);
-    }
-    .daily-progress .goal-text {
-      font-size: 0.75rem;
-      color: var(--text-secondary);
-    }
-    .daily-progress .big-number {
-      font-size: 2rem;
-      font-weight: 800;
-    }
-    .daily-progress .big-number small {
-      font-size: 0.875rem;
-      font-weight: 400;
-      color: var(--text-secondary);
-    }
-    
-    .quick-stat-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 0.5rem;
-    }
-    .last-study-time {
-      font-size: 0.75rem;
-      color: var(--text-secondary);
-      text-align: center;
-      padding: 0.5rem 0;
-    }
-    .home-quick-actions {
-      display: flex;
-      gap: 0.5rem;
-      margin-top: 0.5rem;
-    }
-    .home-quick-actions button {
-      flex: 1;
-      padding: 0.6rem;
-      border-radius: 1rem;
-      border: none;
-      font-weight: 600;
-      font-size: 0.8rem;
-      cursor: pointer;
-      transition: 0.15s;
-    }
-    .home-quick-actions button:active {
-      transform: scale(0.96);
-    }
-    .home-quick-actions .primary {
-      background: var(--accent);
-      color: #fff;
-    }
-    .home-quick-actions .secondary {
-      background: var(--border);
-      color: var(--text);
-    }
-    
-    .premium-badge {
-      background: linear-gradient(135deg, var(--premium-gold), var(--premium-purple));
-      color: #fff;
-      padding: 0.15rem 0.75rem;
-      border-radius: 99px;
-      font-size: 10px;
-      font-weight: 700;
-      text-transform: uppercase;
-    }
-    .free-badge {
-      background: var(--border);
-      color: var(--text-secondary);
-      padding: 0.15rem 0.75rem;
-      border-radius: 99px;
-      font-size: 10px;
-      font-weight: 700;
-      text-transform: uppercase;
-    }
-    .admin-badge {
-      background: #ef4444;
-      color: #fff;
-      padding: 0.15rem 0.75rem;
-      border-radius: 99px;
-      font-size: 10px;
-      font-weight: 700;
-      text-transform: uppercase;
-    }
-    
-    .feature-list {
-      display: flex;
-      flex-direction: column;
-      gap: 0.75rem;
-    }
-    .feature-item {
-      display: flex;
-      align-items: center;
-      gap: 0.75rem;
-      padding: 0.75rem 1rem;
-      border-radius: 1rem;
-      background: var(--bg);
-      border: 1px solid var(--border);
-    }
-    .feature-item .icon {
-      width: 24px;
-      height: 24px;
-      flex-shrink: 0;
-    }
-    .feature-item .icon.gold {
-      color: var(--premium-gold);
-    }
-    .feature-item .icon.gray {
-      color: var(--text-secondary);
-    }
-    .feature-item .label {
-      flex: 1;
-      font-size: 0.875rem;
-    }
-    .feature-item .status {
-      font-size: 0.75rem;
-      font-weight: 600;
-    }
-    .feature-item .status.free {
-      color: var(--text-secondary);
-    }
-    .feature-item .status.premium {
-      color: var(--premium-gold);
-    }
-    
-    .swipe-hint {
-      font-size: 0.75rem;
-      color: var(--text-secondary);
-      text-align: center;
-      padding: 0.25rem 0;
-    }
-    
-    /* Select All */
-    .select-all-container {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      padding: 0.5rem 0.75rem;
-      border-radius: 0.75rem;
-      background: var(--bg);
-      border: 1px solid var(--border);
-      margin-bottom: 0.5rem;
-      flex-shrink: 0;
-    }
-    .select-all-container input[type="checkbox"] {
-      width: 18px;
-      height: 18px;
-      accent-color: var(--accent);
-      cursor: pointer;
-    }
-    .select-all-container .delete-selected-btn {
-      background: #ef4444;
-      color: #fff;
-      border: none;
-      padding: 0.25rem 0.75rem;
-      border-radius: 0.5rem;
-      font-size: 0.75rem;
-      font-weight: 600;
-      cursor: pointer;
-      transition: 0.15s;
-    }
-    .select-all-container .delete-selected-btn:hover { opacity: 0.8; }
-    .select-all-container .delete-selected-btn:disabled { opacity: 0.5; cursor: not-allowed; }
-    .card-checkbox {
-      width: 16px;
-      height: 16px;
-      accent-color: var(--accent);
-      cursor: pointer;
-      flex-shrink: 0;
-    }
   </style>
 </head>
 <body>
@@ -1085,7 +1004,7 @@
   <div id="app">
 
     <!-- ===== AUTH: LOGIN ===== -->
-    <div id="view-login" class="view active" style="padding:1rem;justify-content:center;">
+    <div id="view-login" class="view active" style="padding:1rem;justify-content:center;z-index:200;bottom:0;">
       <div class="auth-card">
         <div class="text-center mb-6">
           <h1 class="text-3xl font-extrabold tracking-tight">FlashMind</h1>
@@ -1096,10 +1015,7 @@
           </div>
         </div>
         <form onsubmit="handleLogin(event)" class="space-y-4">
-          <div>
-            <label class="text-sm font-medium text-sec">Email</label>
-            <input type="email" id="login-email" placeholder="you@example.com" required />
-          </div>
+          <div><label class="text-sm font-medium text-sec">Email</label><input type="email" id="login-email" placeholder="you@example.com" required /></div>
           <div>
             <label class="text-sm font-medium text-sec">Password</label>
             <div class="password-wrapper">
@@ -1121,7 +1037,7 @@
     </div>
 
     <!-- ===== AUTH: SIGNUP ===== -->
-    <div id="view-signup" class="view" style="padding:1rem;justify-content:center;">
+    <div id="view-signup" class="view" style="padding:1rem;justify-content:center;z-index:200;bottom:0;">
       <div class="auth-card">
         <div class="text-center mb-6">
           <h1 class="text-3xl font-extrabold tracking-tight">FlashMind</h1>
@@ -1335,44 +1251,30 @@ Science       | Biology       | What is DNA?             | Deoxyribonucleic acid
     <!-- ===== ADMIN MANAGE CARDS VIEW ===== -->
     <div id="view-admin-cards" class="view">
       <div class="flex items-center gap-3 mb-4">
-        <button onclick="switchTab('decks')" class="text-sec hover:text-text transition-colors">
-          <i data-lucide="arrow-left" class="w-6 h-6"></i>
-        </button>
+        <button onclick="switchTab('decks')" class="text-sec"><i data-lucide="arrow-left" class="w-6 h-6"></i></button>
         <h2 id="manage-deck-name" class="text-xl font-bold flex-1 truncate">Manage Cards</h2>
         <div class="flex gap-2">
-          <button onclick="showAddCardToDeck()" class="accent-bg text-white w-10 h-10 rounded-full flex items-center justify-center shadow-md">
-            <i data-lucide="plus" class="w-5 h-5"></i>
-          </button>
-          <button id="manage-import-btn" onclick="document.getElementById('manage-excel-file').click()" class="accent-bg text-white w-10 h-10 rounded-full flex items-center justify-center shadow-md">
-            <i data-lucide="upload" class="w-5 h-5"></i>
-          </button>
-          <button onclick="bulkDeleteCards()" id="bulk-delete-cards-btn" class="bg-red-500 text-white w-10 h-10 rounded-full flex items-center justify-center shadow-md hover:opacity-80 transition-opacity hidden">
-            <i data-lucide="trash-2" class="w-5 h-5"></i>
-          </button>
+          <button onclick="showAddCardToDeck()" class="accent-bg text-white w-10 h-10 rounded-full flex items-center justify-center shadow-md"><i data-lucide="plus" class="w-5 h-5"></i></button>
+          <button id="manage-import-btn" onclick="document.getElementById('manage-excel-file').click()" class="accent-bg text-white w-10 h-10 rounded-full flex items-center justify-center shadow-md"><i data-lucide="upload" class="w-5 h-5"></i></button>
+          <button onclick="bulkDeleteCards()" id="bulk-delete-cards-btn" class="bg-red-500 text-white w-10 h-10 rounded-full flex items-center justify-center shadow-md hover:opacity-80 transition-opacity hidden"><i data-lucide="trash-2" class="w-5 h-5"></i></button>
         </div>
         <input type="file" id="manage-excel-file" accept=".xlsx,.xls" class="hidden" onchange="importExcelToDeck(event)" />
       </div>
-      <!-- Select All -->
       <div class="select-all-container">
         <input type="checkbox" id="select-all-cards" onchange="toggleAllCards()" />
         <label for="select-all-cards" class="text-sm font-medium">Select All</label>
         <button class="delete-selected-btn" id="delete-selected-cards-btn" onclick="deleteSelectedCards()" disabled>Delete Selected</button>
         <span class="text-xs text-sec ml-auto" id="selected-cards-count">0 selected</span>
       </div>
-      <div class="view-scroll" id="manage-cards-list">
-        <!-- Cards rendered by JS -->
-      </div>
+      <div class="view-scroll" id="manage-cards-list"></div>
     </div>
 
     <!-- ===== STUDY MODE SELECTOR ===== -->
-   <!-- ===== STUDY MODE SELECTOR ===== -->
-<div id="view-study-select" class="view">
-  <div class="flex items-center gap-3 mb-4">
-    <button onclick="switchTab('decks')" class="text-sec hover:text-text transition-colors">
-      <i data-lucide="arrow-left" class="w-6 h-6"></i>
-    </button>
-    <h2 id="study-deck-name" class="text-xl font-bold flex-1 truncate"></h2>
-  </div>
+    <div id="view-study-select" class="view">
+      <div class="flex items-center gap-3 mb-4">
+        <button onclick="switchTab('decks')" class="text-sec"><i data-lucide="arrow-left" class="w-6 h-6"></i></button>
+        <h2 id="study-deck-name" class="text-xl font-bold flex-1 truncate"></h2>
+      </div>
       <p class="text-sec text-sm font-medium mb-3">Choose study mode</p>
       <div class="space-y-3 flex-1">
         <button onclick="startFlashcards()" class="mode-btn"><div class="icon-wrap orange"><i data-lucide="repeat" class="w-6 h-6"></i></div><div><p class="font-bold">Flashcards</p><p class="text-sec text-sm">Tap to flip · rate</p></div></button>
@@ -1527,7 +1429,6 @@ Science       | Biology       | What is DNA?             | Deoxyribonucleic acid
       <h2 class="text-xl font-bold mb-4">⚙️ Settings</h2>
       <div class="view-scroll space-y-3">
 
-        <!-- Account -->
         <div class="surface rounded-2xl border border-theme p-4 shadow-card">
           <p class="text-sm text-sec font-medium mb-1">Account</p>
           <div class="flex items-center justify-between">
@@ -1536,7 +1437,6 @@ Science       | Biology       | What is DNA?             | Deoxyribonucleic acid
           </div>
         </div>
 
-        <!-- Change Password -->
         <div class="surface rounded-2xl border border-theme p-4 shadow-card">
           <p class="text-sm text-sec font-medium mb-2">🔑 Change Password</p>
           <div class="space-y-3">
@@ -1572,7 +1472,6 @@ Science       | Biology       | What is DNA?             | Deoxyribonucleic acid
           </div>
         </div>
 
-        <!-- Display Name -->
         <div class="surface rounded-2xl border border-theme p-4 shadow-card">
           <p class="text-sm text-sec font-medium mb-2">👤 Display Name</p>
           <div class="flex gap-2">
@@ -1582,7 +1481,6 @@ Science       | Biology       | What is DNA?             | Deoxyribonucleic acid
           <p class="text-xs text-sec mt-1">This name will appear on your home screen.</p>
         </div>
 
-        <!-- Daily Goal -->
         <div class="surface rounded-2xl border border-theme p-4 shadow-card">
           <p class="text-sm text-sec font-medium mb-2">🎯 Daily Goal</p>
           <div class="settings-goal">
@@ -1594,7 +1492,6 @@ Science       | Biology       | What is DNA?             | Deoxyribonucleic acid
           <p class="text-xs text-sec mt-2">Set how many cards you want to study each day.</p>
         </div>
 
-        <!-- Plan -->
         <div class="surface rounded-2xl border border-theme p-4 shadow-card">
           <p class="text-sm text-sec font-medium mb-2">Plan</p>
           <div class="flex items-center justify-between mb-3">
@@ -1610,7 +1507,6 @@ Science       | Biology       | What is DNA?             | Deoxyribonucleic acid
           </div>
         </div>
 
-        <!-- Dark Mode -->
         <div class="surface rounded-2xl border border-theme p-4 flex items-center justify-between shadow-card">
           <span class="font-medium text-sm">Dark Mode</span>
           <button onclick="toggleTheme()" id="theme-toggle-btn" class="w-12 h-7 rounded-full relative transition-colors border border-theme" style="background:var(--border)">
@@ -1618,7 +1514,6 @@ Science       | Biology       | What is DNA?             | Deoxyribonucleic acid
           </button>
         </div>
 
-        <!-- SRS Controls -->
         <div class="surface rounded-2xl border border-theme p-4 shadow-card">
           <label class="text-sm font-medium">Ease Factor</label>
           <input id="ease-input" type="number" step="0.1" min="1.3" max="4.0" value="2.5" class="w-full border rounded-xl px-3 py-2 mt-2 surface text-sm" style="border-color:var(--border)" />
@@ -1628,7 +1523,6 @@ Science       | Biology       | What is DNA?             | Deoxyribonucleic acid
           <input id="interval-input" type="number" step="0.1" min="0.5" max="3.0" value="1.0" class="w-full border rounded-xl px-3 py-2 mt-2 surface text-sm" style="border-color:var(--border)" />
         </div>
 
-        <!-- Export -->
         <button onclick="exportData()" class="w-full surface rounded-2xl border border-theme p-4 text-left flex items-center gap-3 shadow-card">
           <i data-lucide="download" class="w-5 h-5 text-sec"></i>
           <span class="font-medium text-sm">Export Data</span>
@@ -1637,16 +1531,14 @@ Science       | Biology       | What is DNA?             | Deoxyribonucleic acid
     </div>
 
     <!-- ===== BOTTOM NAV ===== -->
-    <div id="bottom-nav-container" class="hidden">
-      <div class="bottom-nav" id="bottomNav">
-        <button class="nav-item active" data-tab="home"><i data-lucide="home"></i><span>Home</span></button>
-        <button class="nav-item" data-tab="decks"><i data-lucide="layers"></i><span>Decks</span></button>
-        <button class="nav-item" data-tab="stats"><i data-lucide="bar-chart-2"></i><span>Stats</span></button>
-        <button class="nav-item" data-tab="settings"><i data-lucide="settings"></i><span>Settings</span></button>
-      </div>
+    <div class="bottom-nav" id="bottomNav">
+      <button class="nav-item active" data-tab="home"><i data-lucide="home"></i><span>Home</span></button>
+      <button class="nav-item" data-tab="decks"><i data-lucide="layers"></i><span>Decks</span></button>
+      <button class="nav-item" data-tab="stats"><i data-lucide="bar-chart-2"></i><span>Stats</span></button>
+      <button class="nav-item" data-tab="settings"><i data-lucide="settings"></i><span>Settings</span></button>
     </div>
 
-    <!-- ===== RENAME DECK MODAL ===== -->
+    <!-- ===== MODALS ===== -->
     <div id="rename-deck-modal" class="hidden fixed inset-0 z-50 flex items-end sm:items-center justify-center" style="background:rgba(0,0,0,0.4);" onclick="if(event.target===this) closeRenameDeck()">
       <div class="surface rounded-t-3xl sm:rounded-3xl w-full max-w-md p-6" onclick="event.stopPropagation()">
         <div class="flex justify-between items-center mb-4">
@@ -1662,7 +1554,6 @@ Science       | Biology       | What is DNA?             | Deoxyribonucleic acid
       </div>
     </div>
 
-    <!-- ===== EDIT CARD MODAL ===== -->
     <div id="edit-card-modal" class="hidden fixed inset-0 z-50 flex items-end sm:items-center justify-center" style="background:rgba(0,0,0,0.4);" onclick="if(event.target===this) closeEditCard()">
       <div class="surface rounded-t-3xl sm:rounded-3xl w-full max-w-md p-6" onclick="event.stopPropagation()">
         <div class="flex justify-between items-center mb-4">
@@ -1680,7 +1571,6 @@ Science       | Biology       | What is DNA?             | Deoxyribonucleic acid
       </div>
     </div>
 
-    <!-- ===== CONTACT ADMIN MODAL ===== -->
     <div id="contact-admin-modal" class="hidden fixed inset-0 z-50 flex items-end sm:items-center justify-center" style="background:rgba(0,0,0,0.5);" onclick="if(event.target===this) closeContactAdmin()">
       <div class="surface rounded-t-3xl sm:rounded-3xl w-full max-w-md p-6" onclick="event.stopPropagation()">
         <div class="flex justify-between items-center mb-4"><h3 class="font-bold text-xl">📩 Request New Decks</h3><button onclick="closeContactAdmin()" class="text-sec"><i data-lucide="x" class="w-6 h-6"></i></button></div>
@@ -1695,7 +1585,6 @@ Science       | Biology       | What is DNA?             | Deoxyribonucleic acid
       </div>
     </div>
 
-    <!-- ===== CARD MODAL (Add Card) ===== -->
     <div id="card-modal" class="hidden fixed inset-0 z-50 flex items-end sm:items-center justify-center" style="background:rgba(0,0,0,0.4);" onclick="if(event.target===this) closeCardModal()">
       <div class="surface rounded-t-3xl sm:rounded-3xl w-full max-w-md p-6" onclick="event.stopPropagation()">
         <div class="flex justify-between items-center mb-4">
@@ -1713,17 +1602,14 @@ Science       | Biology       | What is DNA?             | Deoxyribonucleic acid
       </div>
     </div>
 
-    <!-- ===== UPGRADE MODAL ===== -->
     <div id="upgrade-modal" class="hidden fixed inset-0 z-50 flex items-end sm:items-center justify-center" style="background:rgba(0,0,0,0.5);" onclick="if(event.target===this) closeUpgradeModal()">
       <div class="surface rounded-t-3xl sm:rounded-3xl w-full max-w-md p-6" onclick="event.stopPropagation()" style="max-height:90vh;overflow-y:auto;">
         <div class="flex justify-between items-center mb-4"><h3 class="font-bold text-xl">✨ Upgrade to Premium</h3><button onclick="closeUpgradeModal()" class="text-sec"><i data-lucide="x" class="w-6 h-6"></i></button></div>
-
         <div class="pricing-header">
           <p class="text-sm opacity-80">3-Month Study Plan</p>
           <div class="big-price" id="modal-price-display">Rp 35.000 <small>/ 3 mo</small></div>
           <p class="text-sm opacity-80 mt-1" id="modal-price-label">Book Buyer Price</p>
         </div>
-
         <div class="mb-4">
           <label class="text-sm font-medium text-sec">Have a book access code?</label>
           <div class="flex gap-2 mt-1">
@@ -1732,7 +1618,6 @@ Science       | Biology       | What is DNA?             | Deoxyribonucleic acid
           </div>
           <div id="upgrade-code-status" class="text-xs mt-1 min-h-[1.25rem]"></div>
         </div>
-
         <div class="space-y-3 mb-4">
           <div class="pricing-card popular" id="book-buyer-card" onclick="selectPlan('book')">
             <div class="flex justify-between items-start">
@@ -1747,7 +1632,6 @@ Science       | Biology       | What is DNA?             | Deoxyribonucleic acid
             </div>
           </div>
         </div>
-
         <div id="payment-section" class="hidden">
           <div class="border-t border-theme pt-4 mt-2">
             <p class="font-semibold text-sm mb-3">Choose Payment Method</p>
@@ -1760,7 +1644,6 @@ Science       | Biology       | What is DNA?             | Deoxyribonucleic acid
             <p class="text-center text-xs text-sec mt-2">💳 Demo payment - premium unlocks instantly</p>
           </div>
         </div>
-
         <div class="text-center text-xs text-sec mt-3">
           <span>Current plan: </span>
           <span id="upgrade-current-plan" class="font-semibold">Free</span>
@@ -1784,7 +1667,6 @@ Science       | Biology       | What is DNA?             | Deoxyribonucleic acid
       measurementId: "G-DF38PK97GW"
     };
 
-    // Initialize Firebase
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
     const auth = firebase.auth();
@@ -1850,7 +1732,9 @@ Science       | Biology       | What is DNA?             | Deoxyribonucleic acid
         input.type = 'password';
         if (icon) icon.setAttribute('data-lucide', 'eye');
       }
-      if (typeof lucide !== 'undefined') lucide.createIcons();
+      if (typeof lucide !== 'undefined' && lucide.createIcons) {
+        lucide.createIcons();
+      }
     }
 
     // ============================================================
@@ -1968,7 +1852,9 @@ Science       | Biology       | What is DNA?             | Deoxyribonucleic acid
       document.getElementById('fp-step-2').classList.add('hidden');
       document.getElementById('fp-email').value = '';
       document.getElementById('fp-error').textContent = '';
-      if (typeof lucide !== 'undefined') lucide.createIcons();
+      if (typeof lucide !== 'undefined' && lucide.createIcons) {
+        lucide.createIcons();
+      }
     }
 
     function closeForgotPassword() {
@@ -2349,9 +2235,7 @@ Science       | Biology       | What is DNA?             | Deoxyribonucleic acid
     }
 
     function getRealCards() {
-      const cards = allCards.filter(c => c.card_front && c.card_front !== '__deck_placeholder__' && c.card_front.trim() !== '');
-      console.log('🔍 getRealCards: found', cards.length, 'cards');
-      return cards;
+      return allCards.filter(c => c.card_front && c.card_front !== '__deck_placeholder__' && c.card_front.trim() !== '');
     }
 
     function getDecks() {
@@ -2359,21 +2243,19 @@ Science       | Biology       | What is DNA?             | Deoxyribonucleic acid
       allCards.forEach(c => {
         if (!c.deck_id) return;
         if (!map[c.deck_id]) {
-          map[c.deck_id] = { 
-            id: c.deck_id, 
-            name: c.deck_name || 'Untitled', 
-            cards: [], 
+          map[c.deck_id] = {
+            id: c.deck_id,
+            name: c.deck_name || 'Untitled',
+            cards: [],
             topic: c.topic || 'General',
-            subtopic: c.subtopic || '' 
+            subtopic: c.subtopic || ''
           };
         }
         if (c.card_front !== '__deck_placeholder__' && c.card_front && c.card_front.trim() !== '') {
           map[c.deck_id].cards.push(c);
         }
       });
-      const result = Object.values(map);
-      console.log('📚 getDecks: found', result.length, 'decks');
-      return result;
+      return Object.values(map);
     }
 
     function getDueCards(deckId) {
@@ -2443,13 +2325,11 @@ Science       | Biology       | What is DNA?             | Deoxyribonucleic acid
     function showLogin() {
       document.getElementById('view-login').classList.add('active');
       document.getElementById('view-signup').classList.remove('active');
-      document.getElementById('bottom-nav-container').classList.add('hidden');
     }
 
     function showSignup() {
       document.getElementById('view-signup').classList.add('active');
       document.getElementById('view-login').classList.remove('active');
-      document.getElementById('bottom-nav-container').classList.add('hidden');
     }
 
     function showFreeTrial() {
@@ -2467,7 +2347,6 @@ Science       | Biology       | What is DNA?             | Deoxyribonucleic acid
         showSignup();
         return;
       }
-      document.getElementById('bottom-nav-container').classList.remove('hidden');
       switchTab('home');
     }
 
@@ -2497,7 +2376,6 @@ Science       | Biology       | What is DNA?             | Deoxyribonucleic acid
         }
 
         isAdmin = ADMIN_EMAILS.includes(email);
-        document.getElementById('bottom-nav-container').classList.remove('hidden');
         enterApp();
 
       } catch (error) {
@@ -2588,7 +2466,6 @@ Science       | Biology       | What is DNA?             | Deoxyribonucleic acid
         await saveToFirebase(email, allCards, plan);
 
         isAdmin = isAdminUser;
-        document.getElementById('bottom-nav-container').classList.remove('hidden');
         enterApp();
 
         if (isBookBuyer) {
@@ -2635,7 +2512,6 @@ Science       | Biology       | What is DNA?             | Deoxyribonucleic acid
         currentUser = null;
         allCards = [];
         isAdmin = false;
-        document.getElementById('bottom-nav-container').classList.add('hidden');
         document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
         document.getElementById('view-login').classList.add('active');
         document.getElementById('login-email').value = '';
@@ -2656,11 +2532,23 @@ Science       | Biology       | What is DNA?             | Deoxyribonucleic acid
 
     function enterApp() {
       requestAnimationFrame(() => {
-        document.getElementById('bottom-nav-container').classList.remove('hidden');
+        // Show bottom nav
+        document.getElementById('bottomNav').style.display = 'flex';
 
-        document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
-        document.getElementById('view-home').classList.add('active');
+        // Hide all views
+        document.querySelectorAll('.view').forEach(v => {
+          v.classList.remove('active');
+          v.style.display = 'none';
+        });
 
+        // Show home
+        const homeView = document.getElementById('view-home');
+        if (homeView) {
+          homeView.classList.add('active');
+          homeView.style.display = 'flex';
+        }
+
+        // Update nav
         document.querySelectorAll('.nav-item').forEach(b => {
           b.classList.toggle('active', b.dataset.tab === 'home');
         });
@@ -2710,12 +2598,10 @@ Science       | Biology       | What is DNA?             | Deoxyribonucleic acid
           currentUser = s.email;
           loadUserData(s.email);
           isAdmin = users[s.email].isAdmin || ADMIN_EMAILS.includes(s.email);
-          document.getElementById('bottom-nav-container').classList.remove('hidden');
           enterApp();
           return true;
         }
       }
-      document.getElementById('bottom-nav-container').classList.add('hidden');
       return false;
     }
 
@@ -2818,7 +2704,9 @@ Science       | Biology       | What is DNA?             | Deoxyribonucleic acid
     // ============================================================
     function updateHome() {
       const due = getDueCards();
-      document.getElementById('due-count').textContent = due.length;
+      const dueCount = document.getElementById('due-count');
+      if (dueCount) dueCount.textContent = due.length;
+
       const real = getRealCards();
       const total = real.reduce((s, c) => s + (c.total_reviews || 0), 0);
       const correct = real.reduce((s, c) => s + (c.correct_count || 0), 0);
@@ -2829,62 +2717,83 @@ Science       | Biology       | What is DNA?             | Deoxyribonucleic acid
       loadNickname();
       loadDailyGoal();
 
-      document.getElementById('stat-streak').textContent = streak;
-      document.getElementById('stat-accuracy').textContent = acc + '%';
-      document.getElementById('stat-mastered').textContent = mastered;
-      document.getElementById('streak-number').textContent = streak;
+      const statStreak = document.getElementById('stat-streak');
+      if (statStreak) statStreak.textContent = streak;
+
+      const statAccuracy = document.getElementById('stat-accuracy');
+      if (statAccuracy) statAccuracy.textContent = acc + '%';
+
+      const statMastered = document.getElementById('stat-mastered');
+      if (statMastered) statMastered.textContent = mastered;
+
+      const streakNumber = document.getElementById('streak-number');
+      if (streakNumber) streakNumber.textContent = streak;
 
       const goal = getDailyGoal();
       const todayCount = getTodayStudyCount();
 
-      const pct = Math.min((todayCount / goal) * 100, 100);
-      document.getElementById('daily-progress-fill').style.width = pct + '%';
-      document.getElementById('today-count').textContent = todayCount;
+      const dailyProgressFill = document.getElementById('daily-progress-fill');
+      if (dailyProgressFill) {
+        const pct = Math.min((todayCount / goal) * 100, 100);
+        dailyProgressFill.style.width = pct + '%';
+      }
 
+      const todayCountEl = document.getElementById('today-count');
+      if (todayCountEl) todayCountEl.textContent = todayCount;
+
+      // Streak calendar
       const days = getStreakDays();
       const dayLabels = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
       const calendar = document.getElementById('streak-calendar');
-      calendar.innerHTML = days.map((d, i) => {
-        let cls = 'streak-dot';
-        if (d.isToday) cls += ' today';
-        else if (d.active) cls += ' active';
-        else cls += ' inactive';
-        return `<div class="${cls}" title="${d.date}">${dayLabels[i]}</div>`;
-      }).join('');
+      if (calendar) {
+        calendar.innerHTML = days.map((d, i) => {
+          let cls = 'streak-dot';
+          if (d.isToday) cls += ' today';
+          else if (d.active) cls += ' active';
+          else cls += ' inactive';
+          return `<div class="${cls}" title="${d.date}">${dayLabels[i]}</div>`;
+        }).join('');
+      }
 
       const lastReview = real.filter(c => c.last_review).sort((a, b) =>
         new Date(b.last_review) - new Date(a.last_review)
       )[0];
-      if (lastReview) {
-        const diff = Math.floor((Date.now() - new Date(lastReview.last_review)) / (1000 * 60));
-        if (diff < 1) document.getElementById('last-study-text').textContent = 'Last studied: Just now';
-        else if (diff < 60) document.getElementById('last-study-text').textContent = `Last studied: ${diff} min ago`;
-        else if (diff < 1440) document.getElementById('last-study-text').textContent =
-          `Last studied: ${Math.floor(diff / 60)}h ${diff % 60}m ago`;
-        else document.getElementById('last-study-text').textContent = `Last studied: ${Math.floor(diff / 1440)} days ago`;
-      } else {
-        document.getElementById('last-study-text').textContent = 'Last studied: Never';
+      const lastStudyText = document.getElementById('last-study-text');
+      if (lastStudyText) {
+        if (lastReview) {
+          const diff = Math.floor((Date.now() - new Date(lastReview.last_review)) / (1000 * 60));
+          if (diff < 1) lastStudyText.textContent = 'Last studied: Just now';
+          else if (diff < 60) lastStudyText.textContent = `Last studied: ${diff} min ago`;
+          else if (diff < 1440) lastStudyText.textContent =
+            `Last studied: ${Math.floor(diff / 60)}h ${diff % 60}m ago`;
+          else lastStudyText.textContent = `Last studied: ${Math.floor(diff / 1440)} days ago`;
+        } else {
+          lastStudyText.textContent = 'Last studied: Never';
+        }
       }
 
       const studyMins = getStudyTime();
-      document.getElementById('study-time-display').textContent = `⏰ ${studyMins} min studied today`;
+      const studyTimeDisplay = document.getElementById('study-time-display');
+      if (studyTimeDisplay) studyTimeDisplay.textContent = `⏰ ${studyMins} min studied today`;
 
       const btn = document.getElementById('home-review-btn');
-      if (due.length === 0) {
-        btn.textContent = '🎉 All caught up!';
-        btn.disabled = true;
-        btn.classList.add('opacity-60', 'cursor-not-allowed');
-      } else {
-        btn.textContent = '📖 Continue Studying';
-        btn.disabled = false;
-        btn.classList.remove('opacity-60', 'cursor-not-allowed');
+      if (btn) {
+        if (due.length === 0) {
+          btn.textContent = '🎉 All caught up!';
+          btn.disabled = true;
+          btn.classList.add('opacity-60', 'cursor-not-allowed');
+        } else {
+          btn.textContent = '📖 Continue Studying';
+          btn.disabled = false;
+          btn.classList.remove('opacity-60', 'cursor-not-allowed');
+        }
       }
 
       updatePlanUI();
     }
 
     // ============================================================
-    //  RENDER DECKS - HIERARCHICAL
+    //  RENDER DECKS
     // ============================================================
     function renderDecks() {
       const container = document.getElementById('deck-list');
@@ -2906,12 +2815,14 @@ Science       | Biology       | What is DNA?             | Deoxyribonucleic acid
 
       const sortedTopics = Object.keys(topicMap).sort();
 
+      if (!container) return;
+
       if (decks.length === 0) {
         container.innerHTML = '';
-        no.classList.remove('hidden');
+        if (no) no.classList.remove('hidden');
         return;
       }
-      no.classList.add('hidden');
+      if (no) no.classList.add('hidden');
 
       let html = '';
       let deckCount = 0;
@@ -3042,11 +2953,9 @@ Science       | Biology       | What is DNA?             | Deoxyribonucleic acid
     }
 
     // ============================================================
-    //  ADMIN FUNCTIONS - MANAGE CARDS (with Bulk Delete)
+    //  ADMIN FUNCTIONS - MANAGE CARDS
     // ============================================================
     function showManageCards(deckId) {
-      console.log('📋 Opening Manage Cards for deck:', deckId);
-
       if (!isAdmin) {
         alert('Only admins can manage cards.');
         return;
@@ -3057,7 +2966,6 @@ Science       | Biology       | What is DNA?             | Deoxyribonucleic acid
       const deckName = deck ? deck.deck_name : 'Manage Cards';
       document.getElementById('manage-deck-name').textContent = deckName;
 
-      // Reset selections
       selectedCardIds = [];
       const selectAll = document.getElementById('select-all-cards');
       if (selectAll) selectAll.checked = false;
@@ -3066,29 +2974,21 @@ Science       | Biology       | What is DNA?             | Deoxyribonucleic acid
       const countLabel = document.getElementById('selected-cards-count');
       if (countLabel) countLabel.textContent = '0 selected';
 
-      // Show bulk delete button
       const bulkBtn = document.getElementById('bulk-delete-cards-btn');
       if (bulkBtn) bulkBtn.classList.remove('hidden');
 
-      // HIDE ALL VIEWS first
       document.querySelectorAll('.view').forEach(v => {
         v.classList.remove('active');
         v.style.display = 'none';
       });
 
-      // Show admin cards view
       const adminCardsView = document.getElementById('view-admin-cards');
       if (adminCardsView) {
         adminCardsView.classList.add('active');
         adminCardsView.style.display = 'flex';
-        adminCardsView.style.opacity = '1';
-        adminCardsView.style.pointerEvents = 'all';
       }
 
-      // Reset currentTab
       currentTab = 'admin-cards';
-
-      // Render cards
       renderManageCards();
 
       if (typeof lucide !== 'undefined' && lucide.createIcons) {
@@ -3097,16 +2997,10 @@ Science       | Biology       | What is DNA?             | Deoxyribonucleic acid
     }
 
     function renderManageCards() {
-      console.log('📋 Rendering manage cards for deck:', manageDeckId);
-
       const container = document.getElementById('manage-cards-list');
-      if (!container) {
-        console.error('❌ manage-cards-list not found');
-        return;
-      }
+      if (!container) return;
 
       const cards = allCards.filter(c => c.deck_id === manageDeckId && c.card_front !== '__deck_placeholder__');
-      console.log('📚 Found', cards.length, 'cards in this deck');
 
       if (cards.length === 0) {
         container.innerHTML = `
@@ -3398,6 +3292,8 @@ Science       | Biology       | What is DNA?             | Deoxyribonucleic acid
     function renderAdminDeckList() {
       const decks = getDecks();
       const container = document.getElementById('admin-deck-list');
+      if (!container) return;
+
       if (decks.length === 0) {
         container.innerHTML = '<p class="text-sec text-sm">No decks imported yet.</p>';
         return;
@@ -3419,6 +3315,8 @@ Science       | Biology       | What is DNA?             | Deoxyribonucleic acid
     function renderCodeList() {
       const codes = getCodes();
       const container = document.getElementById('code-list');
+      if (!container) return;
+
       const entries = Object.entries(codes);
       if (entries.length === 0) {
         container.innerHTML = '<p class="text-sec">No codes generated yet.</p>';
@@ -3447,11 +3345,8 @@ Science       | Biology       | What is DNA?             | Deoxyribonucleic acid
         return;
       }
 
-      console.log('📤 Importing file:', file.name, file.size, 'bytes');
-
       if (typeof XLSX === 'undefined') {
         alert('❌ Excel library not loaded. Please refresh and try again.');
-        console.error('XLSX library not found!');
         return;
       }
 
@@ -3459,7 +3354,6 @@ Science       | Biology       | What is DNA?             | Deoxyribonucleic acid
 
       reader.onload = function(e) {
         try {
-          console.log('📖 File loaded, parsing...');
           const data = new Uint8Array(e.target.result);
           const workbook = XLSX.read(data, { type: 'array' });
 
@@ -3470,8 +3364,6 @@ Science       | Biology       | What is DNA?             | Deoxyribonucleic acid
 
           const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
           const jsonData = XLSX.utils.sheet_to_json(firstSheet);
-
-          console.log('📊 Found', jsonData.length, 'rows in Excel');
 
           if (jsonData.length === 0) {
             showImportStatus('❌ No data found in Excel file.', 'error');
@@ -3491,7 +3383,6 @@ Science       | Biology       | What is DNA?             | Deoxyribonucleic acid
 
             if (!front || !back) {
               skippedCount++;
-              console.warn(`⚠️ Row ${index + 2} missing front or back, skipping:`, row);
               return;
             }
 
@@ -3555,17 +3446,11 @@ Science       | Biology       | What is DNA?             | Deoxyribonucleic acid
           const message =
             `✅ Successfully imported ${importedCount} cards!${skippedCount > 0 ? ` (${skippedCount} rows skipped due to missing data)` : ''}`;
           showImportStatus(message, 'success');
-          console.log(`✅ Import complete: ${importedCount} cards imported, ${skippedCount} skipped`);
 
         } catch (error) {
           console.error('❌ Import error:', error);
           showImportStatus('❌ Error importing file: ' + error.message, 'error');
         }
-      };
-
-      reader.onerror = function(error) {
-        console.error('❌ File reader error:', error);
-        showImportStatus('❌ Error reading file: ' + error.message, 'error');
       };
 
       reader.readAsArrayBuffer(file);
@@ -3617,82 +3502,65 @@ Science       | Biology       | What is DNA?             | Deoxyribonucleic acid
       }, 5000);
     }
 
- function openDeck(deckId) {
-  console.log('📂 Opening deck:', deckId);
-  
-  const decks = getDecks();
-  const deckIndex = decks.findIndex(d => d.id === deckId);
-  const isPremium = isPremiumActive();
+    function openDeck(deckId) {
+      const decks = getDecks();
+      const deckIndex = decks.findIndex(d => d.id === deckId);
+      const isPremium = isPremiumActive();
 
-  if (!isPremium && deckIndex >= 5) {
-    showUpgradeModal();
-    return;
-  }
+      if (!isPremium && deckIndex >= 5) {
+        showUpgradeModal();
+        return;
+      }
 
-  currentDeckId = deckId;
-  
-  // Show study select immediately
-  openStudySelect();
-}
+      currentDeckId = deckId;
+      openStudySelect();
+    }
 
     // ============================================================
     //  STUDY MODES
     // ============================================================
     function openStudySelect() {
-  console.log('📖 Opening study select for deck:', currentDeckId);
-  
-  const deck = allCards.find(c => c.deck_id === currentDeckId && c.card_front === '__deck_placeholder__');
-  const deckName = deck ? deck.deck_name : 'Deck';
-  
-  const nameEl = document.getElementById('study-deck-name');
-  if (nameEl) nameEl.textContent = deckName;
-  
-  // HIDE ALL VIEWS first
-  document.querySelectorAll('.view').forEach(v => {
-    v.classList.remove('active');
-    v.style.display = 'none';
-    v.style.opacity = '0';
-    v.style.pointerEvents = 'none';
-  });
-  
-  // Show STUDY SELECT view
-  const studySelectView = document.getElementById('view-study-select');
-  if (studySelectView) {
-    studySelectView.classList.add('active');
-    studySelectView.style.display = 'flex';
-    studySelectView.style.opacity = '1';
-    studySelectView.style.pointerEvents = 'all';
-  }
-  
-  // Update nav - highlight Decks
-  document.querySelectorAll('.nav-item').forEach(b => {
-    b.classList.toggle('active', b.dataset.tab === 'decks');
-  });
+      const deck = allCards.find(c => c.deck_id === currentDeckId && c.card_front === '__deck_placeholder__');
+      const deckName = deck ? deck.deck_name : 'Deck';
+      const nameEl = document.getElementById('study-deck-name');
+      if (nameEl) nameEl.textContent = deckName;
 
-  const isPremium = isPremiumActive();
-  const learnBtn = document.getElementById('learn-mode-btn');
-  const testBtn = document.getElementById('test-mode-btn');
-  const lockMsg = document.getElementById('premium-lock-msg');
+      document.querySelectorAll('.view').forEach(v => {
+        v.classList.remove('active');
+        v.style.display = 'none';
+      });
 
-  if (!isPremium) {
-    if (learnBtn) learnBtn.style.opacity = '0.5';
-    if (testBtn) testBtn.style.opacity = '0.5';
-    if (lockMsg) lockMsg.classList.remove('hidden');
-  } else {
-    if (learnBtn) learnBtn.style.opacity = '1';
-    if (testBtn) testBtn.style.opacity = '1';
-    if (lockMsg) lockMsg.classList.add('hidden');
-  }
-  
-  // Reset currentTab to prevent nav interference
-  currentTab = 'study-select';
+      const studySelectView = document.getElementById('view-study-select');
+      if (studySelectView) {
+        studySelectView.classList.add('active');
+        studySelectView.style.display = 'flex';
+      }
 
-  if (typeof lucide !== 'undefined' && lucide.createIcons) {
-    lucide.createIcons();
-  }
-  
-  console.log('✅ Study select opened');
-}
+      document.querySelectorAll('.nav-item').forEach(b => {
+        b.classList.toggle('active', b.dataset.tab === 'decks');
+      });
+
+      const isPremium = isPremiumActive();
+      const learnBtn = document.getElementById('learn-mode-btn');
+      const testBtn = document.getElementById('test-mode-btn');
+      const lockMsg = document.getElementById('premium-lock-msg');
+
+      if (!isPremium) {
+        if (learnBtn) learnBtn.style.opacity = '0.5';
+        if (testBtn) testBtn.style.opacity = '0.5';
+        if (lockMsg) lockMsg.classList.remove('hidden');
+      } else {
+        if (learnBtn) learnBtn.style.opacity = '1';
+        if (testBtn) testBtn.style.opacity = '1';
+        if (lockMsg) lockMsg.classList.add('hidden');
+      }
+
+      currentTab = 'study-select';
+
+      if (typeof lucide !== 'undefined' && lucide.createIcons) {
+        lucide.createIcons();
+      }
+    }
 
     function continueStudying() {
       const due = getDueCards();
@@ -3707,33 +3575,19 @@ Science       | Biology       | What is DNA?             | Deoxyribonucleic acid
     }
 
     // ============================================================
-    //  FLASHCARDS MODE - FIXED
+    //  FLASHCARDS MODE
     // ============================================================
     function startFlashcards() {
-      console.log('🃏 STARTING FLASHCARDS');
-      console.log('📍 currentDeckId:', currentDeckId);
-
-      // Get all real cards from the current deck
       const allCardsInDeck = getRealCards().filter(c => c.deck_id === currentDeckId);
-      console.log('📚 All cards in deck:', allCardsInDeck.length);
 
       if (allCardsInDeck.length === 0) {
         alert('❌ No cards in this deck. Please add some cards first.');
         return;
       }
 
-      // Get due cards first, if none, use all cards
       const dueCards = getDueCards(currentDeckId);
-      console.log('📅 Due cards:', dueCards.length);
-
       studyQueue = dueCards.length > 0 ? dueCards : allCardsInDeck;
-      console.log('📖 Study queue:', studyQueue.length);
 
-      if (studyQueue.length > 0) {
-        console.log('📝 First card in queue:', studyQueue[0]);
-      }
-
-      // Shuffle
       for (let i = studyQueue.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
         [studyQueue[i], studyQueue[j]] = [studyQueue[j], studyQueue[i]];
@@ -3742,7 +3596,6 @@ Science       | Biology       | What is DNA?             | Deoxyribonucleic acid
       studyIdx = 0;
       fcFlipped = false;
 
-      // Show flashcards view
       document.querySelectorAll('.view').forEach(v => {
         v.classList.remove('active');
         v.style.display = 'none';
@@ -3752,16 +3605,12 @@ Science       | Biology       | What is DNA?             | Deoxyribonucleic acid
       if (flashcardView) {
         flashcardView.classList.add('active');
         flashcardView.style.display = 'flex';
-        flashcardView.style.opacity = '1';
-        flashcardView.style.pointerEvents = 'all';
       }
 
       fcShowCard();
     }
 
     function fcShowCard() {
-      console.log('🔄 fcShowCard: studyQueue length:', studyQueue ? studyQueue.length : 0, 'studyIdx:', studyIdx);
-
       const card = document.getElementById('fc-card');
       const done = document.getElementById('fc-done');
       const btns = document.getElementById('fc-buttons');
@@ -3787,9 +3636,7 @@ Science       | Biology       | What is DNA?             | Deoxyribonucleic acid
         };
       }
 
-      // Check if we're done
       if (!studyQueue || studyQueue.length === 0 || studyIdx >= studyQueue.length) {
-        console.log('✅ All cards done!');
         if (card) card.style.display = 'none';
         if (btns) {
           btns.classList.add('hidden');
@@ -3800,8 +3647,10 @@ Science       | Biology       | What is DNA?             | Deoxyribonucleic acid
           done.classList.remove('hidden');
           done.style.display = 'flex';
         }
-        document.getElementById('fc-progress').textContent = `${studyQueue ? studyQueue.length : 0}/${studyQueue ? studyQueue.length : 0}`;
-        document.getElementById('fc-progress-fill').style.width = '100%';
+        const progress = document.getElementById('fc-progress');
+        if (progress) progress.textContent = `${studyQueue ? studyQueue.length : 0}/${studyQueue ? studyQueue.length : 0}`;
+        const progressFill = document.getElementById('fc-progress-fill');
+        if (progressFill) progressFill.style.width = '100%';
 
         if (typeof lucide !== 'undefined' && lucide.createIcons) {
           lucide.createIcons();
@@ -3809,7 +3658,6 @@ Science       | Biology       | What is DNA?             | Deoxyribonucleic acid
         return;
       }
 
-      // Show card
       if (card) {
         card.style.display = '';
         card.classList.remove('flipped');
@@ -3826,19 +3674,21 @@ Science       | Biology       | What is DNA?             | Deoxyribonucleic acid
 
       const c = studyQueue[studyIdx];
       if (!c) {
-        console.error('❌ Card not found at index', studyIdx);
         studyIdx++;
         fcShowCard();
         return;
       }
 
-      console.log('📝 Showing card:', c.card_front);
-      document.getElementById('fc-front-text').textContent = c.card_front || 'Empty';
-      document.getElementById('fc-back-text').textContent = c.card_back || 'Empty';
+      const frontText = document.getElementById('fc-front-text');
+      const backText = document.getElementById('fc-back-text');
+      if (frontText) frontText.textContent = c.card_front || 'Empty';
+      if (backText) backText.textContent = c.card_back || 'Empty';
       fcFlipped = false;
 
-      document.getElementById('fc-progress').textContent = `${studyIdx + 1}/${studyQueue.length}`;
-      document.getElementById('fc-progress-fill').style.width = `${(studyIdx / studyQueue.length) * 100}%`;
+      const progress = document.getElementById('fc-progress');
+      if (progress) progress.textContent = `${studyIdx + 1}/${studyQueue.length}`;
+      const progressFill = document.getElementById('fc-progress-fill');
+      if (progressFill) progressFill.style.width = `${(studyIdx / studyQueue.length) * 100}%`;
 
       if (typeof lucide !== 'undefined' && lucide.createIcons) {
         lucide.createIcons();
@@ -3848,10 +3698,14 @@ Science       | Biology       | What is DNA?             | Deoxyribonucleic acid
     function fcFlip() {
       if (studyIdx >= studyQueue.length) return;
       if (!fcFlipped) {
-        document.getElementById('fc-card').classList.add('flipped');
+        const card = document.getElementById('fc-card');
+        if (card) card.classList.add('flipped');
         fcFlipped = true;
-        document.getElementById('fc-buttons').classList.remove('hidden');
-        document.getElementById('fc-buttons').style.display = '';
+        const btns = document.getElementById('fc-buttons');
+        if (btns) {
+          btns.classList.remove('hidden');
+          btns.style.display = '';
+        }
       }
     }
 
@@ -3877,9 +3731,7 @@ Science       | Biology       | What is DNA?             | Deoxyribonucleic acid
     //  EXIT STUDY - COMPLETE RESET
     // ============================================================
     function exitStudy() {
-      console.log('🔄 exitStudy called');
-
-      // Reset all state
+      // Reset state
       studyQueue = [];
       studyIdx = 0;
       fcFlipped = false;
@@ -3954,8 +3806,6 @@ Science       | Biology       | What is DNA?             | Deoxyribonucleic acid
         if (el) {
           el.classList.remove('active');
           el.style.display = 'none';
-          el.style.opacity = '0';
-          el.style.pointerEvents = 'none';
         }
       });
 
@@ -3964,8 +3814,6 @@ Science       | Biology       | What is DNA?             | Deoxyribonucleic acid
       if (decksView) {
         decksView.classList.add('active');
         decksView.style.display = 'flex';
-        decksView.style.opacity = '1';
-        decksView.style.pointerEvents = 'all';
       }
 
       document.querySelectorAll('.nav-item').forEach(b => {
@@ -3983,8 +3831,6 @@ Science       | Biology       | What is DNA?             | Deoxyribonucleic acid
         clearTimeout(navTimeout);
         navTimeout = null;
       }
-
-      console.log('✅ exitStudy complete');
     }
 
     // ============================================================
@@ -4183,10 +4029,17 @@ Science       | Biology       | What is DNA?             | Deoxyribonucleic acid
       const mastered = real.filter(c => (c.interval || 0) >= 21).length;
       const streak = getStreak();
 
-      document.getElementById('stats-streak-val').textContent = streak + ' days';
-      document.getElementById('stats-acc').textContent = acc + '%';
-      document.getElementById('stats-total').textContent = total;
-      document.getElementById('stats-mastered-val').textContent = mastered;
+      const streakVal = document.getElementById('stats-streak-val');
+      if (streakVal) streakVal.textContent = streak + ' days';
+
+      const accEl = document.getElementById('stats-acc');
+      if (accEl) accEl.textContent = acc + '%';
+
+      const totalEl = document.getElementById('stats-total');
+      if (totalEl) totalEl.textContent = total;
+
+      const masteredEl = document.getElementById('stats-mastered-val');
+      if (masteredEl) masteredEl.textContent = mastered;
 
       loadDailyGoal();
       renderProgressChart();
@@ -4207,6 +4060,7 @@ Science       | Biology       | What is DNA?             | Deoxyribonucleic acid
       const maxCount = Math.max(...counts, 1);
 
       const container = document.getElementById('progress-chart');
+      if (!container) return;
 
       container.className = 'flex items-end gap-1';
       container.style.minHeight = '80px';
@@ -4286,28 +4140,31 @@ Science       | Biology       | What is DNA?             | Deoxyribonucleic acid
 
       const totalInPeriod = counts.reduce((a, b) => a + b, 0);
       const periodLabel = progressPeriod === 'week' ? 'this week' : progressPeriod === 'month' ? 'this month' : 'all time';
-      document.getElementById('progress-total-label').textContent = `${totalInPeriod} cards ${periodLabel}`;
+      const totalLabel = document.getElementById('progress-total-label');
+      if (totalLabel) totalLabel.textContent = `${totalInPeriod} cards ${periodLabel}`;
 
       const streak = getStreak();
       const streakMsg = document.getElementById('progress-streak-msg');
-      if (streak >= 30) {
-        streakMsg.textContent = `🔥 ${streak}-day streak! Unstoppable! 🔥`;
-        streakMsg.style.color = 'var(--premium-gold)';
-      } else if (streak >= 14) {
-        streakMsg.textContent = `🔥 ${streak}-day streak! You're on fire! 🔥`;
-        streakMsg.style.color = 'var(--accent)';
-      } else if (streak >= 7) {
-        streakMsg.textContent = `🔥 ${streak}-day streak! Amazing! Keep going!`;
-        streakMsg.style.color = 'var(--accent)';
-      } else if (streak >= 3) {
-        streakMsg.textContent = `🔥 ${streak}-day streak! You're building momentum!`;
-        streakMsg.style.color = 'var(--accent)';
-      } else if (streak > 0) {
-        streakMsg.textContent = `🔥 ${streak}-day streak! Every day counts!`;
-        streakMsg.style.color = 'var(--accent)';
-      } else {
-        streakMsg.textContent = '📖 Start your streak today! Study at least one card.';
-        streakMsg.style.color = 'var(--text-secondary)';
+      if (streakMsg) {
+        if (streak >= 30) {
+          streakMsg.textContent = `🔥 ${streak}-day streak! Unstoppable! 🔥`;
+          streakMsg.style.color = 'var(--premium-gold)';
+        } else if (streak >= 14) {
+          streakMsg.textContent = `🔥 ${streak}-day streak! You're on fire! 🔥`;
+          streakMsg.style.color = 'var(--accent)';
+        } else if (streak >= 7) {
+          streakMsg.textContent = `🔥 ${streak}-day streak! Amazing! Keep going!`;
+          streakMsg.style.color = 'var(--accent)';
+        } else if (streak >= 3) {
+          streakMsg.textContent = `🔥 ${streak}-day streak! You're building momentum!`;
+          streakMsg.style.color = 'var(--accent)';
+        } else if (streak > 0) {
+          streakMsg.textContent = `🔥 ${streak}-day streak! Every day counts!`;
+          streakMsg.style.color = 'var(--accent)';
+        } else {
+          streakMsg.textContent = '📖 Start your streak today! Study at least one card.';
+          streakMsg.style.color = 'var(--text-secondary)';
+        }
       }
     }
 
@@ -4350,6 +4207,8 @@ Science       | Biology       | What is DNA?             | Deoxyribonucleic acid
     function renderDeckPerformance() {
       const perf = getDeckPerformance();
       const container = document.getElementById('deck-performance-list');
+      if (!container) return;
+
       if (perf.length === 0) {
         container.innerHTML = '<p class="text-xs text-sec">No decks yet.</p>';
         return;
@@ -4369,10 +4228,14 @@ Science       | Biology       | What is DNA?             | Deoxyribonucleic acid
     // ============================================================
     function renderRetentionRate() {
       const ret = getRetentionRates();
-      document.getElementById('ret-overall').textContent = ret.overall + '%';
-      document.getElementById('ret-7d').textContent = ret.d7 + '%';
-      document.getElementById('ret-14d').textContent = ret.d14 + '%';
-      document.getElementById('ret-30d').textContent = ret.d30 + '%';
+      const overallEl = document.getElementById('ret-overall');
+      if (overallEl) overallEl.textContent = ret.overall + '%';
+      const ret7El = document.getElementById('ret-7d');
+      if (ret7El) ret7El.textContent = ret.d7 + '%';
+      const ret14El = document.getElementById('ret-14d');
+      if (ret14El) ret14El.textContent = ret.d14 + '%';
+      const ret30El = document.getElementById('ret-30d');
+      if (ret30El) ret30El.textContent = ret.d30 + '%';
     }
 
     // ============================================================
@@ -4384,10 +4247,14 @@ Science       | Biology       | What is DNA?             | Deoxyribonucleic acid
       const bestDay = getBestDay(30);
       const goal = getDailyGoal();
 
-      document.getElementById('avg-week').textContent = avgWeek;
-      document.getElementById('avg-month').textContent = avgMonth;
-      document.getElementById('best-day').textContent = bestDay;
-      document.getElementById('avg-goal').textContent = goal;
+      const avgWeekEl = document.getElementById('avg-week');
+      if (avgWeekEl) avgWeekEl.textContent = avgWeek;
+      const avgMonthEl = document.getElementById('avg-month');
+      if (avgMonthEl) avgMonthEl.textContent = avgMonth;
+      const bestDayEl = document.getElementById('best-day');
+      if (bestDayEl) bestDayEl.textContent = bestDay;
+      const avgGoalEl = document.getElementById('avg-goal');
+      if (avgGoalEl) avgGoalEl.textContent = goal;
     }
 
     // ============================================================
@@ -4396,6 +4263,8 @@ Science       | Biology       | What is DNA?             | Deoxyribonucleic acid
     function renderSubjectBreakdown() {
       const subjects = getSubjectBreakdown();
       const container = document.getElementById('subject-breakdown-list');
+      if (!container) return;
+
       const total = Object.values(subjects).reduce((a, b) => a + b, 0);
       if (total === 0) {
         container.innerHTML = '<p class="text-xs text-sec">No subjects yet.</p>';
@@ -4418,6 +4287,8 @@ Science       | Biology       | What is DNA?             | Deoxyribonucleic acid
     // ============================================================
     function renderHeatmap() {
       const container = document.getElementById('heatmap-container');
+      if (!container) return;
+
       const weeks = 4;
       const days = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
       const todayDate = new Date();
@@ -4476,87 +4347,74 @@ Science       | Biology       | What is DNA?             | Deoxyribonucleic acid
     // ============================================================
     //  NAVIGATION
     // ============================================================
-   function switchTab(tab) {
-  console.log('🔄 switchTab called:', tab);
-  
-  // If we're in study-select and trying to go to decks, allow it
-  // Otherwise, if trying to go to other tabs from study-select, block it
-  if (currentTab === 'study-select' && tab !== 'decks' && tab !== 'home') {
-    console.log('⛔ Blocked: Cannot switch from study-select to', tab);
-    return;
-  }
-  
-  if (currentTab === tab) return;
-  currentTab = tab;
-  
-  // Hide ALL views (except study-select if we're going back to decks)
-  const allViews = ['home', 'decks', 'study-select', 'flashcards', 'learn', 'test', 'stats', 'settings', 'admin-import', 'admin-cards'];
-  
-  allViews.forEach(v => {
-    const el = document.getElementById('view-' + v);
-    if (el) {
-      el.classList.remove('active');
-      el.style.display = 'none';
-      el.style.opacity = '0';
-      el.style.pointerEvents = 'none';
-    }
-  });
-  
-  // Show the target view
-  const targetView = document.getElementById('view-' + tab);
-  if (targetView) {
-    targetView.classList.add('active');
-    targetView.style.display = 'flex';
-    targetView.style.opacity = '1';
-    targetView.style.pointerEvents = 'all';
-  }
-  
-  // Update nav
-  document.querySelectorAll('.nav-item').forEach(b => {
-    b.classList.toggle('active', b.dataset.tab === tab);
-  });
-  
-  // Render content
-  if (tab === 'stats') renderStats();
-  if (tab === 'home') updateHome();
-  if (tab === 'decks') renderDecks();
-  
-  // Refresh icons
-  if (typeof lucide !== 'undefined' && lucide.createIcons) {
-    lucide.createIcons();
-  }
-}
+    function switchTab(tab) {
+      if (currentTab === tab && tab !== 'study-select') return;
 
+      // If in study select, only allow going to decks
+      if (currentTab === 'study-select' && tab !== 'decks' && tab !== 'home') {
+        return;
+      }
+
+      currentTab = tab;
+
+      const allViews = ['home', 'decks', 'study-select', 'flashcards', 'learn', 'test', 'stats', 'settings', 'admin-import',
+        'admin-cards'
+      ];
+
+      allViews.forEach(v => {
+        const el = document.getElementById('view-' + v);
+        if (el) {
+          el.classList.remove('active');
+          el.style.display = 'none';
+        }
+      });
+
+      const targetView = document.getElementById('view-' + tab);
+      if (targetView) {
+        targetView.classList.add('active');
+        targetView.style.display = 'flex';
+      }
+
+      document.querySelectorAll('.nav-item').forEach(b => {
+        b.classList.toggle('active', b.dataset.tab === tab);
+      });
+
+      if (tab === 'stats') renderStats();
+      if (tab === 'home') updateHome();
+      if (tab === 'decks') renderDecks();
+
+      if (typeof lucide !== 'undefined' && lucide.createIcons) {
+        lucide.createIcons();
+      }
+    }
+
+    // ============================================================
+    //  NAV CLICK HANDLER - DEBOUNCED
+    // ============================================================
     function navClickHandler() {
-  if (navTimeout) return;
-  navTimeout = setTimeout(() => {
-    navTimeout = null;
-  }, 300);
-  
-  const tab = this.dataset.tab;
-  
-  // If we're in study select, going to decks is allowed, but going to other tabs should ask to exit
-  if (currentTab === 'study-select' && tab !== 'decks') {
-    if (!confirm('Exit study selection?')) return;
-    exitStudy();
-  }
-  
-  // If in study mode, ask to exit
-  if (document.getElementById('view-flashcards').classList.contains('active')) {
-    if (!confirm('Exit current study session?')) return;
-    exitStudy();
-  }
-  if (document.getElementById('view-learn').classList.contains('active')) {
-    if (!confirm('Exit current study session?')) return;
-    exitStudy();
-  }
-  if (document.getElementById('view-test').classList.contains('active')) {
-    if (!confirm('Exit current study session?')) return;
-    exitStudy();
-  }
-  
-  switchTab(tab);
-}
+      if (navTimeout) return;
+      navTimeout = setTimeout(() => {
+        navTimeout = null;
+      }, 300);
+
+      const tab = this.dataset.tab;
+
+      // If in study mode, ask to exit
+      if (document.getElementById('view-flashcards').classList.contains('active')) {
+        if (!confirm('Exit current study session?')) return;
+        exitStudy();
+      }
+      if (document.getElementById('view-learn').classList.contains('active')) {
+        if (!confirm('Exit current study session?')) return;
+        exitStudy();
+      }
+      if (document.getElementById('view-test').classList.contains('active')) {
+        if (!confirm('Exit current study session?')) return;
+        exitStudy();
+      }
+
+      switchTab(tab);
+    }
 
     // ============================================================
     //  CONTACT ADMIN
@@ -4867,11 +4725,24 @@ Science       | Biology       | What is DNA?             | Deoxyribonucleic acid
     //  INIT
     // ============================================================
     if (localStorage.getItem('flashmind_theme') === 'dark') document.documentElement.classList.add('dark');
+
+    // Check if user is logged in
     const logged = checkSession();
+
+    // If not logged in, show login
     if (!logged) {
       document.getElementById('view-login').classList.add('active');
-      document.getElementById('bottom-nav-container').classList.add('hidden');
+      document.getElementById('view-login').style.display = 'flex';
+    } else {
+      // Session restored, enter app
+      enterApp();
     }
+
+    // Initialize nav click handlers
+    document.querySelectorAll('.nav-item').forEach(btn => {
+      btn.removeEventListener('click', navClickHandler);
+      btn.addEventListener('click', navClickHandler);
+    });
 
     // Drag and drop for Excel upload
     const uploadZone = document.getElementById('upload-zone');
@@ -4909,7 +4780,7 @@ Science       | Biology       | What is DNA?             | Deoxyribonucleic acid
       });
     });
 
-    console.log('🚀 FlashMind · Pharmacy Study App (Complete)');
+    console.log('🚀 FlashMind · Pharmacy Study App (Optimized & Responsive)');
     console.log('📊 Plan:', userPlan);
     console.log('👑 Admin:', isAdmin);
     console.log('📚 Cards:', getRealCards().length, 'Decks:', getDecks().length);
