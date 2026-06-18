@@ -1521,1129 +1521,2143 @@ Science       | Biology       | What is DNA?             | Deoxyribonucleic acid
 </div>
 
 <script>
-  // ============================================================
-  //  FIREBASE CONFIG
-  // ============================================================
-  const firebaseConfig = {
-    apiKey: "AIzaSyB0m9NM3IxyQJuLEl9_C5C7aI-I-7BndsQ",
-    authDomain: "pharmacore-flashcards.firebaseapp.com",
-    projectId: "pharmacore-flashcards",
-    storageBucket: "pharmacore-flashcards.firebasestorage.app",
-    messagingSenderId: "483421707823",
-    appId: "1:483421707823:web:912254896fc1ba4d4e70da",
-    measurementId: "G-DF38PK97GW"
-  };
+// ============================================================
+//  FIREBASE CONFIG
+// ============================================================
+const firebaseConfig = {
+  apiKey: "AIzaSyB0m9NM3IxyQJuLEl9_C5C7aI-I-7BndsQ",
+  authDomain: "pharmacore-flashcards.firebaseapp.com",
+  projectId: "pharmacore-flashcards",
+  storageBucket: "pharmacore-flashcards.firebasestorage.app",
+  messagingSenderId: "483421707823",
+  appId: "1:483421707823:web:912254896fc1ba4d4e70da",
+  measurementId: "G-DF38PK97GW"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+const auth = firebase.auth();
 
-  firebase.initializeApp(firebaseConfig);
-  const db = firebase.firestore();
-  const auth = firebase.auth();
+// ============================================================
+//  CONFIGURATION
+// ============================================================
+const ADMIN_EMAILS = ['adm.pharmacore@gmail.com'];
+const PRICING = {
+  book: { price: 35000, label: 'Book Buyer', perDay: 389 },
+  regular: { price: 65000, label: 'Regular', perDay: 722 }
+};
+const PLAN_DURATION_MONTHS = 3;
 
-  // ============================================================
-  //  CONFIGURATION
-  // ============================================================
-  const ADMIN_EMAILS = ['adm.pharmacore@gmail.com'];
-  const ADMIN_PASSWORD = 'admin9900';
-  const PRICING = {
-    book: { price: 35000, label: 'Book Buyer', perDay: 389 },
-    regular: { price: 65000, label: 'Regular', perDay: 722 }
-  };
-  const PLAN_DURATION_MONTHS = 3;
+// ============================================================
+//  DATA LAYER
+// ============================================================
+const USERS_KEY = 'flashmind_users';
+const SESSION_KEY = 'flashmind_session';
+const DATA_PREFIX = 'flashmind_data_';
+const CODES_KEY = 'flashmind_codes';
+const GOAL_KEY = 'flashmind_goal';
+const STUDY_TIME_KEY = 'flashmind_study_time';
+const NICKNAME_KEY = 'flashmind_nickname_';
 
-  // ============================================================
-  //  AUTH & DATA LAYER
-  // ============================================================
-  const USERS_KEY = 'flashmind_users';
-  const SESSION_KEY = 'flashmind_session';
-  const DATA_PREFIX = 'flashmind_data_';
-  const CODES_KEY = 'flashmind_codes';
-  const GOAL_KEY = 'flashmind_goal';
-  const STUDY_TIME_KEY = 'flashmind_study_time';
-  const NICKNAME_KEY = 'flashmind_nickname_';
+let currentUser = null;
+let allCards = [];
+let userPlan = 'free';
+let isAdmin = false;
+let currentDeckId = null;
+let studyQueue = [];
+let studyIdx = 0;
+let fcFlipped = false;
+let tsCorrect = 0, tsIncorrect = 0, tsCurrentAnswer = '';
+let selectedPlan = null;
+let hasValidCode = false;
+let currentTab = 'home';
+let navTimeout = null;
+let progressPeriod = 'week';
+let isSyncing = false;
+let renameDeckId = null;
+let manageDeckId = null;
+let editCardId = null;
+let addingToDeckId = null;
+let selectedCardIds = [];
 
-  let currentUser = null;
-  let allCards = [];
-  let userPlan = 'free';
-  let isAdmin = false;
-  let currentDeckId = null;
-  let studyQueue = [];
-  let studyIdx = 0;
-  let fcFlipped = false;
-  let tsCorrect = 0, tsIncorrect = 0, tsCurrentAnswer = '';
-  let selectedPlan = null;
-  let hasValidCode = false;
-  let currentTab = 'home';
-  let navTimeout = null;
-  let progressPeriod = 'week';
-  let isSyncing = false;
-  let renameDeckId = null;
-  let manageDeckId = null;
-  let editCardId = null;
-  let addingToDeckId = null;
-  let resetCode = '';
-  let resetEmail = '';
-  let selectedCardIds = [];
-
-  /** Toggle dark mode and update the toggle button dot */
+// ============================================================
+//  THEME FUNCTIONS
+// ============================================================
 function toggleTheme() {
   document.documentElement.classList.toggle('dark');
   localStorage.setItem('flashmind_theme', document.documentElement.classList.contains('dark') ? 'dark' : 'light');
   updateThemeToggle();
 }
-
-/** Update the position of the dark mode toggle dot */
 function updateThemeToggle() {
   const dark = document.documentElement.classList.contains('dark');
   const dot = document.getElementById('theme-toggle-dot');
-  if (dot) {
-    dot.style.transform = dark ? 'translateX(20px)' : 'translateX(0)';
+  if (dot) dot.style.transform = dark ? 'translateX(20px)' : 'translateX(0)';
+}
+
+// ============================================================
+//  NAV CLICK HANDLER
+// ============================================================
+function navClickHandler() {
+  if (navTimeout) return;
+  navTimeout = setTimeout(() => { navTimeout = null; }, 300);
+  const tab = this.dataset.tab;
+  if (document.querySelector('#view-flashcards.active, #view-learn.active, #view-test.active')) {
+    if (!confirm('Exit current study session?')) return;
+    exitStudy();
+  }
+  switchTab(tab);
+}
+
+// ============================================================
+//  HELPER FUNCTIONS
+// ============================================================
+function today() { return new Date().toISOString().split('T')[0]; }
+function addMonths(date, months) { const d = new Date(date); d.setMonth(d.getMonth()+months); return d; }
+function daysUntil(date) { return Math.ceil((new Date(date)-new Date())/(1000*60*60*24)); }
+function generateId() { return 'id_'+Date.now()+'_'+Math.random().toString(36).slice(2,6); }
+function getUsers() { try { return JSON.parse(localStorage.getItem(USERS_KEY)) || {}; } catch { return {}; } }
+function saveUsers(u) { localStorage.setItem(USERS_KEY, JSON.stringify(u)); }
+function getSession() { try { return JSON.parse(localStorage.getItem(SESSION_KEY)); } catch { return null; } }
+function saveSession(e) { localStorage.setItem(SESSION_KEY, JSON.stringify({ email:e, ts:Date.now() })); }
+function clearSession() { localStorage.removeItem(SESSION_KEY); }
+function getCodes() { try { return JSON.parse(localStorage.getItem(CODES_KEY)) || {}; } catch { return {}; } }
+function saveCodes(c) { localStorage.setItem(CODES_KEY, JSON.stringify(c)); }
+
+function getDateRange(days) {
+  const dates = [];
+  const now = new Date();
+  if (days === 7) {
+    for (let i=6; i>=0; i--) {
+      const d = new Date(now); d.setDate(d.getDate()-i);
+      dates.push(d.toISOString().split('T')[0]);
+    }
+  } else if (days === 30) {
+    const year = now.getFullYear(), month = now.getMonth(), todayDate = now.getDate();
+    for (let day=1; day<=todayDate; day++) {
+      const d = new Date(year, month, day);
+      dates.push(d.toISOString().split('T')[0]);
+    }
+  } else {
+    for (let i=59; i>=0; i--) {
+      const d = new Date(now); d.setDate(d.getDate()-i);
+      dates.push(d.toISOString().split('T')[0]);
+    }
+  }
+  return dates;
+}
+function getDateRangeForPeriod(days) { return getDateRange(days); }
+function getDaysInMonth() { const now = new Date(); return new Date(now.getFullYear(), now.getMonth()+1, 0).getDate(); }
+
+// ============================================================
+//  PASSWORD TOGGLE
+// ============================================================
+function togglePassword(inputId, button) {
+  const input = document.getElementById(inputId);
+  if (!input) return;
+  const icon = button.querySelector('i');
+  if (input.type === 'password') { input.type = 'text'; if (icon) icon.setAttribute('data-lucide', 'eye-off'); }
+  else { input.type = 'password'; if (icon) icon.setAttribute('data-lucide', 'eye'); }
+  if (typeof lucide !== 'undefined') lucide.createIcons();
+}
+
+// ============================================================
+//  SYNC STATUS
+// ============================================================
+function updateSyncStatus(status, message) {
+  ['sync-dot','sync-dot-home','sync-dot-signup'].forEach(id => {
+    const dot = document.getElementById(id);
+    if (dot) { dot.className = 'dot'; if (status==='syncing') dot.classList.add('syncing'); else if (status==='offline') dot.classList.add('offline'); }
+  });
+  ['sync-text','sync-text-home','sync-text-signup'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.textContent = message;
+  });
+}
+
+// ============================================================
+//  NICKNAME
+// ============================================================
+function getNickname() { return localStorage.getItem(NICKNAME_KEY+(currentUser||'default')) || 'Student'; }
+function saveNickname() {
+  const name = document.getElementById('nickname-input').value.trim();
+  if (!name) return alert('Please enter a name.');
+  localStorage.setItem(NICKNAME_KEY+currentUser, name);
+  db.collection('users').doc(currentUser).set({ nickname: name }, { merge: true }).catch(console.warn);
+  updateHome();
+  document.getElementById('nickname-input').value = name;
+  alert('✅ Display name updated to "'+name+'"!');
+}
+function loadNickname() {
+  const name = getNickname();
+  const display = document.getElementById('user-display-name');
+  if (display) display.textContent = name;
+  const input = document.getElementById('nickname-input');
+  if (input) input.value = name;
+  const settings = document.getElementById('settings-username');
+  if (settings && currentUser) {
+    const users = getUsers();
+    if (users[currentUser] && users[currentUser].username) settings.textContent = users[currentUser].username;
   }
 }
-  
-  // ============================================================
-  //  PASSWORD TOGGLE
-  // ============================================================
-  function togglePassword(inputId, button) {
-    const input = document.getElementById(inputId);
-    if (!input) return;
-    const icon = button.querySelector('i');
-    if (input.type === 'password') {
-      input.type = 'text';
-      if (icon) icon.setAttribute('data-lucide', 'eye-off');
-    } else {
-      input.type = 'password';
-      if (icon) icon.setAttribute('data-lucide', 'eye');
-    }
-    if (typeof lucide !== 'undefined' && lucide.createIcons) {
-      lucide.createIcons();
+
+// ============================================================
+//  CHANGE PASSWORD
+// ============================================================
+async function changePassword() {
+  const current = document.getElementById('current-password').value;
+  const newPw = document.getElementById('new-password').value;
+  const confirmPw = document.getElementById('confirm-new-password').value;
+  const err = document.getElementById('change-password-error');
+  err.textContent = '';
+  const user = firebase.auth().currentUser;
+  if (!user) return err.textContent = 'Please login first.';
+  try {
+    const credential = firebase.auth.EmailAuthProvider.credential(user.email, current);
+    await user.reauthenticateWithCredential(credential);
+    if (newPw.length<6) return err.textContent = 'New password min 6 chars.';
+    if (newPw !== confirmPw) return err.textContent = 'Passwords do not match.';
+    await user.updatePassword(newPw);
+    const users = getUsers();
+    if (users[user.email]) { users[user.email].password = newPw; saveUsers(users); }
+    document.getElementById('current-password').value = '';
+    document.getElementById('new-password').value = '';
+    document.getElementById('confirm-new-password').value = '';
+    alert('✅ Password changed successfully!');
+  } catch (error) {
+    if (error.code === 'auth/wrong-password') err.textContent = 'Current password is incorrect.';
+    else if (error.code === 'auth/too-many-requests') err.textContent = 'Too many failed attempts. Please try again later.';
+    else err.textContent = 'Failed to change password: '+error.message;
+  }
+}
+
+// ============================================================
+//  FORGOT PASSWORD
+// ============================================================
+function showForgotPassword() {
+  document.getElementById('forgot-password-modal').classList.remove('hidden');
+  document.getElementById('fp-step-1').classList.remove('hidden');
+  document.getElementById('fp-step-2').classList.add('hidden');
+  document.getElementById('fp-email').value = '';
+  const err = document.getElementById('fp-error');
+  if (err) err.textContent = '';
+  if (typeof lucide !== 'undefined') lucide.createIcons();
+}
+function closeForgotPassword() {
+  document.getElementById('forgot-password-modal').classList.add('hidden');
+}
+async function sendResetCode() {
+  const email = document.getElementById('fp-email').value.trim();
+  const err = document.getElementById('fp-error');
+  if (err) err.textContent = '';
+  if (!email) { if (err) err.textContent = 'Please enter your email.'; return; }
+  try {
+    await firebase.auth().sendPasswordResetEmail(email);
+    document.getElementById('fp-email-display').textContent = email;
+    document.getElementById('fp-step-1').classList.add('hidden');
+    document.getElementById('fp-step-2').classList.remove('hidden');
+    alert('📧 Password reset email sent! Check your inbox.');
+  } catch (error) {
+    if (err) {
+      if (error.code === 'auth/user-not-found') err.textContent = 'No account found with this email.';
+      else err.textContent = 'Failed to send reset email: '+error.message;
     }
   }
+}
 
-  // ============================================================
-  //  SYNC STATUS
-  // ============================================================
-  function updateSyncStatus(status, message) {
-    const dotIds = ['sync-dot', 'sync-dot-home', 'sync-dot-signup'];
-    const textIds = ['sync-text', 'sync-text-home', 'sync-text-signup'];
-    dotIds.forEach(id => {
-      const dot = document.getElementById(id);
-      if (dot) {
-        dot.className = 'dot';
-        if (status === 'syncing') dot.classList.add('syncing');
-        else if (status === 'offline') dot.classList.add('offline');
-      }
-    });
-    textIds.forEach(id => {
-      const el = document.getElementById(id);
-      if (el) el.textContent = message;
-    });
-  }
-
-  // ============================================================
-  //  NICKNAME FUNCTIONS
-  // ============================================================
-  function getNickname() {
-    const nick = localStorage.getItem(NICKNAME_KEY + (currentUser || 'default'));
-    return nick || 'Student';
-  }
-
-  function saveNickname() {
-    const input = document.getElementById('nickname-input');
-    const name = input.value.trim();
-    if (!name) {
-      alert('Please enter a name.');
-      return;
-    }
-    localStorage.setItem(NICKNAME_KEY + currentUser, name);
-    if (db) {
-      db.collection('users').doc(currentUser).set({
-        nickname: name,
-        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-      }, { merge: true }).catch(err => console.warn('⚠️ Could not save nickname to Firebase:', err));
-    }
-    updateHome();
-    document.getElementById('nickname-input').value = name;
-    alert('✅ Display name updated to "' + name + '"!');
-  }
-
-  function loadNickname() {
-    const name = getNickname();
-    const displayElement = document.getElementById('user-display-name');
-    if (displayElement) displayElement.textContent = name;
-    const input = document.getElementById('nickname-input');
-    if (input) input.value = name;
-    const settingsUsername = document.getElementById('settings-username');
-    if (settingsUsername && currentUser) {
-      const users = getUsers();
-      if (users[currentUser] && users[currentUser].username) {
-        settingsUsername.textContent = users[currentUser].username;
-      }
-    }
-  }
-
-  // ============================================================
-  //  CHANGE PASSWORD
-  // ============================================================
-  async function changePassword() {
-    const current = document.getElementById('current-password').value;
-    const newPw = document.getElementById('new-password').value;
-    const confirmPw = document.getElementById('confirm-new-password').value;
-    const err = document.getElementById('change-password-error');
-
-    err.textContent = '';
-
-    const user = firebase.auth().currentUser;
-    if (!user) {
-      err.textContent = 'Please login first.';
-      return;
-    }
-
-    try {
-      const credential = firebase.auth.EmailAuthProvider.credential(user.email, current);
-      await user.reauthenticateWithCredential(credential);
-
-      if (newPw.length < 6) {
-        err.textContent = 'New password must be at least 6 characters.';
-        return;
-      }
-
-      if (newPw !== confirmPw) {
-        err.textContent = 'Passwords do not match.';
-        return;
-      }
-
-      await user.updatePassword(newPw);
-
-      const users = getUsers();
-      if (users[user.email]) {
-        users[user.email].password = newPw;
-        saveUsers(users);
-      }
-
-      document.getElementById('current-password').value = '';
-      document.getElementById('new-password').value = '';
-      document.getElementById('confirm-new-password').value = '';
-
-      alert('✅ Password changed successfully!');
-
-    } catch (error) {
-      console.error('Password change error:', error);
-      if (error.code === 'auth/wrong-password') {
-        err.textContent = 'Current password is incorrect.';
-      } else if (error.code === 'auth/too-many-requests') {
-        err.textContent = 'Too many failed attempts. Please try again later.';
-      } else {
-        err.textContent = 'Failed to change password: ' + error.message;
-      }
-    }
-  }
-
-  // ============================================================
-  //  FORGOT PASSWORD
-  // ============================================================
-  function showForgotPassword() {
-    document.getElementById('forgot-password-modal').classList.remove('hidden');
-    document.getElementById('fp-step-1').classList.remove('hidden');
-    document.getElementById('fp-step-2').classList.add('hidden');
-    document.getElementById('fp-email').value = '';
-    const err = document.getElementById('fp-error');
-    if (err) err.textContent = '';
-    if (typeof lucide !== 'undefined' && lucide.createIcons) {
-      lucide.createIcons();
-    }
-  }
-
-  function closeForgotPassword() {
-    document.getElementById('forgot-password-modal').classList.add('hidden');
-  }
-
-  async function sendResetCode() {
-    const email = document.getElementById('fp-email').value.trim();
-    const err = document.getElementById('fp-error');
-
-    if (err) err.textContent = '';
-
-    if (!email) {
-      if (err) err.textContent = 'Please enter your email.';
-      return;
-    }
-
-    try {
-      await firebase.auth().sendPasswordResetEmail(email);
-      document.getElementById('fp-email-display').textContent = email;
-      document.getElementById('fp-step-1').classList.add('hidden');
-      document.getElementById('fp-step-2').classList.remove('hidden');
-      alert('📧 Password reset email sent! Check your inbox.');
-    } catch (error) {
-      console.error('Reset error:', error);
-      if (err) {
-        if (error.code === 'auth/user-not-found') {
-          err.textContent = 'No account found with this email.';
-        } else {
-          err.textContent = 'Failed to send reset email: ' + error.message;
-        }
-      }
-    }
-  }
-
-  // ============================================================
-  //  FIREBASE SYNC
-  // ============================================================
-  async function saveToFirebase(email, cards, plan) {
-    if (!email || !navigator.onLine) return;
-    try {
-      isSyncing = true;
-      updateSyncStatus('syncing', 'Syncing...');
-      await db.collection('users').doc(email).set({
-        cards: cards,
-        plan: plan || 'free',
-        username: getUsers()[email]?.username || '',
-        nickname: getNickname(),
-        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-      }, { merge: true });
+// ============================================================
+//  FIREBASE SYNC
+// ============================================================
+async function saveToFirebase(email, cards, plan) {
+  if (!email || !navigator.onLine) return;
+  try {
+    isSyncing = true;
+    updateSyncStatus('syncing', 'Syncing...');
+    await db.collection('users').doc(email).set({
+      cards: cards,
+      plan: plan || 'free',
+      username: getUsers()[email]?.username || '',
+      nickname: getNickname(),
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+    }, { merge: true });
+    updateSyncStatus('', 'Synced');
+  } catch (err) { updateSyncStatus('offline', 'Offline'); } finally { isSyncing = false; }
+}
+async function loadFromFirebase(email) {
+  if (!email || !navigator.onLine) return null;
+  try {
+    updateSyncStatus('syncing', 'Loading...');
+    const doc = await db.collection('users').doc(email).get();
+    if (doc.exists) {
+      const data = doc.data();
+      if (data.nickname) localStorage.setItem(NICKNAME_KEY+email, data.nickname);
       updateSyncStatus('', 'Synced');
-      console.log('✅ Data synced to Firebase');
-    } catch (err) {
-      console.warn('⚠️ Firebase sync failed:', err.message);
-      updateSyncStatus('offline', 'Offline');
-    } finally {
-      isSyncing = false;
+      return data;
     }
-  }
+    updateSyncStatus('', 'Ready');
+    return null;
+  } catch (err) { updateSyncStatus('offline', 'Offline'); return null; }
+}
 
-  async function loadFromFirebase(email) {
-    if (!email || !navigator.onLine) return null;
-    try {
-      updateSyncStatus('syncing', 'Loading...');
-      const doc = await db.collection('users').doc(email).get();
-      if (doc.exists) {
-        const data = doc.data();
-        if (data.nickname) {
-          localStorage.setItem(NICKNAME_KEY + email, data.nickname);
-        }
-        updateSyncStatus('', 'Synced');
-        return data;
-      }
-      updateSyncStatus('', 'Ready');
-      return null;
-    } catch (err) {
-      console.warn('⚠️ Firebase load failed:', err.message);
-      updateSyncStatus('offline', 'Offline');
-      return null;
-    }
-  }
+// ============================================================
+//  DAILY GOAL
+// ============================================================
+function getDailyGoal() {
+  const key = 'flashmind_goal_'+(currentUser||'default');
+  const saved = localStorage.getItem(key);
+  if (saved) { const val = parseInt(saved); if (val>0 && val<=500) return val; }
+  return 20;
+}
+function setDailyGoal() {
+  const input = document.getElementById('goal-input');
+  if (!input) return;
+  const val = parseInt(input.value);
+  if (isNaN(val) || val<1 || val>500) return alert('Please enter a number between 1 and 500.');
+  localStorage.setItem('flashmind_goal_'+(currentUser||'default'), val);
+  loadDailyGoal(); updateHome(); renderStats();
+  alert('✅ Daily goal updated to '+val+' cards!');
+}
+function loadDailyGoal() {
+  const goal = getDailyGoal();
+  const todayGoal = document.getElementById('today-goal');
+  if (todayGoal) todayGoal.textContent = goal;
+  const dailyGoalText = document.getElementById('daily-goal-text');
+  if (dailyGoalText) dailyGoalText.textContent = 'Goal: '+goal+' cards';
+  const goalInput = document.getElementById('goal-input');
+  if (goalInput) goalInput.value = goal;
+  const avgGoal = document.getElementById('avg-goal');
+  if (avgGoal) avgGoal.textContent = goal;
+}
 
-  // ============================================================
-  //  FIREBASE AUTH STATE LISTENER
-  // ============================================================
-  firebase.auth().onAuthStateChanged(async user => {
-    if (user) {
-      console.log('✅ Firebase Auth: User signed in:', user.email);
-      isAdmin = ADMIN_EMAILS.includes(user.email);
-      if (isAdmin) {
-        document.getElementById('admin-badge').classList.remove('hidden');
-        document.getElementById('admin-import-btn').classList.remove('hidden');
+// ============================================================
+//  STUDY TIME
+// ============================================================
+function getStudyTime() {
+  const data = JSON.parse(localStorage.getItem(STUDY_TIME_KEY+'_'+(currentUser||'default')) || '{}');
+  const todayStr = today();
+  if (!data[todayStr]) data[todayStr] = 0;
+  return data[todayStr];
+}
+function addStudyTime(minutes) {
+  const data = JSON.parse(localStorage.getItem(STUDY_TIME_KEY+'_'+(currentUser||'default')) || '{}');
+  const todayStr = today();
+  data[todayStr] = (data[todayStr]||0) + minutes;
+  localStorage.setItem(STUDY_TIME_KEY+'_'+(currentUser||'default'), JSON.stringify(data));
+}
+function getTodayStudyCount() {
+  const todayStr = today();
+  return allCards.filter(c => c.last_review && c.last_review.startsWith(todayStr)).length;
+}
+function getCardsByDate(date) {
+  return allCards.filter(c => c.last_review && c.last_review.startsWith(date));
+}
+function getTotalReviewsForDate(date) {
+  return getCardsByDate(date).length;
+}
+
+// ============================================================
+//  DATA FUNCTIONS
+// ============================================================
+function getSampleDecks() {
+  const decks = [];
+  const topics = [
+    { name: 'Pharmacy Basics', subtopics: ['Introduction', 'Drug Classifications', 'Pharmacology'] },
+    { name: 'Clinical Pharmacy', subtopics: ['Drug Interactions', 'Dosage Calculations', 'Therapeutics'] },
+    { name: 'Science', subtopics: ['Biology', 'Chemistry', 'Physics'] },
+    { name: 'Languages', subtopics: ['Spanish', 'French', 'German'] },
+    { name: 'History', subtopics: ['World History', 'US History'] }
+  ];
+  let deckId = 1;
+  topics.forEach(topic => {
+    topic.subtopics.forEach(subtopic => {
+      for (let i=0; i<5; i++) {
+        decks.push({
+          __id: 'card_'+Date.now()+'_'+Math.random().toString(36).slice(2,6),
+          deck_id: 'deck_'+deckId,
+          deck_name: topic.name+' - '+subtopic,
+          card_front: `Question ${i+1} about ${subtopic}?`,
+          card_back: `Answer ${i+1} for ${subtopic}`,
+          card_tags: `${topic.name.toLowerCase()},${subtopic.toLowerCase()}`,
+          ease_factor: 2.5, interval: 0, repetitions: 0, next_review: '', last_review: '',
+          total_reviews: 0, correct_count: 0, topic: topic.name, subtopic: subtopic
+        });
       }
-      const email = user.email;
-      const cloudData = await loadFromFirebase(email);
-      if (cloudData && cloudData.cards) {
-        allCards = cloudData.cards;
-        userPlan = cloudData.plan || 'free';
-        localStorage.setItem(DATA_PREFIX + email, JSON.stringify(allCards));
-        localStorage.setItem('flashmind_plan_' + email, userPlan);
-      }
-    } else {
-      console.log('❌ Firebase Auth: User signed out');
-    }
+      deckId++;
+    });
   });
+  return decks;
+}
 
-  // ============================================================
-  //  HELPERS
-  // ============================================================
-  function today() { return new Date().toISOString().split('T')[0] }
-
-  function addMonths(date, months) {
-    const d = new Date(date);
-    d.setMonth(d.getMonth() + months);
-    return d;
-  }
-
-  function daysUntil(date) {
-    const now = new Date();
-    const target = new Date(date);
-    const diff = target - now;
-    return Math.ceil(diff / (1000 * 60 * 60 * 24));
-  }
-
-  function generateId() { return 'id_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6) }
-
-  function getUsers() { try { return JSON.parse(localStorage.getItem(USERS_KEY)) || {} } catch { return {} } }
-
-  function saveUsers(u) { localStorage.setItem(USERS_KEY, JSON.stringify(u)) }
-
-  function getSession() { try { return JSON.parse(localStorage.getItem(SESSION_KEY)) } catch { return null } }
-
-  function saveSession(e) { localStorage.setItem(SESSION_KEY, JSON.stringify({ email: e, ts: Date.now() })) }
-
-  function clearSession() { localStorage.removeItem(SESSION_KEY) }
-
-  function getCodes() { try { return JSON.parse(localStorage.getItem(CODES_KEY)) || {} } catch { return {} } }
-
-  function saveCodes(c) { localStorage.setItem(CODES_KEY, JSON.stringify(c)) }
-
-  function getDateRange(days) {
-    const dates = [];
-    const now = new Date();
-    if (days === 7) {
-      for (let i = 6; i >= 0; i--) {
-        const d = new Date(now);
-        d.setDate(d.getDate() - i);
-        dates.push(d.toISOString().split('T')[0]);
-      }
-    } else if (days === 30) {
-      const year = now.getFullYear();
-      const month = now.getMonth();
-      const todayDate = now.getDate();
-      for (let day = 1; day <= todayDate; day++) {
-        const d = new Date(year, month, day);
-        dates.push(d.toISOString().split('T')[0]);
-      }
-    } else {
-      for (let i = 59; i >= 0; i--) {
-        const d = new Date(now);
-        d.setDate(d.getDate() - i);
-        dates.push(d.toISOString().split('T')[0]);
-      }
-    }
-    return dates;
-  }
-
-  function getDateRangeForPeriod(days) {
-    return getDateRange(days);
-  }
-
-  function getDaysInMonth() {
-    const now = new Date();
-    return new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
-  }
-
-  // ============================================================
-  //  DAILY GOAL
-  // ============================================================
-  function getDailyGoal() {
-    const key = 'flashmind_goal_' + (currentUser || 'default');
-    const saved = localStorage.getItem(key);
-    if (saved) {
-      const val = parseInt(saved);
-      if (val > 0 && val <= 500) return val;
-    }
-    return 20;
-  }
-
-  function setDailyGoal() {
-    const input = document.getElementById('goal-input');
-    if (!input) return;
-    const val = parseInt(input.value);
-    if (isNaN(val) || val < 1 || val > 500) {
-      alert('Please enter a number between 1 and 500.');
-      return;
-    }
-    const key = 'flashmind_goal_' + (currentUser || 'default');
-    localStorage.setItem(key, val);
-    loadDailyGoal();
-    updateHome();
-    renderStats();
-    alert('✅ Daily goal updated to ' + val + ' cards!');
-  }
-
-  function loadDailyGoal() {
-    const goal = getDailyGoal();
-    const todayGoal = document.getElementById('today-goal');
-    if (todayGoal) todayGoal.textContent = goal;
-    const dailyGoalText = document.getElementById('daily-goal-text');
-    if (dailyGoalText) dailyGoalText.textContent = 'Goal: ' + goal + ' cards';
-    const goalInput = document.getElementById('goal-input');
-    if (goalInput) goalInput.value = goal;
-    const avgGoal = document.getElementById('avg-goal');
-    if (avgGoal) avgGoal.textContent = goal;
-  }
-
-  // ============================================================
-  //  STUDY TIME
-  // ============================================================
-  function getStudyTime() {
-    const data = JSON.parse(localStorage.getItem(STUDY_TIME_KEY + '_' + (currentUser || 'default')) || '{}');
-    const todayStr = today();
-    if (!data[todayStr]) data[todayStr] = 0;
-    return data[todayStr];
-  }
-
-  function addStudyTime(minutes) {
-    const data = JSON.parse(localStorage.getItem(STUDY_TIME_KEY + '_' + (currentUser || 'default')) || '{}');
-    const todayStr = today();
-    data[todayStr] = (data[todayStr] || 0) + minutes;
-    localStorage.setItem(STUDY_TIME_KEY + '_' + (currentUser || 'default'), JSON.stringify(data));
-  }
-
-  function getTodayStudyCount() {
-    const todayStr = today();
-    return allCards.filter(c => c.last_review && c.last_review.startsWith(todayStr)).length;
-  }
-
-  function getCardsByDate(date) {
-    return allCards.filter(c => c.last_review && c.last_review.startsWith(date));
-  }
-
-  function getTotalReviewsForDate(date) {
-    return getCardsByDate(date).length;
-  }
-
-  function getSubjectBreakdown() {
-    const subjects = {};
-    getRealCards().forEach(c => {
-      const topic = c.topic || 'General';
-      if (!subjects[topic]) subjects[topic] = 0;
-      subjects[topic]++;
-    });
-    return subjects;
-  }
-
-  function getDeckPerformance() {
-    const decks = getDecks();
-    return decks.map(d => {
-      const cards = d.cards;
-      const total = cards.length;
-      const correct = cards.filter(c => (c.correct_count || 0) > 0).length;
-      const accuracy = total > 0 ? Math.round((correct / total) * 100) : 0;
-      return { name: d.name, accuracy, total };
-    }).sort((a, b) => b.accuracy - a.accuracy);
-  }
-
-  function getRetentionRates() {
-    const real = getRealCards();
-    const total = real.length;
-    if (total === 0) return { overall: 0, d7: 0, d14: 0, d30: 0 };
-
-    const totalReviews = real.reduce((s, c) => s + (c.total_reviews || 0), 0);
-    const correctReviews = real.reduce((s, c) => s + (c.correct_count || 0), 0);
-    const overall = totalReviews > 0 ? Math.round((correctReviews / totalReviews) * 100) : 0;
-
-    const d7 = real.filter(c => {
-      if (!c.last_review) return false;
-      const days = (Date.now() - new Date(c.last_review).getTime()) / (1000 * 60 * 60 * 24);
-      return days <= 7 && (c.correct_count || 0) > 0;
-    });
-    const d7Total = real.filter(c => {
-      if (!c.last_review) return false;
-      const days = (Date.now() - new Date(c.last_review).getTime()) / (1000 * 60 * 60 * 24);
-      return days <= 7;
-    });
-    const ret7 = d7Total.length > 0 ? Math.round((d7.length / d7Total.length) * 100) : 0;
-
-    const d14 = real.filter(c => {
-      if (!c.last_review) return false;
-      const days = (Date.now() - new Date(c.last_review).getTime()) / (1000 * 60 * 60 * 24);
-      return days <= 14 && (c.correct_count || 0) > 0;
-    });
-    const d14Total = real.filter(c => {
-      if (!c.last_review) return false;
-      const days = (Date.now() - new Date(c.last_review).getTime()) / (1000 * 60 * 60 * 24);
-      return days <= 14;
-    });
-    const ret14 = d14Total.length > 0 ? Math.round((d14.length / d14Total.length) * 100) : 0;
-
-    const d30 = real.filter(c => {
-      if (!c.last_review) return false;
-      const days = (Date.now() - new Date(c.last_review).getTime()) / (1000 * 60 * 60 * 24);
-      return days <= 30 && (c.correct_count || 0) > 0;
-    });
-    const d30Total = real.filter(c => {
-      if (!c.last_review) return false;
-      const days = (Date.now() - new Date(c.last_review).getTime()) / (1000 * 60 * 60 * 24);
-      return days <= 30;
-    });
-    const ret30 = d30Total.length > 0 ? Math.round((d30.length / d30Total.length) * 100) : 0;
-
-    return { overall, d7: ret7, d14: ret14, d30: ret30 };
-  }
-
-  function getAvgCardsPerDay(days) {
-    const dates = getDateRange(days);
-    let total = 0;
-    dates.forEach(d => {
-      total += getTotalReviewsForDate(d);
-    });
-    return Math.round(total / dates.length);
-  }
-
-  function getBestDay(days) {
-    const dates = getDateRange(days);
-    let best = 0;
-    dates.forEach(d => {
-      const count = getTotalReviewsForDate(d);
-      if (count > best) best = count;
-    });
-    return best;
-  }
-
-  // ============================================================
-  //  SAMPLE DECKS
-  // ============================================================
-  function getSampleDecks() {
-    const decks = [];
-    const topics = [
-      { name: 'Pharmacy Basics', subtopics: ['Introduction', 'Drug Classifications', 'Pharmacology'] },
-      { name: 'Clinical Pharmacy', subtopics: ['Drug Interactions', 'Dosage Calculations', 'Therapeutics'] },
-      { name: 'Science', subtopics: ['Biology', 'Chemistry', 'Physics'] },
-      { name: 'Languages', subtopics: ['Spanish', 'French', 'German'] },
-      { name: 'History', subtopics: ['World History', 'US History'] }
-    ];
-    let deckId = 1;
-    topics.forEach(topic => {
-      topic.subtopics.forEach(subtopic => {
-        const cardCount = 5;
-        for (let i = 0; i < cardCount; i++) {
-          decks.push({
-            __id: 'card_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6),
-            deck_id: 'deck_' + deckId,
-            deck_name: topic.name + ' - ' + subtopic,
-            card_front: `Question ${i+1} about ${subtopic}?`,
-            card_back: `Answer ${i+1} for ${subtopic}`,
-            card_tags: `${topic.name.toLowerCase()},${subtopic.toLowerCase()}`,
-            ease_factor: 2.5,
-            interval: 0,
-            repetitions: 0,
-            next_review: '',
-            last_review: '',
-            total_reviews: 0,
-            correct_count: 0,
-            topic: topic.name,
-            subtopic: subtopic
-          });
-        }
-        deckId++;
-      });
-    });
-    return decks;
-  }
-
-  function getRealCards() {
-    return allCards.filter(c => c.card_front && c.card_front !== '__deck_placeholder__' && c.card_front.trim() !== '');
-  }
-
-  function getDecks() {
-    const map = {};
-    allCards.forEach(c => {
-      if (!c.deck_id) return;
-      if (!map[c.deck_id]) {
-        map[c.deck_id] = {
-          id: c.deck_id,
-          name: c.deck_name || 'Untitled',
-          cards: [],
-          topic: c.topic || 'General',
-          subtopic: c.subtopic || ''
-        };
-      }
-      if (c.card_front !== '__deck_placeholder__' && c.card_front && c.card_front.trim() !== '') {
-        map[c.deck_id].cards.push(c);
-      }
-    });
-    return Object.values(map);
-  }
-
-  function getDueCards(deckId) {
-    const now = today();
-    let cards = getRealCards();
-    if (deckId) cards = cards.filter(c => c.deck_id === deckId);
-    return cards.filter(c => !c.next_review || c.next_review <= now);
-  }
-
-  function getStreak() {
-    const reviews = [...new Set(getRealCards().map(c => c.last_review ? c.last_review.split('T')[0] : null).filter(Boolean))];
-    let s = 0, d = new Date();
-    for (let i = 0; i < 365; i++) {
-      const ds = d.toISOString().split('T')[0];
-      if (reviews.includes(ds)) { s++; d.setDate(d.getDate() - 1) } else if (i === 0) { d.setDate(d.getDate() - 1) } else break;
-    }
-    return s;
-  }
-
-  function getStreakDays() {
-    const reviews = [...new Set(getRealCards().map(c => c.last_review ? c.last_review.split('T')[0] : null).filter(Boolean))];
-    const days = [];
-    const d = new Date();
-    for (let i = 6; i >= 0; i--) {
-      const ds = d.toISOString().split('T')[0];
-      days.push({
-        date: ds,
-        active: reviews.includes(ds),
-        isToday: i === 0,
-        isFuture: false
-      });
-      d.setDate(d.getDate() - 1);
-    }
-    return days;
-  }
-
-  // ============================================================
-  //  SRS
-  // ============================================================
-  function applySRS(card, quality) {
-    let ef = card.ease_factor || 2.5, interval = card.interval || 0, reps = card.repetitions || 0;
-    const mult = parseFloat(document.getElementById('interval-input')?.value) || 1.0;
-    if (quality < 1) { reps = 0; interval = 1 } else {
-      if (reps === 0) interval = 1;
-      else if (reps === 1) interval = 6;
-      else interval = Math.round(interval * ef * mult);
-      if (interval < 1) interval = 1;
-      reps++;
-    }
-    ef = ef + (0.1 - (3 - quality) * (0.08 + (3 - quality) * 0.02));
-    if (ef < 1.3) ef = 1.3;
-    const next = new Date();
-    next.setDate(next.getDate() + interval);
-    return { ...card, ease_factor: Math.round(ef * 100) / 100, interval, repetitions: reps, next_review: next.toISOString().split('T')[0], last_review: new Date().toISOString(), total_reviews: (card.total_reviews || 0) + 1,
-      correct_count: (card.correct_count || 0) + (quality >= 2 ? 1 : 0) };
-  }
-
-  // ============================================================
-  //  AUTH
-  // ============================================================
-  function showLogin() {
-    document.getElementById('view-login').classList.add('active');
-    document.getElementById('view-signup').classList.remove('active');
-  }
-
-  function showSignup() {
-    document.getElementById('view-signup').classList.add('active');
-    document.getElementById('view-login').classList.remove('active');
-  }
-
-  function showFreeTrial() {
-    document.getElementById('free-trial-modal').classList.remove('hidden');
-    if (typeof lucide !== 'undefined' && lucide.createIcons) {
-      lucide.createIcons();
-    }
-  }
-
-  function closeFreeTrial() { document.getElementById('free-trial-modal').classList.add('hidden') }
-
-  function startFreeTrial() {
-    closeFreeTrial();
-    if (!currentUser) {
-      showSignup();
-      return;
-    }
-    switchTab('home');
-  }
-
-  async function handleLogin(e) {
-    e.preventDefault();
-    const email = document.getElementById('login-email').value.trim();
-    const pw = document.getElementById('login-password').value;
-    const err = document.getElementById('login-error');
-
-    err.textContent = '';
-
-    try {
-      const userCredential = await firebase.auth().signInWithEmailAndPassword(email, pw);
-      const user = userCredential.user;
-
-      currentUser = email;
-      saveSession(email);
-
-      const cloudData = await loadFromFirebase(email);
-      if (cloudData && cloudData.cards) {
-        allCards = cloudData.cards;
-        userPlan = cloudData.plan || 'free';
-        localStorage.setItem(DATA_PREFIX + email, JSON.stringify(allCards));
-        localStorage.setItem('flashmind_plan_' + email, userPlan);
-      } else {
-        loadUserData(email);
-      }
-
-      isAdmin = ADMIN_EMAILS.includes(email);
-      enterApp();
-
-    } catch (error) {
-      console.error('Login error:', error);
-      if (error.code === 'auth/user-not-found') {
-        err.textContent = 'No account found. Please sign up first.';
-      } else if (error.code === 'auth/wrong-password') {
-        err.textContent = 'Incorrect password.';
-      } else if (error.code === 'auth/invalid-email') {
-        err.textContent = 'Invalid email address.';
-      } else if (error.code === 'auth/too-many-requests') {
-        err.textContent = 'Too many failed attempts. Please try again later.';
-      } else if (error.code === 'auth/invalid-credential') {
-        err.textContent = 'Invalid credentials. Please check your email and password.';
-      } else {
-        err.textContent = 'Login failed: ' + error.message;
-      }
-    }
-  }
-
-  function loadUserData(email) {
-    const key = DATA_PREFIX + email;
-    try { allCards = JSON.parse(localStorage.getItem(key)) || [] } catch { allCards = [] }
-    if (!Array.isArray(allCards) || allCards.length === 0) allCards = getSampleDecks();
-    const pk = 'flashmind_plan_' + email;
-    userPlan = localStorage.getItem(pk) || 'free';
-    isAdmin = ADMIN_EMAILS.includes(email);
-  }
-
-  async function handleSignup(e) {
-    e.preventDefault();
-    const un = document.getElementById('signup-username').value.trim();
-    const email = document.getElementById('signup-email').value.trim();
-    const pw = document.getElementById('signup-password').value;
-    const cf = document.getElementById('signup-confirm').value;
-    const code = document.getElementById('signup-code').value.trim().toUpperCase();
-    const err = document.getElementById('signup-error');
-
-    err.textContent = '';
-
-    if (!un || !email || !pw || !cf) { err.textContent = 'All fields required.'; return; }
-    if (pw.length < 6) { err.textContent = 'Password min 6 chars.'; return; }
-    if (pw !== cf) { err.textContent = 'Passwords do not match.'; return; }
-
-    try {
-      const userCredential = await firebase.auth().createUserWithEmailAndPassword(email, pw);
-      const user = userCredential.user;
-      await user.updateProfile({ displayName: un });
-
-      const isAdminUser = ADMIN_EMAILS.includes(email);
-
-      let isBookBuyer = false;
-      if (code) {
-        const codes = getCodes();
-        if (codes[code] && !codes[code].used) {
-          isBookBuyer = true;
-          codes[code].used = true;
-          codes[code].usedBy = email;
-          codes[code].usedAt = new Date().toISOString();
-          saveCodes(codes);
-        } else if (code) {
-          err.textContent = 'Invalid or already used access code. You can still create a free account.';
-        }
-      }
-
-      const plan = (isBookBuyer || isAdminUser) ? 'premium' : 'free';
-      const expiry = (isBookBuyer || isAdminUser) ? addMonths(new Date(), PLAN_DURATION_MONTHS).toISOString() : null;
-
-      const users = getUsers();
-      users[email] = {
-        username: un,
-        email,
-        password: pw,
-        created: Date.now(),
-        plan: plan,
-        isBookBuyer: isBookBuyer,
-        isAdmin: isAdminUser
+function getRealCards() {
+  return allCards.filter(c => c.card_front && c.card_front !== '__deck_placeholder__' && c.card_front.trim() !== '');
+}
+function getDecks() {
+  const map = {};
+  allCards.forEach(c => {
+    if (!c.deck_id) return;
+    if (!map[c.deck_id]) {
+      map[c.deck_id] = {
+        id: c.deck_id,
+        name: c.deck_name || 'Untitled',
+        cards: [],
+        topic: c.topic || 'General',
+        subtopic: c.subtopic || ''
       };
-      saveUsers(users);
-
-      currentUser = email;
-      saveSession(email);
-      allCards = getSampleDecks();
-      saveUserData(email);
-      if (isBookBuyer || isAdminUser) {
-        savePlan(email, 'premium', expiry);
-      }
-      await saveToFirebase(email, allCards, plan);
-
-      isAdmin = isAdminUser;
-      enterApp();
-
-      if (isBookBuyer) {
-        alert('🎉 Access code validated! You now have Premium access for 3 months.');
-      }
-      if (isAdminUser) {
-        alert('👑 Admin account created! You have full admin access.');
-      }
-
-    } catch (error) {
-      console.error('Signup error:', error);
-      if (error.code === 'auth/email-already-in-use') {
-        err.textContent = 'Email already registered. Please login or use another email.';
-      } else if (error.code === 'auth/weak-password') {
-        err.textContent = 'Password is too weak. Use at least 6 characters.';
-      } else if (error.code === 'auth/invalid-email') {
-        err.textContent = 'Invalid email address.';
-      } else {
-        err.textContent = 'Signup failed: ' + error.message;
-      }
     }
-  }
-
-  function saveUserData(email) {
-    localStorage.setItem(DATA_PREFIX + email, JSON.stringify(allCards));
-    saveToFirebase(email, allCards, userPlan);
-  }
-
-  function savePlan(email, plan, expiry) {
-    localStorage.setItem('flashmind_plan_' + email, plan);
-    if (expiry) localStorage.setItem('flashmind_expiry_' + email, expiry);
-    userPlan = plan;
-    saveToFirebase(email, allCards, plan);
-  }
-
-  async function handleLogout() {
-    if (confirm('Logout?')) {
-      try {
-        await firebase.auth().signOut();
-      } catch (e) {
-        console.warn('Firebase signout error:', e);
-      }
-      clearSession();
-      currentUser = null;
-      allCards = [];
-      isAdmin = false;
-      document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
-      document.getElementById('view-login').classList.add('active');
-      document.getElementById('login-email').value = '';
-      document.getElementById('login-password').value = '';
+    if (c.card_front !== '__deck_placeholder__' && c.card_front && c.card_front.trim() !== '') {
+      map[c.deck_id].cards.push(c);
     }
-  }
-
-  function getPlanExpiry(email) {
-    return localStorage.getItem('flashmind_expiry_' + email) || null;
-  }
-
-  function isPremiumActive() {
-    if (userPlan !== 'premium') return false;
-    const expiry = getPlanExpiry(currentUser);
-    if (!expiry) return false;
-    return new Date(expiry) > new Date();
-  }
-
-  function enterApp() {
-    requestAnimationFrame(() => {
-      document.getElementById('bottomNav').style.display = 'flex';
-
-      document.querySelectorAll('.view').forEach(v => {
-        v.classList.remove('active');
-        v.style.display = 'none';
-      });
-
-      const homeView = document.getElementById('view-home');
-      if (homeView) {
-        homeView.classList.add('active');
-        homeView.style.display = 'flex';
-      }
-
-      document.querySelectorAll('.nav-item').forEach(b => {
-        b.classList.toggle('active', b.dataset.tab === 'home');
-      });
-
-      const users = getUsers();
-      if (currentUser && users[currentUser]) {
-        document.getElementById('settings-username').textContent = users[currentUser].username;
-        isAdmin = users[currentUser].isAdmin || ADMIN_EMAILS.includes(currentUser);
-      }
-
-      loadNickname();
-      loadDailyGoal();
-
-      if (userPlan === 'premium') {
-        const expiry = getPlanExpiry(currentUser);
-        if (expiry && new Date(expiry) <= new Date()) {
-          savePlan(currentUser, 'free', null);
-          userPlan = 'free';
-          localStorage.removeItem('flashmind_expiry_' + currentUser);
-        }
-      }
-
-      if (isAdmin) {
-        document.getElementById('admin-badge').classList.remove('hidden');
-        document.getElementById('admin-import-btn').classList.remove('hidden');
-      } else {
-        document.getElementById('admin-badge').classList.add('hidden');
-        document.getElementById('admin-import-btn').classList.add('hidden');
-      }
-
-      updateThemeToggle();
-      updatePlanUI();
-      updateHome();
-      renderDecks();
-
-      if (typeof lucide !== 'undefined' && lucide.createIcons) {
-        lucide.createIcons();
-      }
-    });
-  }
-
-  function checkSession() {
-    const s = getSession();
-    if (s && s.email) {
-      const users = getUsers();
-      if (users[s.email]) {
-        currentUser = s.email;
-        loadUserData(s.email);
-        isAdmin = users[s.email].isAdmin || ADMIN_EMAILS.includes(s.email);
-        enterApp();
-        return true;
-      }
-    }
-    return false;
-  }
-
-  // ============================================================
-  //  PLAN UI
-  // ============================================================
-  function updatePlanUI() {
-    const isPremium = isPremiumActive();
-
-    const badge = document.getElementById('plan-badge');
-    if (badge) {
-      if (isPremium) {
-        badge.className = 'premium-badge';
-        badge.textContent = 'PRO';
-      } else {
-        badge.className = 'free-badge';
-        badge.textContent = 'FREE';
-      }
-    }
-
-    const planLabel = document.getElementById('settings-plan-label');
-    if (planLabel) {
-      if (isPremium) {
-        const expiry = getPlanExpiry(currentUser);
-        const days = expiry ? daysUntil(expiry) : 0;
-        planLabel.textContent = `Premium ✦ (${days} days left)`;
-      } else {
-        planLabel.textContent = 'Free';
-      }
-    }
-
-    const upgradeBtn = document.getElementById('settings-upgrade-btn');
-    if (upgradeBtn) {
-      upgradeBtn.style.display = isPremium ? 'none' : 'inline-block';
-    }
-
-    const expiryLabel = document.getElementById('expiry-label');
-    if (expiryLabel) {
-      if (isPremium) {
-        const expiry = getPlanExpiry(currentUser);
-        const days = expiry ? daysUntil(expiry) : 0;
-        expiryLabel.textContent = `${days} days remaining`;
-        expiryLabel.className = 'status premium';
-      } else {
-        expiryLabel.textContent = 'Not active';
-        expiryLabel.className = 'status free';
-      }
-    }
-
-    const deckLimitLabel = document.getElementById('deck-limit-label');
-    if (deckLimitLabel) {
-      deckLimitLabel.textContent = isPremium ? '♾️ All decks' : '5 free decks';
-      deckLimitLabel.className = `status ${isPremium ? 'premium' : 'free'}`;
-    }
-
-    const modeLabel = document.getElementById('mode-limit-label');
-    if (modeLabel) {
-      modeLabel.textContent = isPremium ? '✅ All modes' : 'Flashcards only';
-      modeLabel.className = `status ${isPremium ? 'premium' : 'free'}`;
-    }
-
-    const srsLabel = document.getElementById('srs-limit-label');
-    if (srsLabel) {
-      srsLabel.textContent = isPremium ? '✅ Advanced' : 'Basic';
-      srsLabel.className = `status ${isPremium ? 'premium' : 'free'}`;
-    }
-
-    const analyticsLabel = document.getElementById('analytics-limit-label');
-    if (analyticsLabel) {
-      analyticsLabel.textContent = isPremium ? '✅ Full' : 'Limited';
-      analyticsLabel.className = `status ${isPremium ? 'premium' : 'free'}`;
-    }
-
-    const currentPlanLabel = document.getElementById('upgrade-current-plan');
-    if (currentPlanLabel) {
-      currentPlanLabel.textContent = isPremium ? 'Premium ✦' : 'Free';
-      currentPlanLabel.className = isPremium ? 'premium-badge' : 'free-badge';
-    }
-
-    const easeInput = document.getElementById('ease-input');
-    const intervalInput = document.getElementById('interval-input');
-    if (easeInput) easeInput.disabled = !isPremium;
-    if (intervalInput) intervalInput.disabled = !isPremium;
-    if (easeInput) easeInput.style.opacity = isPremium ? '1' : '0.5';
-    if (intervalInput) intervalInput.style.opacity = isPremium ? '1' : '0.5';
-
-    const lockMsg = document.getElementById('premium-lock-msg');
-    if (lockMsg) {
-      lockMsg.classList.toggle('hidden', isPremium);
-    }
-
-    const prompt = document.getElementById('home-upgrade-prompt');
-    if (prompt) {
-      prompt.style.display = isPremium ? 'none' : 'flex';
-    }
-  }
-
-  // ============================================================
-  //  UI RENDERING (partial – only essential functions shown)
-  // ============================================================
-  function updateHome() {
-    // ... (same as original, but we'll keep the minimal version)
-    // For brevity, the rest of the functions (renderDecks, openStudySelect, etc.)
-    // are identical to the original code. Since the user already has the full
-    // code, we only need to ensure handleLogin works.
-  }
-
-  // ============================================================
-  //  INIT
-  // ============================================================
-  if (localStorage.getItem('flashmind_theme') === 'dark') document.documentElement.classList.add('dark');
-
-  const logged = checkSession();
-
-  if (!logged) {
-    document.getElementById('view-login').classList.add('active');
-    document.getElementById('view-login').style.display = 'flex';
-  } else {
-    enterApp();
-  }
-
-  // Nav click handlers
-  document.querySelectorAll('.nav-item').forEach(btn => {
-    btn.removeEventListener('click', navClickHandler);
-    btn.addEventListener('click', navClickHandler);
   });
+  return Object.values(map);
+}
+function getDueCards(deckId) {
+  const now = today();
+  let cards = getRealCards();
+  if (deckId) cards = cards.filter(c => c.deck_id === deckId);
+  return cards.filter(c => !c.next_review || c.next_review <= now);
+}
+function getStreak() {
+  const reviews = [...new Set(getRealCards().map(c => c.last_review ? c.last_review.split('T')[0] : null).filter(Boolean))];
+  let s=0, d=new Date();
+  for (let i=0; i<365; i++) {
+    const ds = d.toISOString().split('T')[0];
+    if (reviews.includes(ds)) { s++; d.setDate(d.getDate()-1); } else if (i===0) { d.setDate(d.getDate()-1); } else break;
+  }
+  return s;
+}
+function getStreakDays() {
+  const reviews = [...new Set(getRealCards().map(c => c.last_review ? c.last_review.split('T')[0] : null).filter(Boolean))];
+  const days = [];
+  const d = new Date();
+  for (let i=6; i>=0; i--) {
+    const ds = d.toISOString().split('T')[0];
+    days.push({ date: ds, active: reviews.includes(ds), isToday: i===0, isFuture: false });
+    d.setDate(d.getDate()-1);
+  }
+  return days;
+}
+function getSubjectBreakdown() {
+  const subjects = {};
+  getRealCards().forEach(c => {
+    const topic = c.topic || 'General';
+    if (!subjects[topic]) subjects[topic] = 0;
+    subjects[topic]++;
+  });
+  return subjects;
+}
+function getDeckPerformance() {
+  const decks = getDecks();
+  return decks.map(d => {
+    const total = d.cards.length;
+    const correct = d.cards.filter(c => (c.correct_count||0)>0).length;
+    const accuracy = total>0 ? Math.round((correct/total)*100) : 0;
+    return { name: d.name, accuracy, total };
+  }).sort((a,b) => b.accuracy - a.accuracy);
+}
+function getRetentionRates() {
+  const real = getRealCards();
+  const total = real.length;
+  if (total === 0) return { overall: 0, d7: 0, d14: 0, d30: 0 };
+  const totalReviews = real.reduce((s,c) => s + (c.total_reviews||0), 0);
+  const correctReviews = real.reduce((s,c) => s + (c.correct_count||0), 0);
+  const overall = totalReviews > 0 ? Math.round((correctReviews/totalReviews)*100) : 0;
+  const d7 = real.filter(c => { if (!c.last_review) return false; const days = (Date.now() - new Date(c.last_review).getTime())/(1000*60*60*24); return days <= 7 && (c.correct_count||0)>0; });
+  const d7Total = real.filter(c => { if (!c.last_review) return false; const days = (Date.now() - new Date(c.last_review).getTime())/(1000*60*60*24); return days <= 7; });
+  const ret7 = d7Total.length > 0 ? Math.round((d7.length/d7Total.length)*100) : 0;
+  const d14 = real.filter(c => { if (!c.last_review) return false; const days = (Date.now() - new Date(c.last_review).getTime())/(1000*60*60*24); return days <= 14 && (c.correct_count||0)>0; });
+  const d14Total = real.filter(c => { if (!c.last_review) return false; const days = (Date.now() - new Date(c.last_review).getTime())/(1000*60*60*24); return days <= 14; });
+  const ret14 = d14Total.length > 0 ? Math.round((d14.length/d14Total.length)*100) : 0;
+  const d30 = real.filter(c => { if (!c.last_review) return false; const days = (Date.now() - new Date(c.last_review).getTime())/(1000*60*60*24); return days <= 30 && (c.correct_count||0)>0; });
+  const d30Total = real.filter(c => { if (!c.last_review) return false; const days = (Date.now() - new Date(c.last_review).getTime())/(1000*60*60*24); return days <= 30; });
+  const ret30 = d30Total.length > 0 ? Math.round((d30.length/d30Total.length)*100) : 0;
+  return { overall, d7: ret7, d14: ret14, d30: ret30 };
+}
+function getAvgCardsPerDay(days) {
+  const dates = getDateRange(days);
+  let total = 0;
+  dates.forEach(d => { total += getTotalReviewsForDate(d); });
+  return Math.round(total/dates.length);
+}
+function getBestDay(days) {
+  const dates = getDateRange(days);
+  let best = 0;
+  dates.forEach(d => { const count = getTotalReviewsForDate(d); if (count>best) best=count; });
+  return best;
+}
 
-  // Drag and drop for Excel upload (if present)
-  const uploadZone = document.getElementById('upload-zone');
-  if (uploadZone) {
-    uploadZone.addEventListener('dragover', (e) => {
-      e.preventDefault();
-      uploadZone.classList.add('dragover');
-    });
-    uploadZone.addEventListener('dragleave', () => {
-      uploadZone.classList.remove('dragover');
-    });
-    uploadZone.addEventListener('drop', (e) => {
-      e.preventDefault();
-      uploadZone.classList.remove('dragover');
-      const file = e.dataTransfer.files[0];
-      if (file && (file.name.endsWith('.xlsx') || file.name.endsWith('.xls'))) {
-        const event = { target: { files: [file] } };
-        handleExcelImport(event);
-      } else {
-        alert('Please upload an Excel file (.xlsx or .xls)');
+// ============================================================
+//  SRS
+// ============================================================
+function applySRS(card, quality) {
+  let ef = card.ease_factor || 2.5, interval = card.interval || 0, reps = card.repetitions || 0;
+  const mult = parseFloat(document.getElementById('interval-input')?.value) || 1.0;
+  if (quality < 1) { reps = 0; interval = 1; } else {
+    if (reps === 0) interval = 1;
+    else if (reps === 1) interval = 6;
+    else interval = Math.round(interval * ef * mult);
+    if (interval < 1) interval = 1;
+    reps++;
+  }
+  ef = ef + (0.1 - (3 - quality) * (0.08 + (3 - quality) * 0.02));
+  if (ef < 1.3) ef = 1.3;
+  const next = new Date();
+  next.setDate(next.getDate() + interval);
+  return {
+    ...card,
+    ease_factor: Math.round(ef * 100) / 100,
+    interval,
+    repetitions: reps,
+    next_review: next.toISOString().split('T')[0],
+    last_review: new Date().toISOString(),
+    total_reviews: (card.total_reviews || 0) + 1,
+    correct_count: (card.correct_count || 0) + (quality >= 2 ? 1 : 0)
+  };
+}
+
+// ============================================================
+//  AUTH FUNCTIONS
+// ============================================================
+function showLogin() {
+  document.getElementById('view-login').classList.add('active');
+  document.getElementById('view-signup').classList.remove('active');
+}
+function showSignup() {
+  document.getElementById('view-signup').classList.add('active');
+  document.getElementById('view-login').classList.remove('active');
+}
+function showFreeTrial() {
+  document.getElementById('free-trial-modal').classList.remove('hidden');
+  if (typeof lucide !== 'undefined') lucide.createIcons();
+}
+function closeFreeTrial() { document.getElementById('free-trial-modal').classList.add('hidden'); }
+function startFreeTrial() {
+  closeFreeTrial();
+  if (!currentUser) { showSignup(); return; }
+  switchTab('home');
+}
+
+async function handleLogin(e) {
+  e.preventDefault();
+  const email = document.getElementById('login-email').value.trim();
+  const pw = document.getElementById('login-password').value;
+  const err = document.getElementById('login-error');
+  err.textContent = '';
+  try {
+    const userCredential = await firebase.auth().signInWithEmailAndPassword(email, pw);
+    currentUser = email;
+    saveSession(email);
+    const cloudData = await loadFromFirebase(email);
+    if (cloudData && cloudData.cards) {
+      allCards = cloudData.cards;
+      userPlan = cloudData.plan || 'free';
+      localStorage.setItem(DATA_PREFIX + email, JSON.stringify(allCards));
+      localStorage.setItem('flashmind_plan_' + email, userPlan);
+    } else {
+      loadUserData(email);
+    }
+    isAdmin = ADMIN_EMAILS.includes(email);
+    enterApp();
+  } catch (error) {
+    if (error.code === 'auth/user-not-found') err.textContent = 'No account found. Please sign up first.';
+    else if (error.code === 'auth/wrong-password') err.textContent = 'Incorrect password.';
+    else if (error.code === 'auth/invalid-email') err.textContent = 'Invalid email address.';
+    else if (error.code === 'auth/too-many-requests') err.textContent = 'Too many failed attempts. Please try again later.';
+    else if (error.code === 'auth/invalid-credential') err.textContent = 'Invalid credentials. Please check your email and password.';
+    else err.textContent = 'Login failed: ' + error.message;
+  }
+}
+
+function loadUserData(email) {
+  const key = DATA_PREFIX + email;
+  try { allCards = JSON.parse(localStorage.getItem(key)) || []; } catch { allCards = []; }
+  if (!Array.isArray(allCards) || allCards.length === 0) allCards = getSampleDecks();
+  const pk = 'flashmind_plan_' + email;
+  userPlan = localStorage.getItem(pk) || 'free';
+  isAdmin = ADMIN_EMAILS.includes(email);
+}
+
+async function handleSignup(e) {
+  e.preventDefault();
+  const un = document.getElementById('signup-username').value.trim();
+  const email = document.getElementById('signup-email').value.trim();
+  const pw = document.getElementById('signup-password').value;
+  const cf = document.getElementById('signup-confirm').value;
+  const code = document.getElementById('signup-code').value.trim().toUpperCase();
+  const err = document.getElementById('signup-error');
+  err.textContent = '';
+  if (!un || !email || !pw || !cf) { err.textContent = 'All fields required.'; return; }
+  if (pw.length < 6) { err.textContent = 'Password min 6 chars.'; return; }
+  if (pw !== cf) { err.textContent = 'Passwords do not match.'; return; }
+
+  try {
+    const userCredential = await firebase.auth().createUserWithEmailAndPassword(email, pw);
+    const user = userCredential.user;
+    await user.updateProfile({ displayName: un });
+
+    const isAdminUser = ADMIN_EMAILS.includes(email);
+    let isBookBuyer = false;
+    if (code) {
+      const codes = getCodes();
+      if (codes[code] && !codes[code].used) {
+        isBookBuyer = true;
+        codes[code].used = true;
+        codes[code].usedBy = email;
+        codes[code].usedAt = new Date().toISOString();
+        saveCodes(codes);
+      } else if (code) {
+        err.textContent = 'Invalid or already used access code. You can still create a free account.';
       }
+    }
+
+    const plan = (isBookBuyer || isAdminUser) ? 'premium' : 'free';
+    const expiry = (isBookBuyer || isAdminUser) ? addMonths(new Date(), PLAN_DURATION_MONTHS).toISOString() : null;
+
+    const users = getUsers();
+    users[email] = {
+      username: un,
+      email,
+      password: pw,
+      created: Date.now(),
+      plan: plan,
+      isBookBuyer: isBookBuyer,
+      isAdmin: isAdminUser
+    };
+    saveUsers(users);
+
+    currentUser = email;
+    saveSession(email);
+    allCards = getSampleDecks();
+    saveUserData(email);
+    if (isBookBuyer || isAdminUser) {
+      savePlan(email, 'premium', expiry);
+    }
+    await saveToFirebase(email, allCards, plan);
+
+    isAdmin = isAdminUser;
+    enterApp();
+
+    if (isBookBuyer) alert('🎉 Access code validated! You now have Premium access for 3 months.');
+    if (isAdminUser) alert('👑 Admin account created! You have full admin access.');
+  } catch (error) {
+    if (error.code === 'auth/email-already-in-use') err.textContent = 'Email already registered. Please login or use another email.';
+    else if (error.code === 'auth/weak-password') err.textContent = 'Password is too weak. Use at least 6 characters.';
+    else if (error.code === 'auth/invalid-email') err.textContent = 'Invalid email address.';
+    else err.textContent = 'Signup failed: ' + error.message;
+  }
+}
+
+function saveUserData(email) {
+  localStorage.setItem(DATA_PREFIX + email, JSON.stringify(allCards));
+  saveToFirebase(email, allCards, userPlan);
+}
+function savePlan(email, plan, expiry) {
+  localStorage.setItem('flashmind_plan_' + email, plan);
+  if (expiry) localStorage.setItem('flashmind_expiry_' + email, expiry);
+  userPlan = plan;
+  saveToFirebase(email, allCards, plan);
+}
+
+async function handleLogout() {
+  if (!confirm('Logout?')) return;
+  try { await firebase.auth().signOut(); } catch (e) { console.warn(e); }
+  clearSession();
+  currentUser = null;
+  allCards = [];
+  isAdmin = false;
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.getElementById('view-login').classList.add('active');
+  document.getElementById('login-email').value = '';
+  document.getElementById('login-password').value = '';
+}
+
+function getPlanExpiry(email) {
+  return localStorage.getItem('flashmind_expiry_' + email) || null;
+}
+function isPremiumActive() {
+  if (userPlan !== 'premium') return false;
+  const expiry = getPlanExpiry(currentUser);
+  if (!expiry) return false;
+  return new Date(expiry) > new Date();
+}
+
+// ============================================================
+//  ENTER APP & NAVIGATION
+// ============================================================
+function enterApp() {
+  requestAnimationFrame(() => {
+    document.getElementById('bottomNav').style.display = 'flex';
+    document.querySelectorAll('.view').forEach(v => {
+      v.classList.remove('active');
+      v.style.display = 'none';
+    });
+    const homeView = document.getElementById('view-home');
+    if (homeView) {
+      homeView.classList.add('active');
+      homeView.style.display = 'flex';
+    }
+    document.querySelectorAll('.nav-item').forEach(b => {
+      b.classList.toggle('active', b.dataset.tab === 'home');
+    });
+
+    const users = getUsers();
+    if (currentUser && users[currentUser]) {
+      document.getElementById('settings-username').textContent = users[currentUser].username;
+      isAdmin = users[currentUser].isAdmin || ADMIN_EMAILS.includes(currentUser);
+    }
+
+    loadNickname();
+    loadDailyGoal();
+
+    if (userPlan === 'premium') {
+      const expiry = getPlanExpiry(currentUser);
+      if (expiry && new Date(expiry) <= new Date()) {
+        savePlan(currentUser, 'free', null);
+        userPlan = 'free';
+        localStorage.removeItem('flashmind_expiry_' + currentUser);
+      }
+    }
+
+    if (isAdmin) {
+      document.getElementById('admin-badge').classList.remove('hidden');
+      document.getElementById('admin-import-btn').classList.remove('hidden');
+    } else {
+      document.getElementById('admin-badge').classList.add('hidden');
+      document.getElementById('admin-import-btn').classList.add('hidden');
+    }
+
+    updateThemeToggle();
+    updatePlanUI();
+    updateHome();
+    renderDecks();
+
+    if (typeof lucide !== 'undefined') lucide.createIcons();
+  });
+}
+
+function checkSession() {
+  const s = getSession();
+  if (s && s.email) {
+    const users = getUsers();
+    if (users[s.email]) {
+      currentUser = s.email;
+      loadUserData(s.email);
+      isAdmin = users[s.email].isAdmin || ADMIN_EMAILS.includes(s.email);
+      enterApp();
+      return true;
+    }
+  }
+  return false;
+}
+
+// ============================================================
+//  PLAN UI
+// ============================================================
+function updatePlanUI() {
+  const isPremium = isPremiumActive();
+  const badge = document.getElementById('plan-badge');
+  if (badge) {
+    badge.className = isPremium ? 'premium-badge' : 'free-badge';
+    badge.textContent = isPremium ? 'PRO' : 'FREE';
+  }
+  const planLabel = document.getElementById('settings-plan-label');
+  if (planLabel) {
+    if (isPremium) {
+      const expiry = getPlanExpiry(currentUser);
+      const days = expiry ? daysUntil(expiry) : 0;
+      planLabel.textContent = `Premium ✦ (${days} days left)`;
+    } else {
+      planLabel.textContent = 'Free';
+    }
+  }
+  const upgradeBtn = document.getElementById('settings-upgrade-btn');
+  if (upgradeBtn) upgradeBtn.style.display = isPremium ? 'none' : 'inline-block';
+  const expiryLabel = document.getElementById('expiry-label');
+  if (expiryLabel) {
+    if (isPremium) {
+      const expiry = getPlanExpiry(currentUser);
+      const days = expiry ? daysUntil(expiry) : 0;
+      expiryLabel.textContent = `${days} days remaining`;
+      expiryLabel.className = 'status premium';
+    } else {
+      expiryLabel.textContent = 'Not active';
+      expiryLabel.className = 'status free';
+    }
+  }
+  const deckLimitLabel = document.getElementById('deck-limit-label');
+  if (deckLimitLabel) {
+    deckLimitLabel.textContent = isPremium ? '♾️ All decks' : '5 free decks';
+    deckLimitLabel.className = `status ${isPremium ? 'premium' : 'free'}`;
+  }
+  const modeLabel = document.getElementById('mode-limit-label');
+  if (modeLabel) {
+    modeLabel.textContent = isPremium ? '✅ All modes' : 'Flashcards only';
+    modeLabel.className = `status ${isPremium ? 'premium' : 'free'}`;
+  }
+  const srsLabel = document.getElementById('srs-limit-label');
+  if (srsLabel) {
+    srsLabel.textContent = isPremium ? '✅ Advanced' : 'Basic';
+    srsLabel.className = `status ${isPremium ? 'premium' : 'free'}`;
+  }
+  const analyticsLabel = document.getElementById('analytics-limit-label');
+  if (analyticsLabel) {
+    analyticsLabel.textContent = isPremium ? '✅ Full' : 'Limited';
+    analyticsLabel.className = `status ${isPremium ? 'premium' : 'free'}`;
+  }
+  const currentPlanLabel = document.getElementById('upgrade-current-plan');
+  if (currentPlanLabel) {
+    currentPlanLabel.textContent = isPremium ? 'Premium ✦' : 'Free';
+    currentPlanLabel.className = isPremium ? 'premium-badge' : 'free-badge';
+  }
+  const easeInput = document.getElementById('ease-input');
+  const intervalInput = document.getElementById('interval-input');
+  if (easeInput) { easeInput.disabled = !isPremium; easeInput.style.opacity = isPremium ? '1' : '0.5'; }
+  if (intervalInput) { intervalInput.disabled = !isPremium; intervalInput.style.opacity = isPremium ? '1' : '0.5'; }
+  const lockMsg = document.getElementById('premium-lock-msg');
+  if (lockMsg) lockMsg.classList.toggle('hidden', isPremium);
+  const prompt = document.getElementById('home-upgrade-prompt');
+  if (prompt) prompt.style.display = isPremium ? 'none' : 'flex';
+}
+
+// ============================================================
+//  UPDATE HOME
+// ============================================================
+function updateHome() {
+  const real = getRealCards();
+  const total = real.reduce((s,c) => s + (c.total_reviews||0), 0);
+  const correct = real.reduce((s,c) => s + (c.correct_count||0), 0);
+  const acc = total > 0 ? Math.round(correct/total*100) : 0;
+  const mastered = real.filter(c => (c.interval||0) >= 21).length;
+  const streak = getStreak();
+
+  loadNickname();
+  loadDailyGoal();
+
+  const statStreak = document.getElementById('stat-streak');
+  if (statStreak) statStreak.textContent = streak;
+  const statAccuracy = document.getElementById('stat-accuracy');
+  if (statAccuracy) statAccuracy.textContent = acc + '%';
+  const statMastered = document.getElementById('stat-mastered');
+  if (statMastered) statMastered.textContent = mastered;
+  const streakNumber = document.getElementById('streak-number');
+  if (streakNumber) streakNumber.textContent = streak;
+
+  const goal = getDailyGoal();
+  const todayCount = getTodayStudyCount();
+  const dailyProgressFill = document.getElementById('daily-progress-fill');
+  if (dailyProgressFill) {
+    const pct = Math.min((todayCount / goal) * 100, 100);
+    dailyProgressFill.style.width = pct + '%';
+  }
+  const todayCountEl = document.getElementById('today-count');
+  if (todayCountEl) todayCountEl.textContent = todayCount;
+
+  // Streak calendar
+  const days = getStreakDays();
+  const dayLabels = ['M','T','W','T','F','S','S'];
+  const calendar = document.getElementById('streak-calendar');
+  if (calendar) {
+    calendar.innerHTML = days.map((d,i) => {
+      let cls = 'streak-dot';
+      if (d.isToday) cls += ' today';
+      else if (d.active) cls += ' active';
+      else cls += ' inactive';
+      return `<div class="${cls}" title="${d.date}">${dayLabels[i]}</div>`;
+    }).join('');
+  }
+
+  const lastReview = real.filter(c => c.last_review).sort((a,b) => new Date(b.last_review) - new Date(a.last_review))[0];
+  const lastStudyText = document.getElementById('last-study-text');
+  if (lastStudyText) {
+    if (lastReview) {
+      const diff = Math.floor((Date.now() - new Date(lastReview.last_review)) / (1000*60));
+      if (diff < 1) lastStudyText.textContent = 'Last studied: Just now';
+      else if (diff < 60) lastStudyText.textContent = `Last studied: ${diff} min ago`;
+      else if (diff < 1440) lastStudyText.textContent = `Last studied: ${Math.floor(diff/60)}h ${diff%60}m ago`;
+      else lastStudyText.textContent = `Last studied: ${Math.floor(diff/1440)} days ago`;
+    } else {
+      lastStudyText.textContent = 'Last studied: Never';
+    }
+  }
+
+  const studyMins = getStudyTime();
+  const studyTimeDisplay = document.getElementById('study-time-display');
+  if (studyTimeDisplay) studyTimeDisplay.textContent = `⏰ ${studyMins} min studied today`;
+
+  const due = getDueCards();
+  const btn = document.getElementById('home-review-btn');
+  if (btn) {
+    if (due.length === 0) {
+      btn.textContent = '🎉 All caught up!';
+      btn.disabled = true;
+      btn.classList.add('opacity-60','cursor-not-allowed');
+    } else {
+      btn.textContent = '📖 Continue Studying';
+      btn.disabled = false;
+      btn.classList.remove('opacity-60','cursor-not-allowed');
+    }
+  }
+  updatePlanUI();
+}
+
+// ============================================================
+//  RENDER DECKS
+// ============================================================
+function renderDecks() {
+  const container = document.getElementById('deck-list');
+  const no = document.getElementById('no-decks');
+  const isPremium = isPremiumActive();
+  const maxFreeDecks = 5;
+  const decks = getDecks();
+  const topicMap = {};
+  decks.forEach(d => {
+    const topic = d.topic || 'General';
+    if (!topicMap[topic]) topicMap[topic] = [];
+    topicMap[topic].push(d);
+  });
+  const sortedTopics = Object.keys(topicMap).sort();
+
+  if (!container) return;
+  if (decks.length === 0) {
+    container.innerHTML = '';
+    if (no) no.classList.remove('hidden');
+    return;
+  }
+  if (no) no.classList.add('hidden');
+
+  let html = '';
+  let deckCount = 0;
+  sortedTopics.forEach((topic, topicIndex) => {
+    const subtopics = topicMap[topic];
+    const totalCardsInTopic = subtopics.reduce((sum,d) => sum + d.cards.length, 0);
+    html += `<div class="topic-group mb-3">
+      <div class="topic-header surface rounded-2xl p-4 border border-theme shadow-card cursor-pointer flex items-center justify-between"
+           onclick="toggleTopic('topic-${topicIndex}')" style="background:var(--bg);">
+        <div class="flex items-center gap-3">
+          <span class="text-xl">📚</span>
+          <div>
+            <span class="font-bold text-base">${topic}</span>
+            <span class="text-xs text-sec ml-2">${totalCardsInTopic} cards · ${subtopics.length} subtopics</span>
+          </div>
+        </div>
+        <div class="flex items-center gap-2">
+          <span id="topic-arrow-${topicIndex}" class="text-sec transition-transform duration-200">▼</span>
+        </div>
+      </div>
+      <div id="topic-${topicIndex}" class="topic-content mt-2 ml-4 space-y-2 hidden">`;
+    subtopics.forEach((d, i) => {
+      const due = d.cards.filter(c => !c.next_review || c.next_review <= today()).length;
+      const mastered = d.cards.filter(c => (c.interval||0) >= 21).length;
+      const pct = d.cards.length > 0 ? Math.round(mastered/d.cards.length*100) : 0;
+      const colors = ['card-peach','card-green','card-blue','card-purple'];
+      const isLocked = !isPremium && deckCount >= maxFreeDecks;
+      const displayName = d.subtopic || d.name;
+      html += `<div class="deck-item ${colors[i%4]} ${isLocked ? 'opacity-60' : ''}"
+               onclick="${isLocked ? "showUpgradeModal()" : "openDeck('"+d.id+"')"}"
+               style="${isLocked ? 'cursor:not-allowed;' : ''}">
+        <div class="flex justify-between items-center">
+          <div>
+            <div class="flex items-center gap-2">
+              <span class="text-lg">${isLocked ? '🔒' : '💊'}</span>
+              <h3 class="font-bold truncate">${displayName}</h3>
+              ${isLocked ? '<span class="text-xs text-orange-500 font-medium">Premium</span>' : ''}
+            </div>
+            ${d.subtopic ? `<span class="text-xs text-sec">${d.topic||''}</span>` : ''}
+          </div>
+          <div class="flex gap-1" onclick="event.stopPropagation()">
+            ${isAdmin && !isLocked ? `
+              <button onclick="showRenameDeck('${d.id}')" class="text-sec p-1 hover:text-accent transition-colors" title="Rename Deck">
+                <i data-lucide="pencil" class="w-4 h-4"></i>
+              </button>
+              <button onclick="showManageCards('${d.id}')" class="text-sec p-1 hover:text-blue-500 transition-colors" title="Manage Cards">
+                <i data-lucide="list" class="w-4 h-4"></i>
+              </button>
+              <button onclick="deleteDeck('${d.id}')" class="text-sec p-1 hover:text-red-500 transition-colors" title="Delete Deck">
+                <i data-lucide="trash-2" class="w-4 h-4"></i>
+              </button>
+            ` : ''}
+          </div>
+        </div>
+        <div class="progress-bar h-1.5 my-1"><div class="progress-fill" style="width:${pct}%"></div></div>
+        <p class="text-xs text-sec">${d.cards.length} cards · ${due} due · ${pct}% mastered</p>
+      </div>`;
+      deckCount++;
+    });
+    html += `</div></div>`;
+  });
+  container.innerHTML = html;
+  if (typeof lucide !== 'undefined') lucide.createIcons();
+}
+
+function toggleTopic(topicId) {
+  const content = document.getElementById(topicId);
+  const arrow = document.getElementById('topic-arrow-'+topicId.split('-')[1]);
+  if (content) {
+    content.classList.toggle('hidden');
+    if (arrow) arrow.style.transform = content.classList.contains('hidden') ? 'rotate(0deg)' : 'rotate(180deg)';
+  }
+}
+
+// ============================================================
+//  ADMIN FUNCTIONS (Rename, Manage, Delete, etc.)
+// ============================================================
+function showRenameDeck(deckId) {
+  if (!isAdmin) return;
+  renameDeckId = deckId;
+  const deck = allCards.find(c => c.deck_id === deckId && c.card_front === '__deck_placeholder__');
+  document.getElementById('rename-deck-input').value = deck ? deck.deck_name : '';
+  document.getElementById('rename-deck-modal').classList.remove('hidden');
+  setTimeout(() => document.getElementById('rename-deck-input').focus(), 100);
+}
+function closeRenameDeck() {
+  document.getElementById('rename-deck-modal').classList.add('hidden');
+}
+function saveRenameDeck() {
+  const newName = document.getElementById('rename-deck-input').value.trim();
+  if (!newName || !renameDeckId) return;
+  allCards.forEach(c => { if (c.deck_id === renameDeckId) c.deck_name = newName; });
+  saveUserData(currentUser);
+  closeRenameDeck();
+  renderDecks();
+  updateHome();
+  alert('✅ Deck renamed successfully!');
+}
+
+function showManageCards(deckId) {
+  if (!isAdmin) return alert('Only admins can manage cards.');
+  manageDeckId = deckId;
+  const deck = allCards.find(c => c.deck_id === deckId && c.card_front === '__deck_placeholder__');
+  const deckName = deck ? deck.deck_name : 'Manage Cards';
+  document.getElementById('manage-deck-name').textContent = deckName;
+  selectedCardIds = [];
+  const selectAll = document.getElementById('select-all-cards');
+  if (selectAll) selectAll.checked = false;
+  const deleteBtn = document.getElementById('delete-selected-cards-btn');
+  if (deleteBtn) deleteBtn.disabled = true;
+  const countLabel = document.getElementById('selected-cards-count');
+  if (countLabel) countLabel.textContent = '0 selected';
+  const bulkBtn = document.getElementById('bulk-delete-cards-btn');
+  if (bulkBtn) bulkBtn.classList.remove('hidden');
+  document.querySelectorAll('.view').forEach(v => { v.classList.remove('active'); v.style.display = 'none'; });
+  const adminCardsView = document.getElementById('view-admin-cards');
+  if (adminCardsView) { adminCardsView.classList.add('active'); adminCardsView.style.display = 'flex'; }
+  currentTab = 'admin-cards';
+  renderManageCards();
+  if (typeof lucide !== 'undefined') lucide.createIcons();
+}
+function renderManageCards() {
+  const container = document.getElementById('manage-cards-list');
+  if (!container) return;
+  const cards = allCards.filter(c => c.deck_id === manageDeckId && c.card_front !== '__deck_placeholder__');
+  if (cards.length === 0) {
+    container.innerHTML = `<div class="text-center py-10">
+      <p class="text-sec text-sm">No cards in this deck.</p>
+      <button onclick="showAddCardToDeck()" class="mt-3 accent-bg text-white px-4 py-2 rounded-xl text-sm font-medium">Add First Card</button>
+    </div>`;
+    return;
+  }
+  selectedCardIds = [];
+  container.innerHTML = cards.map((c,i) => `
+    <div class="card-item surface rounded-2xl p-3 border border-theme shadow-card mb-2 flex items-center gap-3">
+      <input type="checkbox" class="card-checkbox" data-card-id="${c.__id}" onchange="toggleCardSelection('${c.__id}', this)" />
+      <div class="flex-1 min-w-0">
+        <p class="font-medium text-sm truncate">${c.card_front || 'Empty'}</p>
+        <p class="text-xs text-sec truncate">→ ${c.card_back || 'Empty'}</p>
+        <div class="text-[10px] text-sec mt-0.5">Reviews: ${c.total_reviews||0} · Correct: ${c.correct_count||0}</div>
+      </div>
+      <div class="flex gap-1 flex-shrink-0">
+        <button onclick="showEditCard('${c.__id}')" class="text-sec p-1 hover:text-accent transition-colors" title="Edit Card">
+          <i data-lucide="pencil" class="w-4 h-4"></i>
+        </button>
+        <button onclick="deleteCard('${c.__id}')" class="text-sec p-1 hover:text-red-500 transition-colors" title="Delete Card">
+          <i data-lucide="trash-2" class="w-4 h-4"></i>
+        </button>
+      </div>
+    </div>
+  `).join('');
+  if (typeof lucide !== 'undefined') lucide.createIcons();
+}
+function toggleCardSelection(cardId, checkbox) {
+  if (checkbox.checked) { if (!selectedCardIds.includes(cardId)) selectedCardIds.push(cardId); }
+  else { selectedCardIds = selectedCardIds.filter(id => id !== cardId); }
+  updateCardSelectionUI();
+}
+function toggleAllCards() {
+  const checkboxes = document.querySelectorAll('.card-checkbox');
+  const isChecked = document.getElementById('select-all-cards').checked;
+  checkboxes.forEach(cb => {
+    cb.checked = isChecked;
+    const cardId = cb.dataset.cardId;
+    if (isChecked) { if (!selectedCardIds.includes(cardId)) selectedCardIds.push(cardId); }
+    else { selectedCardIds = selectedCardIds.filter(id => id !== cardId); }
+  });
+  updateCardSelectionUI();
+}
+function updateCardSelectionUI() {
+  const count = selectedCardIds.length;
+  document.getElementById('selected-cards-count').textContent = count + ' selected';
+  document.getElementById('delete-selected-cards-btn').disabled = count === 0;
+  const totalCheckboxes = document.querySelectorAll('.card-checkbox').length;
+  const checkedCheckboxes = document.querySelectorAll('.card-checkbox:checked').length;
+  document.getElementById('select-all-cards').checked = totalCheckboxes > 0 && checkedCheckboxes === totalCheckboxes;
+}
+function deleteSelectedCards() {
+  if (selectedCardIds.length === 0) return alert('No cards selected.');
+  if (!confirm(`Delete ${selectedCardIds.length} selected cards?`)) return;
+  allCards = allCards.filter(c => !selectedCardIds.includes(c.__id));
+  saveUserData(currentUser);
+  selectedCardIds = [];
+  renderManageCards();
+  renderDecks();
+  updateHome();
+  document.getElementById('select-all-cards').checked = false;
+  document.getElementById('delete-selected-cards-btn').disabled = true;
+  document.getElementById('selected-cards-count').textContent = '0 selected';
+  alert('✅ Selected cards deleted successfully!');
+}
+function showAddCardToDeck() {
+  if (!isAdmin || !manageDeckId) return;
+  addingToDeckId = manageDeckId;
+  document.getElementById('card-front-input').value = '';
+  document.getElementById('card-back-input').value = '';
+  document.getElementById('card-modal').classList.remove('hidden');
+}
+function saveCard() {
+  const front = document.getElementById('card-front-input').value.trim();
+  const back = document.getElementById('card-back-input').value.trim();
+  if (!front || !back) return;
+  const deck = allCards.find(c => c.deck_id === addingToDeckId && c.card_front === '__deck_placeholder__');
+  allCards.push({
+    __id: generateId(),
+    deck_id: addingToDeckId,
+    deck_name: deck ? deck.deck_name : 'Untitled',
+    card_front: front,
+    card_back: back,
+    card_tags: '',
+    ease_factor: 2.5,
+    interval: 0,
+    repetitions: 0,
+    next_review: today(),
+    last_review: '',
+    total_reviews: 0,
+    correct_count: 0
+  });
+  saveUserData(currentUser);
+  closeCardModal();
+  renderManageCards();
+  renderDecks();
+  updateHome();
+}
+function closeCardModal() { document.getElementById('card-modal').classList.add('hidden'); }
+function showEditCard(cardId) {
+  if (!isAdmin) return;
+  editCardId = cardId;
+  const card = allCards.find(c => c.__id === cardId);
+  if (!card) return;
+  document.getElementById('edit-card-front').value = card.card_front || '';
+  document.getElementById('edit-card-back').value = card.card_back || '';
+  document.getElementById('edit-card-modal').classList.remove('hidden');
+  setTimeout(() => document.getElementById('edit-card-front').focus(), 100);
+}
+function closeEditCard() { document.getElementById('edit-card-modal').classList.add('hidden'); }
+function saveEditCard() {
+  const front = document.getElementById('edit-card-front').value.trim();
+  const back = document.getElementById('edit-card-back').value.trim();
+  if (!front || !back || !editCardId) return;
+  const card = allCards.find(c => c.__id === editCardId);
+  if (card) { card.card_front = front; card.card_back = back; saveUserData(currentUser); closeEditCard(); renderManageCards(); renderDecks(); updateHome(); alert('✅ Card updated successfully!'); }
+}
+function deleteCard(cardId) {
+  if (!isAdmin) return;
+  if (!confirm('Delete this card?')) return;
+  allCards = allCards.filter(c => c.__id !== cardId);
+  saveUserData(currentUser);
+  renderManageCards();
+  renderDecks();
+  updateHome();
+}
+function deleteDeck(deckId) {
+  if (!isAdmin) return alert('Only admins can delete decks.');
+  if (!confirm('Delete this deck and all cards?')) return;
+  allCards = allCards.filter(c => c.deck_id !== deckId);
+  saveUserData(currentUser);
+  renderDecks();
+  updateHome();
+  if (document.getElementById('view-admin-import').classList.contains('active')) renderAdminDeckList();
+}
+
+// ============================================================
+//  ADMIN IMPORT & CODES
+// ============================================================
+function showAdminImport() {
+  if (!isAdmin) return;
+  switchTab('admin-import');
+  renderAdminDeckList();
+  renderCodeList();
+}
+function renderAdminDeckList() {
+  const decks = getDecks();
+  const container = document.getElementById('admin-deck-list');
+  if (!container) return;
+  if (decks.length === 0) { container.innerHTML = '<p class="text-sec text-sm">No decks imported yet.</p>'; return; }
+  container.innerHTML = decks.map(d => `
+    <div class="admin-deck-item flex items-center justify-between p-2 rounded-lg" style="background:var(--surface);border:1px solid var(--border);">
+      <div>
+        <span class="font-medium text-sm">${d.name}</span>
+        <span class="text-xs text-sec ml-2">${d.cards.length} cards</span>
+      </div>
+      <button onclick="deleteDeck('${d.id}')" class="text-red-500 p-1"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+    </div>
+  `).join('');
+  if (typeof lucide !== 'undefined') lucide.createIcons();
+}
+function renderCodeList() {
+  const codes = getCodes();
+  const container = document.getElementById('code-list');
+  if (!container) return;
+  const entries = Object.entries(codes);
+  if (entries.length === 0) { container.innerHTML = '<p class="text-sec">No codes generated yet.</p>'; return; }
+  container.innerHTML = entries.map(([code, data]) => `
+    <div class="flex items-center justify-between p-1.5 rounded" style="background:var(--surface);border:1px solid var(--border);">
+      <span class="font-mono text-xs">${code}</span>
+      <span class="text-xs ${data.used ? 'text-red-500' : 'text-green-500'}">${data.used ? '✓ Used by ' + data.usedBy : 'Available'}</span>
+    </div>
+  `).join('');
+}
+function generateCodes(count) {
+  if (!isAdmin) return;
+  const codes = getCodes();
+  const prefix = 'PHARM', year = new Date().getFullYear();
+  for (let i=0; i<count; i++) {
+    const random = Math.random().toString(36).substring(2,8).toUpperCase();
+    const code = `${prefix}-${year}-${random}`;
+    if (!codes[code]) {
+      codes[code] = { code, used: false, usedBy: null, usedAt: null, createdAt: new Date().toISOString() };
+    }
+  }
+  saveCodes(codes);
+  renderCodeList();
+  alert(`✅ Generated ${count} new access codes!`);
+}
+function exportCodes() {
+  if (!isAdmin) return;
+  const codes = getCodes();
+  const data = Object.values(codes).map(c => ({ Code: c.code, Used: c.used ? 'Yes' : 'No', 'Used By': c.usedBy||'', 'Used At': c.usedAt||'', 'Created At': c.createdAt }));
+  if (data.length === 0) return alert('No codes to export.');
+  const wb = XLSX.utils.book_new();
+  const ws = XLSX.utils.json_to_sheet(data);
+  XLSX.utils.book_append_sheet(wb, ws, 'Access Codes');
+  XLSX.writeFile(wb, 'flashmind_access_codes.xlsx');
+}
+function handleExcelImport(event) {
+  if (!isAdmin) return alert('Only admins can import decks.');
+  const file = event.target.files[0];
+  if (!file) return;
+  if (typeof XLSX === 'undefined') return alert('❌ Excel library not loaded.');
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      const data = new Uint8Array(e.target.result);
+      const workbook = XLSX.read(data, { type: 'array' });
+      const jsonData = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]]);
+      if (jsonData.length === 0) return showImportStatus('❌ No data found.', 'error');
+      let importedCount = 0, skippedCount = 0;
+      jsonData.forEach(row => {
+        const topic = row['Topic'] || row['topic'] || 'General';
+        const subtopic = row['Subtopic'] || row['subtopic'] || '';
+        const front = row['Front'] || row['front'] || row['Question'] || row['question'];
+        const back = row['Back'] || row['back'] || row['Answer'] || row['answer'];
+        const tags = row['Tags'] || row['tags'] || '';
+        if (!front || !back) { skippedCount++; return; }
+        const deckName = topic + (subtopic ? ' - ' + subtopic : '');
+        let deckId = null;
+        const existingDeck = allCards.find(c => c.deck_name === deckName && c.card_front === '__deck_placeholder__');
+        if (existingDeck) { deckId = existingDeck.deck_id; } else {
+          deckId = 'deck_' + Date.now() + '_' + Math.random().toString(36).slice(2,6);
+          allCards.push({ __id: generateId(), deck_id: deckId, deck_name: deckName, card_front: '__deck_placeholder__', card_back: '', card_tags: '', ease_factor: 2.5, interval: 0, repetitions: 0, next_review: '', last_review: '', total_reviews: 0, correct_count: 0, topic: topic, subtopic: subtopic });
+        }
+        allCards.push({ __id: generateId(), deck_id: deckId, deck_name: deckName, card_front: front, card_back: back, card_tags: tags, ease_factor: 2.5, interval: 0, repetitions: 0, next_review: today(), last_review: '', total_reviews: 0, correct_count: 0, topic: topic, subtopic: subtopic });
+        importedCount++;
+      });
+      saveUserData(currentUser);
+      renderDecks(); updateHome(); renderAdminDeckList();
+      showImportStatus(`✅ Imported ${importedCount} cards!${skippedCount ? ' Skipped '+skippedCount : ''}`, 'success');
+    } catch (error) { showImportStatus('❌ Error: '+error.message, 'error'); }
+  };
+  reader.readAsArrayBuffer(file);
+  event.target.value = '';
+}
+function showImportStatus(message, type) {
+  const statusDiv = document.getElementById('import-status');
+  const statusBox = document.getElementById('import-status-box');
+  const statusText = document.getElementById('import-status-text');
+  if (!statusDiv || !statusBox || !statusText) { alert(message); return; }
+  statusDiv.classList.remove('hidden');
+  statusText.textContent = message;
+  statusBox.className = type === 'success' ?
+    'flex items-center gap-2 p-3 rounded-xl bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800' :
+    'flex items-center gap-2 p-3 rounded-xl bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800';
+  const icon = statusBox.querySelector('i');
+  if (icon) {
+    icon.className = type === 'success' ? 'w-5 h-5 text-green-500' : 'w-5 h-5 text-red-500';
+    icon.setAttribute('data-lucide', type === 'success' ? 'check-circle' : 'alert-circle');
+  }
+  if (typeof lucide !== 'undefined') lucide.createIcons();
+  setTimeout(() => statusDiv.classList.add('hidden'), 5000);
+}
+function downloadSampleExcel() {
+  const sampleData = [
+    { Topic: 'Pharmacy', Subtopic: 'Basics', Front: 'What is a drug?', Back: 'A substance that alters body function', Tags: 'pharmacology' },
+    { Topic: 'Pharmacy', Subtopic: 'Dosage', Front: 'What is 1 gram in mg?', Back: '1000 mg', Tags: 'calculations' },
+    { Topic: 'Science', Subtopic: 'Biology', Front: 'What is DNA?', Back: 'Deoxyribonucleic acid', Tags: 'genetics' }
+  ];
+  const wb = XLSX.utils.book_new();
+  const ws = XLSX.utils.json_to_sheet(sampleData);
+  XLSX.utils.book_append_sheet(wb, ws, 'Flashcards');
+  XLSX.writeFile(wb, 'flashmind_sample_decks.xlsx');
+}
+
+// ============================================================
+//  IMPORT EXCEL TO DECK
+// ============================================================
+function importExcelToDeck(event) {
+  if (!isAdmin || !manageDeckId) return alert('Only admins can import, or no deck selected.');
+  const file = event.target.files[0];
+  if (!file) return;
+  if (typeof XLSX === 'undefined') return alert('❌ Excel library not loaded.');
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      const data = new Uint8Array(e.target.result);
+      const workbook = XLSX.read(data, { type: 'array' });
+      const jsonData = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]]);
+      if (jsonData.length === 0) return alert('No data found.');
+      let importedCount = 0;
+      const deck = allCards.find(c => c.deck_id === manageDeckId && c.card_front === '__deck_placeholder__');
+      jsonData.forEach(row => {
+        const front = row['Front'] || row['front'] || row['QUESTION'] || row['question'];
+        const back = row['Back'] || row['back'] || row['ANSWER'] || row['answer'];
+        if (!front || !back) return;
+        const exists = allCards.some(c => c.deck_id === manageDeckId && c.card_front === front && c.card_back === back);
+        if (exists) return;
+        allCards.push({ __id: generateId(), deck_id: manageDeckId, deck_name: deck ? deck.deck_name : 'Untitled', card_front: front, card_back: back, card_tags: '', ease_factor: 2.5, interval: 0, repetitions: 0, next_review: today(), last_review: '', total_reviews: 0, correct_count: 0 });
+        importedCount++;
+      });
+      saveUserData(currentUser);
+      renderManageCards();
+      renderDecks();
+      alert(`✅ Imported ${importedCount} new cards to this deck!`);
+    } catch (error) { alert('❌ Error: '+error.message); }
+  };
+  reader.readAsArrayBuffer(file);
+  event.target.value = '';
+}
+
+// ============================================================
+//  OPEN DECK & STUDY SELECT
+// ============================================================
+function openDeck(deckId) {
+  const decks = getDecks();
+  const deckIndex = decks.findIndex(d => d.id === deckId);
+  const isPremium = isPremiumActive();
+  if (!isPremium && deckIndex >= 5) { showUpgradeModal(); return; }
+  currentDeckId = deckId;
+  openStudySelect();
+}
+function openStudySelect() {
+  const deck = allCards.find(c => c.deck_id === currentDeckId && c.card_front === '__deck_placeholder__');
+  const deckName = deck ? deck.deck_name : 'Deck';
+  const nameEl = document.getElementById('study-deck-name');
+  if (nameEl) nameEl.textContent = deckName;
+  document.querySelectorAll('.view').forEach(v => { v.classList.remove('active'); v.style.display = 'none'; });
+  const studySelectView = document.getElementById('view-study-select');
+  if (studySelectView) { studySelectView.classList.add('active'); studySelectView.style.display = 'flex'; }
+  document.querySelectorAll('.nav-item').forEach(b => { b.classList.toggle('active', b.dataset.tab === 'decks'); });
+  const isPremium = isPremiumActive();
+  const learnBtn = document.getElementById('learn-mode-btn');
+  const testBtn = document.getElementById('test-mode-btn');
+  const lockMsg = document.getElementById('premium-lock-msg');
+  if (!isPremium) {
+    if (learnBtn) learnBtn.style.opacity = '0.5';
+    if (testBtn) testBtn.style.opacity = '0.5';
+    if (lockMsg) lockMsg.classList.remove('hidden');
+  } else {
+    if (learnBtn) learnBtn.style.opacity = '1';
+    if (testBtn) testBtn.style.opacity = '1';
+    if (lockMsg) lockMsg.classList.add('hidden');
+  }
+  currentTab = 'study-select';
+  updateDeckStats();
+  if (typeof lucide !== 'undefined') lucide.createIcons();
+}
+function updateDeckStats() {
+  const deckCards = getRealCards().filter(c => c.deck_id === currentDeckId);
+  const total = deckCards.length;
+  const totalReviews = deckCards.reduce((s,c) => s + (c.total_reviews||0), 0);
+  const correctReviews = deckCards.reduce((s,c) => s + (c.correct_count||0), 0);
+  const retention = totalReviews > 0 ? Math.round((correctReviews/totalReviews)*100) : 0;
+  document.getElementById('deck-retention').textContent = retention + '%';
+  const mastered = deckCards.filter(c => (c.interval||0) >= 21).length;
+  const masteredPct = total > 0 ? Math.round((mastered/total)*100) : 0;
+  document.getElementById('deck-mastered').textContent = masteredPct + '%';
+  const avgTime = totalReviews > 0 ? Math.round(totalReviews/total*2) : 0;
+  document.getElementById('deck-avg-time').textContent = avgTime + 's';
+  document.getElementById('deck-reviews').textContent = totalReviews;
+  document.getElementById('deck-trend').textContent = '📈 +0% from last week';
+  const due = getDueCards(currentDeckId);
+  const todayStr = today();
+  const dueToday = due.filter(c => c.next_review === todayStr || !c.next_review).length;
+  const tomorrow = new Date(); tomorrow.setDate(tomorrow.getDate()+1);
+  const tomorrowStr = tomorrow.toISOString().split('T')[0];
+  const dueTomorrow = due.filter(c => c.next_review === tomorrowStr).length;
+  const nextWeek = new Date(); nextWeek.setDate(nextWeek.getDate()+7);
+  const dueWeek = due.filter(c => c.next_review && c.next_review >= todayStr && c.next_review <= nextWeek.toISOString().split('T')[0]).length;
+  document.getElementById('deck-due-today').textContent = dueToday;
+  document.getElementById('deck-due-tomorrow').textContent = dueTomorrow;
+  document.getElementById('deck-due-week').textContent = dueWeek;
+  document.getElementById('deck-total-cards').textContent = total;
+  const weak = deckCards.filter(c => (c.total_reviews||0) >= 2 && (c.correct_count||0)/(c.total_reviews||1) < 0.5)
+    .sort((a,b) => (a.correct_count/(a.total_reviews||1)) - (b.correct_count/(b.total_reviews||1)))
+    .slice(0,5);
+  const weakContainer = document.getElementById('weak-cards-list');
+  const weakCount = document.getElementById('weak-count');
+  if (weakContainer) {
+    if (weak.length === 0) {
+      weakContainer.innerHTML = '<p class="text-xs text-sec text-center py-2">No weak cards yet! 🎉</p>';
+      if (weakCount) weakCount.textContent = '0 cards';
+    } else {
+      weakContainer.innerHTML = weak.map(c => `
+        <div class="weak-card-item">
+          <span class="card-text">${c.card_front || 'Untitled'}</span>
+          <span class="wrong-count">${Math.round((1 - (c.correct_count/(c.total_reviews||1)))*100)}% wrong</span>
+        </div>
+      `).join('');
+      if (weakCount) weakCount.textContent = weak.length + ' cards';
+    }
+  }
+  const weakBtn = document.getElementById('study-weak-btn');
+  if (weakBtn) weakBtn.style.display = weak.length > 0 ? 'block' : 'none';
+}
+function studyWeakCards() {
+  const weak = getRealCards().filter(c =>
+    c.deck_id === currentDeckId &&
+    (c.total_reviews||0) >= 2 &&
+    (c.correct_count||0)/(c.total_reviews||1) < 0.5
+  );
+  if (weak.length === 0) { alert('No weak cards in this deck!'); return; }
+  studyQueue = weak;
+  studyIdx = 0;
+  fcFlipped = false;
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.getElementById('view-flashcards').classList.add('active');
+  fcShowCard();
+}
+function continueStudying() {
+  const due = getDueCards();
+  if (due.length === 0) { alert('🎉 All caught up! No cards due for review.'); return; }
+  const deckDue = {};
+  due.forEach(c => { deckDue[c.deck_id] = (deckDue[c.deck_id]||0) + 1; });
+  currentDeckId = Object.entries(deckDue).sort((a,b) => b[1]-a[1])[0][0];
+  openStudySelect();
+}
+
+// ============================================================
+//  STUDY MODES (Flashcards, Learn, Test)
+// ============================================================
+function startFlashcards() {
+  const allCardsInDeck = getRealCards().filter(c => c.deck_id === currentDeckId);
+  if (allCardsInDeck.length === 0) { alert('❌ No cards in this deck.'); return; }
+  const dueCards = getDueCards(currentDeckId);
+  studyQueue = dueCards.length > 0 ? dueCards : allCardsInDeck;
+  for (let i = studyQueue.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [studyQueue[i], studyQueue[j]] = [studyQueue[j], studyQueue[i]];
+  }
+  studyIdx = 0;
+  fcFlipped = false;
+  document.querySelectorAll('.view').forEach(v => { v.classList.remove('active'); v.style.display = 'none'; });
+  document.getElementById('view-flashcards').classList.add('active');
+  fcShowCard();
+}
+function fcShowCard() {
+  const card = document.getElementById('fc-card');
+  const done = document.getElementById('fc-done');
+  const btns = document.getElementById('fc-buttons');
+  const hint = document.querySelector('.swipe-hint');
+  if (!studyQueue || studyQueue.length === 0 || studyIdx >= studyQueue.length) {
+    if (card) card.style.display = 'none';
+    if (btns) { btns.classList.add('hidden'); btns.style.display = 'none'; }
+    if (hint) hint.style.display = 'none';
+    if (done) { done.classList.remove('hidden'); done.style.display = 'flex'; }
+    const progress = document.getElementById('fc-progress');
+    if (progress) progress.textContent = `${studyQueue ? studyQueue.length : 0}/${studyQueue ? studyQueue.length : 0}`;
+    const progressFill = document.getElementById('fc-progress-fill');
+    if (progressFill) progressFill.style.width = '100%';
+    if (typeof lucide !== 'undefined') lucide.createIcons();
+    return;
+  }
+  if (card) { card.style.display = ''; card.classList.remove('flipped'); }
+  if (done) { done.classList.add('hidden'); done.style.display = 'none'; }
+  if (btns) { btns.classList.add('hidden'); btns.style.display = 'none'; }
+  if (hint) hint.style.display = '';
+  const c = studyQueue[studyIdx];
+  if (!c) { studyIdx++; fcShowCard(); return; }
+  document.getElementById('fc-front-text').textContent = c.card_front || 'Empty';
+  document.getElementById('fc-back-text').textContent = c.card_back || 'Empty';
+  fcFlipped = false;
+  const progress = document.getElementById('fc-progress');
+  if (progress) progress.textContent = `${studyIdx+1}/${studyQueue.length}`;
+  const progressFill = document.getElementById('fc-progress-fill');
+  if (progressFill) progressFill.style.width = `${(studyIdx/studyQueue.length)*100}%`;
+  if (typeof lucide !== 'undefined') lucide.createIcons();
+}
+function fcFlip() {
+  if (studyIdx >= studyQueue.length) return;
+  if (!fcFlipped) {
+    const card = document.getElementById('fc-card');
+    if (card) card.classList.add('flipped');
+    fcFlipped = true;
+    const btns = document.getElementById('fc-buttons');
+    if (btns) { btns.classList.remove('hidden'); btns.style.display = ''; }
+  }
+}
+function fcRate(q) {
+  if (!studyQueue || studyIdx >= studyQueue.length) { exitStudy(); return; }
+  const c = studyQueue[studyIdx];
+  const updated = applySRS(c, q);
+  const idx = allCards.findIndex(x => x.__id === updated.__id);
+  if (idx !== -1) allCards[idx] = updated;
+  else allCards.push(updated);
+  saveUserData(currentUser);
+  addStudyTime(0.5);
+  studyIdx++;
+  fcShowCard();
+  updateHome();
+}
+
+function startLearn() {
+  if (!isPremiumActive()) { showUpgradeModal(); return; }
+  studyQueue = getDueCards(currentDeckId);
+  if (studyQueue.length === 0) studyQueue = getRealCards().filter(c => c.deck_id === currentDeckId);
+  if (studyQueue.length === 0) { alert('No cards.'); return; }
+  studyIdx = 0;
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.getElementById('view-learn').classList.add('active');
+  lnShowQuestion();
+}
+function lnShowQuestion() {
+  const done = document.getElementById('ln-done'), qBox = document.getElementById('ln-question'),
+        aBox = document.getElementById('ln-answer-box'), showBtn = document.getElementById('ln-show-btn'),
+        gradeB = document.getElementById('ln-grade-btns');
+  if (studyIdx >= studyQueue.length) {
+    qBox.style.display = 'none';
+    aBox.classList.add('hidden');
+    showBtn.style.display = 'none';
+    gradeB.classList.add('hidden');
+    done.classList.remove('hidden');
+    done.style.display = 'flex';
+    document.getElementById('ln-progress-fill').style.width = '100%';
+    if (typeof lucide !== 'undefined') lucide.createIcons();
+    return;
+  }
+  qBox.style.display = '';
+  done.classList.add('hidden'); done.style.display = 'none';
+  aBox.classList.add('hidden');
+  showBtn.style.display = '';
+  gradeB.classList.add('hidden');
+  const c = studyQueue[studyIdx];
+  document.getElementById('ln-front-text').textContent = c.card_front;
+  document.getElementById('ln-back-text').textContent = c.card_back;
+  document.getElementById('ln-progress').textContent = `${studyIdx+1}/${studyQueue.length}`;
+  document.getElementById('ln-progress-fill').style.width = `${(studyIdx/studyQueue.length)*100}%`;
+  if (typeof lucide !== 'undefined') lucide.createIcons();
+}
+function lnShowAnswer() {
+  document.getElementById('ln-answer-box').classList.remove('hidden');
+  document.getElementById('ln-show-btn').style.display = 'none';
+  document.getElementById('ln-grade-btns').classList.remove('hidden');
+}
+function lnGrade(correct) {
+  const c = studyQueue[studyIdx];
+  const updated = applySRS(c, correct ? 2 : 0);
+  const idx = allCards.findIndex(x => x.__id === updated.__id);
+  if (idx !== -1) allCards[idx] = updated;
+  else allCards.push(updated);
+  saveUserData(currentUser);
+  addStudyTime(0.5);
+  studyIdx++;
+  lnShowQuestion();
+  updateHome();
+}
+
+function startTest() {
+  if (!isPremiumActive()) { showUpgradeModal(); return; }
+  const all = getRealCards().filter(c => c.deck_id === currentDeckId);
+  if (all.length === 0) { alert('No cards.'); return; }
+  const shuffled = [...all];
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
+  studyQueue = shuffled.slice(0, 10);
+  studyIdx = 0;
+  tsCorrect = 0;
+  tsIncorrect = 0;
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.getElementById('view-test').classList.add('active');
+  tsShowQuestion();
+}
+function tsShowQuestion() {
+  const results = document.getElementById('ts-results'), qArea = document.getElementById('ts-question-area'),
+        fb = document.getElementById('ts-feedback'), choices = document.getElementById('ts-choices'),
+        typeArea = document.getElementById('ts-type-area');
+  if (studyIdx >= studyQueue.length) {
+    qArea.style.display = 'none';
+    results.classList.remove('hidden');
+    results.style.display = 'flex';
+    const pct = studyQueue.length > 0 ? Math.round(tsCorrect / studyQueue.length * 100) : 0;
+    document.getElementById('ts-score').textContent = pct + '%';
+    document.getElementById('ts-correct-count').textContent = tsCorrect;
+    document.getElementById('ts-incorrect-count').textContent = tsIncorrect;
+    document.getElementById('ts-progress-fill').style.width = '100%';
+    if (typeof lucide !== 'undefined') lucide.createIcons();
+    return;
+  }
+  qArea.style.display = '';
+  results.classList.add('hidden'); results.style.display = 'none';
+  fb.classList.add('hidden');
+  const c = studyQueue[studyIdx];
+  document.getElementById('ts-question').textContent = c.card_front;
+  tsCurrentAnswer = c.card_back;
+  document.getElementById('ts-progress').textContent = `${studyIdx+1}/${studyQueue.length}`;
+  document.getElementById('ts-progress-fill').style.width = `${(studyIdx/studyQueue.length)*100}%`;
+  if (Math.random() > 0.4 && getRealCards().length >= 4) {
+    choices.classList.remove('hidden');
+    typeArea.classList.add('hidden');
+    const options = [c.card_back];
+    const others = getRealCards().filter(x => x.__id !== c.__id && x.deck_id === currentDeckId).map(x => x.card_back).filter(Boolean);
+    while (options.length < 4 && others.length > 0) {
+      const idx = Math.floor(Math.random() * others.length);
+      if (!options.includes(others[idx])) options.push(others[idx]);
+      others.splice(idx, 1);
+    }
+    for (let i = options.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [options[i], options[j]] = [options[j], options[i]];
+    }
+    choices.innerHTML = options.map(o => `<button onclick="tsChoose('${o.replace(/'/g, "\\'").replace(/"/g, '&quot;')}')" class="choice-btn">${o}</button>`).join('');
+  } else {
+    choices.classList.add('hidden');
+    typeArea.classList.remove('hidden');
+    document.getElementById('ts-type-input').value = '';
+    setTimeout(() => document.getElementById('ts-type-input').focus(), 100);
+  }
+  if (typeof lucide !== 'undefined') lucide.createIcons();
+}
+function tsChoose(answer) { const c = answer === tsCurrentAnswer; if (c) tsCorrect++; else tsIncorrect++; tsShowFeedback(c); }
+function tsSubmitTyped() {
+  const val = document.getElementById('ts-type-input').value.trim().toLowerCase();
+  const c = val === tsCurrentAnswer.toLowerCase();
+  if (c) tsCorrect++; else tsIncorrect++;
+  tsShowFeedback(c);
+}
+function tsShowFeedback(correct) {
+  document.getElementById('ts-choices').classList.add('hidden');
+  document.getElementById('ts-type-area').classList.add('hidden');
+  const fb = document.getElementById('ts-feedback');
+  fb.classList.remove('hidden');
+  fb.style.background = correct ? 'var(--card-green)' : 'var(--card-peach)';
+  document.getElementById('ts-feedback-text').textContent = correct ? '✅ Correct!' : '❌ Incorrect';
+  document.getElementById('ts-feedback-text').style.color = correct ? '#059669' : '#dc2626';
+  document.getElementById('ts-correct-answer').textContent = correct ? '' : 'Answer: ' + tsCurrentAnswer;
+  const c = studyQueue[studyIdx];
+  const updated = applySRS(c, correct ? 2 : 0);
+  const idx = allCards.findIndex(x => x.__id === updated.__id);
+  if (idx !== -1) allCards[idx] = updated;
+  else allCards.push(updated);
+  saveUserData(currentUser);
+  addStudyTime(0.5);
+  updateHome();
+  if (typeof lucide !== 'undefined') lucide.createIcons();
+}
+function tsNext() { studyIdx++; tsShowQuestion(); }
+
+// ============================================================
+//  EXIT STUDY
+// ============================================================
+function exitStudy() {
+  studyQueue = [];
+  studyIdx = 0;
+  fcFlipped = false;
+  // Reset Learn
+  const lnAnswerBox = document.getElementById('ln-answer-box');
+  const lnShowBtn = document.getElementById('ln-show-btn');
+  const lnGradeBtns = document.getElementById('ln-grade-btns');
+  const lnDone = document.getElementById('ln-done');
+  const lnProgressFill = document.getElementById('ln-progress-fill');
+  const lnProgress = document.getElementById('ln-progress');
+  if (lnAnswerBox) lnAnswerBox.classList.add('hidden');
+  if (lnShowBtn) lnShowBtn.style.display = '';
+  if (lnGradeBtns) lnGradeBtns.classList.add('hidden');
+  if (lnDone) { lnDone.classList.add('hidden'); lnDone.style.display = 'none'; }
+  if (lnProgressFill) lnProgressFill.style.width = '0%';
+  if (lnProgress) lnProgress.textContent = '0/0';
+  // Reset Test
+  const tsResults = document.getElementById('ts-results');
+  const tsQuestionArea = document.getElementById('ts-question-area');
+  const tsProgressFill = document.getElementById('ts-progress-fill');
+  const tsProgress = document.getElementById('ts-progress');
+  if (tsResults) { tsResults.classList.add('hidden'); tsResults.style.display = 'none'; }
+  if (tsQuestionArea) tsQuestionArea.style.display = '';
+  if (tsProgressFill) tsProgressFill.style.width = '0%';
+  if (tsProgress) tsProgress.textContent = '0/0';
+  // Reset Study Select
+  const studySelect = document.getElementById('view-study-select');
+  if (studySelect) { studySelect.classList.remove('active'); studySelect.style.display = 'none'; }
+  // Reset Flashcards
+  const btns = document.getElementById('fc-buttons');
+  const done = document.getElementById('fc-done');
+  const card = document.getElementById('fc-card');
+  const hint = document.querySelector('.swipe-hint');
+  const fcProgress = document.getElementById('fc-progress');
+  const fcProgressFill = document.getElementById('fc-progress-fill');
+  if (btns) { btns.classList.add('hidden'); btns.style.display = 'none'; }
+  if (done) { done.classList.add('hidden'); done.style.display = 'none'; }
+  if (card) { card.style.display = ''; card.classList.remove('flipped'); }
+  if (hint) hint.style.display = '';
+  if (fcProgress) fcProgress.textContent = '0/0';
+  if (fcProgressFill) fcProgressFill.style.width = '0%';
+  // Hide all study views
+  ['view-flashcards','view-learn','view-test'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) { el.classList.remove('active'); el.style.display = 'none'; }
+  });
+  // Show Decks view
+  const decksView = document.getElementById('view-decks');
+  if (decksView) { decksView.classList.add('active'); decksView.style.display = 'flex'; }
+  document.querySelectorAll('.nav-item').forEach(b => {
+    b.classList.toggle('active', b.dataset.tab === 'decks');
+  });
+  currentTab = 'decks';
+  renderDecks();
+  if (typeof lucide !== 'undefined') lucide.createIcons();
+  if (navTimeout) { clearTimeout(navTimeout); navTimeout = null; }
+}
+
+// ============================================================
+//  STATS RENDERING
+// ============================================================
+function renderStats() {
+  // Simplified but functional – you can expand with your full version
+  const real = getRealCards();
+  const total = real.reduce((s,c) => s + (c.total_reviews||0), 0);
+  const correct = real.reduce((s,c) => s + (c.correct_count||0), 0);
+  const acc = total > 0 ? Math.round(correct/total*100) : 0;
+  const mastered = real.filter(c => (c.interval||0) >= 21).length;
+  const streak = getStreak();
+  document.getElementById('stats-streak-val').textContent = streak + ' days';
+  document.getElementById('stats-acc').textContent = acc + '%';
+  document.getElementById('stats-total').textContent = total;
+  document.getElementById('stats-mastered-val').textContent = mastered;
+  loadDailyGoal();
+  renderProgressChart();
+  renderDeckPerformance();
+  renderRetentionRate();
+  renderAvgCards();
+  renderSubjectBreakdown();
+  renderHeatmap();
+}
+function renderProgressChart() {
+  const days = progressPeriod === 'week' ? 7 : progressPeriod === 'month' ? getDaysInMonth() : 60;
+  const dates = getDateRangeForPeriod(days);
+  const counts = dates.map(d => getTotalReviewsForDate(d));
+  const maxCount = Math.max(...counts, 1);
+  const container = document.getElementById('progress-chart');
+  if (!container) return;
+  container.className = 'flex items-end gap-1';
+  container.style.minHeight = '80px';
+  container.style.width = '100%';
+  container.style.padding = '4px 8px 4px 4px';
+  container.style.flexWrap = 'nowrap';
+  if (days > 14) container.classList.add('month');
+  if (days > 40) container.classList.add('all');
+  let labelStep = 1;
+  if (days === 30) labelStep = 5;
+  if (days === 60) labelStep = 10;
+  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const getWeekLabels = () => {
+    const todayDate = new Date();
+    const dayOfWeek = todayDate.getDay();
+    const mondayOffset = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
+    const startOfWeek = new Date(todayDate);
+    startOfWeek.setDate(todayDate.getDate() - mondayOffset);
+    const dayNames = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+    const labels = [];
+    for (let i=0; i<7; i++) {
+      const d = new Date(startOfWeek);
+      d.setDate(d.getDate() + i);
+      labels.push({ label: dayNames[i], date: d.toISOString().split('T')[0] });
+    }
+    return labels;
+  };
+  const barCount = dates.length;
+  const containerWidth = container.parentElement?.offsetWidth || 320;
+  const gapTotal = (barCount - 1) * 3;
+  const availableWidth = containerWidth - 16 - gapTotal;
+  let barWidth = Math.max(Math.min(availableWidth / barCount, 30), 6);
+  if (days > 14) barWidth = Math.min(barWidth, 14);
+  if (days > 40) barWidth = Math.min(barWidth, 8);
+  container.innerHTML = dates.map((d, i) => {
+    const height = Math.max((counts[i] / maxCount) * 55, 3);
+    const isToday = d === today();
+    const hasValue = counts[i] > 0;
+    const dateObj = new Date(d);
+    const day = dateObj.getDate();
+    const month = months[dateObj.getMonth()];
+    const dayOfWeek = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][dateObj.getDay()];
+    let showLabel = false, labelText = '';
+    if (days === 7) {
+      const weekLabels = getWeekLabels();
+      showLabel = true;
+      labelText = weekLabels[i]?.label || dayOfWeek.substring(0,3);
+    } else {
+      if (i % labelStep === 0 || i === dates.length - 1) {
+        showLabel = true;
+        labelText = `${month} ${day}`;
+      }
+    }
+    const minWidth = Math.max(barWidth, 6);
+    return `<div class="bar-group" style="min-width:${minWidth}px; max-width:${barWidth + 4}px; flex:1;">
+      <span class="bar-value">${counts[i] > 0 ? counts[i] : ''}</span>
+      <div class="bar ${hasValue ? 'filled' : ''} ${isToday ? 'today' : ''}" style="height:${height}px; width:100%; max-width:${barWidth}px;"></div>
+      <span class="bar-label">${showLabel ? labelText : ''}</span>
+    </div>`;
+  }).join('');
+  const totalInPeriod = counts.reduce((a,b) => a+b, 0);
+  const periodLabel = progressPeriod === 'week' ? 'this week' : progressPeriod === 'month' ? 'this month' : 'all time';
+  document.getElementById('progress-total-label').textContent = `${totalInPeriod} cards ${periodLabel}`;
+  const streak = getStreak();
+  const streakMsg = document.getElementById('progress-streak-msg');
+  if (streakMsg) {
+    if (streak >= 30) { streakMsg.textContent = `🔥 ${streak}-day streak! Unstoppable! 🔥`; streakMsg.style.color = 'var(--premium-gold)'; }
+    else if (streak >= 14) { streakMsg.textContent = `🔥 ${streak}-day streak! You're on fire! 🔥`; streakMsg.style.color = 'var(--accent)'; }
+    else if (streak >= 7) { streakMsg.textContent = `🔥 ${streak}-day streak! Amazing! Keep going!`; streakMsg.style.color = 'var(--accent)'; }
+    else if (streak >= 3) { streakMsg.textContent = `🔥 ${streak}-day streak! You're building momentum!`; streakMsg.style.color = 'var(--accent)'; }
+    else if (streak > 0) { streakMsg.textContent = `🔥 ${streak}-day streak! Every day counts!`; streakMsg.style.color = 'var(--accent)'; }
+    else { streakMsg.textContent = '📖 Start your streak today! Study at least one card.'; streakMsg.style.color = 'var(--text-secondary)'; }
+  }
+}
+function renderDeckPerformance() {
+  const perf = getDeckPerformance();
+  const container = document.getElementById('deck-performance-list');
+  if (!container) return;
+  if (perf.length === 0) { container.innerHTML = '<p class="text-xs text-sec">No decks yet.</p>'; return; }
+  container.innerHTML = perf.map(d => {
+    const color = d.accuracy >= 80 ? '#059669' : d.accuracy >= 60 ? '#f59e0b' : '#ef4444';
+    return `<div class="deck-perf-bar">
+      <span class="name" title="${d.name}">${d.name}</span>
+      <div class="bar-track"><div class="bar-fill" style="width:${d.accuracy}%; background:${color};"></div></div>
+      <span class="pct" style="color:${color}">${d.accuracy}%</span>
+    </div>`;
+  }).join('');
+}
+function renderRetentionRate() {
+  const ret = getRetentionRates();
+  document.getElementById('ret-overall').textContent = ret.overall + '%';
+  document.getElementById('ret-7d').textContent = ret.d7 + '%';
+  document.getElementById('ret-14d').textContent = ret.d14 + '%';
+  document.getElementById('ret-30d').textContent = ret.d30 + '%';
+}
+function renderAvgCards() {
+  const avgWeek = getAvgCardsPerDay(7);
+  const avgMonth = getAvgCardsPerDay(30);
+  const bestDay = getBestDay(30);
+  const goal = getDailyGoal();
+  document.getElementById('avg-week').textContent = avgWeek;
+  document.getElementById('avg-month').textContent = avgMonth;
+  document.getElementById('best-day').textContent = bestDay;
+  document.getElementById('avg-goal').textContent = goal;
+}
+function renderSubjectBreakdown() {
+  const subjects = getSubjectBreakdown();
+  const container = document.getElementById('subject-breakdown-list');
+  if (!container) return;
+  const total = Object.values(subjects).reduce((a,b) => a+b, 0);
+  if (total === 0) { container.innerHTML = '<p class="text-xs text-sec">No subjects yet.</p>'; return; }
+  const sorted = Object.entries(subjects).sort((a,b) => b[1]-a[1]);
+  container.innerHTML = sorted.map(([name,count]) => {
+    const pct = Math.round((count/total)*100);
+    return `<div class="subject-item">
+      <span class="name" title="${name}">${name}</span>
+      <div class="bar-track"><div class="bar-fill" style="width:${pct}%;"></div></div>
+      <span class="pct">${pct}%</span>
+    </div>`;
+  }).join('');
+}
+function renderHeatmap() {
+  const container = document.getElementById('heatmap-container');
+  if (!container) return;
+  const weeks = 4, days = ['M','T','W','T','F','S','S'];
+  const todayDate = new Date();
+  const firstDay = new Date(todayDate);
+  firstDay.setDate(firstDay.getDate() - (firstDay.getDay() === 0 ? 6 : firstDay.getDay() - 1));
+  firstDay.setDate(firstDay.getDate() - (weeks - 1) * 7);
+  let html = `<div class="heatmap-grid">`;
+  days.forEach(d => { html += `<div class="day-label">${d}</div>`; });
+  for (let w=0; w<weeks; w++) {
+    for (let d=0; d<7; d++) {
+      const date = new Date(firstDay);
+      date.setDate(date.getDate() + w*7 + d);
+      const dateStr = date.toISOString().split('T')[0];
+      const isToday = dateStr === today();
+      const count = getTotalReviewsForDate(dateStr);
+      let cls = 'heat-cell';
+      if (isToday) cls += ' today';
+      if (count > 0) cls += ' studied';
+      else cls += ' empty';
+      html += `<div class="${cls}" title="${dateStr}: ${count} cards">${count > 0 ? count : ''}</div>`;
+    }
+  }
+  html += `</div>`;
+  container.innerHTML = html;
+}
+
+// ============================================================
+//  SWITCH TAB
+// ============================================================
+function switchTab(tab) {
+  if (currentTab === tab && tab !== 'study-select') return;
+  if (currentTab === 'study-select' && tab !== 'decks' && tab !== 'home') return;
+  currentTab = tab;
+  const allViews = ['home','decks','study-select','flashcards','learn','test','stats','settings','admin-import','admin-cards'];
+  allViews.forEach(v => {
+    const el = document.getElementById('view-'+v);
+    if (el) { el.classList.remove('active'); el.style.display = 'none'; }
+  });
+  const targetView = document.getElementById('view-'+tab);
+  if (targetView) { targetView.classList.add('active'); targetView.style.display = 'flex'; }
+  document.querySelectorAll('.nav-item').forEach(b => {
+    b.classList.toggle('active', b.dataset.tab === tab);
+  });
+  if (tab === 'stats') renderStats();
+  if (tab === 'home') updateHome();
+  if (tab === 'decks') renderDecks();
+  if (typeof lucide !== 'undefined') lucide.createIcons();
+}
+
+// ============================================================
+//  CONTACT ADMIN & EXPORT DATA
+// ============================================================
+function showContactAdmin() {
+  document.getElementById('contact-admin-modal').classList.remove('hidden');
+  document.getElementById('request-topic').value = '';
+  document.getElementById('request-subtopic').value = '';
+  document.getElementById('request-notes').value = '';
+  if (typeof lucide !== 'undefined') lucide.createIcons();
+}
+function closeContactAdmin() {
+  document.getElementById('contact-admin-modal').classList.add('hidden');
+}
+function sendDeckRequest(e) {
+  e.preventDefault();
+  const topic = document.getElementById('request-topic').value.trim();
+  const subtopic = document.getElementById('request-subtopic').value.trim();
+  const notes = document.getElementById('request-notes').value.trim();
+  const requests = JSON.parse(localStorage.getItem('deck_requests') || '[]');
+  requests.push({ id: Date.now(), user: currentUser || 'anonymous', topic, subtopic, notes, date: new Date().toISOString(), status: 'pending' });
+  localStorage.setItem('deck_requests', JSON.stringify(requests));
+  alert('✅ Request sent! We\'ll review it and add new decks soon.');
+  closeContactAdmin();
+}
+function exportData() {
+  const blob = new Blob([JSON.stringify(allCards, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'flashmind-export-' + today() + '.json';
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+// ============================================================
+//  UPGRADE & PAYMENT
+// ============================================================
+function showUpgradeModal() {
+  document.getElementById('upgrade-modal').classList.remove('hidden');
+  document.getElementById('upgrade-code-input').value = '';
+  document.getElementById('upgrade-code-status').textContent = '';
+  document.getElementById('payment-section').classList.add('hidden');
+  hasValidCode = false;
+  selectedPlan = null;
+  document.getElementById('book-buyer-card').style.borderColor = 'var(--border)';
+  document.getElementById('regular-card').style.borderColor = 'var(--border)';
+  const isPremium = isPremiumActive();
+  if (isPremium) {
+    document.getElementById('modal-price-display').textContent = '✅ Premium Active';
+    document.getElementById('modal-price-label').textContent = 'You already have premium!';
+  } else {
+    document.getElementById('modal-price-display').textContent = 'Rp 35.000';
+    document.getElementById('modal-price-label').textContent = 'Book Buyer Price';
+  }
+  const currentPlanLabel = document.getElementById('upgrade-current-plan');
+  if (currentPlanLabel) {
+    currentPlanLabel.textContent = isPremium ? 'Premium ✦' : 'Free';
+    currentPlanLabel.className = isPremium ? 'premium-badge' : 'free-badge';
+  }
+  if (isPremium) {
+    document.getElementById('upgrade-code-status').textContent = '✅ You already have Premium access!';
+    document.getElementById('upgrade-code-status').style.color = '#059669';
+  }
+  if (typeof lucide !== 'undefined') lucide.createIcons();
+}
+function closeUpgradeModal() { document.getElementById('upgrade-modal').classList.add('hidden'); }
+function validateUpgradeCode() {
+  const code = document.getElementById('upgrade-code-input').value.trim().toUpperCase();
+  const status = document.getElementById('upgrade-code-status');
+  if (!code) { status.textContent = 'Please enter an access code.'; status.style.color = '#ef4444'; return; }
+  const codes = getCodes();
+  if (codes[code] && !codes[code].used) {
+    hasValidCode = true;
+    status.textContent = '✅ Valid access code! You get the book buyer discount.';
+    status.style.color = '#059669';
+    document.getElementById('book-buyer-card').style.borderColor = '#d97706';
+    document.getElementById('modal-price-display').textContent = 'Rp 35.000';
+    document.getElementById('modal-price-label').textContent = 'Book Buyer Price (Discounted)';
+    selectPlan('book');
+  } else if (codes[code] && codes[code].used) {
+    hasValidCode = false;
+    status.textContent = '❌ This code has already been used.';
+    status.style.color = '#ef4444';
+  } else {
+    hasValidCode = false;
+    status.textContent = '❌ Invalid access code. You can still upgrade at regular price.';
+    status.style.color = '#ef4444';
+    document.getElementById('modal-price-display').textContent = 'Rp 65.000';
+    document.getElementById('modal-price-label').textContent = 'Regular Price';
+  }
+}
+function selectPlan(type) {
+  if (isPremiumActive()) { alert('You already have Premium access!'); return; }
+  selectedPlan = type;
+  document.getElementById('payment-section').classList.remove('hidden');
+  document.getElementById('book-buyer-card').style.borderColor = type === 'book' ? '#d97706' : 'var(--border)';
+  document.getElementById('regular-card').style.borderColor = type === 'regular' ? '#d97706' : 'var(--border)';
+  const price = type === 'book' ? PRICING.book.price : PRICING.regular.price;
+  const label = type === 'book' ? 'Book Buyer' : 'Regular';
+  document.getElementById('pay-now-btn').textContent = `Pay Rp ${price.toLocaleString()} (${label})`;
+  document.getElementById('modal-price-display').textContent = `Rp ${price.toLocaleString()}`;
+  document.getElementById('modal-price-label').textContent = type === 'book' ? 'Book Buyer Price' : 'Regular Price';
+}
+function selectPayment(method) {
+  document.querySelectorAll('.payment-option').forEach(el => el.classList.remove('selected'));
+  event.currentTarget.classList.add('selected');
+}
+function processPayment() {
+  if (!selectedPlan) return alert('Please select a plan first.');
+  if (isPremiumActive()) { alert('You already have Premium access!'); closeUpgradeModal(); return; }
+  const price = selectedPlan === 'book' ? PRICING.book.price : PRICING.regular.price;
+  const label = selectedPlan === 'book' ? 'Book Buyer' : 'Regular';
+  const btn = document.getElementById('pay-now-btn');
+  btn.textContent = 'Processing...';
+  btn.disabled = true;
+  setTimeout(() => {
+    const expiry = addMonths(new Date(), PLAN_DURATION_MONTHS).toISOString();
+    savePlan(currentUser, 'premium', expiry);
+    if (selectedPlan === 'book' && hasValidCode) {
+      const code = document.getElementById('upgrade-code-input').value.trim().toUpperCase();
+      const codes = getCodes();
+      if (codes[code]) { codes[code].used = true; codes[code].usedBy = currentUser; codes[code].usedAt = new Date().toISOString(); saveCodes(codes); }
+    }
+    userPlan = 'premium';
+    updatePlanUI();
+    updateHome();
+    renderDecks();
+    closeUpgradeModal();
+    btn.textContent = `Pay Rp ${price.toLocaleString()} (${label})`;
+    btn.disabled = false;
+    alert(`🎉 Premium unlocked! You have access for ${PLAN_DURATION_MONTHS} months.`);
+  }, 1500);
+}
+
+// ============================================================
+//  KEYBOARD SHORTCUTS
+// ============================================================
+document.addEventListener('keydown', (e) => {
+  if (document.getElementById('view-flashcards').classList.contains('active')) {
+    if (!document.getElementById('fc-buttons').classList.contains('hidden')) {
+      if (e.key === '1') fcRate(0);
+      else if (e.key === '2') fcRate(1);
+      else if (e.key === '3') fcRate(2);
+      else if (e.key === '4') fcRate(3);
+    }
+    if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); fcFlip(); }
+  }
+  if (document.getElementById('view-learn').classList.contains('active')) {
+    if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); if (document.getElementById('ln-show-btn').style.display !== 'none') lnShowAnswer(); }
+    if (!document.getElementById('ln-grade-btns').classList.contains('hidden')) {
+      if (e.key === '1') lnGrade(false);
+      else if (e.key === '2') lnGrade(true);
+    }
+  }
+  if (document.getElementById('view-test').classList.contains('active')) {
+    if (e.key === 'Enter' && !document.getElementById('ts-type-area').classList.contains('hidden')) { e.preventDefault(); tsSubmitTyped(); }
+  }
+  if (e.key === 'Escape') { closeUpgradeModal(); closeContactAdmin(); }
+});
+
+// ============================================================
+//  PROGRESS TOGGLE
+// ============================================================
+document.addEventListener('DOMContentLoaded', function() {
+  const toggle = document.getElementById('progress-toggle');
+  if (toggle) {
+    toggle.addEventListener('click', function(e) {
+      const btn = e.target.closest('button');
+      if (!btn || !btn.dataset.period) return;
+      document.querySelectorAll('#progress-toggle button').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      progressPeriod = btn.dataset.period;
+      renderStats();
     });
   }
+});
 
-  if (typeof lucide !== 'undefined' && lucide.createIcons) {
-    lucide.createIcons();
-  }
+// ============================================================
+//  INIT
+// ============================================================
+if (localStorage.getItem('flashmind_theme') === 'dark') document.documentElement.classList.add('dark');
 
-  console.log('🚀 FlashMind · Pharmacy Study App (Optimized & Error-Free)');
-  console.log('📊 Plan:', userPlan);
-  console.log('👑 Admin:', isAdmin);
-  console.log('📚 Cards:', getRealCards().length, 'Decks:', getDecks().length);
-  console.log('☁️ Firebase: Connected & Syncing');
-  console.log('📝 Admin email: adm.pharmacore@gmail.com');
+const logged = checkSession();
+if (!logged) {
+  document.getElementById('view-login').classList.add('active');
+  document.getElementById('view-login').style.display = 'flex';
+} else {
+  enterApp();
+}
+
+document.querySelectorAll('.nav-item').forEach(btn => {
+  btn.removeEventListener('click', navClickHandler);
+  btn.addEventListener('click', navClickHandler);
+});
+
+// Drag and drop for Excel upload
+const uploadZone = document.getElementById('upload-zone');
+if (uploadZone) {
+  uploadZone.addEventListener('dragover', (e) => { e.preventDefault(); uploadZone.classList.add('dragover'); });
+  uploadZone.addEventListener('dragleave', () => { uploadZone.classList.remove('dragover'); });
+  uploadZone.addEventListener('drop', (e) => {
+    e.preventDefault();
+    uploadZone.classList.remove('dragover');
+    const file = e.dataTransfer.files[0];
+    if (file && (file.name.endsWith('.xlsx') || file.name.endsWith('.xls'))) {
+      const event = { target: { files: [file] } };
+      handleExcelImport(event);
+    } else {
+      alert('Please upload an Excel file (.xlsx or .xls)');
+    }
+  });
+}
+
+if (typeof lucide !== 'undefined') lucide.createIcons();
+
+console.log('🚀 FlashMind · Pharmacy Study App (All functions included)');
 </script>
 
 </body>
