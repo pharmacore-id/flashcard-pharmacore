@@ -95,28 +95,31 @@
     
     /* ===== VIEWS - PROPER STACKING ===== */
     .view {
-      display: none;
-      flex-direction: column;
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 68px;
-      padding: 1.25rem 1.25rem 0.5rem;
-      background: var(--bg);
-      opacity: 0;
-      pointer-events: none;
-      transition: opacity 0.15s ease;
-      z-index: 1;
-      overflow: hidden;
-      will-change: opacity;
-    }
-    .view.active {
-      display: flex !important;
-      opacity: 1;
-      pointer-events: all;
-      z-index: 2;
-    }
+  display: none;
+  flex-direction: column;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 68px;
+  padding: 1.25rem 1.25rem 0.5rem;
+  background: var(--bg);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.15s ease;
+  z-index: 1;
+  overflow-y: auto;           /* ← scrollable vertically */
+  -webkit-overflow-scrolling: touch;
+  will-change: opacity, transform;
+}
+
+.view.active {
+  display: flex !important;
+  opacity: 1;
+  pointer-events: all;
+  z-index: 2;
+  overflow-y: auto;           /* ← ensure scrolling when active */
+}
     
     .view-scroll {
       flex: 1;
