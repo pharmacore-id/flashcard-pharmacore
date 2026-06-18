@@ -1583,6 +1583,22 @@ Science       | Biology       | What is DNA?             | Deoxyribonucleic acid
   let resetEmail = '';
   let selectedCardIds = [];
 
+  /** Toggle dark mode and update the toggle button dot */
+function toggleTheme() {
+  document.documentElement.classList.toggle('dark');
+  localStorage.setItem('flashmind_theme', document.documentElement.classList.contains('dark') ? 'dark' : 'light');
+  updateThemeToggle();
+}
+
+/** Update the position of the dark mode toggle dot */
+function updateThemeToggle() {
+  const dark = document.documentElement.classList.contains('dark');
+  const dot = document.getElementById('theme-toggle-dot');
+  if (dot) {
+    dot.style.transform = dark ? 'translateX(20px)' : 'translateX(0)';
+  }
+}
+  
   // ============================================================
   //  PASSWORD TOGGLE
   // ============================================================
