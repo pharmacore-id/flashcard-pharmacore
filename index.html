@@ -92,6 +92,7 @@
     .accent-text { color: var(--accent); }
     .shadow-card { box-shadow: var(--shadow); }
     
+    /* View styles */
     .view {
       display: none;
       flex-direction: column;
@@ -102,9 +103,10 @@
       transition: opacity 0.15s ease;
       opacity: 0;
       pointer-events: none;
+      background: var(--bg);
     }
     .view.active {
-      display: flex;
+      display: flex !important;
       opacity: 1;
       pointer-events: all;
       animation: fade 0.15s ease;
@@ -152,6 +154,7 @@
     .nav-item.active { color: var(--accent); }
     .nav-item i { width: 24px; height: 24px; }
     
+    /* Flashcard styles */
     .flip-card {
       perspective: 1000px;
       width: 100%;
@@ -195,6 +198,7 @@
       transition: width 0.3s;
     }
     
+    /* Mode buttons */
     .mode-btn {
       display: flex;
       align-items: center;
@@ -224,6 +228,7 @@
     .mode-btn .icon-wrap.green { background: #059669; color: #fff; }
     .mode-btn .icon-wrap.blue { background: #2563eb; color: #fff; }
     
+    /* Deck item */
     .deck-item {
       padding: 1rem 1.25rem;
       border-radius: var(--radius);
@@ -235,28 +240,7 @@
     }
     .deck-item:hover { transform: scale(0.99); }
     
-    .hero-number {
-      font-size: 4.5rem;
-      font-weight: 800;
-      line-height: 1;
-    }
-    
-    .choice-btn {
-      width: 100%;
-      padding: 0.9rem 1.25rem;
-      border-radius: 1.25rem;
-      border: 1px solid var(--border);
-      background: var(--surface);
-      text-align: left;
-      font-weight: 500;
-      transition: 0.12s;
-      color: var(--text);
-      cursor: pointer;
-    }
-    .choice-btn:active { transform: scale(0.96); }
-    .choice-btn.correct { background: #d1fae5; border-color: #059669; }
-    .choice-btn.wrong { background: #fee2e2; border-color: #dc2626; }
-    
+    /* Auth */
     .auth-card {
       background: var(--surface);
       border-radius: var(--radius);
@@ -281,7 +265,6 @@
       outline: 2px solid var(--accent);
       outline-offset: 2px;
     }
-    
     .password-wrapper {
       position: relative;
     }
@@ -311,9 +294,10 @@
     .btn-block:active { transform: scale(0.96); }
     .btn-block:disabled { opacity: 0.5; cursor: not-allowed; }
     
-    /* Topic Header */
+    /* Topic header */
     .topic-header {
       transition: background 0.15s ease;
+      cursor: pointer;
     }
     .topic-header:hover {
       background: var(--accent-light);
@@ -719,7 +703,7 @@
       background: var(--accent-light);
     }
     
-    /* Dark mode fixes for import page */
+    /* Dark mode fixes */
     .dark .upload-zone {
       border-color: var(--border);
       background: var(--surface);
@@ -773,6 +757,7 @@
       text-transform: none;
     }
     
+    /* Pricing */
     .pricing-card {
       border-radius: var(--radius);
       padding: 1.25rem;
@@ -1055,16 +1040,17 @@
       padding: 0.25rem 0;
     }
     
-    /* Bulk delete checkbox styles */
+    /* Select All */
     .select-all-container {
       display: flex;
       align-items: center;
       gap: 0.5rem;
-      padding: 0.5rem;
+      padding: 0.5rem 0.75rem;
       border-radius: 0.75rem;
       background: var(--bg);
       border: 1px solid var(--border);
       margin-bottom: 0.5rem;
+      flex-shrink: 0;
     }
     .select-all-container input[type="checkbox"] {
       width: 18px;
@@ -1083,13 +1069,8 @@
       cursor: pointer;
       transition: 0.15s;
     }
-    .select-all-container .delete-selected-btn:hover {
-      opacity: 0.8;
-    }
-    .select-all-container .delete-selected-btn:disabled {
-      opacity: 0.5;
-      cursor: not-allowed;
-    }
+    .select-all-container .delete-selected-btn:hover { opacity: 0.8; }
+    .select-all-container .delete-selected-btn:disabled { opacity: 0.5; cursor: not-allowed; }
     .card-checkbox {
       width: 16px;
       height: 16px;
@@ -1354,12 +1335,20 @@ Science       | Biology       | What is DNA?             | Deoxyribonucleic acid
     <!-- ===== ADMIN MANAGE CARDS VIEW ===== -->
     <div id="view-admin-cards" class="view">
       <div class="flex items-center gap-3 mb-4">
-        <button onclick="switchTab('decks')" class="text-sec"><i data-lucide="arrow-left" class="w-6 h-6"></i></button>
+        <button onclick="switchTab('decks')" class="text-sec hover:text-text transition-colors">
+          <i data-lucide="arrow-left" class="w-6 h-6"></i>
+        </button>
         <h2 id="manage-deck-name" class="text-xl font-bold flex-1 truncate">Manage Cards</h2>
         <div class="flex gap-2">
-          <button onclick="showAddCardToDeck()" class="accent-bg text-white w-10 h-10 rounded-full flex items-center justify-center shadow-md"><i data-lucide="plus" class="w-5 h-5"></i></button>
-          <button id="manage-import-btn" onclick="document.getElementById('manage-excel-file').click()" class="accent-bg text-white w-10 h-10 rounded-full flex items-center justify-center shadow-md"><i data-lucide="upload" class="w-5 h-5"></i></button>
-          <button onclick="bulkDeleteCards()" id="bulk-delete-cards-btn" class="bg-red-500 text-white w-10 h-10 rounded-full flex items-center justify-center shadow-md hover:opacity-80 transition-opacity hidden"><i data-lucide="trash-2" class="w-5 h-5"></i></button>
+          <button onclick="showAddCardToDeck()" class="accent-bg text-white w-10 h-10 rounded-full flex items-center justify-center shadow-md">
+            <i data-lucide="plus" class="w-5 h-5"></i>
+          </button>
+          <button id="manage-import-btn" onclick="document.getElementById('manage-excel-file').click()" class="accent-bg text-white w-10 h-10 rounded-full flex items-center justify-center shadow-md">
+            <i data-lucide="upload" class="w-5 h-5"></i>
+          </button>
+          <button onclick="bulkDeleteCards()" id="bulk-delete-cards-btn" class="bg-red-500 text-white w-10 h-10 rounded-full flex items-center justify-center shadow-md hover:opacity-80 transition-opacity hidden">
+            <i data-lucide="trash-2" class="w-5 h-5"></i>
+          </button>
         </div>
         <input type="file" id="manage-excel-file" accept=".xlsx,.xls" class="hidden" onchange="importExcelToDeck(event)" />
       </div>
@@ -2325,7 +2314,7 @@ Science       | Biology       | What is DNA?             | Deoxyribonucleic acid
         { name: 'Clinical Pharmacy', subtopics: ['Drug Interactions', 'Dosage Calculations', 'Therapeutics'] },
         { name: 'Science', subtopics: ['Biology', 'Chemistry', 'Physics'] },
         { name: 'Languages', subtopics: ['Spanish', 'French', 'German'] },
-        { name: 'History', subtopics: ['World History', 'US History', 'Ancient Civilizations'] }
+        { name: 'History', subtopics: ['World History', 'US History'] }
       ];
       let deckId = 1;
       topics.forEach(topic => {
@@ -2356,37 +2345,33 @@ Science       | Biology       | What is DNA?             | Deoxyribonucleic acid
       return decks;
     }
 
-   function getRealCards() {
-  const cards = allCards.filter(c => c.card_front && c.card_front !== '__deck_placeholder__');
-  console.log('🔍 getRealCards: found', cards.length, 'cards');
-  if (cards.length > 0) {
-    console.log('📝 First card:', cards[0].card_front);
-  }
-  return cards;
-}
+    function getRealCards() {
+      const cards = allCards.filter(c => c.card_front && c.card_front !== '__deck_placeholder__' && c.card_front.trim() !== '');
+      console.log('🔍 getRealCards: found', cards.length, 'cards');
+      return cards;
+    }
+
     function getDecks() {
-  const map = {};
-  allCards.forEach(c => {
-    if (!map[c.deck_id]) {
-      map[c.deck_id] = { 
-        id: c.deck_id, 
-        name: c.deck_name || 'Untitled', 
-        cards: [], 
-        topic: c.topic || 'General',
-        subtopic: c.subtopic || '' 
-      };
+      const map = {};
+      allCards.forEach(c => {
+        if (!c.deck_id) return;
+        if (!map[c.deck_id]) {
+          map[c.deck_id] = { 
+            id: c.deck_id, 
+            name: c.deck_name || 'Untitled', 
+            cards: [], 
+            topic: c.topic || 'General',
+            subtopic: c.subtopic || '' 
+          };
+        }
+        if (c.card_front !== '__deck_placeholder__' && c.card_front && c.card_front.trim() !== '') {
+          map[c.deck_id].cards.push(c);
+        }
+      });
+      const result = Object.values(map);
+      console.log('📚 getDecks: found', result.length, 'decks');
+      return result;
     }
-    if (c.card_front !== '__deck_placeholder__') {
-      map[c.deck_id].cards.push(c);
-    }
-  });
-  const result = Object.values(map);
-  console.log('📚 getDecks: found', result.length, 'decks');
-  result.forEach(d => {
-    console.log('  -', d.name, ':', d.cards.length, 'cards');
-  });
-  return result;
-}
 
     function getDueCards(deckId) {
       const now = today();
@@ -2522,6 +2507,8 @@ Science       | Biology       | What is DNA?             | Deoxyribonucleic acid
           err.textContent = 'Invalid email address.';
         } else if (error.code === 'auth/too-many-requests') {
           err.textContent = 'Too many failed attempts. Please try again later.';
+        } else if (error.code === 'auth/invalid-credential') {
+          err.textContent = 'Invalid credentials. Please check your email and password.';
         } else {
           err.textContent = 'Login failed: ' + error.message;
         }
@@ -2925,7 +2912,6 @@ Science       | Biology       | What is DNA?             | Deoxyribonucleic acid
 
       let html = '';
       let deckCount = 0;
-      let topicCount = 0;
 
       sortedTopics.forEach((topic, topicIndex) => {
         const subtopics = topicMap[topic];
@@ -2998,7 +2984,6 @@ Science       | Biology       | What is DNA?             | Deoxyribonucleic acid
             </div>
           </div>
         `;
-        topicCount++;
       });
 
       container.innerHTML = html;
@@ -3057,38 +3042,79 @@ Science       | Biology       | What is DNA?             | Deoxyribonucleic acid
     //  ADMIN FUNCTIONS - MANAGE CARDS (with Bulk Delete)
     // ============================================================
     function showManageCards(deckId) {
-      if (!isAdmin) return;
+      console.log('📋 Opening Manage Cards for deck:', deckId);
+
+      if (!isAdmin) {
+        alert('Only admins can manage cards.');
+        return;
+      }
+
       manageDeckId = deckId;
       const deck = allCards.find(c => c.deck_id === deckId && c.card_front === '__deck_placeholder__');
-      document.getElementById('manage-deck-name').textContent = deck ? deck.deck_name : 'Manage Cards';
-
-      // Show bulk delete button
-      document.getElementById('bulk-delete-cards-btn').classList.remove('hidden');
+      const deckName = deck ? deck.deck_name : 'Manage Cards';
+      document.getElementById('manage-deck-name').textContent = deckName;
 
       // Reset selections
       selectedCardIds = [];
-      document.getElementById('select-all-cards').checked = false;
-      document.getElementById('delete-selected-cards-btn').disabled = true;
-      document.getElementById('selected-cards-count').textContent = '0 selected';
+      const selectAll = document.getElementById('select-all-cards');
+      if (selectAll) selectAll.checked = false;
+      const deleteBtn = document.getElementById('delete-selected-cards-btn');
+      if (deleteBtn) deleteBtn.disabled = true;
+      const countLabel = document.getElementById('selected-cards-count');
+      if (countLabel) countLabel.textContent = '0 selected';
 
-      document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
-      document.getElementById('view-admin-cards').classList.add('active');
+      // Show bulk delete button
+      const bulkBtn = document.getElementById('bulk-delete-cards-btn');
+      if (bulkBtn) bulkBtn.classList.remove('hidden');
+
+      // HIDE ALL VIEWS first
+      document.querySelectorAll('.view').forEach(v => {
+        v.classList.remove('active');
+        v.style.display = 'none';
+      });
+
+      // Show admin cards view
+      const adminCardsView = document.getElementById('view-admin-cards');
+      if (adminCardsView) {
+        adminCardsView.classList.add('active');
+        adminCardsView.style.display = 'flex';
+        adminCardsView.style.opacity = '1';
+        adminCardsView.style.pointerEvents = 'all';
+      }
+
+      // Reset currentTab
+      currentTab = 'admin-cards';
+
+      // Render cards
       renderManageCards();
+
       if (typeof lucide !== 'undefined' && lucide.createIcons) {
         lucide.createIcons();
       }
     }
 
     function renderManageCards() {
-      const container = document.getElementById('manage-cards-list');
-      const cards = allCards.filter(c => c.deck_id === manageDeckId && c.card_front !== '__deck_placeholder__');
+      console.log('📋 Rendering manage cards for deck:', manageDeckId);
 
-      if (cards.length === 0) {
-        container.innerHTML = '<p class="text-sec text-center py-10">No cards in this deck.</p>';
+      const container = document.getElementById('manage-cards-list');
+      if (!container) {
+        console.error('❌ manage-cards-list not found');
         return;
       }
 
-      // Reset selected IDs for rendering
+      const cards = allCards.filter(c => c.deck_id === manageDeckId && c.card_front !== '__deck_placeholder__');
+      console.log('📚 Found', cards.length, 'cards in this deck');
+
+      if (cards.length === 0) {
+        container.innerHTML = `
+          <div class="text-center py-10">
+            <p class="text-sec text-sm">No cards in this deck.</p>
+            <button onclick="showAddCardToDeck()" class="mt-3 accent-bg text-white px-4 py-2 rounded-xl text-sm font-medium">Add First Card</button>
+          </div>
+        `;
+        return;
+      }
+
       selectedCardIds = [];
 
       container.innerHTML = cards.map((c, i) => `
@@ -3151,7 +3177,6 @@ Science       | Biology       | What is DNA?             | Deoxyribonucleic acid
       document.getElementById('selected-cards-count').textContent = count + ' selected';
       document.getElementById('delete-selected-cards-btn').disabled = count === 0;
 
-      // Update select all checkbox
       const totalCheckboxes = document.querySelectorAll('.card-checkbox').length;
       const checkedCheckboxes = document.querySelectorAll('.card-checkbox:checked').length;
       document.getElementById('select-all-cards').checked = totalCheckboxes > 0 && checkedCheckboxes === totalCheckboxes;
@@ -3647,136 +3672,144 @@ Science       | Biology       | What is DNA?             | Deoxyribonucleic acid
     }
 
     // ============================================================
-    //  FLASHCARDS MODE - COMPLETE FIX
+    //  FLASHCARDS MODE - FIXED
     // ============================================================
-   function startFlashcards() {
-  console.log('🃏 Starting flashcards for deck:', currentDeckId);
-  console.log('📊 allCards length:', allCards.length);
-  console.log('📊 allCards sample:', allCards.slice(0, 3));
-  
-  // Get all real cards from the current deck
-  const allCardsInDeck = getRealCards().filter(c => c.deck_id === currentDeckId);
-  console.log('📚 All cards in deck:', allCardsInDeck.length);
-  
-  if (allCardsInDeck.length === 0) {
-    // Try to find if there's any card with this deck_id
-    const anyCard = allCards.find(c => c.deck_id === currentDeckId);
-    console.log('🔍 Any card with this deck_id?', anyCard);
-    alert('❌ No cards in this deck. Please add some cards first.');
-    return;
-  }
-  
-  // Get due cards first, if none, use all cards
-  const dueCards = getDueCards(currentDeckId);
-  console.log('📅 Due cards:', dueCards.length);
-  
-  studyQueue = dueCards.length > 0 ? dueCards : allCardsInDeck;
-  console.log('📖 Study queue:', studyQueue.length);
-  
-  if (studyQueue.length > 0) {
-    console.log('📝 First card in queue:', studyQueue[0]);
-  }
-  
-  // Shuffle for variety
-  for (let i = studyQueue.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [studyQueue[i], studyQueue[j]] = [studyQueue[j], studyQueue[i]];
-  }
-  
-  studyIdx = 0;
-  fcFlipped = false;
-  
-  // Show the flashcards view
-  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
-  document.getElementById('view-flashcards').classList.add('active');
-  fcShowCard();
-}
+    function startFlashcards() {
+      console.log('🃏 STARTING FLASHCARDS');
+      console.log('📍 currentDeckId:', currentDeckId);
 
-   function fcShowCard() {
-  console.log('🔄 fcShowCard called, studyQueue length:', studyQueue ? studyQueue.length : 0, 'studyIdx:', studyIdx);
-  
-  const card = document.getElementById('fc-card');
-  const done = document.getElementById('fc-done');
-  const btns = document.getElementById('fc-buttons');
-  const hint = document.getElementById('fc-hint');
-  
-  // Ensure back button works
-  const backBtn = done ? done.querySelector('.back-btn') : null;
-  if (backBtn) {
-    backBtn.onclick = function(e) {
-      e.stopPropagation();
-      exitStudy();
-      return false;
-    };
-  }
-  
-  // Ensure X button works
-  const xBtn = document.querySelector('#view-flashcards .flex button');
-  if (xBtn) {
-    xBtn.onclick = function(e) {
-      e.stopPropagation();
-      exitStudy();
-      return false;
-    };
-  }
-  
-  // Check if we're done
-  if (!studyQueue || studyQueue.length === 0 || studyIdx >= studyQueue.length) {
-    console.log('✅ All cards done!');
-    if (card) card.style.display = 'none';
-    if (btns) {
-      btns.classList.add('hidden');
-      btns.style.display = 'none';
+      // Get all real cards from the current deck
+      const allCardsInDeck = getRealCards().filter(c => c.deck_id === currentDeckId);
+      console.log('📚 All cards in deck:', allCardsInDeck.length);
+
+      if (allCardsInDeck.length === 0) {
+        alert('❌ No cards in this deck. Please add some cards first.');
+        return;
+      }
+
+      // Get due cards first, if none, use all cards
+      const dueCards = getDueCards(currentDeckId);
+      console.log('📅 Due cards:', dueCards.length);
+
+      studyQueue = dueCards.length > 0 ? dueCards : allCardsInDeck;
+      console.log('📖 Study queue:', studyQueue.length);
+
+      if (studyQueue.length > 0) {
+        console.log('📝 First card in queue:', studyQueue[0]);
+      }
+
+      // Shuffle
+      for (let i = studyQueue.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [studyQueue[i], studyQueue[j]] = [studyQueue[j], studyQueue[i]];
+      }
+
+      studyIdx = 0;
+      fcFlipped = false;
+
+      // Show flashcards view
+      document.querySelectorAll('.view').forEach(v => {
+        v.classList.remove('active');
+        v.style.display = 'none';
+      });
+
+      const flashcardView = document.getElementById('view-flashcards');
+      if (flashcardView) {
+        flashcardView.classList.add('active');
+        flashcardView.style.display = 'flex';
+        flashcardView.style.opacity = '1';
+        flashcardView.style.pointerEvents = 'all';
+      }
+
+      fcShowCard();
     }
-    if (hint) hint.style.display = 'none';
-    if (done) {
-      done.classList.remove('hidden');
-      done.style.display = 'flex';
+
+    function fcShowCard() {
+      console.log('🔄 fcShowCard: studyQueue length:', studyQueue ? studyQueue.length : 0, 'studyIdx:', studyIdx);
+
+      const card = document.getElementById('fc-card');
+      const done = document.getElementById('fc-done');
+      const btns = document.getElementById('fc-buttons');
+      const hint = document.getElementById('fc-hint');
+
+      // Ensure back button works
+      const backBtn = done ? done.querySelector('.back-btn') : null;
+      if (backBtn) {
+        backBtn.onclick = function(e) {
+          e.stopPropagation();
+          exitStudy();
+          return false;
+        };
+      }
+
+      // Ensure X button works
+      const xBtn = document.querySelector('#view-flashcards .flex button');
+      if (xBtn) {
+        xBtn.onclick = function(e) {
+          e.stopPropagation();
+          exitStudy();
+          return false;
+        };
+      }
+
+      // Check if we're done
+      if (!studyQueue || studyQueue.length === 0 || studyIdx >= studyQueue.length) {
+        console.log('✅ All cards done!');
+        if (card) card.style.display = 'none';
+        if (btns) {
+          btns.classList.add('hidden');
+          btns.style.display = 'none';
+        }
+        if (hint) hint.style.display = 'none';
+        if (done) {
+          done.classList.remove('hidden');
+          done.style.display = 'flex';
+        }
+        document.getElementById('fc-progress').textContent = `${studyQueue ? studyQueue.length : 0}/${studyQueue ? studyQueue.length : 0}`;
+        document.getElementById('fc-progress-fill').style.width = '100%';
+
+        if (typeof lucide !== 'undefined' && lucide.createIcons) {
+          lucide.createIcons();
+        }
+        return;
+      }
+
+      // Show card
+      if (card) {
+        card.style.display = '';
+        card.classList.remove('flipped');
+      }
+      if (done) {
+        done.classList.add('hidden');
+        done.style.display = 'none';
+      }
+      if (btns) {
+        btns.classList.add('hidden');
+        btns.style.display = 'none';
+      }
+      if (hint) hint.style.display = '';
+
+      const c = studyQueue[studyIdx];
+      if (!c) {
+        console.error('❌ Card not found at index', studyIdx);
+        studyIdx++;
+        fcShowCard();
+        return;
+      }
+
+      console.log('📝 Showing card:', c.card_front);
+      document.getElementById('fc-front-text').textContent = c.card_front || 'Empty';
+      document.getElementById('fc-back-text').textContent = c.card_back || 'Empty';
+      fcFlipped = false;
+
+      document.getElementById('fc-progress').textContent = `${studyIdx + 1}/${studyQueue.length}`;
+      document.getElementById('fc-progress-fill').style.width = `${(studyIdx / studyQueue.length) * 100}%`;
+
+      if (typeof lucide !== 'undefined' && lucide.createIcons) {
+        lucide.createIcons();
+      }
     }
-    document.getElementById('fc-progress').textContent = `${studyQueue ? studyQueue.length : 0}/${studyQueue ? studyQueue.length : 0}`;
-    document.getElementById('fc-progress-fill').style.width = '100%';
-    
-    if (typeof lucide !== 'undefined' && lucide.createIcons) {
-      lucide.createIcons();
-    }
-    return;
-  }
-  
-  // Show card
-  if (card) {
-    card.style.display = '';
-    card.classList.remove('flipped');
-  }
-  if (done) {
-    done.classList.add('hidden');
-    done.style.display = 'none';
-  }
-  if (btns) {
-    btns.classList.add('hidden');
-    btns.style.display = 'none';
-  }
-  if (hint) hint.style.display = '';
-  
-  const c = studyQueue[studyIdx];
-  if (!c) {
-    console.error('❌ Card not found at index', studyIdx);
-    studyIdx++;
-    fcShowCard();
-    return;
-  }
-  
-  console.log('📝 Showing card:', c.card_front, '→', c.card_back);
-  document.getElementById('fc-front-text').textContent = c.card_front || 'Empty';
-  document.getElementById('fc-back-text').textContent = c.card_back || 'Empty';
-  fcFlipped = false;
-  
-  document.getElementById('fc-progress').textContent = `${studyIdx + 1}/${studyQueue.length}`;
-  document.getElementById('fc-progress-fill').style.width = `${(studyIdx / studyQueue.length) * 100}%`;
-  
-  if (typeof lucide !== 'undefined' && lucide.createIcons) {
-    lucide.createIcons();
-  }
-}
+
     function fcFlip() {
       if (studyIdx >= studyQueue.length) return;
       if (!fcFlipped) {
@@ -3811,6 +3844,7 @@ Science       | Biology       | What is DNA?             | Deoxyribonucleic acid
     function exitStudy() {
       console.log('🔄 exitStudy called');
 
+      // Reset all state
       studyQueue = [];
       studyIdx = 0;
       fcFlipped = false;
@@ -4408,6 +4442,8 @@ Science       | Biology       | What is DNA?             | Deoxyribonucleic acid
     //  NAVIGATION
     // ============================================================
     function switchTab(tab) {
+      console.log('🔄 switchTab called:', tab);
+
       if (currentTab === tab) return;
       currentTab = tab;
 
@@ -4420,6 +4456,8 @@ Science       | Biology       | What is DNA?             | Deoxyribonucleic acid
         if (el) {
           el.classList.remove('active');
           el.style.display = 'none';
+          el.style.opacity = '0';
+          el.style.pointerEvents = 'none';
         }
       });
 
@@ -4427,6 +4465,8 @@ Science       | Biology       | What is DNA?             | Deoxyribonucleic acid
       if (targetView) {
         targetView.classList.add('active');
         targetView.style.display = 'flex';
+        targetView.style.opacity = '1';
+        targetView.style.pointerEvents = 'all';
       }
 
       document.querySelectorAll('.nav-item').forEach(b => {
@@ -4441,6 +4481,33 @@ Science       | Biology       | What is DNA?             | Deoxyribonucleic acid
         lucide.createIcons();
       }
     }
+
+    function navClickHandler() {
+      if (navTimeout) return;
+      navTimeout = setTimeout(() => {
+        navTimeout = null;
+      }, 300);
+
+      if (document.getElementById('view-flashcards').classList.contains('active')) {
+        if (!confirm('Exit current study session?')) return;
+        exitStudy();
+      }
+      if (document.getElementById('view-learn').classList.contains('active')) {
+        if (!confirm('Exit current study session?')) return;
+        exitStudy();
+      }
+      if (document.getElementById('view-test').classList.contains('active')) {
+        if (!confirm('Exit current study session?')) return;
+        exitStudy();
+      }
+
+      switchTab(this.dataset.tab);
+    }
+
+    document.querySelectorAll('.nav-item').forEach(btn => {
+      btn.removeEventListener('click', navClickHandler);
+      btn.addEventListener('click', navClickHandler);
+    });
 
     // ============================================================
     //  CONTACT ADMIN
@@ -4756,26 +4823,6 @@ Science       | Biology       | What is DNA?             | Deoxyribonucleic acid
       document.getElementById('view-login').classList.add('active');
       document.getElementById('bottom-nav-container').classList.add('hidden');
     }
-
-    function navClickHandler() {
-      if (navTimeout) return;
-      navTimeout = setTimeout(() => {
-        navTimeout = null;
-      }, 300);
-
-      if (document.getElementById('view-study-select').classList.contains('active')) return;
-      if (document.getElementById('view-flashcards').classList.contains('active')) return;
-      if (document.getElementById('view-learn').classList.contains('active')) return;
-      if (document.getElementById('view-test').classList.contains('active')) return;
-      if (document.getElementById('view-admin-import').classList.contains('active')) return;
-      if (document.getElementById('view-admin-cards').classList.contains('active')) return;
-      switchTab(this.dataset.tab);
-    }
-
-    document.querySelectorAll('.nav-item').forEach(btn => {
-      btn.removeEventListener('click', navClickHandler);
-      btn.addEventListener('click', navClickHandler);
-    });
 
     // Drag and drop for Excel upload
     const uploadZone = document.getElementById('upload-zone');
