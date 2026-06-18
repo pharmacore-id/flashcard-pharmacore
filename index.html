@@ -2773,97 +2773,43 @@
     // ============================================================
     //  RENDER DECKS
     // ============================================================
-    function renderDecks() {
-      const decks = getDecks();
-      const container = document.getElementById('deck-list');
-      const no = document.getElementById('no-decks');
-
-      const isPremium = isPremiumActive();
-      const maxFreeDecks = 5;
-      let visibleDecks = decks;
-
-      if (!isPremium && decks.length > maxFreeDecks) {
-        visibleDecks = decks.slice(0, maxFreeDecks);
-        const premiumCount = decks.length - maxFreeDecks;
-        if (premiumCount > 0) {
-          container.innerHTML = visibleDecks.map((d, i) => {
-            const colors = ['card-peach', 'card-green', 'card-blue', 'card-purple'];
-            const due = d.cards.filter(c => !c.next_review || c.next_review <= today()).length;
-            const mastered = d.cards.filter(c => (c.interval || 0) >= 21).length;
-            const pct = d.cards.length > 0 ? Math.round(mastered / d.cards.length * 100) : 0;
-            return `<div class="deck-item ${colors[i % 4]}" onclick="openDeck('${d.id}')">
-                      <div class="flex justify-between items-center">
-                        <h3 class="font-bold truncate">${d.name}</h3>
-                        <div class="flex gap-1" onclick="event.stopPropagation()">
-                          ${isAdmin ? `
-                            <button onclick="showRenameDeck('${d.id}')" class="text-sec p-1 hover:text-accent transition-colors" title="Rename Deck">
-                              <i data-lucide="pencil" class="w-4 h-4"></i>
-                            </button>
-                            <button onclick="showManageCards('${d.id}')" class="text-sec p-1 hover:text-blue-500 transition-colors" title="Manage Cards">
-                              <i data-lucide="list" class="w-4 h-4"></i>
-                            </button>
-                            <button onclick="deleteDeck('${d.id}')" class="text-sec p-1 hover:text-red-500 transition-colors" title="Delete Deck">
-                              <i data-lucide="trash-2" class="w-4 h-4"></i>
-                            </button>
-                          ` : ''}
-                        </div>
-                      </div>
-                      <div class="progress-bar h-1.5 my-1"><div class="progress-fill" style="width:${pct}%"></div></div>
-                      <p class="text-xs text-sec">${d.cards.length} cards · ${due} due · ${pct}% mastered</p>
-                      ${d.subtopic ? `<p class="text-xs text-sec mt-0.5">📂 ${d.subtopic}</p>` : ''}
-                    </div>`;
-          }).join('');
-
-          container.innerHTML += `
-                <div class="rounded-2xl p-4 text-center border-2 border-dashed border-orange-300 dark:border-orange-700 bg-orange-50 dark:bg-orange-900/20 cursor-pointer" onclick="showUpgradeModal()">
-                  <i data-lucide="lock" class="w-8 h-8 mx-auto text-orange-500 mb-2"></i>
-                  <p class="font-semibold text-orange-600 dark:text-orange-400">${premiumCount} more decks locked</p>
-                  <p class="text-xs text-sec">Upgrade to Premium to unlock all decks</p>
-                  <button class="mt-2 accent-bg text-white px-6 py-2 rounded-xl text-sm font-medium">Upgrade Now</button>
-                </div>
-              `;
-          no.classList.add('hidden');
-          if (typeof lucide !== 'undefined' && lucide.createIcons) {
-            lucide.createIcons();
-          }
-          return;
-        }
+   function getSampleDecks() {
+  const decks = [];
+  const topics = [
+    { name: 'Pharmacy Basics', subtopics: ['Introduction', 'Drug Classifications', 'Pharmacology'] },
+    { name: 'Clinical Pharmacy', subtopics: ['Drug Interactions', 'Dosage Calculations', 'Therapeutics'] },
+    { name: 'Science', subtopics: ['Biology', 'Chemistry', 'Physics'] },
+    { name: 'Languages', subtopics: ['Spanish', 'French', 'German'] },
+    { name: 'History', subtopics: ['World History', 'US History', 'Ancient Civilizations'] }
+  ];
+  let deckId = 1;
+  topics.forEach(topic => {
+    topic.subtopics.forEach(subtopic => {
+      const cardCount = 5;
+      for (let i = 0; i < cardCount; i++) {
+        decks.push({
+          __id: 'card_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6),
+          deck_id: 'deck_' + deckId,
+          deck_name: topic.name + ' - ' + subtopic,
+          card_front: `Question ${i+1} about ${subtopic}?`,
+          card_back: `Answer ${i+1} for ${subtopic}`,
+          card_tags: `${topic.name.toLowerCase()},${subtopic.toLowerCase()}`,
+          ease_factor: 2.5,
+          interval: 0,
+          repetitions: 0,
+          next_review: '',
+          last_review: '',
+          total_reviews: 0,
+          correct_count: 0,
+          topic: topic.name,
+          subtopic: subtopic
+        });
       }
-
-      if (decks.length === 0) { container.innerHTML = '';
-        no.classList.remove('hidden'); return }
-      no.classList.add('hidden');
-      const colors = ['card-peach', 'card-green', 'card-blue', 'card-purple'];
-      container.innerHTML = visibleDecks.map((d, i) => {
-        const due = d.cards.filter(c => !c.next_review || c.next_review <= today()).length;
-        const mastered = d.cards.filter(c => (c.interval || 0) >= 21).length;
-        const pct = d.cards.length > 0 ? Math.round(mastered / d.cards.length * 100) : 0;
-        return `<div class="deck-item ${colors[i % 4]}" onclick="openDeck('${d.id}')">
-                <div class="flex justify-between items-center">
-                  <h3 class="font-bold truncate">${d.name}</h3>
-                  <div class="flex gap-1" onclick="event.stopPropagation()">
-                    ${isAdmin ? `
-                      <button onclick="showRenameDeck('${d.id}')" class="text-sec p-1 hover:text-accent transition-colors" title="Rename Deck">
-                        <i data-lucide="pencil" class="w-4 h-4"></i>
-                      </button>
-                      <button onclick="showManageCards('${d.id}')" class="text-sec p-1 hover:text-blue-500 transition-colors" title="Manage Cards">
-                        <i data-lucide="list" class="w-4 h-4"></i>
-                      </button>
-                      <button onclick="deleteDeck('${d.id}')" class="text-sec p-1 hover:text-red-500 transition-colors" title="Delete Deck">
-                        <i data-lucide="trash-2" class="w-4 h-4"></i>
-                      </button>
-                    ` : ''}
-                  </div>
-                </div>
-                <div class="progress-bar h-1.5 my-1"><div class="progress-fill" style="width:${pct}%"></div></div>
-                <p class="text-xs text-sec">${d.cards.length} cards · ${due} due · ${pct}% mastered</p>
-                ${d.subtopic ? `<p class="text-xs text-sec mt-0.5">📂 ${d.subtopic}</p>` : ''}
-              </div>`;
-      }).join('');
-      if (typeof lucide !== 'undefined' && lucide.createIcons) {
-        lucide.createIcons();
-      }
-    }
+      deckId++;
+    });
+  });
+  return decks;
+}
 
     // ============================================================
     //  ADMIN FUNCTIONS - RENAME DECK
