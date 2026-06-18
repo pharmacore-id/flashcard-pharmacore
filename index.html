@@ -59,8 +59,7 @@
       --premium-purple: #a78bfa;
       --shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
     }
-    html,
-    body {
+    html, body {
       height: 100%;
       overflow: hidden;
       background: var(--bg);
@@ -83,24 +82,13 @@
       flex-direction: column;
       box-shadow: 0 0 40px rgba(0, 0, 0, 0.08);
     }
-    .surface {
-      background: var(--surface);
-    }
-    .text-sec {
-      color: var(--text-secondary);
-    }
-    .border-theme {
-      border-color: var(--border);
-    }
-    .accent-bg {
-      background: var(--accent);
-    }
-    .accent-text {
-      color: var(--accent);
-    }
-    .shadow-card {
-      box-shadow: var(--shadow);
-    }
+    .surface { background: var(--surface); }
+    .text-sec { color: var(--text-secondary); }
+    .border-theme { border-color: var(--border); }
+    .accent-bg { background: var(--accent); }
+    .accent-text { color: var(--accent); }
+    .shadow-card { box-shadow: var(--shadow); }
+    
     .view {
       display: none;
       flex-direction: column;
@@ -119,28 +107,19 @@
       animation: fade 0.15s ease;
     }
     @keyframes fade {
-      from {
-        opacity: 0;
-        transform: translateY(4px);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
+      from { opacity: 0; transform: translateY(4px); }
+      to { opacity: 1; transform: translateY(0); }
     }
+    
     .view-scroll {
       flex: 1;
       overflow-y: auto;
       padding-bottom: 0.5rem;
       -webkit-overflow-scrolling: touch;
     }
-    .view-scroll::-webkit-scrollbar {
-      width: 3px;
-    }
-    .view-scroll::-webkit-scrollbar-thumb {
-      background: var(--border);
-      border-radius: 99px;
-    }
+    .view-scroll::-webkit-scrollbar { width: 3px; }
+    .view-scroll::-webkit-scrollbar-thumb { background: var(--border); border-radius: 99px; }
+    
     .bottom-nav {
       display: flex;
       justify-content: space-around;
@@ -167,13 +146,9 @@
       transition: 0.15s;
       cursor: pointer;
     }
-    .nav-item.active {
-      color: var(--accent);
-    }
-    .nav-item i {
-      width: 24px;
-      height: 24px;
-    }
+    .nav-item.active { color: var(--accent); }
+    .nav-item i { width: 24px; height: 24px; }
+    
     .flip-card {
       perspective: 1000px;
       width: 100%;
@@ -188,11 +163,8 @@
       height: 100%;
       position: relative;
     }
-    .flip-card.flipped .flip-inner {
-      transform: rotateY(180deg);
-    }
-    .flip-front,
-    .flip-back {
+    .flip-card.flipped .flip-inner { transform: rotateY(180deg); }
+    .flip-front, .flip-back {
       backface-visibility: hidden;
       -webkit-backface-visibility: hidden;
       position: absolute;
@@ -204,13 +176,9 @@
       padding: 1.5rem;
       box-shadow: var(--shadow);
     }
-    .flip-front {
-      background: var(--card-peach);
-    }
-    .flip-back {
-      background: var(--card-green);
-      transform: rotateY(180deg);
-    }
+    .flip-front { background: var(--card-peach); }
+    .flip-back { background: var(--card-green); transform: rotateY(180deg); }
+    
     .progress-bar {
       background: var(--border);
       border-radius: 99px;
@@ -223,6 +191,7 @@
       border-radius: 99px;
       transition: width 0.3s;
     }
+    
     .mode-btn {
       display: flex;
       align-items: center;
@@ -238,9 +207,7 @@
       color: var(--text);
       box-shadow: var(--shadow);
     }
-    .mode-btn:hover {
-      transform: scale(0.98);
-    }
+    .mode-btn:hover { transform: scale(0.98); }
     .mode-btn .icon-wrap {
       width: 48px;
       height: 48px;
@@ -250,18 +217,10 @@
       justify-content: center;
       flex-shrink: 0;
     }
-    .mode-btn .icon-wrap.orange {
-      background: var(--accent);
-      color: #fff;
-    }
-    .mode-btn .icon-wrap.green {
-      background: #059669;
-      color: #fff;
-    }
-    .mode-btn .icon-wrap.blue {
-      background: #2563eb;
-      color: #fff;
-    }
+    .mode-btn .icon-wrap.orange { background: var(--accent); color: #fff; }
+    .mode-btn .icon-wrap.green { background: #059669; color: #fff; }
+    .mode-btn .icon-wrap.blue { background: #2563eb; color: #fff; }
+    
     .deck-item {
       padding: 1rem 1.25rem;
       border-radius: var(--radius);
@@ -271,14 +230,14 @@
       transition: 0.15s;
       box-shadow: var(--shadow);
     }
-    .deck-item:hover {
-      transform: scale(0.99);
-    }
+    .deck-item:hover { transform: scale(0.99); }
+    
     .hero-number {
       font-size: 4.5rem;
       font-weight: 800;
       line-height: 1;
     }
+    
     .choice-btn {
       width: 100%;
       padding: 0.9rem 1.25rem;
@@ -291,17 +250,10 @@
       color: var(--text);
       cursor: pointer;
     }
-    .choice-btn:active {
-      transform: scale(0.96);
-    }
-    .choice-btn.correct {
-      background: #d1fae5;
-      border-color: #059669;
-    }
-    .choice-btn.wrong {
-      background: #fee2e2;
-      border-color: #dc2626;
-    }
+    .choice-btn:active { transform: scale(0.96); }
+    .choice-btn.correct { background: #d1fae5; border-color: #059669; }
+    .choice-btn.wrong { background: #fee2e2; border-color: #dc2626; }
+    
     .auth-card {
       background: var(--surface);
       border-radius: var(--radius);
@@ -326,6 +278,7 @@
       outline: 2px solid var(--accent);
       outline-offset: 2px;
     }
+    
     .password-wrapper {
       position: relative;
     }
@@ -340,9 +293,8 @@
       color: var(--text-secondary);
       padding: 4px;
     }
-    .password-wrapper .toggle-eye:hover {
-      color: var(--text);
-    }
+    .password-wrapper .toggle-eye:hover { color: var(--text); }
+    
     .btn-block {
       width: 100%;
       padding: 0.9rem;
@@ -353,475 +305,10 @@
       transition: 0.15s;
       text-align: center;
     }
-    .btn-block:active {
-      transform: scale(0.96);
-    }
-    .btn-block:disabled {
-      opacity: 0.5;
-      cursor: not-allowed;
-    }
-    .flex-center {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-    .gap-2 {
-      gap: 0.5rem;
-    }
-    .gap-3 {
-      gap: 0.75rem;
-    }
-    .gap-4 {
-      gap: 1rem;
-    }
-    .mt-1 {
-      margin-top: 0.25rem;
-    }
-    .mt-2 {
-      margin-top: 0.5rem;
-    }
-    .mt-3 {
-      margin-top: 0.75rem;
-    }
-    .mt-4 {
-      margin-top: 1rem;
-    }
-    .mt-6 {
-      margin-top: 1.5rem;
-    }
-    .mb-2 {
-      margin-bottom: 0.5rem;
-    }
-    .mb-3 {
-      margin-bottom: 0.75rem;
-    }
-    .mb-4 {
-      margin-bottom: 1rem;
-    }
-    .mb-6 {
-      margin-bottom: 1.5rem;
-    }
-    .flex-1 {
-      flex: 1;
-    }
-    .text-center {
-      text-align: center;
-    }
-    .text-sm {
-      font-size: 0.875rem;
-    }
-    .text-xs {
-      font-size: 0.75rem;
-    }
-    .font-bold {
-      font-weight: 700;
-    }
-    .font-semibold {
-      font-weight: 600;
-    }
-    .font-medium {
-      font-weight: 500;
-    }
-    .truncate {
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-    }
-    .relative {
-      position: relative;
-    }
-    .absolute {
-      position: absolute;
-    }
-    .inset-0 {
-      inset: 0;
-    }
-    .z-10 {
-      z-index: 10;
-    }
-    .hidden {
-      display: none !important;
-    }
-    .w-full {
-      width: 100%;
-    }
-    .h-full {
-      height: 100%;
-    }
-    .bg-white {
-      background: #fff;
-    }
-    .text-white {
-      color: #fff;
-    }
-    .text-orange-600 {
-      color: #ea580c;
-    }
-    .rounded-full {
-      border-radius: 9999px;
-    }
-    .shadow-md {
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-    }
-    .chart-bar {
-      border-radius: 99px 99px 0 0;
-      background: var(--accent);
-      transition: height 0.3s;
-      min-height: 4px;
-    }
-    .dark .auth-card {
-      background: var(--surface);
-    }
-    .dark .choice-btn {
-      background: var(--surface);
-    }
-    .swipe-hint {
-      font-size: 0.75rem;
-      color: var(--text-secondary);
-      text-align: center;
-      padding: 0.25rem 0;
-    }
-    .premium-badge {
-      background: linear-gradient(135deg, var(--premium-gold), var(--premium-purple));
-      color: #fff;
-      padding: 0.15rem 0.75rem;
-      border-radius: 99px;
-      font-size: 10px;
-      font-weight: 700;
-      text-transform: uppercase;
-    }
-    .free-badge {
-      background: var(--border);
-      color: var(--text-secondary);
-      padding: 0.15rem 0.75rem;
-      border-radius: 99px;
-      font-size: 10px;
-      font-weight: 700;
-      text-transform: uppercase;
-    }
-    .admin-badge {
-      background: #ef4444;
-      color: #fff;
-      padding: 0.15rem 0.75rem;
-      border-radius: 99px;
-      font-size: 10px;
-      font-weight: 700;
-      text-transform: uppercase;
-    }
-    .feature-list {
-      display: flex;
-      flex-direction: column;
-      gap: 0.75rem;
-    }
-    .feature-item {
-      display: flex;
-      align-items: center;
-      gap: 0.75rem;
-      padding: 0.75rem 1rem;
-      border-radius: 1rem;
-      background: var(--bg);
-      border: 1px solid var(--border);
-    }
-    .feature-item .icon {
-      width: 24px;
-      height: 24px;
-      flex-shrink: 0;
-    }
-    .feature-item .icon.gold {
-      color: var(--premium-gold);
-    }
-    .feature-item .icon.gray {
-      color: var(--text-secondary);
-    }
-    .feature-item .label {
-      flex: 1;
-      font-size: 0.875rem;
-    }
-    .feature-item .status {
-      font-size: 0.75rem;
-      font-weight: 600;
-    }
-    .feature-item .status.free {
-      color: var(--text-secondary);
-    }
-    .feature-item .status.premium {
-      color: var(--premium-gold);
-    }
-    .upload-zone {
-      border: 2px dashed var(--border);
-      border-radius: var(--radius);
-      padding: 2rem;
-      text-align: center;
-      cursor: pointer;
-      transition: 0.2s;
-    }
-    .upload-zone:hover {
-      border-color: var(--accent);
-      background: var(--accent-light);
-    }
-    .upload-zone.dragover {
-      border-color: var(--accent);
-      background: var(--accent-light);
-    }
-    .code-input {
-      font-family: 'Courier New', monospace;
-      letter-spacing: 2px;
-      text-transform: uppercase;
-    }
-    .code-input::placeholder {
-      letter-spacing: 0;
-      text-transform: none;
-    }
-    .pricing-card {
-      border-radius: var(--radius);
-      padding: 1.25rem;
-      border: 2px solid var(--border);
-      transition: 0.2s;
-      cursor: pointer;
-    }
-    .pricing-card:hover {
-      transform: scale(0.98);
-    }
-    .pricing-card.popular {
-      border-color: var(--premium-gold);
-      background: var(--accent-light);
-    }
-    .pricing-card .price {
-      font-size: 1.75rem;
-      font-weight: 800;
-    }
-    .pricing-card .price small {
-      font-size: 0.75rem;
-      font-weight: 400;
-    }
-    .pricing-card .per-day {
-      font-size: 0.7rem;
-      color: var(--text-secondary);
-    }
-    .pricing-card .badge-popular {
-      background: linear-gradient(135deg, var(--premium-gold), var(--premium-purple));
-      color: #fff;
-      padding: 0.1rem 0.6rem;
-      border-radius: 99px;
-      font-size: 9px;
-      font-weight: 700;
-      text-transform: uppercase;
-      display: inline-block;
-    }
-    .payment-option {
-      display: flex;
-      align-items: center;
-      gap: 1rem;
-      padding: 0.75rem 1rem;
-      border-radius: 1rem;
-      border: 1px solid var(--border);
-      cursor: pointer;
-      transition: 0.15s;
-    }
-    .payment-option:hover {
-      border-color: var(--accent);
-      background: var(--accent-light);
-    }
-    .payment-option.selected {
-      border-color: var(--accent);
-      background: var(--accent-light);
-    }
-    .payment-option .icon {
-      width: 36px;
-      height: 36px;
-      border-radius: 10px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-shrink: 0;
-    }
-    .payment-option .icon.bank {
-      background: #2563eb;
-      color: #fff;
-    }
-    .payment-option .icon.qris {
-      background: #059669;
-      color: #fff;
-    }
-    .payment-option .icon.ewallet {
-      background: #7c3aed;
-      color: #fff;
-    }
-    .pricing-header {
-      background: linear-gradient(135deg, var(--premium-gold), var(--premium-purple));
-      color: #fff;
-      padding: 1.5rem;
-      border-radius: var(--radius);
-      text-align: center;
-      margin-bottom: 1rem;
-    }
-    .pricing-header .big-price {
-      font-size: 2.5rem;
-      font-weight: 800;
-    }
-    .pricing-header .big-price small {
-      font-size: 1rem;
-      font-weight: 400;
-    }
-    .stat-card {
-      background: var(--surface);
-      border-radius: 1.25rem;
-      padding: 0.75rem 1rem;
-      border: 1px solid var(--border);
-      text-align: center;
-      box-shadow: var(--shadow);
-    }
-    .stat-card .number {
-      font-size: 1.5rem;
-      font-weight: 800;
-      line-height: 1.2;
-    }
-    .stat-card .label {
-      font-size: 0.65rem;
-      font-weight: 600;
-      color: var(--text-secondary);
-      text-transform: uppercase;
-      letter-spacing: 0.3px;
-    }
-    .stat-card .icon {
-      margin-bottom: 2px;
-    }
-    .streak-dot {
-      width: 28px;
-      height: 28px;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 11px;
-      font-weight: 700;
-      transition: 0.15s;
-    }
-    .streak-dot.active {
-      background: var(--accent);
-      color: #fff;
-    }
-    .streak-dot.today {
-      border: 2px solid var(--accent);
-      background: var(--accent-light);
-      color: var(--accent);
-    }
-    .streak-dot.inactive {
-      background: var(--border);
-      color: var(--text-secondary);
-    }
-    .streak-dot.future {
-      background: transparent;
-      border: 1px dashed var(--border);
-      color: var(--text-secondary);
-    }
-    .daily-progress {
-      background: var(--surface);
-      border-radius: var(--radius);
-      padding: 1.25rem;
-      border: 1px solid var(--border);
-      box-shadow: var(--shadow);
-    }
-    .daily-progress .goal-text {
-      font-size: 0.75rem;
-      color: var(--text-secondary);
-    }
-    .daily-progress .big-number {
-      font-size: 2rem;
-      font-weight: 800;
-    }
-    .daily-progress .big-number small {
-      font-size: 0.875rem;
-      font-weight: 400;
-      color: var(--text-secondary);
-    }
-    .quick-stat-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 0.5rem;
-    }
-    .last-study-time {
-      font-size: 0.75rem;
-      color: var(--text-secondary);
-      text-align: center;
-      padding: 0.5rem 0;
-    }
-    .home-quick-actions {
-      display: flex;
-      gap: 0.5rem;
-      margin-top: 0.5rem;
-    }
-    .home-quick-actions button {
-      flex: 1;
-      padding: 0.6rem;
-      border-radius: 1rem;
-      border: none;
-      font-weight: 600;
-      font-size: 0.8rem;
-      cursor: pointer;
-      transition: 0.15s;
-    }
-    .home-quick-actions button:active {
-      transform: scale(0.96);
-    }
-    .home-quick-actions .primary {
-      background: var(--accent);
-      color: #fff;
-    }
-    .home-quick-actions .secondary {
-      background: var(--border);
-      color: var(--text);
-    }
-    .settings-goal {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      flex-wrap: wrap;
-    }
-    .settings-goal input {
-      width: 70px;
-      padding: 0.4rem 0.5rem;
-      border-radius: 0.75rem;
-      border: 1px solid var(--border);
-      background: var(--bg);
-      color: var(--text);
-      font-size: 0.875rem;
-      text-align: center;
-      font-weight: 700;
-    }
-    .settings-goal input:focus {
-      outline: 2px solid var(--accent);
-      outline-offset: 2px;
-    }
-    .settings-goal button {
-      background: var(--accent);
-      color: #fff;
-      border: none;
-      padding: 0.4rem 1rem;
-      border-radius: 0.75rem;
-      font-size: 0.75rem;
-      font-weight: 600;
-      cursor: pointer;
-      transition: 0.15s;
-    }
-    .settings-goal button:hover {
-      opacity: 0.8;
-    }
-    .daily-progress.hero-gradient .goal-text {
-      color: rgba(255, 255, 255, 0.7);
-    }
-    .daily-progress.hero-gradient .big-number {
-      color: #fff;
-    }
-    .daily-progress.hero-gradient .big-number small {
-      color: rgba(255, 255, 255, 0.6);
-    }
-    .daily-progress.hero-gradient .progress-bar {
-      background: rgba(255, 255, 255, 0.3);
-    }
-    .daily-progress.hero-gradient .progress-fill {
-      background: #ffffff;
-    }
+    .btn-block:active { transform: scale(0.96); }
+    .btn-block:disabled { opacity: 0.5; cursor: not-allowed; }
+    
+    /* Stats Styles */
     .stats-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -863,6 +350,8 @@
       align-items: center;
       gap: 0.5rem;
     }
+    
+    /* Progress chart */
     .progress-chart-wrapper {
       overflow-x: auto;
       overflow-y: hidden;
@@ -872,16 +361,10 @@
       scrollbar-color: var(--border) transparent;
       width: 100%;
     }
-    .progress-chart-wrapper::-webkit-scrollbar {
-      height: 4px;
-    }
-    .progress-chart-wrapper::-webkit-scrollbar-track {
-      background: transparent;
-    }
-    .progress-chart-wrapper::-webkit-scrollbar-thumb {
-      background: var(--border);
-      border-radius: 99px;
-    }
+    .progress-chart-wrapper::-webkit-scrollbar { height: 4px; }
+    .progress-chart-wrapper::-webkit-scrollbar-track { background: transparent; }
+    .progress-chart-wrapper::-webkit-scrollbar-thumb { background: var(--border); border-radius: 99px; }
+    
     #progress-chart {
       display: flex;
       align-items: flex-end;
@@ -915,9 +398,7 @@
       transition: height 0.4s ease, background 0.3s ease;
       min-height: 3px;
     }
-    #progress-chart .bar.filled {
-      background: var(--accent);
-    }
+    #progress-chart .bar.filled { background: var(--accent); }
     #progress-chart .bar.today {
       background: var(--premium-gold);
       box-shadow: 0 0 8px rgba(217, 119, 6, 0.3);
@@ -931,24 +412,12 @@
       min-height: 10px;
       white-space: nowrap;
     }
-    #progress-chart.month .bar-group {
-      min-width: 10px;
-      max-width: 24px;
-    }
-    #progress-chart.month .bar {
-      max-width: 14px;
-    }
-    #progress-chart.all .bar-group {
-      min-width: 8px;
-      max-width: 18px;
-    }
-    #progress-chart.all .bar {
-      max-width: 8px;
-    }
-    #progress-chart.all .bar-value {
-      font-size: 7px;
-      min-height: 10px;
-    }
+    #progress-chart.month .bar-group { min-width: 10px; max-width: 24px; }
+    #progress-chart.month .bar { max-width: 14px; }
+    #progress-chart.all .bar-group { min-width: 8px; max-width: 18px; }
+    #progress-chart.all .bar { max-width: 8px; }
+    #progress-chart.all .bar-value { font-size: 7px; min-height: 10px; }
+    
     .progress-toggle {
       display: flex;
       gap: 2px;
@@ -972,9 +441,8 @@
       background: var(--accent);
       color: #fff;
     }
-    .progress-toggle button:hover:not(.active) {
-      background: var(--border);
-    }
+    .progress-toggle button:hover:not(.active) { background: var(--border); }
+    
     .scrollable-horizontal {
       overflow-x: auto;
       overflow-y: hidden;
@@ -983,16 +451,10 @@
       scrollbar-width: thin;
       scrollbar-color: var(--border) transparent;
     }
-    .scrollable-horizontal::-webkit-scrollbar {
-      height: 4px;
-    }
-    .scrollable-horizontal::-webkit-scrollbar-track {
-      background: transparent;
-    }
-    .scrollable-horizontal::-webkit-scrollbar-thumb {
-      background: var(--border);
-      border-radius: 99px;
-    }
+    .scrollable-horizontal::-webkit-scrollbar { height: 4px; }
+    .scrollable-horizontal::-webkit-scrollbar-track { background: transparent; }
+    .scrollable-horizontal::-webkit-scrollbar-thumb { background: var(--border); border-radius: 99px; }
+    
     .deck-perf-bar {
       display: flex;
       align-items: center;
@@ -1029,6 +491,7 @@
       text-align: right;
       flex-shrink: 0;
     }
+    
     .subject-item {
       display: flex;
       align-items: center;
@@ -1066,14 +529,13 @@
       text-align: right;
       flex-shrink: 0;
     }
+    
     .retention-dots {
       display: flex;
       gap: 0.5rem;
       justify-content: center;
     }
-    .retention-dots .dot-item {
-      text-align: center;
-    }
+    .retention-dots .dot-item { text-align: center; }
     .retention-dots .dot-item .value {
       font-size: 1rem;
       font-weight: 800;
@@ -1083,6 +545,7 @@
       color: var(--text-secondary);
       font-weight: 600;
     }
+    
     .heatmap-grid {
       display: grid;
       grid-template-columns: repeat(7, 1fr);
@@ -1116,6 +579,7 @@
     .heatmap-grid .heat-cell.today {
       border: 2px solid var(--accent);
     }
+    
     .sync-status {
       display: flex;
       align-items: center;
@@ -1138,14 +602,10 @@
       background: #ef4444;
     }
     @keyframes pulse {
-      0%,
-      100% {
-        opacity: 1;
-      }
-      50% {
-        opacity: 0.3;
-      }
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.3; }
     }
+    
     #fc-done {
       pointer-events: all;
       cursor: pointer;
@@ -1153,12 +613,14 @@
     #fc-done .back-btn {
       pointer-events: all;
     }
+    
     .card-item {
       transition: background 0.15s ease;
     }
     .card-item:hover {
       background: var(--accent-light);
     }
+    
     .forgot-link {
       font-size: 0.75rem;
       color: var(--accent);
@@ -1168,6 +630,376 @@
     }
     .forgot-link:hover {
       text-decoration: underline;
+    }
+    
+    .settings-goal {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+    .settings-goal input {
+      width: 70px;
+      padding: 0.4rem 0.5rem;
+      border-radius: 0.75rem;
+      border: 1px solid var(--border);
+      background: var(--bg);
+      color: var(--text);
+      font-size: 0.875rem;
+      text-align: center;
+      font-weight: 700;
+    }
+    .settings-goal input:focus {
+      outline: 2px solid var(--accent);
+      outline-offset: 2px;
+    }
+    .settings-goal button {
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      padding: 0.4rem 1rem;
+      border-radius: 0.75rem;
+      font-size: 0.75rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: 0.15s;
+    }
+    .settings-goal button:hover {
+      opacity: 0.8;
+    }
+    
+    .daily-progress.hero-gradient .goal-text {
+      color: rgba(255, 255, 255, 0.7);
+    }
+    .daily-progress.hero-gradient .big-number {
+      color: #fff;
+    }
+    .daily-progress.hero-gradient .big-number small {
+      color: rgba(255, 255, 255, 0.6);
+    }
+    .daily-progress.hero-gradient .progress-bar {
+      background: rgba(255, 255, 255, 0.3);
+    }
+    .daily-progress.hero-gradient .progress-fill {
+      background: #ffffff;
+    }
+    
+    .upload-zone {
+      border: 2px dashed var(--border);
+      border-radius: var(--radius);
+      padding: 2rem;
+      text-align: center;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+    .upload-zone:hover {
+      border-color: var(--accent);
+      background: var(--accent-light);
+    }
+    .upload-zone.dragover {
+      border-color: var(--accent);
+      background: var(--accent-light);
+    }
+    
+    .code-input {
+      font-family: 'Courier New', monospace;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+    }
+    .code-input::placeholder {
+      letter-spacing: 0;
+      text-transform: none;
+    }
+    
+    .pricing-card {
+      border-radius: var(--radius);
+      padding: 1.25rem;
+      border: 2px solid var(--border);
+      transition: 0.2s;
+      cursor: pointer;
+    }
+    .pricing-card:hover {
+      transform: scale(0.98);
+    }
+    .pricing-card.popular {
+      border-color: var(--premium-gold);
+      background: var(--accent-light);
+    }
+    .pricing-card .price {
+      font-size: 1.75rem;
+      font-weight: 800;
+    }
+    .pricing-card .price small {
+      font-size: 0.75rem;
+      font-weight: 400;
+    }
+    .pricing-card .per-day {
+      font-size: 0.7rem;
+      color: var(--text-secondary);
+    }
+    .pricing-card .badge-popular {
+      background: linear-gradient(135deg, var(--premium-gold), var(--premium-purple));
+      color: #fff;
+      padding: 0.1rem 0.6rem;
+      border-radius: 99px;
+      font-size: 9px;
+      font-weight: 700;
+      text-transform: uppercase;
+      display: inline-block;
+    }
+    
+    .payment-option {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      padding: 0.75rem 1rem;
+      border-radius: 1rem;
+      border: 1px solid var(--border);
+      cursor: pointer;
+      transition: 0.15s;
+    }
+    .payment-option:hover {
+      border-color: var(--accent);
+      background: var(--accent-light);
+    }
+    .payment-option.selected {
+      border-color: var(--accent);
+      background: var(--accent-light);
+    }
+    .payment-option .icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    .payment-option .icon.bank {
+      background: #2563eb;
+      color: #fff;
+    }
+    .payment-option .icon.qris {
+      background: #059669;
+      color: #fff;
+    }
+    .payment-option .icon.ewallet {
+      background: #7c3aed;
+      color: #fff;
+    }
+    
+    .pricing-header {
+      background: linear-gradient(135deg, var(--premium-gold), var(--premium-purple));
+      color: #fff;
+      padding: 1.5rem;
+      border-radius: var(--radius);
+      text-align: center;
+      margin-bottom: 1rem;
+    }
+    .pricing-header .big-price {
+      font-size: 2.5rem;
+      font-weight: 800;
+    }
+    .pricing-header .big-price small {
+      font-size: 1rem;
+      font-weight: 400;
+    }
+    
+    .stat-card {
+      background: var(--surface);
+      border-radius: 1.25rem;
+      padding: 0.75rem 1rem;
+      border: 1px solid var(--border);
+      text-align: center;
+      box-shadow: var(--shadow);
+    }
+    .stat-card .number {
+      font-size: 1.5rem;
+      font-weight: 800;
+      line-height: 1.2;
+    }
+    .stat-card .label {
+      font-size: 0.65rem;
+      font-weight: 600;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+    }
+    .stat-card .icon {
+      margin-bottom: 2px;
+    }
+    
+    .streak-dot {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      font-weight: 700;
+      transition: 0.15s;
+    }
+    .streak-dot.active {
+      background: var(--accent);
+      color: #fff;
+    }
+    .streak-dot.today {
+      border: 2px solid var(--accent);
+      background: var(--accent-light);
+      color: var(--accent);
+    }
+    .streak-dot.inactive {
+      background: var(--border);
+      color: var(--text-secondary);
+    }
+    .streak-dot.future {
+      background: transparent;
+      border: 1px dashed var(--border);
+      color: var(--text-secondary);
+    }
+    
+    .daily-progress {
+      background: var(--surface);
+      border-radius: var(--radius);
+      padding: 1.25rem;
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow);
+    }
+    .daily-progress .goal-text {
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+    }
+    .daily-progress .big-number {
+      font-size: 2rem;
+      font-weight: 800;
+    }
+    .daily-progress .big-number small {
+      font-size: 0.875rem;
+      font-weight: 400;
+      color: var(--text-secondary);
+    }
+    
+    .quick-stat-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 0.5rem;
+    }
+    .last-study-time {
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+      text-align: center;
+      padding: 0.5rem 0;
+    }
+    .home-quick-actions {
+      display: flex;
+      gap: 0.5rem;
+      margin-top: 0.5rem;
+    }
+    .home-quick-actions button {
+      flex: 1;
+      padding: 0.6rem;
+      border-radius: 1rem;
+      border: none;
+      font-weight: 600;
+      font-size: 0.8rem;
+      cursor: pointer;
+      transition: 0.15s;
+    }
+    .home-quick-actions button:active {
+      transform: scale(0.96);
+    }
+    .home-quick-actions .primary {
+      background: var(--accent);
+      color: #fff;
+    }
+    .home-quick-actions .secondary {
+      background: var(--border);
+      color: var(--text);
+    }
+    
+    .premium-badge {
+      background: linear-gradient(135deg, var(--premium-gold), var(--premium-purple));
+      color: #fff;
+      padding: 0.15rem 0.75rem;
+      border-radius: 99px;
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+    .free-badge {
+      background: var(--border);
+      color: var(--text-secondary);
+      padding: 0.15rem 0.75rem;
+      border-radius: 99px;
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+    .admin-badge {
+      background: #ef4444;
+      color: #fff;
+      padding: 0.15rem 0.75rem;
+      border-radius: 99px;
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+    
+    .feature-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+    .feature-item {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.75rem 1rem;
+      border-radius: 1rem;
+      background: var(--bg);
+      border: 1px solid var(--border);
+    }
+    .feature-item .icon {
+      width: 24px;
+      height: 24px;
+      flex-shrink: 0;
+    }
+    .feature-item .icon.gold {
+      color: var(--premium-gold);
+    }
+    .feature-item .icon.gray {
+      color: var(--text-secondary);
+    }
+    .feature-item .label {
+      flex: 1;
+      font-size: 0.875rem;
+    }
+    .feature-item .status {
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+    .feature-item .status.free {
+      color: var(--text-secondary);
+    }
+    .feature-item .status.premium {
+      color: var(--premium-gold);
+    }
+    
+    /* Flashcard done state */
+    #fc-done {
+      pointer-events: all;
+      cursor: pointer;
+    }
+    #fc-done .back-btn {
+      pointer-events: all;
+    }
+    
+    .swipe-hint {
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+      text-align: center;
+      padding: 0.25rem 0;
     }
   </style>
 </head>
@@ -1264,33 +1096,16 @@
           <button onclick="closeForgotPassword()" class="text-sec"><i data-lucide="x" class="w-6 h-6"></i></button>
         </div>
         <div id="fp-step-1">
-          <p class="text-sm text-sec mb-4">Enter your email to receive a reset code.</p>
+          <p class="text-sm text-sec mb-4">Enter your email to receive a reset link.</p>
           <input type="email" id="fp-email" placeholder="you@example.com" class="w-full border rounded-2xl px-4 py-3 mb-4 surface text-base" style="border-color:var(--border)" />
-          <button onclick="sendResetCode()" class="w-full py-3 rounded-2xl accent-bg text-white font-bold hover:opacity-90 transition-opacity">Send Reset Code</button>
+          <button onclick="sendResetCode()" class="w-full py-3 rounded-2xl accent-bg text-white font-bold hover:opacity-90 transition-opacity">Send Reset Link</button>
         </div>
         <div id="fp-step-2" class="hidden">
-          <p class="text-sm text-sec mb-2">Enter the reset code and your new password.</p>
+          <p class="text-sm text-sec mb-2">Check your email for the reset link.</p>
           <div class="bg-green-50 dark:bg-green-900/20 p-3 rounded-xl mb-4 border border-green-200 dark:border-green-800">
-            <p class="text-sm font-medium text-green-700 dark:text-green-300">📧 Reset code sent to: <span id="fp-email-display" class="font-bold"></span></p>
+            <p class="text-sm font-medium text-green-700 dark:text-green-300">📧 Reset link sent to: <span id="fp-email-display" class="font-bold"></span></p>
           </div>
-          <label class="text-sm text-sec font-medium">Reset Code</label>
-          <input type="text" id="fp-code" placeholder="e.g. 123456" class="w-full border rounded-2xl px-4 py-3 mb-3 surface text-base" style="border-color:var(--border)" />
-          <label class="text-sm text-sec font-medium">New Password</label>
-          <div class="password-wrapper">
-            <input type="password" id="fp-new-password" placeholder="Min 6 characters" class="w-full border rounded-2xl px-4 py-3 mb-3 surface text-base" style="border-color:var(--border)" />
-            <button type="button" class="toggle-eye" onclick="togglePassword('fp-new-password', this)">
-              <i data-lucide="eye" class="w-5 h-5"></i>
-            </button>
-          </div>
-          <label class="text-sm text-sec font-medium">Confirm Password</label>
-          <div class="password-wrapper">
-            <input type="password" id="fp-confirm-password" placeholder="Confirm new password" class="w-full border rounded-2xl px-4 py-3 mb-4 surface text-base" style="border-color:var(--border)" />
-            <button type="button" class="toggle-eye" onclick="togglePassword('fp-confirm-password', this)">
-              <i data-lucide="eye" class="w-5 h-5"></i>
-            </button>
-          </div>
-          <div id="fp-error" class="text-sm text-red-500 min-h-[1.5rem]"></div>
-          <button onclick="resetPassword()" class="w-full py-3 rounded-2xl accent-bg text-white font-bold hover:opacity-90 transition-opacity">Reset Password</button>
+          <button onclick="closeForgotPassword()" class="w-full py-3 rounded-2xl border border-theme font-medium" style="color:var(--text-secondary)">Back to Login</button>
         </div>
         <div class="text-center mt-3">
           <button onclick="closeForgotPassword()" class="text-xs text-sec hover:text-text transition-colors">Back to Login</button>
@@ -1489,11 +1304,11 @@
         <button onclick="fcRate(2)" class="py-3 rounded-2xl text-white font-semibold text-sm" style="background:#3b82f6">Good</button>
         <button onclick="fcRate(3)" class="py-3 rounded-2xl text-white font-semibold text-sm" style="background:#10b981">Easy</button>
       </div>
-     <div id="fc-done" class="hidden flex-1 flex-col items-center justify-center text-center">
-  <i data-lucide="check-circle" class="w-16 h-16 accent-text mb-3"></i>
-  <p class="text-xl font-bold">All done! 🎉</p>
-  <button onclick="exitStudy()" class="back-btn mt-4 accent-bg text-white px-6 py-2.5 rounded-2xl font-bold">Back</button>
-</div>
+      <div id="fc-done" class="hidden flex-1 flex-col items-center justify-center text-center">
+        <i data-lucide="check-circle" class="w-16 h-16 accent-text mb-3"></i>
+        <p class="text-xl font-bold">All done! 🎉</p>
+        <button onclick="exitStudy()" class="back-btn mt-4 accent-bg text-white px-6 py-2.5 rounded-2xl font-bold">Back</button>
+      </div>
     </div>
 
     <!-- ===== LEARN MODE ===== -->
@@ -1919,7 +1734,7 @@
     let resetEmail = '';
 
     // ============================================================
-    //  PASSWORD TOGGLE FUNCTION
+    //  PASSWORD TOGGLE
     // ============================================================
     function togglePassword(inputId, button) {
       const input = document.getElementById(inputId);
@@ -1936,12 +1751,11 @@
     }
 
     // ============================================================
-    //  SYNC STATUS FUNCTIONS
+    //  SYNC STATUS
     // ============================================================
     function updateSyncStatus(status, message) {
       const dotIds = ['sync-dot', 'sync-dot-home', 'sync-dot-signup'];
       const textIds = ['sync-text', 'sync-text-home', 'sync-text-signup'];
-
       dotIds.forEach(id => {
         const dot = document.getElementById(id);
         if (dot) {
@@ -1950,7 +1764,6 @@
           else if (status === 'offline') dot.classList.add('offline');
         }
       });
-
       textIds.forEach(id => {
         const el = document.getElementById(id);
         if (el) el.textContent = message;
@@ -1990,122 +1803,109 @@
     //  CHANGE PASSWORD
     // ============================================================
     async function changePassword() {
-  const current = document.getElementById('current-password').value;
-  const newPw = document.getElementById('new-password').value;
-  const confirmPw = document.getElementById('confirm-new-password').value;
-  const err = document.getElementById('change-password-error');
+      const current = document.getElementById('current-password').value;
+      const newPw = document.getElementById('new-password').value;
+      const confirmPw = document.getElementById('confirm-new-password').value;
+      const err = document.getElementById('change-password-error');
 
-  err.textContent = '';
+      err.textContent = '';
 
-  const user = firebase.auth().currentUser;
-  if (!user) {
-    err.textContent = 'Please login first.';
-    return;
-  }
+      const user = firebase.auth().currentUser;
+      if (!user) {
+        err.textContent = 'Please login first.';
+        return;
+      }
 
-  try {
-    // Re-authenticate user
-    const credential = firebase.auth.EmailAuthProvider.credential(user.email, current);
-    await user.reauthenticateWithCredential(credential);
+      try {
+        const credential = firebase.auth.EmailAuthProvider.credential(user.email, current);
+        await user.reauthenticateWithCredential(credential);
 
-    if (newPw.length < 6) {
-      err.textContent = 'New password must be at least 6 characters.';
-      return;
+        if (newPw.length < 6) {
+          err.textContent = 'New password must be at least 6 characters.';
+          return;
+        }
+
+        if (newPw !== confirmPw) {
+          err.textContent = 'Passwords do not match.';
+          return;
+        }
+
+        await user.updatePassword(newPw);
+
+        const users = getUsers();
+        if (users[user.email]) {
+          users[user.email].password = newPw;
+          saveUsers(users);
+        }
+
+        document.getElementById('current-password').value = '';
+        document.getElementById('new-password').value = '';
+        document.getElementById('confirm-new-password').value = '';
+
+        alert('✅ Password changed successfully!');
+
+      } catch (error) {
+        console.error('Password change error:', error);
+        if (error.code === 'auth/wrong-password') {
+          err.textContent = 'Current password is incorrect.';
+        } else if (error.code === 'auth/too-many-requests') {
+          err.textContent = 'Too many failed attempts. Please try again later.';
+        } else {
+          err.textContent = 'Failed to change password: ' + error.message;
+        }
+      }
     }
-
-    if (newPw !== confirmPw) {
-      err.textContent = 'Passwords do not match.';
-      return;
-    }
-
-    // Update password
-    await user.updatePassword(newPw);
-
-    // Also update localStorage backup
-    const users = getUsers();
-    if (users[user.email]) {
-      users[user.email].password = newPw;
-      saveUsers(users);
-    }
-
-    document.getElementById('current-password').value = '';
-    document.getElementById('new-password').value = '';
-    document.getElementById('confirm-new-password').value = '';
-
-    alert('✅ Password changed successfully!');
-
-  } catch (error) {
-    console.error('Password change error:', error);
-    if (error.code === 'auth/wrong-password') {
-      err.textContent = 'Current password is incorrect.';
-    } else if (error.code === 'auth/too-many-requests') {
-      err.textContent = 'Too many failed attempts. Please try again later.';
-    } else {
-      err.textContent = 'Failed to change password: ' + error.message;
-    }
-  }
-}
 
     // ============================================================
     //  FORGOT PASSWORD
     // ============================================================
-    // ============================================================
-//  FORGOT PASSWORD FUNCTIONS (NEW - Firebase Auth)
-// ============================================================
-
-function showForgotPassword() {
-  document.getElementById('forgot-password-modal').classList.remove('hidden');
-  document.getElementById('fp-step-1').classList.remove('hidden');
-  document.getElementById('fp-step-2').classList.add('hidden');
-  document.getElementById('fp-email').value = '';
-  document.getElementById('fp-code').value = '';
-  document.getElementById('fp-new-password').value = '';
-  document.getElementById('fp-confirm-password').value = '';
-  document.getElementById('fp-error').textContent = '';
-  if (typeof lucide !== 'undefined') lucide.createIcons();
-}
-
-function closeForgotPassword() {
-  document.getElementById('forgot-password-modal').classList.add('hidden');
-}
-
-async function sendResetCode() {
-  const email = document.getElementById('fp-email').value.trim();
-  const err = document.getElementById('fp-error');
-
-  err.textContent = '';
-
-  if (!email) {
-    err.textContent = 'Please enter your email.';
-    return;
-  }
-
-  try {
-    // Send password reset email via Firebase
-    await firebase.auth().sendPasswordResetEmail(email);
-    document.getElementById('fp-email-display').textContent = email;
-    document.getElementById('fp-step-1').classList.add('hidden');
-    document.getElementById('fp-step-2').classList.remove('hidden');
-    alert('📧 Password reset email sent! Check your inbox.');
-  } catch (error) {
-    console.error('Reset error:', error);
-    if (error.code === 'auth/user-not-found') {
-      err.textContent = 'No account found with this email.';
-    } else {
-      err.textContent = 'Failed to send reset email: ' + error.message;
+    function showForgotPassword() {
+      document.getElementById('forgot-password-modal').classList.remove('hidden');
+      document.getElementById('fp-step-1').classList.remove('hidden');
+      document.getElementById('fp-step-2').classList.add('hidden');
+      document.getElementById('fp-email').value = '';
+      document.getElementById('fp-error').textContent = '';
+      if (typeof lucide !== 'undefined') lucide.createIcons();
     }
-  }
-}
 
-async function resetPassword() {
-  // This is now handled by Firebase's sendPasswordResetEmail
-  // The user will receive an email to reset their password
-  closeForgotPassword();
-  alert('📧 Please check your email for the password reset link.');
-}
+    function closeForgotPassword() {
+      document.getElementById('forgot-password-modal').classList.add('hidden');
+    }
+
+    async function sendResetCode() {
+      const email = document.getElementById('fp-email').value.trim();
+      const err = document.getElementById('fp-error');
+
+      err.textContent = '';
+
+      if (!email) {
+        err.textContent = 'Please enter your email.';
+        return;
+      }
+
+      try {
+        await firebase.auth().sendPasswordResetEmail(email);
+        document.getElementById('fp-email-display').textContent = email;
+        document.getElementById('fp-step-1').classList.add('hidden');
+        document.getElementById('fp-step-2').classList.remove('hidden');
+        alert('📧 Password reset email sent! Check your inbox.');
+      } catch (error) {
+        console.error('Reset error:', error);
+        if (error.code === 'auth/user-not-found') {
+          err.textContent = 'No account found with this email.';
+        } else {
+          err.textContent = 'Failed to send reset email: ' + error.message;
+        }
+      }
+    }
+
+    async function resetPassword() {
+      closeForgotPassword();
+      alert('📧 Please check your email for the password reset link.');
+    }
 
     // ============================================================
-    //  FIREBASE SYNC FUNCTIONS
+    //  FIREBASE SYNC
     // ============================================================
     async function saveToFirebase(email, cards, plan) {
       if (!email || !navigator.onLine) return;
@@ -2151,36 +1951,34 @@ async function resetPassword() {
       }
     }
 
-// ============================================================
-//  FIREBASE AUTH STATE LISTENER
-// ============================================================
-firebase.auth().onAuthStateChanged(async user => {
-  if (user) {
-    // User is signed in
-    console.log('✅ Firebase Auth: User signed in:', user.email);
-    // Check if admin
-    isAdmin = ADMIN_EMAILS.includes(user.email);
-    if (isAdmin) {
-      document.getElementById('admin-badge').classList.remove('hidden');
-      document.getElementById('admin-import-btn').classList.remove('hidden');
-    }
-    
-    // Load user data from Firestore
-    const email = user.email;
-    const cloudData = await loadFromFirebase(email);
-    if (cloudData && cloudData.cards) {
-      allCards = cloudData.cards;
-      userPlan = cloudData.plan || 'free';
-      localStorage.setItem(DATA_PREFIX + email, JSON.stringify(allCards));
-      localStorage.setItem('flashmind_plan_' + email, userPlan);
-    }
-  } else {
-    // User is signed out
-    console.log('❌ Firebase Auth: User signed out');
-  }
-});
+    // ============================================================
+    //  FIREBASE AUTH STATE LISTENER
+    // ============================================================
+    firebase.auth().onAuthStateChanged(async user => {
+      if (user) {
+        console.log('✅ Firebase Auth: User signed in:', user.email);
+        isAdmin = ADMIN_EMAILS.includes(user.email);
+        if (isAdmin) {
+          document.getElementById('admin-badge').classList.remove('hidden');
+          document.getElementById('admin-import-btn').classList.remove('hidden');
+        }
+        const email = user.email;
+        const cloudData = await loadFromFirebase(email);
+        if (cloudData && cloudData.cards) {
+          allCards = cloudData.cards;
+          userPlan = cloudData.plan || 'free';
+          localStorage.setItem(DATA_PREFIX + email, JSON.stringify(allCards));
+          localStorage.setItem('flashmind_plan_' + email, userPlan);
+        }
+      } else {
+        console.log('❌ Firebase Auth: User signed out');
+        // Only reset if we're not in the middle of a login
+        if (!currentUser) {
+          // Do nothing - login page will handle it
+        }
+      }
+    });
 
-    
     // ============================================================
     //  HELPERS
     // ============================================================
@@ -2218,7 +2016,6 @@ firebase.auth().onAuthStateChanged(async user => {
     function getDateRange(days) {
       const dates = [];
       const now = new Date();
-
       if (days === 7) {
         for (let i = 6; i >= 0; i--) {
           const d = new Date(now);
@@ -2253,7 +2050,7 @@ firebase.auth().onAuthStateChanged(async user => {
     }
 
     // ============================================================
-    //  DAILY GOAL FUNCTIONS
+    //  DAILY GOAL
     // ============================================================
     function getDailyGoal() {
       const key = 'flashmind_goal_' + (currentUser || 'default');
@@ -2564,52 +2361,49 @@ firebase.auth().onAuthStateChanged(async user => {
     }
 
     async function handleLogin(e) {
-  e.preventDefault();
-  const email = document.getElementById('login-email').value.trim();
-  const pw = document.getElementById('login-password').value;
-  const err = document.getElementById('login-error');
+      e.preventDefault();
+      const email = document.getElementById('login-email').value.trim();
+      const pw = document.getElementById('login-password').value;
+      const err = document.getElementById('login-error');
 
-  err.textContent = '';
+      err.textContent = '';
 
-  try {
-    // Sign in with Firebase Authentication
-    const userCredential = await firebase.auth().signInWithEmailAndPassword(email, pw);
-    const user = userCredential.user;
+      try {
+        const userCredential = await firebase.auth().signInWithEmailAndPassword(email, pw);
+        const user = userCredential.user;
 
-    currentUser = email;
-    saveSession(email);
+        currentUser = email;
+        saveSession(email);
 
-    // Load user data from Firestore
-    const cloudData = await loadFromFirebase(email);
-    if (cloudData && cloudData.cards) {
-      allCards = cloudData.cards;
-      userPlan = cloudData.plan || 'free';
-      localStorage.setItem(DATA_PREFIX + email, JSON.stringify(allCards));
-      localStorage.setItem('flashmind_plan_' + email, userPlan);
-    } else {
-      loadUserData(email);
+        const cloudData = await loadFromFirebase(email);
+        if (cloudData && cloudData.cards) {
+          allCards = cloudData.cards;
+          userPlan = cloudData.plan || 'free';
+          localStorage.setItem(DATA_PREFIX + email, JSON.stringify(allCards));
+          localStorage.setItem('flashmind_plan_' + email, userPlan);
+        } else {
+          loadUserData(email);
+        }
+
+        isAdmin = ADMIN_EMAILS.includes(email);
+        document.getElementById('bottom-nav-container').classList.remove('hidden');
+        enterApp();
+
+      } catch (error) {
+        console.error('Login error:', error);
+        if (error.code === 'auth/user-not-found') {
+          err.textContent = 'No account found. Please sign up first.';
+        } else if (error.code === 'auth/wrong-password') {
+          err.textContent = 'Incorrect password.';
+        } else if (error.code === 'auth/invalid-email') {
+          err.textContent = 'Invalid email address.';
+        } else if (error.code === 'auth/too-many-requests') {
+          err.textContent = 'Too many failed attempts. Please try again later.';
+        } else {
+          err.textContent = 'Login failed: ' + error.message;
+        }
+      }
     }
-
-    // Check if admin
-    isAdmin = ADMIN_EMAILS.includes(email);
-    document.getElementById('bottom-nav-container').classList.remove('hidden');
-    enterApp();
-
-  } catch (error) {
-    console.error('Login error:', error);
-    if (error.code === 'auth/user-not-found') {
-      err.textContent = 'No account found. Please sign up first.';
-    } else if (error.code === 'auth/wrong-password') {
-      err.textContent = 'Incorrect password.';
-    } else if (error.code === 'auth/invalid-email') {
-      err.textContent = 'Invalid email address.';
-    } else if (error.code === 'auth/too-many-requests') {
-      err.textContent = 'Too many failed attempts. Please try again later.';
-    } else {
-      err.textContent = 'Login failed: ' + error.message;
-    }
-  }
-}
 
     function loadUserData(email) {
       const key = DATA_PREFIX + email;
@@ -2621,97 +2415,89 @@ firebase.auth().onAuthStateChanged(async user => {
     }
 
     async function handleSignup(e) {
-  e.preventDefault();
-  const un = document.getElementById('signup-username').value.trim();
-  const email = document.getElementById('signup-email').value.trim();
-  const pw = document.getElementById('signup-password').value;
-  const cf = document.getElementById('signup-confirm').value;
-  const code = document.getElementById('signup-code').value.trim().toUpperCase();
-  const err = document.getElementById('signup-error');
+      e.preventDefault();
+      const un = document.getElementById('signup-username').value.trim();
+      const email = document.getElementById('signup-email').value.trim();
+      const pw = document.getElementById('signup-password').value;
+      const cf = document.getElementById('signup-confirm').value;
+      const code = document.getElementById('signup-code').value.trim().toUpperCase();
+      const err = document.getElementById('signup-error');
 
-  err.textContent = '';
+      err.textContent = '';
 
-  if (!un || !email || !pw || !cf) { err.textContent = 'All fields required.'; return; }
-  if (pw.length < 6) { err.textContent = 'Password min 6 chars.'; return; }
-  if (pw !== cf) { err.textContent = 'Passwords do not match.'; return; }
+      if (!un || !email || !pw || !cf) { err.textContent = 'All fields required.'; return; }
+      if (pw.length < 6) { err.textContent = 'Password min 6 chars.'; return; }
+      if (pw !== cf) { err.textContent = 'Passwords do not match.'; return; }
 
-  try {
-    // Create user with Firebase Authentication
-    const userCredential = await firebase.auth().createUserWithEmailAndPassword(email, pw);
-    const user = userCredential.user;
+      try {
+        const userCredential = await firebase.auth().createUserWithEmailAndPassword(email, pw);
+        const user = userCredential.user;
+        await user.updateProfile({ displayName: un });
 
-    // Update profile with username
-    await user.updateProfile({ displayName: un });
+        const isAdminUser = ADMIN_EMAILS.includes(email);
 
-    const isAdminUser = ADMIN_EMAILS.includes(email);
+        let isBookBuyer = false;
+        if (code) {
+          const codes = getCodes();
+          if (codes[code] && !codes[code].used) {
+            isBookBuyer = true;
+            codes[code].used = true;
+            codes[code].usedBy = email;
+            codes[code].usedAt = new Date().toISOString();
+            saveCodes(codes);
+          } else if (code) {
+            err.textContent = 'Invalid or already used access code. You can still create a free account.';
+          }
+        }
 
-    let isBookBuyer = false;
-    if (code) {
-      const codes = getCodes();
-      if (codes[code] && !codes[code].used) {
-        isBookBuyer = true;
-        codes[code].used = true;
-        codes[code].usedBy = email;
-        codes[code].usedAt = new Date().toISOString();
-        saveCodes(codes);
-      } else if (code) {
-        err.textContent = 'Invalid or already used access code. You can still create a free account.';
+        const plan = (isBookBuyer || isAdminUser) ? 'premium' : 'free';
+        const expiry = (isBookBuyer || isAdminUser) ? addMonths(new Date(), PLAN_DURATION_MONTHS).toISOString() : null;
+
+        const users = getUsers();
+        users[email] = {
+          username: un,
+          email,
+          password: pw,
+          created: Date.now(),
+          plan: plan,
+          isBookBuyer: isBookBuyer,
+          isAdmin: isAdminUser
+        };
+        saveUsers(users);
+
+        currentUser = email;
+        saveSession(email);
+        allCards = getSampleDecks();
+        saveUserData(email);
+        if (isBookBuyer || isAdminUser) {
+          savePlan(email, 'premium', expiry);
+        }
+        await saveToFirebase(email, allCards, plan);
+
+        isAdmin = isAdminUser;
+        document.getElementById('bottom-nav-container').classList.remove('hidden');
+        enterApp();
+
+        if (isBookBuyer) {
+          alert('🎉 Access code validated! You now have Premium access for 3 months.');
+        }
+        if (isAdminUser) {
+          alert('👑 Admin account created! You have full admin access.');
+        }
+
+      } catch (error) {
+        console.error('Signup error:', error);
+        if (error.code === 'auth/email-already-in-use') {
+          err.textContent = 'Email already registered. Please login or use another email.';
+        } else if (error.code === 'auth/weak-password') {
+          err.textContent = 'Password is too weak. Use at least 6 characters.';
+        } else if (error.code === 'auth/invalid-email') {
+          err.textContent = 'Invalid email address.';
+        } else {
+          err.textContent = 'Signup failed: ' + error.message;
+        }
       }
     }
-
-    const plan = (isBookBuyer || isAdminUser) ? 'premium' : 'free';
-    const expiry = (isBookBuyer || isAdminUser) ? addMonths(new Date(), PLAN_DURATION_MONTHS).toISOString() : null;
-
-    // Save user info to localStorage (backup)
-    const users = getUsers();
-    users[email] = {
-      username: un,
-      email,
-      password: pw,
-      created: Date.now(),
-      plan: plan,
-      isBookBuyer: isBookBuyer,
-      isAdmin: isAdminUser
-    };
-    saveUsers(users);
-
-    currentUser = email;
-    saveSession(email);
-    allCards = getSampleDecks();
-
-    // Save to localStorage
-    saveUserData(email);
-    if (isBookBuyer || isAdminUser) {
-      savePlan(email, 'premium', expiry);
-    }
-
-    // Save to Firestore
-    await saveToFirebase(email, allCards, plan);
-
-    isAdmin = isAdminUser;
-    document.getElementById('bottom-nav-container').classList.remove('hidden');
-    enterApp();
-
-    if (isBookBuyer) {
-      alert('🎉 Access code validated! You now have Premium access for 3 months.');
-    }
-    if (isAdminUser) {
-      alert('👑 Admin account created! You have full admin access.');
-    }
-
-  } catch (error) {
-    console.error('Signup error:', error);
-    if (error.code === 'auth/email-already-in-use') {
-      err.textContent = 'Email already registered. Please login or use another email.';
-    } else if (error.code === 'auth/weak-password') {
-      err.textContent = 'Password is too weak. Use at least 6 characters.';
-    } else if (error.code === 'auth/invalid-email') {
-      err.textContent = 'Invalid email address.';
-    } else {
-      err.textContent = 'Signup failed: ' + error.message;
-    }
-  }
-}
 
     function saveUserData(email) {
       localStorage.setItem(DATA_PREFIX + email, JSON.stringify(allCards));
@@ -2726,25 +2512,23 @@ firebase.auth().onAuthStateChanged(async user => {
     }
 
     async function handleLogout() {
-  if (confirm('Logout?')) {
-    try {
-      // Sign out from Firebase
-      await firebase.auth().signOut();
-    } catch (e) {
-      console.warn('Firebase signout error:', e);
+      if (confirm('Logout?')) {
+        try {
+          await firebase.auth().signOut();
+        } catch (e) {
+          console.warn('Firebase signout error:', e);
+        }
+        clearSession();
+        currentUser = null;
+        allCards = [];
+        isAdmin = false;
+        document.getElementById('bottom-nav-container').classList.add('hidden');
+        document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+        document.getElementById('view-login').classList.add('active');
+        document.getElementById('login-email').value = '';
+        document.getElementById('login-password').value = '';
+      }
     }
-    
-    clearSession();
-    currentUser = null;
-    allCards = [];
-    isAdmin = false;
-    document.getElementById('bottom-nav-container').classList.add('hidden');
-    document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
-    document.getElementById('view-login').classList.add('active');
-    document.getElementById('login-email').value = '';
-    document.getElementById('login-password').value = '';
-  }
-}
 
     function getPlanExpiry(email) {
       return localStorage.getItem('flashmind_expiry_' + email) || null;
@@ -2986,6 +2770,9 @@ firebase.auth().onAuthStateChanged(async user => {
       updatePlanUI();
     }
 
+    // ============================================================
+    //  RENDER DECKS
+    // ============================================================
     function renderDecks() {
       const decks = getDecks();
       const container = document.getElementById('deck-list');
@@ -3251,12 +3038,38 @@ firebase.auth().onAuthStateChanged(async user => {
     }
 
     // ============================================================
+    //  ADMIN FUNCTIONS - DELETE DECK
+    // ============================================================
+    function deleteDeck(deckId) {
+      if (!isAdmin) {
+        alert('Only admins can delete decks.');
+        return;
+      }
+      if (!confirm('Delete this deck and all cards?')) return;
+      allCards = allCards.filter(c => c.deck_id !== deckId);
+      saveUserData(currentUser);
+      renderDecks();
+      updateHome();
+      if (document.getElementById('view-admin-import').classList.contains('active')) {
+        renderAdminDeckList();
+      }
+    }
+
+    // ============================================================
     //  ADMIN FUNCTIONS - IMPORT EXCEL TO DECK
     // ============================================================
     function importExcelToDeck(event) {
-      if (!isAdmin || !manageDeckId) return;
+      if (!isAdmin || !manageDeckId) {
+        alert('Only admins can import, or no deck selected.');
+        return;
+      }
       const file = event.target.files[0];
       if (!file) return;
+
+      if (typeof XLSX === 'undefined') {
+        alert('❌ Excel library not loaded. Please refresh and try again.');
+        return;
+      }
 
       const reader = new FileReader();
       reader.onload = function(e) {
@@ -3274,8 +3087,8 @@ firebase.auth().onAuthStateChanged(async user => {
           const deck = allCards.find(c => c.deck_id === manageDeckId && c.card_front === '__deck_placeholder__');
 
           jsonData.forEach(row => {
-            const front = row['Front'] || row['front'] || row['Question'] || row['question'];
-            const back = row['Back'] || row['back'] || row['Answer'] || row['answer'];
+            const front = row['Front'] || row['front'] || row['QUESTION'] || row['question'];
+            const back = row['Back'] || row['back'] || row['ANSWER'] || row['answer'];
 
             if (!front || !back) return;
 
@@ -3311,6 +3124,7 @@ firebase.auth().onAuthStateChanged(async user => {
           alert(`✅ Imported ${importedCount} new cards to this deck!`);
         } catch (error) {
           alert('❌ Error importing file: ' + error.message);
+          console.error(error);
         }
       };
       reader.readAsArrayBuffer(file);
@@ -3318,21 +3132,237 @@ firebase.auth().onAuthStateChanged(async user => {
     }
 
     // ============================================================
-    //  DECKS (Admin only for deletion)
+    //  ADMIN FUNCTIONS - SHOW ADMIN IMPORT
     // ============================================================
-    function deleteDeck(deckId) {
-      if (!isAdmin) {
-        alert('Only admins can delete decks.');
+    function showAdminImport() {
+      if (!isAdmin) return;
+      switchTab('admin-import');
+      renderAdminDeckList();
+      renderCodeList();
+    }
+
+    function renderAdminDeckList() {
+      const decks = getDecks();
+      const container = document.getElementById('admin-deck-list');
+      if (decks.length === 0) {
+        container.innerHTML = '<p class="text-sec text-sm">No decks imported yet.</p>';
         return;
       }
-      if (!confirm('Delete this deck and all cards?')) return;
-      allCards = allCards.filter(c => c.deck_id !== deckId);
-      saveUserData(currentUser);
-      renderDecks();
-      updateHome();
-      if (document.getElementById('view-admin-import').classList.contains('active')) {
-        renderAdminDeckList();
+      container.innerHTML = decks.map(d => `
+          <div class="flex items-center justify-between p-2 rounded-lg bg-gray-50 dark:bg-gray-800">
+            <div>
+              <span class="font-medium text-sm">${d.name}</span>
+              <span class="text-xs text-sec ml-2">${d.cards.length} cards</span>
+            </div>
+            <button onclick="deleteDeck('${d.id}')" class="text-red-500 p-1"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+          </div>
+        `).join('');
+      if (typeof lucide !== 'undefined' && lucide.createIcons) {
+        lucide.createIcons();
       }
+    }
+
+    function renderCodeList() {
+      const codes = getCodes();
+      const container = document.getElementById('code-list');
+      const entries = Object.entries(codes);
+      if (entries.length === 0) {
+        container.innerHTML = '<p class="text-sec">No codes generated yet.</p>';
+        return;
+      }
+      container.innerHTML = entries.map(([code, data]) => `
+          <div class="flex items-center justify-between p-1.5 rounded bg-gray-50 dark:bg-gray-800">
+            <span class="font-mono text-xs">${code}</span>
+            <span class="text-xs ${data.used ? 'text-red-500' : 'text-green-500'}">${data.used ? '✓ Used by ' + data.usedBy : 'Available'}</span>
+          </div>
+        `).join('');
+    }
+
+    // ============================================================
+    //  EXCEL IMPORT - MAIN
+    // ============================================================
+    function handleExcelImport(event) {
+      if (!isAdmin) {
+        alert('Only admins can import decks.');
+        return;
+      }
+
+      const file = event.target.files[0];
+      if (!file) {
+        alert('No file selected.');
+        return;
+      }
+
+      console.log('📤 Importing file:', file.name, file.size, 'bytes');
+
+      if (typeof XLSX === 'undefined') {
+        alert('❌ Excel library not loaded. Please refresh and try again.');
+        console.error('XLSX library not found!');
+        return;
+      }
+
+      const reader = new FileReader();
+
+      reader.onload = function(e) {
+        try {
+          console.log('📖 File loaded, parsing...');
+          const data = new Uint8Array(e.target.result);
+          const workbook = XLSX.read(data, { type: 'array' });
+
+          if (!workbook.SheetNames || workbook.SheetNames.length === 0) {
+            showImportStatus('❌ No sheets found in Excel file.', 'error');
+            return;
+          }
+
+          const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+          const jsonData = XLSX.utils.sheet_to_json(firstSheet);
+
+          console.log('📊 Found', jsonData.length, 'rows in Excel');
+
+          if (jsonData.length === 0) {
+            showImportStatus('❌ No data found in Excel file.', 'error');
+            return;
+          }
+
+          let importedCount = 0;
+          let skippedCount = 0;
+
+          jsonData.forEach((row, index) => {
+            const topic = row['Topic'] || row['topic'] || row['TOPIC'] || 'General';
+            const subtopic = row['Subtopic'] || row['subtopic'] || row['SUBTOPIC'] || '';
+            const front = row['Front'] || row['front'] || row['FRONT'] || row['Question'] || row['question'] || row[
+              'QUESTION'];
+            const back = row['Back'] || row['back'] || row['BACK'] || row['Answer'] || row['answer'] || row['ANSWER'];
+            const tags = row['Tags'] || row['tags'] || row['TAGS'] || '';
+
+            if (!front || !back) {
+              skippedCount++;
+              console.warn(`⚠️ Row ${index + 2} missing front or back, skipping:`, row);
+              return;
+            }
+
+            const deckName = topic + (subtopic ? ' - ' + subtopic : '');
+            let deckId = null;
+
+            const existingDeck = allCards.find(c =>
+              c.deck_name === deckName &&
+              c.card_front === '__deck_placeholder__'
+            );
+
+            if (existingDeck) {
+              deckId = existingDeck.deck_id;
+            } else {
+              deckId = 'deck_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6);
+              allCards.push({
+                __id: generateId(),
+                deck_id: deckId,
+                deck_name: deckName,
+                card_front: '__deck_placeholder__',
+                card_back: '',
+                card_tags: '',
+                ease_factor: 2.5,
+                interval: 0,
+                repetitions: 0,
+                next_review: '',
+                last_review: '',
+                total_reviews: 0,
+                correct_count: 0,
+                topic: topic,
+                subtopic: subtopic
+              });
+            }
+
+            allCards.push({
+              __id: generateId(),
+              deck_id: deckId,
+              deck_name: deckName,
+              card_front: front,
+              card_back: back,
+              card_tags: tags,
+              ease_factor: 2.5,
+              interval: 0,
+              repetitions: 0,
+              next_review: today(),
+              last_review: '',
+              total_reviews: 0,
+              correct_count: 0,
+              topic: topic,
+              subtopic: subtopic
+            });
+
+            importedCount++;
+          });
+
+          saveUserData(currentUser);
+          renderDecks();
+          updateHome();
+          renderAdminDeckList();
+
+          const message =
+            `✅ Successfully imported ${importedCount} cards!${skippedCount > 0 ? ` (${skippedCount} rows skipped due to missing data)` : ''}`;
+          showImportStatus(message, 'success');
+          console.log(`✅ Import complete: ${importedCount} cards imported, ${skippedCount} skipped`);
+
+        } catch (error) {
+          console.error('❌ Import error:', error);
+          showImportStatus('❌ Error importing file: ' + error.message, 'error');
+        }
+      };
+
+      reader.onerror = function(error) {
+        console.error('❌ File reader error:', error);
+        showImportStatus('❌ Error reading file: ' + error.message, 'error');
+      };
+
+      reader.readAsArrayBuffer(file);
+      event.target.value = '';
+    }
+
+    function showImportStatus(message, type) {
+      // Try to update the UI elements
+      const statusDiv = document.getElementById('import-status');
+      const statusBox = document.getElementById('import-status-box');
+      const statusText = document.getElementById('import-status-text');
+
+      // If elements don't exist, use alert
+      if (!statusDiv || !statusBox || !statusText) {
+        console.log('📊 Import status:', message);
+        if (type === 'success') {
+          alert('✅ ' + message);
+        } else {
+          alert('❌ ' + message);
+        }
+        return;
+      }
+
+      statusDiv.classList.remove('hidden');
+      statusText.textContent = message;
+
+      if (type === 'success') {
+        statusBox.className =
+          'flex items-center gap-2 p-3 rounded-xl bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800';
+        const icon = statusBox.querySelector('i');
+        if (icon) {
+          icon.className = 'w-5 h-5 text-green-500';
+          icon.setAttribute('data-lucide', 'check-circle');
+        }
+      } else {
+        statusBox.className =
+          'flex items-center gap-2 p-3 rounded-xl bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800';
+        const icon = statusBox.querySelector('i');
+        if (icon) {
+          icon.className = 'w-5 h-5 text-red-500';
+          icon.setAttribute('data-lucide', 'alert-circle');
+        }
+      }
+
+      if (typeof lucide !== 'undefined' && lucide.createIcons) {
+        lucide.createIcons();
+      }
+
+      setTimeout(() => {
+        statusDiv.classList.add('hidden');
+      }, 5000);
     }
 
     function openDeck(deckId) {
@@ -3348,6 +3378,406 @@ firebase.auth().onAuthStateChanged(async user => {
       currentDeckId = deckId;
       openStudySelect();
     }
+
+    // ============================================================
+    //  STUDY MODES
+    // ============================================================
+    function openStudySelect() {
+      const deck = allCards.find(c => c.deck_id === currentDeckId && c.card_front === '__deck_placeholder__');
+      const deckName = deck ? deck.deck_name : 'Deck';
+      document.getElementById('study-deck-name').textContent = deckName;
+
+      document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+      document.getElementById('view-study-select').classList.add('active');
+
+      const isPremium = isPremiumActive();
+      const learnBtn = document.getElementById('learn-mode-btn');
+      const testBtn = document.getElementById('test-mode-btn');
+      const lockMsg = document.getElementById('premium-lock-msg');
+
+      if (!isPremium) {
+        learnBtn.style.opacity = '0.5';
+        testBtn.style.opacity = '0.5';
+        lockMsg.classList.remove('hidden');
+      } else {
+        learnBtn.style.opacity = '1';
+        testBtn.style.opacity = '1';
+        lockMsg.classList.add('hidden');
+      }
+
+      if (typeof lucide !== 'undefined' && lucide.createIcons) {
+        lucide.createIcons();
+      }
+    }
+
+    function continueStudying() {
+      const due = getDueCards();
+      if (due.length === 0) {
+        alert('🎉 All caught up! No cards due for review.');
+        return;
+      }
+      const deckDue = {};
+      due.forEach(c => { deckDue[c.deck_id] = (deckDue[c.deck_id] || 0) + 1 });
+      currentDeckId = Object.entries(deckDue).sort((a, b) => b[1] - a[1])[0][0];
+      openStudySelect();
+    }
+
+    // ============================================================
+    //  FLASHCARDS MODE - COMPLETE FIX
+    // ============================================================
+    function startFlashcards() {
+      const allCardsInDeck = getRealCards().filter(c => c.deck_id === currentDeckId);
+
+      if (allCardsInDeck.length === 0) {
+        alert('No cards in this deck.');
+        return;
+      }
+
+      const dueCards = getDueCards(currentDeckId);
+      studyQueue = dueCards.length > 0 ? dueCards : allCardsInDeck;
+
+      for (let i = studyQueue.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [studyQueue[i], studyQueue[j]] = [studyQueue[j], studyQueue[i]];
+      }
+
+      studyIdx = 0;
+      fcFlipped = false;
+
+      document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+      document.getElementById('view-flashcards').classList.add('active');
+      fcShowCard();
+    }
+
+    function fcShowCard() {
+      const card = document.getElementById('fc-card');
+      const done = document.getElementById('fc-done');
+      const btns = document.getElementById('fc-buttons');
+      const hint = document.getElementById('fc-hint');
+
+      // Ensure back button works
+      const backBtn = done ? done.querySelector('.back-btn') : null;
+      if (backBtn) {
+        backBtn.onclick = function() {
+          exitStudy();
+        };
+      }
+
+      if (!studyQueue || studyQueue.length === 0 || studyIdx >= studyQueue.length) {
+        // Done state
+        if (card) card.style.display = 'none';
+        if (btns) {
+          btns.classList.add('hidden');
+          btns.style.display = 'none';
+        }
+        if (hint) hint.style.display = 'none';
+        if (done) {
+          done.classList.remove('hidden');
+          done.style.display = 'flex';
+        }
+        document.getElementById('fc-progress').textContent = `${studyQueue.length || 0}/${studyQueue.length || 0}`;
+        document.getElementById('fc-progress-fill').style.width = '100%';
+
+        if (typeof lucide !== 'undefined' && lucide.createIcons) {
+          lucide.createIcons();
+        }
+        return;
+      }
+
+      // Show card
+      if (card) card.style.display = '';
+      if (done) {
+        done.classList.add('hidden');
+        done.style.display = 'none';
+      }
+      if (btns) {
+        btns.classList.add('hidden');
+        btns.style.display = 'none';
+      }
+      if (hint) hint.style.display = '';
+
+      const c = studyQueue[studyIdx];
+      if (!c) {
+        console.error('Card not found at index', studyIdx);
+        return;
+      }
+
+      document.getElementById('fc-front-text').textContent = c.card_front || 'Empty';
+      document.getElementById('fc-back-text').textContent = c.card_back || 'Empty';
+      if (card) card.classList.remove('flipped');
+      fcFlipped = false;
+
+      document.getElementById('fc-progress').textContent = `${studyIdx + 1}/${studyQueue.length}`;
+      document.getElementById('fc-progress-fill').style.width = `${(studyIdx / studyQueue.length) * 100}%`;
+
+      if (typeof lucide !== 'undefined' && lucide.createIcons) {
+        lucide.createIcons();
+      }
+    }
+
+    function fcFlip() {
+      if (studyIdx >= studyQueue.length) return;
+      if (!fcFlipped) {
+        document.getElementById('fc-card').classList.add('flipped');
+        fcFlipped = true;
+        document.getElementById('fc-buttons').classList.remove('hidden');
+        document.getElementById('fc-buttons').style.display = '';
+      }
+    }
+
+    function fcRate(q) {
+      const c = studyQueue[studyIdx];
+      const updated = applySRS(c, q);
+      const idx = allCards.findIndex(x => x.__id === updated.__id);
+      if (idx !== -1) allCards[idx] = updated;
+      else allCards.push(updated);
+      saveUserData(currentUser);
+      addStudyTime(0.5);
+      studyIdx++;
+      fcShowCard();
+      updateHome();
+    }
+
+    // ============================================================
+    //  EXIT STUDY - COMPLETE FIX
+    // ============================================================
+    function exitStudy() {
+      // Reset all flashcard state
+      studyQueue = [];
+      studyIdx = 0;
+      fcFlipped = false;
+
+      // Reset UI elements
+      const btns = document.getElementById('fc-buttons');
+      const done = document.getElementById('fc-done');
+      const card = document.getElementById('fc-card');
+      const hint = document.getElementById('fc-hint');
+
+      if (btns) {
+        btns.classList.add('hidden');
+        btns.style.display = 'none';
+      }
+      if (done) {
+        done.classList.add('hidden');
+        done.style.display = 'none';
+      }
+      if (card) {
+        card.style.display = '';
+        card.classList.remove('flipped');
+      }
+      if (hint) {
+        hint.style.display = '';
+      }
+
+      // Reset progress
+      document.getElementById('fc-progress').textContent = '0/0';
+      document.getElementById('fc-progress-fill').style.width = '0%';
+
+      // Hide flashcard view and show decks
+      document.getElementById('view-flashcards').classList.remove('active');
+      document.getElementById('view-decks').classList.add('active');
+
+      // Update nav active state
+      document.querySelectorAll('.nav-item').forEach(b => {
+        b.classList.toggle('active', b.dataset.tab === 'decks');
+      });
+
+      // Re-render decks
+      renderDecks();
+
+      // Refresh icons
+      if (typeof lucide !== 'undefined' && lucide.createIcons) {
+        lucide.createIcons();
+      }
+
+      // Reset currentTab to decks so nav works
+      currentTab = 'decks';
+    }
+
+    // ============================================================
+    //  LEARN MODE
+    // ============================================================
+    function startLearn() {
+      if (!isPremiumActive()) {
+        showUpgradeModal();
+        return;
+      }
+      studyQueue = getDueCards(currentDeckId);
+      if (studyQueue.length === 0) studyQueue = getRealCards().filter(c => c.deck_id === currentDeckId);
+      if (studyQueue.length === 0) { alert('No cards.'); return }
+      studyIdx = 0;
+      document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+      document.getElementById('view-learn').classList.add('active');
+      lnShowQuestion();
+    }
+
+    function lnShowQuestion() {
+      const done = document.getElementById('ln-done'),
+        qBox = document.getElementById('ln-question'),
+        aBox = document.getElementById('ln-answer-box'),
+        showBtn = document.getElementById('ln-show-btn'),
+        gradeB = document.getElementById('ln-grade-btns');
+      if (studyIdx >= studyQueue.length) {
+        qBox.style.display = 'none';
+        aBox.classList.add('hidden');
+        showBtn.style.display = 'none';
+        gradeB.classList.add('hidden');
+        done.classList.remove('hidden');
+        done.style.display = 'flex';
+        document.getElementById('ln-progress-fill').style.width = '100%';
+        if (typeof lucide !== 'undefined' && lucide.createIcons) {
+          lucide.createIcons();
+        }
+        return;
+      }
+      qBox.style.display = '';
+      done.classList.add('hidden');
+      done.style.display = 'none';
+      aBox.classList.add('hidden');
+      showBtn.style.display = '';
+      gradeB.classList.add('hidden');
+      const c = studyQueue[studyIdx];
+      document.getElementById('ln-front-text').textContent = c.card_front;
+      document.getElementById('ln-back-text').textContent = c.card_back;
+      document.getElementById('ln-progress').textContent = `${studyIdx + 1}/${studyQueue.length}`;
+      document.getElementById('ln-progress-fill').style.width = `${(studyIdx / studyQueue.length) * 100}%`;
+      if (typeof lucide !== 'undefined' && lucide.createIcons) {
+        lucide.createIcons();
+      }
+    }
+
+    function lnShowAnswer() {
+      document.getElementById('ln-answer-box').classList.remove('hidden');
+      document.getElementById('ln-show-btn').style.display = 'none';
+      document.getElementById('ln-grade-btns').classList.remove('hidden');
+    }
+
+    function lnGrade(correct) {
+      const c = studyQueue[studyIdx];
+      const updated = applySRS(c, correct ? 2 : 0);
+      const idx = allCards.findIndex(x => x.__id === updated.__id);
+      if (idx !== -1) allCards[idx] = updated;
+      else allCards.push(updated);
+      saveUserData(currentUser);
+      addStudyTime(0.5);
+      studyIdx++;
+      lnShowQuestion();
+      updateHome();
+    }
+
+    // ============================================================
+    //  TEST MODE
+    // ============================================================
+    function startTest() {
+      if (!isPremiumActive()) {
+        showUpgradeModal();
+        return;
+      }
+      const all = getRealCards().filter(c => c.deck_id === currentDeckId);
+      if (all.length === 0) { alert('No cards.'); return }
+      const shuffled = [...all];
+      for (let i = shuffled.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1));
+        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]] }
+      studyQueue = shuffled.slice(0, 10);
+      studyIdx = 0;
+      tsCorrect = 0;
+      tsIncorrect = 0;
+      document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+      document.getElementById('view-test').classList.add('active');
+      tsShowQuestion();
+    }
+
+    function tsShowQuestion() {
+      const results = document.getElementById('ts-results'),
+        qArea = document.getElementById('ts-question-area'),
+        fb = document.getElementById('ts-feedback'),
+        choices = document.getElementById('ts-choices'),
+        typeArea = document.getElementById('ts-type-area');
+      if (studyIdx >= studyQueue.length) {
+        qArea.style.display = 'none';
+        results.classList.remove('hidden');
+        results.style.display = 'flex';
+        const pct = studyQueue.length > 0 ? Math.round(tsCorrect / studyQueue.length * 100) : 0;
+        document.getElementById('ts-score').textContent = pct + '%';
+        document.getElementById('ts-correct-count').textContent = tsCorrect;
+        document.getElementById('ts-incorrect-count').textContent = tsIncorrect;
+        document.getElementById('ts-progress-fill').style.width = '100%';
+        if (typeof lucide !== 'undefined' && lucide.createIcons) {
+          lucide.createIcons();
+        }
+        return;
+      }
+      qArea.style.display = '';
+      results.classList.add('hidden');
+      results.style.display = 'none';
+      fb.classList.add('hidden');
+      const c = studyQueue[studyIdx];
+      document.getElementById('ts-question').textContent = c.card_front;
+      tsCurrentAnswer = c.card_back;
+      document.getElementById('ts-progress').textContent = `${studyIdx + 1}/${studyQueue.length}`;
+      document.getElementById('ts-progress-fill').style.width = `${(studyIdx / studyQueue.length) * 100}%`;
+
+      if (Math.random() > 0.4 && getRealCards().length >= 4) {
+        choices.classList.remove('hidden');
+        typeArea.classList.add('hidden');
+        const options = [c.card_back];
+        const others = getRealCards().filter(x => x.__id !== c.__id && x.deck_id === currentDeckId).map(x => x.card_back)
+          .filter(Boolean);
+        while (options.length < 4 && others.length > 0) { const idx = Math.floor(Math.random() * others.length); if (!options
+            .includes(others[idx])) options.push(others[idx]);
+          others.splice(idx, 1) }
+        for (let i = options.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1));
+          [options[i], options[j]] = [options[j], options[i]] }
+        choices.innerHTML = options.map(o =>
+          `<button onclick="tsChoose('${o.replace(/'/g, "\\'").replace(/"/g, '&quot;')}')" class="choice-btn">${o}</button>`
+        ).join('');
+      } else {
+        choices.classList.add('hidden');
+        typeArea.classList.remove('hidden');
+        document.getElementById('ts-type-input').value = '';
+        setTimeout(() => document.getElementById('ts-type-input').focus(), 100);
+      }
+      if (typeof lucide !== 'undefined' && lucide.createIcons) {
+        lucide.createIcons();
+      }
+    }
+
+    function tsChoose(answer) { const c = answer === tsCurrentAnswer; if (c) tsCorrect++;
+      else tsIncorrect++;
+      tsShowFeedback(c) }
+
+    function tsSubmitTyped() {
+      const val = document.getElementById('ts-type-input').value.trim().toLowerCase();
+      const c = val === tsCurrentAnswer.toLowerCase();
+      if (c) tsCorrect++;
+      else tsIncorrect++;
+      tsShowFeedback(c);
+    }
+
+    function tsShowFeedback(correct) {
+      document.getElementById('ts-choices').classList.add('hidden');
+      document.getElementById('ts-type-area').classList.add('hidden');
+      const fb = document.getElementById('ts-feedback');
+      fb.classList.remove('hidden');
+      fb.style.background = correct ? 'var(--card-green)' : 'var(--card-peach)';
+      document.getElementById('ts-feedback-text').textContent = correct ? '✅ Correct!' : '❌ Incorrect';
+      document.getElementById('ts-feedback-text').style.color = correct ? '#059669' : '#dc2626';
+      document.getElementById('ts-correct-answer').textContent = correct ? '' : 'Answer: ' + tsCurrentAnswer;
+      const c = studyQueue[studyIdx];
+      const updated = applySRS(c, correct ? 2 : 0);
+      const idx = allCards.findIndex(x => x.__id === updated.__id);
+      if (idx !== -1) allCards[idx] = updated;
+      else allCards.push(updated);
+      saveUserData(currentUser);
+      addStudyTime(0.5);
+      updateHome();
+      if (typeof lucide !== 'undefined' && lucide.createIcons) {
+        lucide.createIcons();
+      }
+    }
+
+    function tsNext() { studyIdx++;
+      tsShowQuestion() }
 
     // ============================================================
     //  STATS RENDERING
@@ -3684,444 +4114,6 @@ firebase.auth().onAuthStateChanged(async user => {
       });
     }
 
-    function showAdminImport() {
-      if (!isAdmin) return;
-      switchTab('admin-import');
-      renderAdminDeckList();
-      renderCodeList();
-    }
-
-    function renderAdminDeckList() {
-      const decks = getDecks();
-      const container = document.getElementById('admin-deck-list');
-      if (decks.length === 0) {
-        container.innerHTML = '<p class="text-sec text-sm">No decks imported yet.</p>';
-        return;
-      }
-      container.innerHTML = decks.map(d => `
-            <div class="flex items-center justify-between p-2 rounded-lg bg-gray-50 dark:bg-gray-800">
-              <div>
-                <span class="font-medium text-sm">${d.name}</span>
-                <span class="text-xs text-sec ml-2">${d.cards.length} cards</span>
-              </div>
-              <button onclick="deleteDeck('${d.id}')" class="text-red-500 p-1"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
-            </div>
-          `).join('');
-      if (typeof lucide !== 'undefined' && lucide.createIcons) {
-        lucide.createIcons();
-      }
-    }
-
-    function renderCodeList() {
-      const codes = getCodes();
-      const container = document.getElementById('code-list');
-      const entries = Object.entries(codes);
-      if (entries.length === 0) {
-        container.innerHTML = '<p class="text-sec">No codes generated yet.</p>';
-        return;
-      }
-      container.innerHTML = entries.map(([code, data]) => `
-            <div class="flex items-center justify-between p-1.5 rounded bg-gray-50 dark:bg-gray-800">
-              <span class="font-mono text-xs">${code}</span>
-              <span class="text-xs ${data.used ? 'text-red-500' : 'text-green-500'}">${data.used ? '✓ Used by ' + data.usedBy : 'Available'}</span>
-            </div>
-          `).join('');
-    }
-
-    function continueStudying() {
-      const due = getDueCards();
-      if (due.length === 0) {
-        alert('🎉 All caught up! No cards due for review.');
-        return;
-      }
-      const deckDue = {};
-      due.forEach(c => { deckDue[c.deck_id] = (deckDue[c.deck_id] || 0) + 1 });
-      currentDeckId = Object.entries(deckDue).sort((a, b) => b[1] - a[1])[0][0];
-      openStudySelect();
-    }
-
-    function openStudySelect() {
-      const deck = allCards.find(c => c.deck_id === currentDeckId);
-      document.getElementById('study-deck-name').textContent = deck ? deck.deck_name : 'Deck';
-      document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
-      document.getElementById('view-study-select').classList.add('active');
-
-      const isPremium = isPremiumActive();
-      const learnBtn = document.getElementById('learn-mode-btn');
-      const testBtn = document.getElementById('test-mode-btn');
-      const lockMsg = document.getElementById('premium-lock-msg');
-
-      if (!isPremium) {
-        learnBtn.style.opacity = '0.5';
-        testBtn.style.opacity = '0.5';
-        lockMsg.classList.remove('hidden');
-      } else {
-        learnBtn.style.opacity = '1';
-        testBtn.style.opacity = '1';
-        lockMsg.classList.add('hidden');
-      }
-
-      if (typeof lucide !== 'undefined' && lucide.createIcons) {
-        lucide.createIcons();
-      }
-    }
-
-    function exitStudy() {
-  addStudyTime(5);
-  
-  // Reset all flashcard state
-  studyQueue = [];
-  studyIdx = 0;
-  fcFlipped = false;
-  
-  // Reset UI elements
-  const btns = document.getElementById('fc-buttons');
-  const done = document.getElementById('fc-done');
-  const card = document.getElementById('fc-card');
-  const hint = document.getElementById('fc-hint');
-  
-  if (btns) {
-    btns.classList.add('hidden');
-  }
-  if (done) {
-    done.classList.add('hidden');
-    done.style.display = 'none';
-  }
-  if (card) {
-    card.style.display = '';
-  }
-  if (hint) {
-    hint.style.display = '';
-  }
-  
-  // Reset progress
-  document.getElementById('fc-progress').textContent = '0/0';
-  document.getElementById('fc-progress-fill').style.width = '0%';
-  
-  // Go back to decks
-  switchTab('decks');
-}
-
-    // ============================================================
-    //  FLASHCARDS
-    // ============================================================
-    function startFlashcards() {
-  // Get all real cards from the current deck
-  const allCardsInDeck = getRealCards().filter(c => c.deck_id === currentDeckId);
-  
-  if (allCardsInDeck.length === 0) {
-    alert('No cards in this deck.');
-    return;
-  }
-  
-  // Get due cards first, if none, use all cards
-  const dueCards = getDueCards(currentDeckId);
-  studyQueue = dueCards.length > 0 ? dueCards : allCardsInDeck;
-  
-  // Shuffle for variety
-  for (let i = studyQueue.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [studyQueue[i], studyQueue[j]] = [studyQueue[j], studyQueue[i]];
-  }
-  
-  studyIdx = 0;
-  fcFlipped = false;
-  
-  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
-  document.getElementById('view-flashcards').classList.add('active');
-  fcShowCard();
-}
-
-    function fcShowCard() {
-  const card = document.getElementById('fc-card');
-  const done = document.getElementById('fc-done');
-  const btns = document.getElementById('fc-buttons');
-  const hint = document.getElementById('fc-hint');
-  const progress = document.getElementById('fc-progress');
-  const progressFill = document.getElementById('fc-progress-fill');
-  
-  // Debug logging
-  console.log('fcShowCard called, studyQueue length:', studyQueue.length, 'studyIdx:', studyIdx);
-  
-  if (!studyQueue || studyQueue.length === 0 || studyIdx >= studyQueue.length) {
-    // Done state
-    card.style.display = 'none';
-    btns.classList.add('hidden');
-    hint.style.display = 'none';
-    done.classList.remove('hidden');
-    done.style.display = 'flex';
-    if (progress) progress.textContent = `${studyQueue.length || 0}/${studyQueue.length || 0}`;
-    if (progressFill) progressFill.style.width = '100%';
-    
-    // Make sure the back button works
-    const backBtn = done.querySelector('.back-btn');
-    if (backBtn) {
-      backBtn.onclick = function() {
-        exitStudy();
-      };
-    }
-    
-    if (typeof lucide !== 'undefined' && lucide.createIcons) {
-      lucide.createIcons();
-    }
-    return;
-  }
-  
-  // Show card
-  card.style.display = '';
-  done.classList.add('hidden');
-  done.style.display = 'none';
-  btns.classList.add('hidden');
-  hint.style.display = '';
-  
-  const c = studyQueue[studyIdx];
-  if (!c) {
-    console.error('Card not found at index', studyIdx);
-    return;
-  }
-  
-  document.getElementById('fc-front-text').textContent = c.card_front || 'No front text';
-  document.getElementById('fc-back-text').textContent = c.card_back || 'No back text';
-  document.getElementById('fc-card').classList.remove('flipped');
-  fcFlipped = false;
-  
-  if (progress) progress.textContent = `${studyIdx + 1}/${studyQueue.length}`;
-  if (progressFill) progressFill.style.width = `${(studyIdx / studyQueue.length) * 100}%`;
-  
-  if (typeof lucide !== 'undefined' && lucide.createIcons) {
-    lucide.createIcons();
-  }
-}
-
-    function fcFlip() {
-      if (studyIdx >= studyQueue.length) return;
-      if (!fcFlipped) {
-        document.getElementById('fc-card').classList.add('flipped');
-        fcFlipped = true;
-        document.getElementById('fc-buttons').classList.remove('hidden');
-      }
-    }
-
-    function fcRate(q) {
-      const c = studyQueue[studyIdx];
-      const updated = applySRS(c, q);
-      const idx = allCards.findIndex(x => x.__id === updated.__id);
-      if (idx !== -1) allCards[idx] = updated;
-      else allCards.push(updated);
-      saveUserData(currentUser);
-      addStudyTime(0.5);
-      studyIdx++;
-      fcShowCard();
-      updateHome();
-    }
-
-    // ============================================================
-    //  LEARN (Premium only)
-    // ============================================================
-    function startLearn() {
-      if (!isPremiumActive()) {
-        showUpgradeModal();
-        return;
-      }
-      studyQueue = getDueCards(currentDeckId);
-      if (studyQueue.length === 0) studyQueue = getRealCards().filter(c => c.deck_id === currentDeckId);
-      if (studyQueue.length === 0) { alert('No cards.'); return }
-      studyIdx = 0;
-      document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
-      document.getElementById('view-learn').classList.add('active');
-      lnShowQuestion();
-    }
-
-    function lnShowQuestion() {
-      const done = document.getElementById('ln-done'),
-        qBox = document.getElementById('ln-question'),
-        aBox = document.getElementById('ln-answer-box'),
-        showBtn = document.getElementById('ln-show-btn'),
-        gradeB = document.getElementById('ln-grade-btns');
-      if (studyIdx >= studyQueue.length) {
-        qBox.style.display = 'none';
-        aBox.classList.add('hidden');
-        showBtn.style.display = 'none';
-        gradeB.classList.add('hidden');
-        done.classList.remove('hidden');
-        done.style.display = 'flex';
-        document.getElementById('ln-progress-fill').style.width = '100%';
-        if (typeof lucide !== 'undefined' && lucide.createIcons) {
-          lucide.createIcons();
-        }
-        return;
-      }
-      qBox.style.display = '';
-      done.classList.add('hidden');
-      done.style.display = 'none';
-      aBox.classList.add('hidden');
-      showBtn.style.display = '';
-      gradeB.classList.add('hidden');
-      const c = studyQueue[studyIdx];
-      document.getElementById('ln-front-text').textContent = c.card_front;
-      document.getElementById('ln-back-text').textContent = c.card_back;
-      document.getElementById('ln-progress').textContent = `${studyIdx + 1}/${studyQueue.length}`;
-      document.getElementById('ln-progress-fill').style.width = `${(studyIdx / studyQueue.length) * 100}%`;
-      if (typeof lucide !== 'undefined' && lucide.createIcons) {
-        lucide.createIcons();
-      }
-    }
-
-    function lnShowAnswer() {
-      document.getElementById('ln-answer-box').classList.remove('hidden');
-      document.getElementById('ln-show-btn').style.display = 'none';
-      document.getElementById('ln-grade-btns').classList.remove('hidden');
-    }
-
-    function lnGrade(correct) {
-      const c = studyQueue[studyIdx];
-      const updated = applySRS(c, correct ? 2 : 0);
-      const idx = allCards.findIndex(x => x.__id === updated.__id);
-      if (idx !== -1) allCards[idx] = updated;
-      else allCards.push(updated);
-      saveUserData(currentUser);
-      addStudyTime(0.5);
-      studyIdx++;
-      lnShowQuestion();
-      updateHome();
-    }
-
-    // ============================================================
-    //  TEST (Premium only)
-    // ============================================================
-    function startTest() {
-      if (!isPremiumActive()) {
-        showUpgradeModal();
-        return;
-      }
-      const all = getRealCards().filter(c => c.deck_id === currentDeckId);
-      if (all.length === 0) { alert('No cards.'); return }
-      const shuffled = [...all];
-      for (let i = shuffled.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1));
-        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]] }
-      studyQueue = shuffled.slice(0, 10);
-      studyIdx = 0;
-      tsCorrect = 0;
-      tsIncorrect = 0;
-      document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
-      document.getElementById('view-test').classList.add('active');
-      tsShowQuestion();
-    }
-
-    function tsShowQuestion() {
-      const results = document.getElementById('ts-results'),
-        qArea = document.getElementById('ts-question-area'),
-        fb = document.getElementById('ts-feedback'),
-        choices = document.getElementById('ts-choices'),
-        typeArea = document.getElementById('ts-type-area');
-      if (studyIdx >= studyQueue.length) {
-        qArea.style.display = 'none';
-        results.classList.remove('hidden');
-        results.style.display = 'flex';
-        const pct = studyQueue.length > 0 ? Math.round(tsCorrect / studyQueue.length * 100) : 0;
-        document.getElementById('ts-score').textContent = pct + '%';
-        document.getElementById('ts-correct-count').textContent = tsCorrect;
-        document.getElementById('ts-incorrect-count').textContent = tsIncorrect;
-        document.getElementById('ts-progress-fill').style.width = '100%';
-        if (typeof lucide !== 'undefined' && lucide.createIcons) {
-          lucide.createIcons();
-        }
-        return;
-      }
-      qArea.style.display = '';
-      results.classList.add('hidden');
-      results.style.display = 'none';
-      fb.classList.add('hidden');
-      const c = studyQueue[studyIdx];
-      document.getElementById('ts-question').textContent = c.card_front;
-      tsCurrentAnswer = c.card_back;
-      document.getElementById('ts-progress').textContent = `${studyIdx + 1}/${studyQueue.length}`;
-      document.getElementById('ts-progress-fill').style.width = `${(studyIdx / studyQueue.length) * 100}%`;
-
-      if (Math.random() > 0.4 && getRealCards().length >= 4) {
-        choices.classList.remove('hidden');
-        typeArea.classList.add('hidden');
-        const options = [c.card_back];
-        const others = getRealCards().filter(x => x.__id !== c.__id && x.deck_id === currentDeckId).map(x => x.card_back)
-          .filter(Boolean);
-        while (options.length < 4 && others.length > 0) { const idx = Math.floor(Math.random() * others.length); if (!options
-            .includes(others[idx])) options.push(others[idx]);
-          others.splice(idx, 1) }
-        for (let i = options.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1));
-          [options[i], options[j]] = [options[j], options[i]] }
-        choices.innerHTML = options.map(o =>
-          `<button onclick="tsChoose('${o.replace(/'/g, "\\'").replace(/"/g, '&quot;')}')" class="choice-btn">${o}</button>`
-        ).join('');
-      } else {
-        choices.classList.add('hidden');
-        typeArea.classList.remove('hidden');
-        document.getElementById('ts-type-input').value = '';
-        setTimeout(() => document.getElementById('ts-type-input').focus(), 100);
-      }
-      if (typeof lucide !== 'undefined' && lucide.createIcons) {
-        lucide.createIcons();
-      }
-    }
-
-    function tsChoose(answer) { const c = answer === tsCurrentAnswer; if (c) tsCorrect++;
-      else tsIncorrect++;
-      tsShowFeedback(c) }
-
-    function tsSubmitTyped() {
-      const val = document.getElementById('ts-type-input').value.trim().toLowerCase();
-      const c = val === tsCurrentAnswer.toLowerCase();
-      if (c) tsCorrect++;
-      else tsIncorrect++;
-      tsShowFeedback(c);
-    }
-
-    function tsShowFeedback(correct) {
-      document.getElementById('ts-choices').classList.add('hidden');
-      document.getElementById('ts-type-area').classList.add('hidden');
-      const fb = document.getElementById('ts-feedback');
-      fb.classList.remove('hidden');
-      fb.style.background = correct ? 'var(--card-green)' : 'var(--card-peach)';
-      document.getElementById('ts-feedback-text').textContent = correct ? '✅ Correct!' : '❌ Incorrect';
-      document.getElementById('ts-feedback-text').style.color = correct ? '#059669' : '#dc2626';
-      document.getElementById('ts-correct-answer').textContent = correct ? '' : 'Answer: ' + tsCurrentAnswer;
-      const c = studyQueue[studyIdx];
-      const updated = applySRS(c, correct ? 2 : 0);
-      const idx = allCards.findIndex(x => x.__id === updated.__id);
-      if (idx !== -1) allCards[idx] = updated;
-      else allCards.push(updated);
-      saveUserData(currentUser);
-      addStudyTime(0.5);
-      updateHome();
-      if (typeof lucide !== 'undefined' && lucide.createIcons) {
-        lucide.createIcons();
-      }
-    }
-
-    function tsNext() { studyIdx++;
-      tsShowQuestion() }
-
-    // ============================================================
-    //  THEME
-    // ============================================================
-    function toggleTheme() {
-      document.documentElement.classList.toggle('dark');
-      localStorage.setItem('flashmind_theme', document.documentElement.classList.contains('dark') ? 'dark' : 'light');
-      updateThemeToggle();
-    }
-
-    // ============================================================
-    //  EXPORT
-    // ============================================================
-    function exportData() {
-      const blob = new Blob([JSON.stringify(allCards, null, 2)], { type: 'application/json' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = 'flashmind-export-' + today() + '.json';
-      a.click();
-      URL.revokeObjectURL(url);
-    }
-
     // ============================================================
     //  CONTACT ADMIN
     // ============================================================
@@ -4159,145 +4151,6 @@ firebase.auth().onAuthStateChanged(async user => {
 
       alert('✅ Request sent! We\'ll review it and add new decks soon.');
       closeContactAdmin();
-    }
-
-    // ============================================================
-    //  EXCEL IMPORT (ADMIN ONLY)
-    // ============================================================
-    function handleExcelImport(event) {
-      if (!isAdmin) return;
-      const file = event.target.files[0];
-      if (!file) return;
-
-      const reader = new FileReader();
-      reader.onload = function(e) {
-        try {
-          const data = new Uint8Array(e.target.result);
-          const workbook = XLSX.read(data, { type: 'array' });
-          const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
-          const jsonData = XLSX.utils.sheet_to_json(firstSheet);
-
-          if (jsonData.length === 0) {
-            showImportStatus('No data found in Excel file.', 'error');
-            return;
-          }
-
-          let importedCount = 0;
-
-          jsonData.forEach(row => {
-            const topic = row['Topic'] || row['topic'] || 'General';
-            const subtopic = row['Subtopic'] || row['subtopic'] || '';
-            const front = row['Front'] || row['front'] || row['Question'] || row['question'];
-            const back = row['Back'] || row['back'] || row['Answer'] || row['answer'];
-            const tags = row['Tags'] || row['tags'] || '';
-
-            if (!front || !back) return;
-
-            const deckName = topic + (subtopic ? ' - ' + subtopic : '');
-            let deckId = null;
-
-            const existingDeck = allCards.find(c =>
-              c.deck_name === deckName &&
-              c.card_front === '__deck_placeholder__'
-            );
-
-            if (existingDeck) {
-              deckId = existingDeck.deck_id;
-            } else {
-              deckId = 'deck_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6);
-              allCards.push({
-                __id: generateId(),
-                deck_id: deckId,
-                deck_name: deckName,
-                card_front: '__deck_placeholder__',
-                card_back: '',
-                card_tags: '',
-                ease_factor: 2.5,
-                interval: 0,
-                repetitions: 0,
-                next_review: '',
-                last_review: '',
-                total_reviews: 0,
-                correct_count: 0,
-                topic: topic,
-                subtopic: subtopic
-              });
-            }
-
-            allCards.push({
-              __id: generateId(),
-              deck_id: deckId,
-              deck_name: deckName,
-              card_front: front,
-              card_back: back,
-              card_tags: tags,
-              ease_factor: 2.5,
-              interval: 0,
-              repetitions: 0,
-              next_review: today(),
-              last_review: '',
-              total_reviews: 0,
-              correct_count: 0,
-              topic: topic,
-              subtopic: subtopic
-            });
-
-            importedCount++;
-          });
-
-          saveUserData(currentUser);
-          renderDecks();
-          updateHome();
-          renderAdminDeckList();
-          showImportStatus(`✅ Successfully imported ${importedCount} cards!`, 'success');
-
-        } catch (error) {
-          showImportStatus('❌ Error importing file: ' + error.message, 'error');
-          console.error('Import error:', error);
-        }
-      };
-
-      reader.readAsArrayBuffer(file);
-      event.target.value = '';
-    }
-
-    function showImportStatus(message, type) {
-      const statusDiv = document.getElementById('import-status');
-      const statusBox = document.getElementById('import-status-box');
-      const statusText = document.getElementById('import-status-text');
-
-      statusDiv.classList.remove('hidden');
-      statusText.textContent = message;
-
-      if (type === 'success') {
-        statusBox.className =
-          'flex items-center gap-2 p-3 rounded-xl bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800';
-      } else {
-        statusBox.className =
-          'flex items-center gap-2 p-3 rounded-xl bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800';
-      }
-
-      setTimeout(() => {
-        statusDiv.classList.add('hidden');
-      }, 5000);
-    }
-
-    function downloadSampleExcel() {
-      const sampleData = [
-        { Topic: 'Pharmacy', Subtopic: 'Basics', Front: 'What is a drug?', Back: 'A substance that alters body function',
-          Tags: 'pharmacology' },
-        { Topic: 'Pharmacy', Subtopic: 'Dosage', Front: 'What is 1 gram in mg?', Back: '1000 mg',
-          Tags: 'calculations' },
-        { Topic: 'Science', Subtopic: 'Biology', Front: 'What is DNA?', Back: 'Deoxyribonucleic acid',
-          Tags: 'genetics' },
-        { Topic: 'Languages', Subtopic: 'Spanish', Front: 'Hello', Back: 'Hola', Tags: 'greetings' },
-        { Topic: 'History', Subtopic: 'World History', Front: 'When did WWII end?', Back: '1945', Tags: 'war' },
-      ];
-
-      const wb = XLSX.utils.book_new();
-      const ws = XLSX.utils.json_to_sheet(sampleData);
-      XLSX.utils.book_append_sheet(wb, ws, 'Flashcards');
-      XLSX.writeFile(wb, 'flashmind_sample_decks.xlsx');
     }
 
     // ============================================================
@@ -4347,6 +4200,49 @@ firebase.auth().onAuthStateChanged(async user => {
       const ws = XLSX.utils.json_to_sheet(data);
       XLSX.utils.book_append_sheet(wb, ws, 'Access Codes');
       XLSX.writeFile(wb, 'flashmind_access_codes.xlsx');
+    }
+
+    // ============================================================
+    //  DOWNLOAD SAMPLE EXCEL
+    // ============================================================
+    function downloadSampleExcel() {
+      const sampleData = [
+        { Topic: 'Pharmacy', Subtopic: 'Basics', Front: 'What is a drug?', Back: 'A substance that alters body function',
+          Tags: 'pharmacology' },
+        { Topic: 'Pharmacy', Subtopic: 'Dosage', Front: 'What is 1 gram in mg?', Back: '1000 mg',
+          Tags: 'calculations' },
+        { Topic: 'Science', Subtopic: 'Biology', Front: 'What is DNA?', Back: 'Deoxyribonucleic acid',
+          Tags: 'genetics' },
+        { Topic: 'Languages', Subtopic: 'Spanish', Front: 'Hello', Back: 'Hola', Tags: 'greetings' },
+        { Topic: 'History', Subtopic: 'World History', Front: 'When did WWII end?', Back: '1945', Tags: 'war' },
+      ];
+
+      const wb = XLSX.utils.book_new();
+      const ws = XLSX.utils.json_to_sheet(sampleData);
+      XLSX.utils.book_append_sheet(wb, ws, 'Flashcards');
+      XLSX.writeFile(wb, 'flashmind_sample_decks.xlsx');
+    }
+
+    // ============================================================
+    //  EXPORT DATA
+    // ============================================================
+    function exportData() {
+      const blob = new Blob([JSON.stringify(allCards, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'flashmind-export-' + today() + '.json';
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    // ============================================================
+    //  THEME
+    // ============================================================
+    function toggleTheme() {
+      document.documentElement.classList.toggle('dark');
+      localStorage.setItem('flashmind_theme', document.documentElement.classList.contains('dark') ? 'dark' : 'light');
+      updateThemeToggle();
     }
 
     // ============================================================
@@ -4533,12 +4429,7 @@ firebase.auth().onAuthStateChanged(async user => {
       document.getElementById('bottom-nav-container').classList.add('hidden');
     }
 
-    // Only attach nav listeners once
-    document.querySelectorAll('.nav-item').forEach(btn => {
-      btn.removeEventListener('click', navClickHandler);
-      btn.addEventListener('click', navClickHandler);
-    });
-
+    // Nav click handler
     function navClickHandler() {
       if (navTimeout) return;
       navTimeout = setTimeout(() => {
@@ -4554,6 +4445,12 @@ firebase.auth().onAuthStateChanged(async user => {
       switchTab(this.dataset.tab);
     }
 
+    document.querySelectorAll('.nav-item').forEach(btn => {
+      btn.removeEventListener('click', navClickHandler);
+      btn.addEventListener('click', navClickHandler);
+    });
+
+    // Drag and drop for Excel upload
     const uploadZone = document.getElementById('upload-zone');
     if (uploadZone) {
       uploadZone.addEventListener('dragover', (e) => {
@@ -4568,8 +4465,8 @@ firebase.auth().onAuthStateChanged(async user => {
         uploadZone.classList.remove('dragover');
         const file = e.dataTransfer.files[0];
         if (file && (file.name.endsWith('.xlsx') || file.name.endsWith('.xls'))) {
-          document.getElementById('excel-file').files = e.dataTransfer.files;
-          handleExcelImport({ target: { files: [file] } });
+          const event = { target: { files: [file] } };
+          handleExcelImport(event);
         } else {
           alert('Please upload an Excel file (.xlsx or .xls)');
         }
@@ -4590,7 +4487,7 @@ firebase.auth().onAuthStateChanged(async user => {
       });
     });
 
-    console.log('🚀 FlashMind · Pharmacy Study App (Optimized)');
+    console.log('🚀 FlashMind · Pharmacy Study App (Complete)');
     console.log('📊 Plan:', userPlan);
     console.log('👑 Admin:', isAdmin);
     console.log('📚 Cards:', getRealCards().length, 'Decks:', getDecks().length);
