@@ -1365,11 +1365,14 @@ Science       | Biology       | What is DNA?             | Deoxyribonucleic acid
     </div>
 
     <!-- ===== STUDY MODE SELECTOR ===== -->
-    <div id="view-study-select" class="view">
-      <div class="flex items-center gap-3 mb-4">
-        <button onclick="switchTab('decks')" class="text-sec"><i data-lucide="arrow-left" class="w-6 h-6"></i></button>
-        <h2 id="study-deck-name" class="text-xl font-bold flex-1 truncate"></h2>
-      </div>
+   <!-- ===== STUDY MODE SELECTOR ===== -->
+<div id="view-study-select" class="view">
+  <div class="flex items-center gap-3 mb-4">
+    <button onclick="switchTab('decks')" class="text-sec hover:text-text transition-colors">
+      <i data-lucide="arrow-left" class="w-6 h-6"></i>
+    </button>
+    <h2 id="study-deck-name" class="text-xl font-bold flex-1 truncate"></h2>
+  </div>
       <p class="text-sec text-sm font-medium mb-3">Choose study mode</p>
       <div class="space-y-3 flex-1">
         <button onclick="startFlashcards()" class="mode-btn"><div class="icon-wrap orange"><i data-lucide="repeat" class="w-6 h-6"></i></div><div><p class="font-bold">Flashcards</p><p class="text-sec text-sm">Tap to flip · rate</p></div></button>
@@ -3614,50 +3617,82 @@ Science       | Biology       | What is DNA?             | Deoxyribonucleic acid
       }, 5000);
     }
 
-    function openDeck(deckId) {
-      const decks = getDecks();
-      const deckIndex = decks.findIndex(d => d.id === deckId);
-      const isPremium = isPremiumActive();
+ function openDeck(deckId) {
+  console.log('📂 Opening deck:', deckId);
+  
+  const decks = getDecks();
+  const deckIndex = decks.findIndex(d => d.id === deckId);
+  const isPremium = isPremiumActive();
 
-      if (!isPremium && deckIndex >= 5) {
-        showUpgradeModal();
-        return;
-      }
+  if (!isPremium && deckIndex >= 5) {
+    showUpgradeModal();
+    return;
+  }
 
-      currentDeckId = deckId;
-      openStudySelect();
-    }
+  currentDeckId = deckId;
+  
+  // Show study select immediately
+  openStudySelect();
+}
 
     // ============================================================
     //  STUDY MODES
     // ============================================================
     function openStudySelect() {
-      const deck = allCards.find(c => c.deck_id === currentDeckId && c.card_front === '__deck_placeholder__');
-      const deckName = deck ? deck.deck_name : 'Deck';
-      document.getElementById('study-deck-name').textContent = deckName;
+  console.log('📖 Opening study select for deck:', currentDeckId);
+  
+  const deck = allCards.find(c => c.deck_id === currentDeckId && c.card_front === '__deck_placeholder__');
+  const deckName = deck ? deck.deck_name : 'Deck';
+  
+  const nameEl = document.getElementById('study-deck-name');
+  if (nameEl) nameEl.textContent = deckName;
+  
+  // HIDE ALL VIEWS first
+  document.querySelectorAll('.view').forEach(v => {
+    v.classList.remove('active');
+    v.style.display = 'none';
+    v.style.opacity = '0';
+    v.style.pointerEvents = 'none';
+  });
+  
+  // Show STUDY SELECT view
+  const studySelectView = document.getElementById('view-study-select');
+  if (studySelectView) {
+    studySelectView.classList.add('active');
+    studySelectView.style.display = 'flex';
+    studySelectView.style.opacity = '1';
+    studySelectView.style.pointerEvents = 'all';
+  }
+  
+  // Update nav - highlight Decks
+  document.querySelectorAll('.nav-item').forEach(b => {
+    b.classList.toggle('active', b.dataset.tab === 'decks');
+  });
 
-      document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
-      document.getElementById('view-study-select').classList.add('active');
+  const isPremium = isPremiumActive();
+  const learnBtn = document.getElementById('learn-mode-btn');
+  const testBtn = document.getElementById('test-mode-btn');
+  const lockMsg = document.getElementById('premium-lock-msg');
 
-      const isPremium = isPremiumActive();
-      const learnBtn = document.getElementById('learn-mode-btn');
-      const testBtn = document.getElementById('test-mode-btn');
-      const lockMsg = document.getElementById('premium-lock-msg');
+  if (!isPremium) {
+    if (learnBtn) learnBtn.style.opacity = '0.5';
+    if (testBtn) testBtn.style.opacity = '0.5';
+    if (lockMsg) lockMsg.classList.remove('hidden');
+  } else {
+    if (learnBtn) learnBtn.style.opacity = '1';
+    if (testBtn) testBtn.style.opacity = '1';
+    if (lockMsg) lockMsg.classList.add('hidden');
+  }
+  
+  // Reset currentTab to prevent nav interference
+  currentTab = 'study-select';
 
-      if (!isPremium) {
-        learnBtn.style.opacity = '0.5';
-        testBtn.style.opacity = '0.5';
-        lockMsg.classList.remove('hidden');
-      } else {
-        learnBtn.style.opacity = '1';
-        testBtn.style.opacity = '1';
-        lockMsg.classList.add('hidden');
-      }
-
-      if (typeof lucide !== 'undefined' && lucide.createIcons) {
-        lucide.createIcons();
-      }
-    }
+  if (typeof lucide !== 'undefined' && lucide.createIcons) {
+    lucide.createIcons();
+  }
+  
+  console.log('✅ Study select opened');
+}
 
     function continueStudying() {
       const due = getDueCards();
@@ -4441,73 +4476,87 @@ Science       | Biology       | What is DNA?             | Deoxyribonucleic acid
     // ============================================================
     //  NAVIGATION
     // ============================================================
-    function switchTab(tab) {
-      console.log('🔄 switchTab called:', tab);
-
-      if (currentTab === tab) return;
-      currentTab = tab;
-
-      const allViews = ['home', 'decks', 'study-select', 'flashcards', 'learn', 'test', 'stats', 'settings', 'admin-import',
-        'admin-cards'
-      ];
-
-      allViews.forEach(v => {
-        const el = document.getElementById('view-' + v);
-        if (el) {
-          el.classList.remove('active');
-          el.style.display = 'none';
-          el.style.opacity = '0';
-          el.style.pointerEvents = 'none';
-        }
-      });
-
-      const targetView = document.getElementById('view-' + tab);
-      if (targetView) {
-        targetView.classList.add('active');
-        targetView.style.display = 'flex';
-        targetView.style.opacity = '1';
-        targetView.style.pointerEvents = 'all';
-      }
-
-      document.querySelectorAll('.nav-item').forEach(b => {
-        b.classList.toggle('active', b.dataset.tab === tab);
-      });
-
-      if (tab === 'stats') renderStats();
-      if (tab === 'home') updateHome();
-      if (tab === 'decks') renderDecks();
-
-      if (typeof lucide !== 'undefined' && lucide.createIcons) {
-        lucide.createIcons();
-      }
+   function switchTab(tab) {
+  console.log('🔄 switchTab called:', tab);
+  
+  // If we're in study-select and trying to go to decks, allow it
+  // Otherwise, if trying to go to other tabs from study-select, block it
+  if (currentTab === 'study-select' && tab !== 'decks' && tab !== 'home') {
+    console.log('⛔ Blocked: Cannot switch from study-select to', tab);
+    return;
+  }
+  
+  if (currentTab === tab) return;
+  currentTab = tab;
+  
+  // Hide ALL views (except study-select if we're going back to decks)
+  const allViews = ['home', 'decks', 'study-select', 'flashcards', 'learn', 'test', 'stats', 'settings', 'admin-import', 'admin-cards'];
+  
+  allViews.forEach(v => {
+    const el = document.getElementById('view-' + v);
+    if (el) {
+      el.classList.remove('active');
+      el.style.display = 'none';
+      el.style.opacity = '0';
+      el.style.pointerEvents = 'none';
     }
+  });
+  
+  // Show the target view
+  const targetView = document.getElementById('view-' + tab);
+  if (targetView) {
+    targetView.classList.add('active');
+    targetView.style.display = 'flex';
+    targetView.style.opacity = '1';
+    targetView.style.pointerEvents = 'all';
+  }
+  
+  // Update nav
+  document.querySelectorAll('.nav-item').forEach(b => {
+    b.classList.toggle('active', b.dataset.tab === tab);
+  });
+  
+  // Render content
+  if (tab === 'stats') renderStats();
+  if (tab === 'home') updateHome();
+  if (tab === 'decks') renderDecks();
+  
+  // Refresh icons
+  if (typeof lucide !== 'undefined' && lucide.createIcons) {
+    lucide.createIcons();
+  }
+}
 
     function navClickHandler() {
-      if (navTimeout) return;
-      navTimeout = setTimeout(() => {
-        navTimeout = null;
-      }, 300);
-
-      if (document.getElementById('view-flashcards').classList.contains('active')) {
-        if (!confirm('Exit current study session?')) return;
-        exitStudy();
-      }
-      if (document.getElementById('view-learn').classList.contains('active')) {
-        if (!confirm('Exit current study session?')) return;
-        exitStudy();
-      }
-      if (document.getElementById('view-test').classList.contains('active')) {
-        if (!confirm('Exit current study session?')) return;
-        exitStudy();
-      }
-
-      switchTab(this.dataset.tab);
-    }
-
-    document.querySelectorAll('.nav-item').forEach(btn => {
-      btn.removeEventListener('click', navClickHandler);
-      btn.addEventListener('click', navClickHandler);
-    });
+  if (navTimeout) return;
+  navTimeout = setTimeout(() => {
+    navTimeout = null;
+  }, 300);
+  
+  const tab = this.dataset.tab;
+  
+  // If we're in study select, going to decks is allowed, but going to other tabs should ask to exit
+  if (currentTab === 'study-select' && tab !== 'decks') {
+    if (!confirm('Exit study selection?')) return;
+    exitStudy();
+  }
+  
+  // If in study mode, ask to exit
+  if (document.getElementById('view-flashcards').classList.contains('active')) {
+    if (!confirm('Exit current study session?')) return;
+    exitStudy();
+  }
+  if (document.getElementById('view-learn').classList.contains('active')) {
+    if (!confirm('Exit current study session?')) return;
+    exitStudy();
+  }
+  if (document.getElementById('view-test').classList.contains('active')) {
+    if (!confirm('Exit current study session?')) return;
+    exitStudy();
+  }
+  
+  switchTab(tab);
+}
 
     // ============================================================
     //  CONTACT ADMIN
