@@ -1989,139 +1989,120 @@
     // ============================================================
     //  CHANGE PASSWORD
     // ============================================================
-    function changePassword() {
-      const current = document.getElementById('current-password').value;
-      const newPw = document.getElementById('new-password').value;
-      const confirmPw = document.getElementById('confirm-new-password').value;
-      const err = document.getElementById('change-password-error');
+    async function changePassword() {
+  const current = document.getElementById('current-password').value;
+  const newPw = document.getElementById('new-password').value;
+  const confirmPw = document.getElementById('confirm-new-password').value;
+  const err = document.getElementById('change-password-error');
 
-      err.textContent = '';
+  err.textContent = '';
 
-      const users = getUsers();
-      if (!users[currentUser]) {
-        err.textContent = 'User not found.';
-        return;
-      }
+  const user = firebase.auth().currentUser;
+  if (!user) {
+    err.textContent = 'Please login first.';
+    return;
+  }
 
-      if (users[currentUser].password !== current) {
-        err.textContent = 'Current password is incorrect.';
-        return;
-      }
+  try {
+    // Re-authenticate user
+    const credential = firebase.auth.EmailAuthProvider.credential(user.email, current);
+    await user.reauthenticateWithCredential(credential);
 
-      if (newPw.length < 6) {
-        err.textContent = 'New password must be at least 6 characters.';
-        return;
-      }
-
-      if (newPw !== confirmPw) {
-        err.textContent = 'Passwords do not match.';
-        return;
-      }
-
-      users[currentUser].password = newPw;
-      saveUsers(users);
-
-      // Clear password fields
-      document.getElementById('current-password').value = '';
-      document.getElementById('new-password').value = '';
-      document.getElementById('confirm-new-password').value = '';
-
-      alert('✅ Password changed successfully!');
+    if (newPw.length < 6) {
+      err.textContent = 'New password must be at least 6 characters.';
+      return;
     }
+
+    if (newPw !== confirmPw) {
+      err.textContent = 'Passwords do not match.';
+      return;
+    }
+
+    // Update password
+    await user.updatePassword(newPw);
+
+    // Also update localStorage backup
+    const users = getUsers();
+    if (users[user.email]) {
+      users[user.email].password = newPw;
+      saveUsers(users);
+    }
+
+    document.getElementById('current-password').value = '';
+    document.getElementById('new-password').value = '';
+    document.getElementById('confirm-new-password').value = '';
+
+    alert('✅ Password changed successfully!');
+
+  } catch (error) {
+    console.error('Password change error:', error);
+    if (error.code === 'auth/wrong-password') {
+      err.textContent = 'Current password is incorrect.';
+    } else if (error.code === 'auth/too-many-requests') {
+      err.textContent = 'Too many failed attempts. Please try again later.';
+    } else {
+      err.textContent = 'Failed to change password: ' + error.message;
+    }
+  }
+}
 
     // ============================================================
     //  FORGOT PASSWORD
     // ============================================================
-    function showForgotPassword() {
-      document.getElementById('forgot-password-modal').classList.remove('hidden');
-      document.getElementById('fp-step-1').classList.remove('hidden');
-      document.getElementById('fp-step-2').classList.add('hidden');
-      document.getElementById('fp-email').value = '';
-      document.getElementById('fp-code').value = '';
-      document.getElementById('fp-new-password').value = '';
-      document.getElementById('fp-confirm-password').value = '';
-      document.getElementById('fp-error').textContent = '';
-      if (typeof lucide !== 'undefined') lucide.createIcons();
+    // ============================================================
+//  FORGOT PASSWORD FUNCTIONS (NEW - Firebase Auth)
+// ============================================================
+
+function showForgotPassword() {
+  document.getElementById('forgot-password-modal').classList.remove('hidden');
+  document.getElementById('fp-step-1').classList.remove('hidden');
+  document.getElementById('fp-step-2').classList.add('hidden');
+  document.getElementById('fp-email').value = '';
+  document.getElementById('fp-code').value = '';
+  document.getElementById('fp-new-password').value = '';
+  document.getElementById('fp-confirm-password').value = '';
+  document.getElementById('fp-error').textContent = '';
+  if (typeof lucide !== 'undefined') lucide.createIcons();
+}
+
+function closeForgotPassword() {
+  document.getElementById('forgot-password-modal').classList.add('hidden');
+}
+
+async function sendResetCode() {
+  const email = document.getElementById('fp-email').value.trim();
+  const err = document.getElementById('fp-error');
+
+  err.textContent = '';
+
+  if (!email) {
+    err.textContent = 'Please enter your email.';
+    return;
+  }
+
+  try {
+    // Send password reset email via Firebase
+    await firebase.auth().sendPasswordResetEmail(email);
+    document.getElementById('fp-email-display').textContent = email;
+    document.getElementById('fp-step-1').classList.add('hidden');
+    document.getElementById('fp-step-2').classList.remove('hidden');
+    alert('📧 Password reset email sent! Check your inbox.');
+  } catch (error) {
+    console.error('Reset error:', error);
+    if (error.code === 'auth/user-not-found') {
+      err.textContent = 'No account found with this email.';
+    } else {
+      err.textContent = 'Failed to send reset email: ' + error.message;
     }
+  }
+}
 
-    function closeForgotPassword() {
-      document.getElementById('forgot-password-modal').classList.add('hidden');
-    }
-
-    function sendResetCode() {
-      const email = document.getElementById('fp-email').value.trim();
-      const err = document.getElementById('fp-error');
-      const users = getUsers();
-
-      err.textContent = '';
-
-      if (!email) {
-        err.textContent = 'Please enter your email.';
-        return;
-      }
-
-      if (!users[email]) {
-        err.textContent = 'No account found with this email.';
-        return;
-      }
-
-      resetCode = Math.floor(100000 + Math.random() * 900000).toString();
-      resetEmail = email;
-
-      document.getElementById('fp-email-display').textContent = email;
-      document.getElementById('fp-step-1').classList.add('hidden');
-      document.getElementById('fp-step-2').classList.remove('hidden');
-
-      alert('📧 Reset code sent!\n\nYour reset code is: ' + resetCode + '\n\n(For demo purposes, the code is shown here.)');
-    }
-
-    function resetPassword() {
-      const code = document.getElementById('fp-code').value.trim();
-      const newPassword = document.getElementById('fp-new-password').value;
-      const confirmPassword = document.getElementById('fp-confirm-password').value;
-      const err = document.getElementById('fp-error');
-
-      err.textContent = '';
-
-      if (!code) {
-        err.textContent = 'Please enter the reset code.';
-        return;
-      }
-
-      if (code !== resetCode) {
-        err.textContent = 'Invalid reset code. Please try again.';
-        return;
-      }
-
-      if (newPassword.length < 6) {
-        err.textContent = 'Password must be at least 6 characters.';
-        return;
-      }
-
-      if (newPassword !== confirmPassword) {
-        err.textContent = 'Passwords do not match.';
-        return;
-      }
-
-      const users = getUsers();
-      if (users[resetEmail]) {
-        users[resetEmail].password = newPassword;
-        saveUsers(users);
-
-        alert('✅ Password reset successfully! Please login with your new password.');
-        closeForgotPassword();
-
-        document.getElementById('login-email').value = resetEmail;
-        document.getElementById('login-password').value = newPassword;
-
-        resetCode = '';
-        resetEmail = '';
-
-        handleLogin(new Event('submit'));
-      } else {
-        err.textContent = 'Account not found. Please try again.';
-      }
-    }
+async function resetPassword() {
+  // This is now handled by Firebase's sendPasswordResetEmail
+  // The user will receive an email to reset their password
+  closeForgotPassword();
+  alert('📧 Please check your email for the password reset link.');
+}
 
     // ============================================================
     //  FIREBASE SYNC FUNCTIONS
@@ -2170,6 +2151,36 @@
       }
     }
 
+// ============================================================
+//  FIREBASE AUTH STATE LISTENER
+// ============================================================
+firebase.auth().onAuthStateChanged(async user => {
+  if (user) {
+    // User is signed in
+    console.log('✅ Firebase Auth: User signed in:', user.email);
+    // Check if admin
+    isAdmin = ADMIN_EMAILS.includes(user.email);
+    if (isAdmin) {
+      document.getElementById('admin-badge').classList.remove('hidden');
+      document.getElementById('admin-import-btn').classList.remove('hidden');
+    }
+    
+    // Load user data from Firestore
+    const email = user.email;
+    const cloudData = await loadFromFirebase(email);
+    if (cloudData && cloudData.cards) {
+      allCards = cloudData.cards;
+      userPlan = cloudData.plan || 'free';
+      localStorage.setItem(DATA_PREFIX + email, JSON.stringify(allCards));
+      localStorage.setItem('flashmind_plan_' + email, userPlan);
+    }
+  } else {
+    // User is signed out
+    console.log('❌ Firebase Auth: User signed out');
+  }
+});
+
+    
     // ============================================================
     //  HELPERS
     // ============================================================
@@ -2553,51 +2564,52 @@
     }
 
     async function handleLogin(e) {
-      e.preventDefault();
-      const email = document.getElementById('login-email').value.trim();
-      const pw = document.getElementById('login-password').value;
-      const err = document.getElementById('login-error');
-      const users = getUsers();
+  e.preventDefault();
+  const email = document.getElementById('login-email').value.trim();
+  const pw = document.getElementById('login-password').value;
+  const err = document.getElementById('login-error');
 
-      err.textContent = '';
+  err.textContent = '';
 
-      if (!users[email]) {
-        err.textContent = 'No account found. Please sign up first.';
-        return;
-      }
+  try {
+    // Sign in with Firebase Authentication
+    const userCredential = await firebase.auth().signInWithEmailAndPassword(email, pw);
+    const user = userCredential.user;
 
-      if (email === 'adm.pharmacore@gmail.com' && pw !== 'admin9900') {
-        err.textContent = 'Incorrect admin password.';
-        return;
-      }
+    currentUser = email;
+    saveSession(email);
 
-      if (users[email].password !== pw) {
-        err.textContent = 'Incorrect password.';
-        return;
-      }
-
-      currentUser = email;
-      saveSession(email);
-
-      const cloudData = await loadFromFirebase(email);
-      if (cloudData && cloudData.cards && cloudData.cards.length > 0) {
-        allCards = cloudData.cards;
-        userPlan = cloudData.plan || 'free';
-        localStorage.setItem(DATA_PREFIX + email, JSON.stringify(allCards));
-        localStorage.setItem('flashmind_plan_' + email, userPlan);
-        if (cloudData.username) {
-          const u = getUsers();
-          if (u[email]) u[email].username = cloudData.username;
-          saveUsers(u);
-        }
-      } else {
-        loadUserData(email);
-      }
-
-      isAdmin = users[email].isAdmin || ADMIN_EMAILS.includes(email);
-      document.getElementById('bottom-nav-container').classList.remove('hidden');
-      enterApp();
+    // Load user data from Firestore
+    const cloudData = await loadFromFirebase(email);
+    if (cloudData && cloudData.cards) {
+      allCards = cloudData.cards;
+      userPlan = cloudData.plan || 'free';
+      localStorage.setItem(DATA_PREFIX + email, JSON.stringify(allCards));
+      localStorage.setItem('flashmind_plan_' + email, userPlan);
+    } else {
+      loadUserData(email);
     }
+
+    // Check if admin
+    isAdmin = ADMIN_EMAILS.includes(email);
+    document.getElementById('bottom-nav-container').classList.remove('hidden');
+    enterApp();
+
+  } catch (error) {
+    console.error('Login error:', error);
+    if (error.code === 'auth/user-not-found') {
+      err.textContent = 'No account found. Please sign up first.';
+    } else if (error.code === 'auth/wrong-password') {
+      err.textContent = 'Incorrect password.';
+    } else if (error.code === 'auth/invalid-email') {
+      err.textContent = 'Invalid email address.';
+    } else if (error.code === 'auth/too-many-requests') {
+      err.textContent = 'Too many failed attempts. Please try again later.';
+    } else {
+      err.textContent = 'Login failed: ' + error.message;
+    }
+  }
+}
 
     function loadUserData(email) {
       const key = DATA_PREFIX + email;
@@ -2609,73 +2621,97 @@
     }
 
     async function handleSignup(e) {
-      e.preventDefault();
-      const un = document.getElementById('signup-username').value.trim();
-      const email = document.getElementById('signup-email').value.trim();
-      const pw = document.getElementById('signup-password').value;
-      const cf = document.getElementById('signup-confirm').value;
-      const code = document.getElementById('signup-code').value.trim().toUpperCase();
-      const err = document.getElementById('signup-error');
+  e.preventDefault();
+  const un = document.getElementById('signup-username').value.trim();
+  const email = document.getElementById('signup-email').value.trim();
+  const pw = document.getElementById('signup-password').value;
+  const cf = document.getElementById('signup-confirm').value;
+  const code = document.getElementById('signup-code').value.trim().toUpperCase();
+  const err = document.getElementById('signup-error');
 
-      err.textContent = '';
+  err.textContent = '';
 
-      if (!un || !email || !pw || !cf) { err.textContent = 'All fields required.'; return }
-      if (pw.length < 6) { err.textContent = 'Password min 6 chars.'; return }
-      if (pw !== cf) { err.textContent = 'Passwords do not match.'; return }
+  if (!un || !email || !pw || !cf) { err.textContent = 'All fields required.'; return; }
+  if (pw.length < 6) { err.textContent = 'Password min 6 chars.'; return; }
+  if (pw !== cf) { err.textContent = 'Passwords do not match.'; return; }
 
-      const users = getUsers();
-      if (users[email]) { err.textContent = 'Email already registered.'; return }
+  try {
+    // Create user with Firebase Authentication
+    const userCredential = await firebase.auth().createUserWithEmailAndPassword(email, pw);
+    const user = userCredential.user;
 
-      const isAdminUser = ADMIN_EMAILS.includes(email);
+    // Update profile with username
+    await user.updateProfile({ displayName: un });
 
-      let isBookBuyer = false;
-      if (code) {
-        const codes = getCodes();
-        if (codes[code] && !codes[code].used) {
-          isBookBuyer = true;
-          codes[code].used = true;
-          codes[code].usedBy = email;
-          codes[code].usedAt = new Date().toISOString();
-          saveCodes(codes);
-        } else if (code) {
-          err.textContent = 'Invalid or already used access code. You can still create a free account.';
-        }
-      }
+    const isAdminUser = ADMIN_EMAILS.includes(email);
 
-      const plan = (isBookBuyer || isAdminUser) ? 'premium' : 'free';
-      const expiry = (isBookBuyer || isAdminUser) ? addMonths(new Date(), PLAN_DURATION_MONTHS).toISOString() : null;
-
-      users[email] = {
-        username: un,
-        email,
-        password: pw,
-        created: Date.now(),
-        plan: plan,
-        isBookBuyer: isBookBuyer,
-        isAdmin: isAdminUser
-      };
-      saveUsers(users);
-
-      currentUser = email;
-      saveSession(email);
-      allCards = getSampleDecks();
-      saveUserData(email);
-      if (isBookBuyer || isAdminUser) {
-        savePlan(email, 'premium', expiry);
-      }
-
-      await saveToFirebase(email, allCards, plan);
-
-      isAdmin = isAdminUser;
-      document.getElementById('bottom-nav-container').classList.remove('hidden');
-      enterApp();
-      if (isBookBuyer) {
-        alert('🎉 Access code validated! You now have Premium access for 3 months.');
-      }
-      if (isAdminUser) {
-        alert('👑 Admin account created! You have full admin access.');
+    let isBookBuyer = false;
+    if (code) {
+      const codes = getCodes();
+      if (codes[code] && !codes[code].used) {
+        isBookBuyer = true;
+        codes[code].used = true;
+        codes[code].usedBy = email;
+        codes[code].usedAt = new Date().toISOString();
+        saveCodes(codes);
+      } else if (code) {
+        err.textContent = 'Invalid or already used access code. You can still create a free account.';
       }
     }
+
+    const plan = (isBookBuyer || isAdminUser) ? 'premium' : 'free';
+    const expiry = (isBookBuyer || isAdminUser) ? addMonths(new Date(), PLAN_DURATION_MONTHS).toISOString() : null;
+
+    // Save user info to localStorage (backup)
+    const users = getUsers();
+    users[email] = {
+      username: un,
+      email,
+      password: pw,
+      created: Date.now(),
+      plan: plan,
+      isBookBuyer: isBookBuyer,
+      isAdmin: isAdminUser
+    };
+    saveUsers(users);
+
+    currentUser = email;
+    saveSession(email);
+    allCards = getSampleDecks();
+
+    // Save to localStorage
+    saveUserData(email);
+    if (isBookBuyer || isAdminUser) {
+      savePlan(email, 'premium', expiry);
+    }
+
+    // Save to Firestore
+    await saveToFirebase(email, allCards, plan);
+
+    isAdmin = isAdminUser;
+    document.getElementById('bottom-nav-container').classList.remove('hidden');
+    enterApp();
+
+    if (isBookBuyer) {
+      alert('🎉 Access code validated! You now have Premium access for 3 months.');
+    }
+    if (isAdminUser) {
+      alert('👑 Admin account created! You have full admin access.');
+    }
+
+  } catch (error) {
+    console.error('Signup error:', error);
+    if (error.code === 'auth/email-already-in-use') {
+      err.textContent = 'Email already registered. Please login or use another email.';
+    } else if (error.code === 'auth/weak-password') {
+      err.textContent = 'Password is too weak. Use at least 6 characters.';
+    } else if (error.code === 'auth/invalid-email') {
+      err.textContent = 'Invalid email address.';
+    } else {
+      err.textContent = 'Signup failed: ' + error.message;
+    }
+  }
+}
 
     function saveUserData(email) {
       localStorage.setItem(DATA_PREFIX + email, JSON.stringify(allCards));
@@ -2689,19 +2725,26 @@
       saveToFirebase(email, allCards, plan);
     }
 
-    function handleLogout() {
-      if (confirm('Logout?')) {
-        clearSession();
-        currentUser = null;
-        allCards = [];
-        isAdmin = false;
-        document.getElementById('bottom-nav-container').classList.add('hidden');
-        document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
-        document.getElementById('view-login').classList.add('active');
-        document.getElementById('login-email').value = '';
-        document.getElementById('login-password').value = '';
-      }
+    async function handleLogout() {
+  if (confirm('Logout?')) {
+    try {
+      // Sign out from Firebase
+      await firebase.auth().signOut();
+    } catch (e) {
+      console.warn('Firebase signout error:', e);
     }
+    
+    clearSession();
+    currentUser = null;
+    allCards = [];
+    isAdmin = false;
+    document.getElementById('bottom-nav-container').classList.add('hidden');
+    document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+    document.getElementById('view-login').classList.add('active');
+    document.getElementById('login-email').value = '';
+    document.getElementById('login-password').value = '';
+  }
+}
 
     function getPlanExpiry(email) {
       return localStorage.getItem('flashmind_expiry_' + email) || null;
