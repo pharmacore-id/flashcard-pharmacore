@@ -977,6 +977,21 @@
     .heatmap-grid .heat-cell.today {
       border: 2px solid var(--accent);
     }
+
+    /* Ensure the bottom nav is always on top and clickable */
+.bottom-nav {
+  position: relative;
+  z-index: 9999 !important;   /* above everything */
+  pointer-events: all !important;
+}
+
+/* Force the login view to be completely non‑interactive when hidden */
+#view-login:not(.active),
+#view-signup:not(.active) {
+  display: none !important;
+  pointer-events: none !important;
+  opacity: 0 !important;
+}
   </style>
 </head>
 <body>
