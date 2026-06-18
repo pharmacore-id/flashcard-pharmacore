@@ -1183,12 +1183,15 @@
 
     <!-- ===== DECKS ===== -->
     <div id="view-decks" class="view">
-      <div class="flex items-center justify-between mb-4">
-        <h2 class="text-xl font-bold">Your Decks</h2>
-        <div class="flex gap-2">
-          <button id="admin-import-btn" onclick="showAdminImport()" class="hidden accent-bg text-white w-10 h-10 rounded-full flex items-center justify-center shadow-md"><i data-lucide="upload" class="w-5 h-5"></i></button>
-        </div>
-      </div>
+    <div class="flex items-center justify-between mb-4">
+  <h2 class="text-xl font-bold">Your Decks</h2>
+  <div class="flex gap-2">
+    <!-- Admin import button (upload icon) -->
+    <button id="admin-import-btn" onclick="showAdminImport()" class="hidden accent-bg text-white w-10 h-10 rounded-full flex items-center justify-center shadow-md"><i data-lucide="upload" class="w-5 h-5"></i></button>
+    <!-- Regular user request button (plus icon) -->
+    <button id="user-request-btn" onclick="showContactAdmin()" class="hidden accent-bg text-white w-10 h-10 rounded-full flex items-center justify-center shadow-md"><i data-lucide="plus" class="w-5 h-5"></i></button>
+  </div>
+</div>
       <div class="view-scroll" id="deck-list-container">
         <div id="deck-list"></div>
         <p id="no-decks" class="text-sec text-center py-12 hidden">No decks available. Enter your book's access code to unlock the full library! 📚</p>
@@ -2657,6 +2660,15 @@ Science       | Biology       | What is DNA?             | Deoxyribonucleic acid
         updateHome();
         renderDecks();
 
+        // Show/hide user request button
+const userRequestBtn = document.getElementById('user-request-btn');
+if (userRequestBtn) {
+  if (isAdmin) {
+    userRequestBtn.classList.add('hidden');
+  } else {
+    userRequestBtn.classList.remove('hidden');
+  }
+}
         if (typeof lucide !== 'undefined' && lucide.createIcons) {
           lucide.createIcons();
         }
