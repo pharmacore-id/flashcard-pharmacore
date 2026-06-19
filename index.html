@@ -3018,7 +3018,7 @@ function renderDecks() {
   const isPremium = isPremiumActive();
   const maxFreeDecks = 5;
 
-  // ===== LEVEL 2: Subtopik (tanpa background) =====
+  // ===== LEVEL 2: Subtopik (120px) =====
   if (currentTopic) {
     const subtopics = topicMap[currentTopic] || [];
     let html = `
@@ -3042,7 +3042,7 @@ function renderDecks() {
 
       html += `
         <div class="deck-item rounded-2xl p-4 shadow-card mb-3 cursor-pointer flex flex-col justify-center"
-             style="${bgStyle} height: 150px; ${isLocked ? 'cursor:not-allowed; opacity: 0.6;' : ''}"
+             style="${bgStyle} height: 120px; ${isLocked ? 'cursor:not-allowed; opacity: 0.6;' : ''}"
              onclick="${isLocked ? 'showUpgradeModal()' : `openDeck('${d.id}')`}">
           <div class="flex items-center gap-4">
             <div class="flex-1">
@@ -3071,13 +3071,12 @@ function renderDecks() {
     return;
   }
 
-  // ===== LEVEL 1: Topik (dengan background dari kartu pertama) =====
+  // ===== LEVEL 1: Topik (200px + background) =====
   let html = '';
   sortedTopics.forEach((topic) => {
     const subtopics = topicMap[topic];
     const totalCards = subtopics.reduce((sum, d) => sum + d.cards.length, 0);
 
-    // Cari background dari kartu pertama di semua subtopik yang memiliki card_background
     let bgStyle = '';
     let iconHtml = '';
     for (const d of subtopics) {
@@ -3089,7 +3088,7 @@ function renderDecks() {
         } else {
           iconHtml = `<span class="text-4xl">${background}</span>`;
         }
-        break; // gunakan yang pertama ditemukan
+        break;
       }
     }
 
