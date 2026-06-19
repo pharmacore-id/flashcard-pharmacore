@@ -1832,20 +1832,24 @@ Science       | Biology       | What is DNA?             | Deoxyribonucleic acid
       alert('✅ Display name updated to "' + name + '"!');
     }
 
-    function loadNickname() {
-      const name = getNickname();
-      const displayElement = document.getElementById('user-display-name');
-      if (displayElement) displayElement.textContent = name;
-      const input = document.getElementById('nickname-input');
-      if (input) input.value = name;
-      const settingsUsername = document.getElementById('settings-username');
-      if (settingsUsername && currentUser) {
-        const users = getUsers();
-        if (users[currentUser] && users[currentUser].username) {
-          settingsUsername.textContent = users[currentUser].username;
-        }
+   function loadNickname() {
+    const name = getNickname();
+    const displayElement = document.getElementById('user-display-name');
+    if (displayElement) displayElement.textContent = name;
+    const input = document.getElementById('nickname-input');
+    if (input) input.value = name;
+  
+    const settingsUsername = document.getElementById('settings-username');
+    if (settingsUsername && currentUser) {
+      const users = getUsers();
+      const originalUsername = (users[currentUser] && users[currentUser].username) || currentUser;
+      if (name && name !== 'Student') {
+        settingsUsername.textContent = name;
+      } else {
+        settingsUsername.textContent = originalUsername;
       }
     }
+  }
 
     // ============================================================
     //  CHANGE PASSWORD
@@ -2690,11 +2694,10 @@ async function loadSharedDecks() {
           b.classList.toggle('active', b.dataset.tab === 'home');
         });
 
-        const users = getUsers();
+       const users = getUsers();
         if (currentUser && users[currentUser]) {
-          document.getElementById('settings-username').textContent = users[currentUser].username;
           isAdmin = users[currentUser].isAdmin || ADMIN_EMAILS.includes(currentUser);
-        }
+        }  
 
         loadNickname();
         loadDailyGoal();
