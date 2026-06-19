@@ -2611,7 +2611,7 @@ async function loadSharedDecks() {
     
         // Plan & expiry – admin langsung premium, user biasa free
         const plan = isAdminUser ? 'premium' : 'free';
-        const expiry = isAdminUser ? addMonths(new Date(), PLAN_DURATION_MONTHS).toISOString() : null;
+        const expiry = null;
     
         const users = getUsers();
         users[email] = {
@@ -2812,11 +2812,15 @@ async function loadSharedDecks() {
         upgradeBtn.style.display = isPremium ? 'none' : 'inline-block';
       }
 
-      const expiryLabel = document.getElementById('expiry-label');
+     const expiryLabel = document.getElementById('expiry-label');
       if (expiryLabel) {
         if (isPremium) {
           const expiry = getPlanExpiry(currentUser);
-          expiryLabel.textContent = expiry ? formatExpiryDate(expiry) : 'Active';
+          if (expiry) {
+            expiryLabel.textContent = formatExpiryDate(expiry);
+          } else {
+            expiryLabel.textContent = 'Permanent';   //
+          }
           expiryLabel.className = 'status premium';
         } else {
           expiryLabel.textContent = 'Not active';
