@@ -2994,7 +2994,7 @@ if (calendar) {
         // ============================================================
     //  RENDER DECKS (VERSI BARU DENGAN TOPIC GROUPING)
     // ============================================================
- function renderDecks() {
+function renderDecks() {
   const container = document.getElementById('deck-list');
   const no = document.getElementById('no-decks');
   if (!container) return;
@@ -3093,7 +3093,7 @@ if (calendar) {
     const totalCards = subtopics.reduce((sum, d) => sum + d.cards.length, 0);
     html += `
       <div class="topic-card surface rounded-2xl p-5 border border-theme shadow-card mb-4 cursor-pointer hover:shadow-lg transition-shadow flex items-center"
-           style="height: 240px;"
+           style="height: 200px;"
            onclick="currentTopic='${topic.replace(/'/g, "\\'")}'; renderDecks();">
         <div class="flex items-center gap-4 w-full">
           <span class="text-3xl">📚</span>
