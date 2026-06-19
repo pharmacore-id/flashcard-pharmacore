@@ -2814,7 +2814,7 @@ async function loadSharedDecks() {
         if (isPremium) {
           const expiry = getPlanExpiry(currentUser);
           if (expiry) {
-            expiryLabel.textContent = 'Expires ' + formatExpiryDate(expiry);
+            expiryLabel.textContent = formatExpiryDate(expiry);
           } else {
             expiryLabel.textContent = 'Permanent';   // ← admin
           }
