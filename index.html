@@ -3024,7 +3024,7 @@ function renderDecks() {
   const isPremium = isPremiumActive();
   const maxFreeDecks = 5;
 
-  // ===== LEVEL 2: Subtopik (120px) – dengan background =====
+  // ===== LEVEL 2: Subtopik (120px) – font putih semua =====
   if (currentTopic) {
     const subtopics = topicMap[currentTopic] || [];
     let html = `
@@ -3057,26 +3057,26 @@ function renderDecks() {
         }
       } else {
         const colors = ['var(--card-peach)', 'var(--card-green)', 'var(--card-blue)', 'var(--card-purple)'];
-        bgStyle = `background: ${colors[i % 4]};`;
+        bgStyle = `background: ${colors[i % 4]}; color: white;`;
       }
 
       const isPremiumDeck = d.cards.some(c => c.isPremium);
 
       html += `
-        <div class="deck-item rounded-2xl p-4 shadow-card mb-3 cursor-pointer flex items-center relative"
+        <div class="deck-item rounded-2xl p-4 shadow-card mb-3 cursor-pointer flex items-center relative text-white"
              style="${bgStyle} height: 120px; ${isLocked ? 'cursor:not-allowed; opacity: 0.6;' : ''}"
              onclick="${isLocked ? 'showUpgradeModal()' : `openDeck('${d.id}')`}">
           <div class="flex-1" style="max-width: 66.666%;">
             ${iconHtml ? `<div class="mb-1">${iconHtml}</div>` : ''}
             <h3 class="font-bold text-lg uppercase" style="white-space: normal; word-break: break-word;">${displayName}</h3>
-           <p class="text-sm mt-1">${d.cards.length} cards · ${due} due · ${pct}% mastered</p>
-            <div class="progress-bar h-1.5 mt-1"><div class="progress-fill" style="width:${pct}%"></div></div>
+            <p class="text-sm mt-1">${d.cards.length} cards · ${due} due · ${pct}% mastered</p>
+            <div class="progress-bar h-1.5 mt-1 bg-white/30"><div class="progress-fill bg-white" style="width:${pct}%"></div></div>
           </div>
           <div class="flex gap-1 ml-auto flex-shrink-0" onclick="event.stopPropagation()">
             ${isAdmin && !isLocked ? `
-              <button onclick="showRenameDeck('${d.id}')" class="text-sec p-1 hover:text-accent transition-colors" title="Rename"><i data-lucide="pencil" class="w-4 h-4"></i></button>
-              <button onclick="showManageCards('${d.id}')" class="text-sec p-1 hover:text-blue-500 transition-colors" title="Manage Cards"><i data-lucide="list" class="w-4 h-4"></i></button>
-              <button onclick="deleteDeck('${d.id}')" class="text-sec p-1 hover:text-red-500 transition-colors" title="Delete"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+              <button onclick="showRenameDeck('${d.id}')" class="text-white/80 p-1 hover:text-white transition-colors" title="Rename"><i data-lucide="pencil" class="w-4 h-4"></i></button>
+              <button onclick="showManageCards('${d.id}')" class="text-white/80 p-1 hover:text-white transition-colors" title="Manage Cards"><i data-lucide="list" class="w-4 h-4"></i></button>
+              <button onclick="deleteDeck('${d.id}')" class="text-white/80 p-1 hover:text-white transition-colors" title="Delete"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
             ` : ''}
           </div>
           ${isPremiumDeck ? `
@@ -3093,7 +3093,7 @@ function renderDecks() {
     return;
   }
 
-  // ===== LEVEL 1: Topik (150px) – dengan background =====
+  // ===== LEVEL 1: Topik (150px) =====
   let html = '';
   sortedTopics.forEach((topic) => {
     const subtopics = topicMap[topic];
@@ -3122,7 +3122,7 @@ function renderDecks() {
           ${iconHtml}
           <div class="flex-1">
             <h3 class="font-bold text-lg uppercase" style="white-space: normal; word-break: break-word;">${topic}</h3>
-            <p class="text-xs text-sec mt-0.5">${subtopics.length} subtopics · ${totalCards} cards</p>
+            <p class="text-sm text-sec mt-2">${subtopics.length} subtopics · ${totalCards} cards</p>
           </div>
         </div>
       </div>
