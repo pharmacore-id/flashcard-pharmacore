@@ -2052,7 +2052,7 @@ async function saveSharedDeck(deckData, isPremium = false) {
       card_front: c.card_front,
       card_back: c.card_back,
       card_tags: c.card_tags || '',
-      card_background: c.card_background || ''   // ← tambahkan
+      card_background: c.card_background || '',   // ← tambahkan
     }))
       createdAt: firebase.firestore.FieldValue.serverTimestamp(),
       createdBy: currentUser
