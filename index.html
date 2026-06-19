@@ -2054,7 +2054,8 @@ async function saveSharedDeck(deckData, isPremium = false) {
       cards: deckData.cards.map(c => ({
         card_front: c.card_front,
         card_back: c.card_back,
-        card_tags: c.card_tags || ''
+        card_tags: c.card_tags || '',
+        card_background: c.card_background || '',   // ← properti baru
       })),
       createdAt: firebase.firestore.FieldValue.serverTimestamp(),
       createdBy: currentUser
@@ -2088,6 +2089,7 @@ async function loadSharedDecks() {
             card_front: c.card_front,
             card_back: c.card_back,
             card_tags: c.card_tags || '',
+            card_background: c.card_background || '',   // ← properti baru
             ease_factor: 2.5,
             interval: 0,
             repetitions: 0,
@@ -3018,7 +3020,7 @@ function renderDecks() {
   const isPremium = isPremiumActive();
   const maxFreeDecks = 5;
 
-  // ===== LEVEL 2: Subtopik (120px) – DENGAN BACKGROUND =====
+  // ===== LEVEL 2: Subtopik (120px) – dengan background =====
   if (currentTopic) {
     const subtopics = topicMap[currentTopic] || [];
     let html = `
@@ -3038,7 +3040,7 @@ function renderDecks() {
       const isLocked = !isPremium && deckCount >= maxFreeDecks;
       const displayName = d.subtopic || d.name;
 
-      // Background handling (sama seperti Level 1)
+      // Background handling
       const bgCard = d.cards.find(c => c.card_background && c.card_background.trim() !== '');
       const background = bgCard ? bgCard.card_background : '';
       let bgStyle = '';
@@ -3061,7 +3063,7 @@ function renderDecks() {
              style="${bgStyle} height: 120px; ${isLocked ? 'cursor:not-allowed; opacity: 0.6;' : ''}"
              onclick="${isLocked ? 'showUpgradeModal()' : `openDeck('${d.id}')`}">
           <div class="flex-1" style="max-width: 66.666%;">
-            ${iconHtml ? `<div class="flex items-center gap-2 mb-1">${iconHtml}</div>` : ''}
+            ${iconHtml ? `<div class="mb-1">${iconHtml}</div>` : ''}
             <h3 class="font-bold text-lg uppercase" style="white-space: normal; word-break: break-word;">${displayName}</h3>
             <p class="text-xs opacity-80 mt-1">${d.cards.length} cards · ${due} due · ${pct}% mastered</p>
             <div class="progress-bar h-1.5 mt-1"><div class="progress-fill" style="width:${pct}%"></div></div>
@@ -3087,7 +3089,7 @@ function renderDecks() {
     return;
   }
 
-  // ===== LEVEL 1: Topik (150px) – DENGAN BACKGROUND =====
+  // ===== LEVEL 1: Topik (150px) – dengan background =====
   let html = '';
   sortedTopics.forEach((topic) => {
     const subtopics = topicMap[topic];
@@ -3560,6 +3562,7 @@ function renderDecks() {
         const front = row['Front'] || row['front'] || row['FRONT'] || row['Question'] || row['question'] || row['QUESTION'];
         const back = row['Back'] || row['back'] || row['BACK'] || row['Answer'] || row['answer'] || row['ANSWER'];
         const tags = row['Tags'] || row['tags'] || row['TAGS'] || '';
+        const background = row['Background'] || row['background'] || row['BACKGROUND'] || ''; // ← properti baru
 
         if (!front || !back) {
           skippedCount++;
@@ -3581,7 +3584,8 @@ function renderDecks() {
         decksToShare[deckKey].cards.push({
           card_front: front,
           card_back: back,
-          card_tags: tags
+          card_tags: tags,
+          card_background: background   // ← simpan properti background
         });
 
         importedCount++;
