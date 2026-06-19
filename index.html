@@ -3018,7 +3018,7 @@ function renderDecks() {
   const isPremium = isPremiumActive();
   const maxFreeDecks = 5;
 
-  // ===== LEVEL 2: Subtopik (120px) =====
+  // ===== LEVEL 2: Subtopik (120px) – DENGAN BACKGROUND =====
   if (currentTopic) {
     const subtopics = topicMap[currentTopic] || [];
     let html = `
@@ -3038,9 +3038,22 @@ function renderDecks() {
       const isLocked = !isPremium && deckCount >= maxFreeDecks;
       const displayName = d.subtopic || d.name;
 
-      // Warna default (otomatis berubah saat dark mode via CSS variables)
-      const colors = ['var(--card-peach)', 'var(--card-green)', 'var(--card-blue)', 'var(--card-purple)'];
-      const bgStyle = `background: ${colors[i % 4]};`;
+      // Background handling (sama seperti Level 1)
+      const bgCard = d.cards.find(c => c.card_background && c.card_background.trim() !== '');
+      const background = bgCard ? bgCard.card_background : '';
+      let bgStyle = '';
+      let iconHtml = '';
+      if (background) {
+        if (background.startsWith('http')) {
+          bgStyle = `background: linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), url('${background}') center/cover no-repeat; color: white;`;
+        } else {
+          iconHtml = `<span class="text-3xl mr-2">${background}</span>`;
+        }
+      } else {
+        const colors = ['var(--card-peach)', 'var(--card-green)', 'var(--card-blue)', 'var(--card-purple)'];
+        bgStyle = `background: ${colors[i % 4]};`;
+      }
+
       const isPremiumDeck = d.cards.some(c => c.isPremium);
 
       html += `
@@ -3048,6 +3061,7 @@ function renderDecks() {
              style="${bgStyle} height: 120px; ${isLocked ? 'cursor:not-allowed; opacity: 0.6;' : ''}"
              onclick="${isLocked ? 'showUpgradeModal()' : `openDeck('${d.id}')`}">
           <div class="flex-1" style="max-width: 66.666%;">
+            ${iconHtml ? `<div class="flex items-center gap-2 mb-1">${iconHtml}</div>` : ''}
             <h3 class="font-bold text-lg uppercase" style="white-space: normal; word-break: break-word;">${displayName}</h3>
             <p class="text-xs opacity-80 mt-1">${d.cards.length} cards · ${due} due · ${pct}% mastered</p>
             <div class="progress-bar h-1.5 mt-1"><div class="progress-fill" style="width:${pct}%"></div></div>
@@ -3073,7 +3087,7 @@ function renderDecks() {
     return;
   }
 
-  // ===== LEVEL 1: Topik (150px) – tanpa chevron =====
+  // ===== LEVEL 1: Topik (150px) – DENGAN BACKGROUND =====
   let html = '';
   sortedTopics.forEach((topic) => {
     const subtopics = topicMap[topic];
@@ -3088,7 +3102,7 @@ function renderDecks() {
         if (background.startsWith('http')) {
           bgStyle = `background: linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), url('${background}') center/cover no-repeat; color: white;`;
         } else {
-          iconHtml = `<span class="text-4xl">${background}</span>`;
+          iconHtml = `<span class="text-4xl mr-3">${background}</span>`;
         }
         break;
       }
@@ -3098,9 +3112,12 @@ function renderDecks() {
       <div class="topic-card surface rounded-2xl p-5 border border-theme shadow-card mb-4 cursor-pointer hover:shadow-lg transition-shadow flex items-center"
            style="height: 150px; ${bgStyle}"
            onclick="currentTopic='${topic.replace(/'/g, "\\'")}'; renderDecks();">
-        <div class="flex-1">
-          <h3 class="font-bold text-lg uppercase" style="white-space: normal; word-break: break-word;">${topic}</h3>
-          <p class="text-xs text-sec mt-0.5">${subtopics.length} subtopics · ${totalCards} cards</p>
+        <div class="flex items-center gap-4 w-full">
+          ${iconHtml}
+          <div class="flex-1">
+            <h3 class="font-bold text-lg uppercase" style="white-space: normal; word-break: break-word;">${topic}</h3>
+            <p class="text-xs text-sec mt-0.5">${subtopics.length} subtopics · ${totalCards} cards</p>
+          </div>
         </div>
       </div>
     `;
