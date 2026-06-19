@@ -985,6 +985,20 @@
       pointer-events: none !important;
       opacity: 0 !important;
     }
+    .flip-front,
+    .flip-back {
+      overflow-y: auto;              /* scroll jika teks sangat panjang */
+      word-wrap: break-word;         /* paksa wrap kata */
+      overflow-wrap: break-word;
+    }
+    
+    .flip-front p,
+    .flip-back p {
+      word-break: break-word;        /* wrap di dalam paragraf */
+      white-space: normal;           /* izinkan baris baru */
+      max-width: 100%;
+      line-height: 1.6;
+    }
   </style>
 </head>
 <body>
