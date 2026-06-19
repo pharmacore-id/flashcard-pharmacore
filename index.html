@@ -4339,24 +4339,23 @@ if (calendar) {
 
   // === PERBAIKAN: getWeekLabels dengan hari yang benar ===
   const getWeekLabels = () => {
-    const todayDate = new Date();
-    const dayOfWeek = todayDate.getDay(); // 0=Sunday
-    // Konversi ke Monday-based (0=Monday)
-    const mondayOffset = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
-    const startOfWeek = new Date(todayDate);
-    startOfWeek.setDate(todayDate.getDate() - mondayOffset);
-    const dayNames = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-    const labels = [];
-    for (let i = 0; i < 7; i++) {
-      const d = new Date(startOfWeek);
-      d.setDate(d.getDate() + i);
-      labels.push({
-        label: dayNames[i],
-        date: formatLocalDate(d)
-      });
-    }
-    return labels;
-  };
+  const todayDate = new Date();
+  const dayOfWeek = todayDate.getDay(); // 0=Sunday
+  const mondayOffset = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
+  const startOfWeek = new Date(todayDate);
+  startOfWeek.setDate(todayDate.getDate() - mondayOffset);
+  const dayNames = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+  const labels = [];
+  for (let i = 0; i < 7; i++) {
+    const d = new Date(startOfWeek);
+    d.setDate(d.getDate() + i);
+    labels.push({
+      label: dayNames[i],
+      date: d.toISOString().split('T')[0]  // ← INI MASIH PAKAI UTC
+    });
+  }
+  return labels;
+};
 
   const barCount = dates.length;
   const containerWidth = container.parentElement?.offsetWidth || 320;
