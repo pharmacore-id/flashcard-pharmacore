@@ -2075,7 +2075,6 @@ async function loadSharedDecks() {
 
     snapshot.forEach(doc => {
       const deck = doc.data();
-      if (!isPremiumUser && deck.isPremium === true) return;
 
       if (deck.cards && deck.cards.length) {
         deck.cards.forEach(c => {
@@ -2446,6 +2445,10 @@ async function loadSharedDecks() {
       return Object.values(map);
     }
 
+    function isCurrentDeckPremium() {
+  if (!currentDeckId) return false;
+  return allCards.some(c => c.deck_id === currentDeckId && c.isPremium);
+}
     function getDueCards(deckId) {
       const now = today();
       let cards = getRealCards();
@@ -3720,6 +3723,51 @@ function renderDecks() {
         if (lockMsg) lockMsg.classList.add('hidden');
       }
 
+      const userIsPremium = isPremiumActive();
+const deckIsPremium = isCurrentDeckPremium();
+
+// Jika user free & deck premium → kunci semua mode
+if (!userIsPremium && deckIsPremium) {
+  const flashcardsBtn = document.querySelector('.mode-btn .icon-wrap.orange')?.parentElement;
+  const learnBtn = document.getElementById('learn-mode-btn');
+  const testBtn = document.getElementById('test-mode-btn');
+  const lockMsg = document.getElementById('premium-lock-msg');
+
+  if (flashcardsBtn) { flashcardsBtn.style.opacity = '0.5'; flashcardsBtn.style.pointerEvents = 'none'; }
+  if (learnBtn) { learnBtn.style.opacity = '0.5'; learnBtn.style.pointerEvents = 'none'; }
+  if (testBtn) { testBtn.style.opacity = '0.5'; testBtn.style.pointerEvents = 'none'; }
+  if (lockMsg) {
+    lockMsg.classList.remove('hidden');
+    lockMsg.innerHTML = `<p class="text-sm font-medium text-orange-600 dark:text-orange-400">🔒 Premium Deck</p>
+                         <p class="text-xs text-sec mt-1">This deck is exclusive to Premium users. Upgrade to study it.</p>
+                         <button onclick="showUpgradeModal()" class="mt-2 text-sm accent-bg text-white px-4 py-1.5 rounded-xl font-medium">Upgrade Now</button>`;
+  }
+} else {
+  // Kembalikan ke perilaku normal (free user dengan deck biasa)
+  const flashcardsBtn = document.querySelector('.mode-btn .icon-wrap.orange')?.parentElement;
+  const learnBtn = document.getElementById('learn-mode-btn');
+  const testBtn = document.getElementById('test-mode-btn');
+  const lockMsg = document.getElementById('premium-lock-msg');
+
+  if (!userIsPremium) {
+    // Free user, deck biasa: Flashcards bisa, Learn/Test terkunci
+    if (flashcardsBtn) { flashcardsBtn.style.opacity = '1'; flashcardsBtn.style.pointerEvents = 'auto'; }
+    if (learnBtn) { learnBtn.style.opacity = '0.5'; learnBtn.style.pointerEvents = 'none'; }
+    if (testBtn) { testBtn.style.opacity = '0.5'; testBtn.style.pointerEvents = 'none'; }
+    if (lockMsg) {
+      lockMsg.classList.remove('hidden');
+      lockMsg.innerHTML = `<p class="text-sm font-medium text-orange-600 dark:text-orange-400">🔒 Premium feature</p>
+                           <p class="text-xs text-sec mt-1">Enter your pharmacy book's access code or upgrade to unlock Learn and Test modes.</p>
+                           <button onclick="showUpgradeModal()" class="mt-2 text-sm accent-bg text-white px-4 py-1.5 rounded-xl font-medium">Upgrade Now</button>`;
+    }
+  } else {
+    // User premium: semua mode bisa
+    if (flashcardsBtn) { flashcardsBtn.style.opacity = '1'; flashcardsBtn.style.pointerEvents = 'auto'; }
+    if (learnBtn) { learnBtn.style.opacity = '1'; learnBtn.style.pointerEvents = 'auto'; }
+    if (testBtn) { testBtn.style.opacity = '1'; testBtn.style.pointerEvents = 'auto'; }
+    if (lockMsg) lockMsg.classList.add('hidden');
+  }
+}
       currentTab = 'study-select';
 
       updateDeckStats();
@@ -3833,6 +3881,10 @@ function renderDecks() {
     //  FLASHCARDS MODE
     // ============================================================
     function startFlashcards() {
+      if (!isPremiumActive() && isCurrentDeckPremium()) {
+  showUpgradeModal();
+  return;
+}
       const allCardsInDeck = getRealCards().filter(c => c.deck_id === currentDeckId);
 
       if (allCardsInDeck.length === 0) {
@@ -4065,6 +4117,10 @@ function renderDecks() {
     //  LEARN MODE
     // ============================================================
     function startLearn() {
+      if (!isPremiumActive() && isCurrentDeckPremium()) {
+  showUpgradeModal();
+  return;
+}
       if (!isPremiumActive()) {
         showUpgradeModal();
         return;
@@ -4136,6 +4192,10 @@ function renderDecks() {
     //  TEST MODE
     // ============================================================
     function startTest() {
+      
+      if (!isPremiumActive()) {
+        showUpgradeModal();
+        return;
       if (!isPremiumActive()) {
         showUpgradeModal();
         return;
