@@ -3065,7 +3065,7 @@ function renderDecks() {
           <div class="flex-1" style="max-width: 66.666%;">
             ${iconHtml ? `<div class="mb-1">${iconHtml}</div>` : ''}
             <h3 class="font-bold text-lg uppercase" style="white-space: normal; word-break: break-word;">${displayName}</h3>
-            <p class="text-xs opacity-80 mt-1">${d.cards.length} cards · ${due} due · ${pct}% mastered</p>
+           <p class="text-sm mt-1">${d.cards.length} cards · ${due} due · ${pct}% mastered</p>
             <div class="progress-bar h-1.5 mt-1"><div class="progress-fill" style="width:${pct}%"></div></div>
           </div>
           <div class="flex gap-1 ml-auto flex-shrink-0" onclick="event.stopPropagation()">
