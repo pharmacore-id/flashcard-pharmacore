@@ -1204,6 +1204,10 @@
         <button onclick="switchTab('decks')" class="text-sec"><i data-lucide="arrow-left" class="w-6 h-6"></i></button>
         <h2 class="text-xl font-bold flex-1">📥 Admin - Import Decks</h2>
       </div>
+      <div class="flex items-center gap-3 mt-3">
+  <input type="checkbox" id="import-premium-toggle" />
+  <label for="import-premium-toggle" class="text-sm font-medium">⭐ Tandai deck ini sebagai PREMIUM</label>
+</div>
       <div class="view-scroll">
         <div class="surface rounded-2xl p-6 border border-theme shadow-card mb-4">
           <h3 class="font-bold mb-2">Upload Excel File</h3>
@@ -1994,15 +1998,16 @@ Science       | Biology       | What is DNA?             | Deoxyribonucleic acid
       }
     }
 
-    async function loadFromFirebase(email) {
+   async function loadFromFirebase(email) {
   if (!email || !navigator.onLine) return null;
   try {
     updateSyncStatus('syncing', 'Loading...');
     
-    // 1. Ambil personal cards user
     const userDoc = await db.collection('users').doc(email).get();
     let personalCards = [];
     let userPlan = 'free';
+    const isAdminUser = ADMIN_EMAILS.includes(email);
+
     if (userDoc.exists) {
       const data = userDoc.data();
       if (data.nickname) localStorage.setItem(NICKNAME_KEY + email, data.nickname);
@@ -2010,11 +2015,18 @@ Science       | Biology       | What is DNA?             | Deoxyribonucleic acid
       userPlan = data.plan || 'free';
     }
 
-    // 2. Ambil shared decks (public)
+    // Ambil shared decks
     const sharedCards = await loadSharedDecks();
 
-    // 3. Gabungkan personal + shared
-    const allCards = [...personalCards, ...sharedCards];
+    // === PERUBAHAN: user biasa hanya lihat shared cards ===
+    let allCards;
+    if (isAdminUser) {
+      // Admin: gabungkan personal + shared
+      allCards = [...personalCards, ...sharedCards];
+    } else {
+      // User biasa: HANYA shared cards (personalCards diabaikan)
+      allCards = [...sharedCards];
+    }
     
     updateSyncStatus('', 'Synced');
     return { cards: allCards, plan: userPlan };
@@ -2030,7 +2042,7 @@ Science       | Biology       | What is DNA?             | Deoxyribonucleic acid
 //  SHARED DECKS - SAVE & LOAD
 // ============================================================
 
-async function saveSharedDeck(deckData) {
+async function saveSharedDeck(deckData, isPremium = false) {
   if (!isAdmin) return;
   try {
     const docRef = db.collection('sharedDecks').doc();
@@ -2038,6 +2050,7 @@ async function saveSharedDeck(deckData) {
       deckName: deckData.deckName,
       topic: deckData.topic || 'General',
       subtopic: deckData.subtopic || '',
+      isPremium: isPremium,   // ← flag baru
       cards: deckData.cards.map(c => ({
         card_front: c.card_front,
         card_back: c.card_back,
@@ -2046,7 +2059,6 @@ async function saveSharedDeck(deckData) {
       createdAt: firebase.firestore.FieldValue.serverTimestamp(),
       createdBy: currentUser
     });
-    console.log('✅ Shared deck saved:', deckData.deckName);
     return true;
   } catch (error) {
     console.error('❌ Gagal menyimpan shared deck:', error);
@@ -2058,8 +2070,13 @@ async function loadSharedDecks() {
   try {
     const snapshot = await db.collection('sharedDecks').get();
     const sharedCards = [];
+    const isPremiumUser = isPremiumActive(); // cek status user
+
     snapshot.forEach(doc => {
       const deck = doc.data();
+      // === PERUBAHAN: user free tidak lihat premium deck ===
+      if (!isPremiumUser && deck.isPremium === true) return;
+
       if (deck.cards && deck.cards.length) {
         deck.cards.forEach(c => {
           sharedCards.push({
@@ -2068,6 +2085,7 @@ async function loadSharedDecks() {
             deck_name: deck.deckName || 'Shared Deck',
             topic: deck.topic || 'General',
             subtopic: deck.subtopic || '',
+            isPremium: deck.isPremium || false,
             card_front: c.card_front,
             card_back: c.card_back,
             card_tags: c.card_tags || '',
@@ -2649,11 +2667,17 @@ async function loadSharedDecks() {
       }
     }
 
-    function saveUserData(email) {
-  // Filter cards: hanya simpan yang bukan shared (personal cards)
-  const personalCards = allCards.filter(c => !c.isShared);
-  localStorage.setItem(DATA_PREFIX + email, JSON.stringify(allCards)); // tetap simpan semua di local untuk offline
-  saveToFirebase(email, personalCards, userPlan); // simpan hanya personal ke cloud
+   function saveUserData(email) {
+  const isAdminUser = ADMIN_EMAILS.includes(email);
+  let personalCards = allCards.filter(c => !c.isShared);
+  
+  // User biasa: kosongkan personalCards (tidak disimpan ke cloud)
+  if (!isAdminUser) {
+    personalCards = [];
+  }
+  
+  localStorage.setItem(DATA_PREFIX + email, JSON.stringify(allCards));
+  saveToFirebase(email, personalCards, userPlan);
 }
 
     function savePlan(email, plan, expiry) {
@@ -2746,6 +2770,10 @@ async function loadSharedDecks() {
         updateHome();
         renderDecks();
 
+         if (currentUser && !isAdmin) {
+      clearUserSampleDecks(currentUser);
+    }
+        
         // Show/hide user request button
 const userRequestBtn = document.getElementById('user-request-btn');
 if (userRequestBtn) {
@@ -2966,6 +2994,27 @@ if (calendar) {
     // ============================================================
     //  RENDER DECKS
     // ============================================================
+   async function clearUserSampleDecks(email) {
+  if (!email) return;
+  const isAdminUser = ADMIN_EMAILS.includes(email);
+  if (isAdminUser) return;
+  
+  try {
+    const userDoc = await db.collection('users').doc(email).get();
+    if (userDoc.exists) {
+      const data = userDoc.data();
+      if (data.cards && data.cards.length > 0) {
+        await db.collection('users').doc(email).update({
+          cards: []
+        });
+        console.log('✅ Sample decks removed for user:', email);
+      }
+    }
+  } catch (err) {
+    console.warn('⚠️ Gagal membersihkan sample decks:', err);
+  }
+}
+    
     function renderDecks() {
       const container = document.getElementById('deck-list');
       const no = document.getElementById('no-decks');
