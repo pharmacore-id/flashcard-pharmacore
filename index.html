@@ -1829,38 +1829,45 @@ Science       | Biology       | What is DNA?             | Deoxyribonucleic acid
     }
 
     function saveNickname() {
-      const input = document.getElementById('nickname-input');
-      const name = input.value.trim();
-      if (!name) {
-        alert('Please enter a name.');
-        return;
-      }
-      localStorage.setItem(NICKNAME_KEY + currentUser, name);
-      if (db) {
-        db.collection('users').doc(currentUser).set({
-          nickname: name,
-          updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-        }, { merge: true }).catch(err => console.warn('⚠️ Could not save nickname to Firebase:', err));
-      }
-      updateHome();
-      document.getElementById('nickname-input').value = name;
-      alert('✅ Display name updated to "' + name + '"!');
-    }
+  const input = document.getElementById('nickname-input');
+  const name = input.value.trim();
+  if (!name) {
+    alert('Please enter a name.');
+    return;
+  }
+  localStorage.setItem(NICKNAME_KEY + currentUser, name);
+  if (db) {
+    db.collection('users').doc(currentUser).set({
+      nickname: name,
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+    }, { merge: true }).catch(err => console.warn('⚠️ Could not save nickname to Firebase:', err));
+  }
+  updateHome();
+  document.getElementById('nickname-input').value = name;
+
+  // 👇 Tambahan ini langsung memperbarui Account di Settings
+  const settingsUsername = document.getElementById('settings-username');
+  if (settingsUsername) {
+    settingsUsername.textContent = name;
+  }
+
+  alert('✅ Display name updated to "' + name + '"!');
+}
 
     function loadNickname() {
-      const name = getNickname();
-      const displayElement = document.getElementById('user-display-name');
-      if (displayElement) displayElement.textContent = name;
-      const input = document.getElementById('nickname-input');
-      if (input) input.value = name;
-      const settingsUsername = document.getElementById('settings-username');
-      if (settingsUsername && currentUser) {
-        const users = getUsers();
-        if (users[currentUser] && users[currentUser].username) {
-          settingsUsername.textContent = users[currentUser].username;
-        }
-      }
-    }
+  const name = getNickname();
+  const displayElement = document.getElementById('user-display-name');
+  if (displayElement) displayElement.textContent = name;
+  const input = document.getElementById('nickname-input');
+  if (input) input.value = name;
+
+  const settingsUsername = document.getElementById('settings-username');
+  if (settingsUsername && currentUser) {
+    const users = getUsers();
+    const originalUsername = (users[currentUser] && users[currentUser].username) || currentUser;
+    settingsUsername.textContent = (name && name !== 'Student') ? name : originalUsername;
+  }
+}
 
     // ============================================================
     //  CHANGE PASSWORD
@@ -2714,7 +2721,6 @@ async function loadSharedDecks() {
 
         const users = getUsers();
         if (currentUser && users[currentUser]) {
-          document.getElementById('settings-username').textContent = users[currentUser].username;
           isAdmin = users[currentUser].isAdmin || ADMIN_EMAILS.includes(currentUser);
         }
 
