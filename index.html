@@ -2632,7 +2632,8 @@ async function loadSharedDecks() {
     
         currentUser = email;
         saveSession(email);
-        allCards = getSampleDecks();
+        const sharedDecks = await loadSharedDecks();
+        allCards = sharedDecks;
         saveUserData(email);
         if (isAdminUser) {
           savePlan(email, 'premium', expiry);
