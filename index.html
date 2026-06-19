@@ -3085,13 +3085,13 @@ if (calendar) {
                  style="${isLocked ? 'cursor:not-allowed;' : ''}">
               <div class="flex justify-between items-center">
                 <div>
-                  <div class="flex items-center gap-2">
-                    <span class="text-lg">${isLocked ? '🔒' : '💊'}</span>
-                    <h3 class="font-bold truncate">${displayName}</h3>
-                    ${isLocked ? '<span class="text-xs text-orange-500 font-medium">Premium</span>' : ''}
-                  </div>
-                  ${d.subtopic ? `<span class="text-xs text-sec">${d.topic || ''}</span>` : ''}
-                </div>
+                 <div class="flex items-center gap-2">
+  <span class="text-lg">${isLocked ? '🔒' : '💊'}</span>
+  <h3 class="font-bold truncate">${displayName}</h3>
+  ${d.cards.some(c => c.isPremium) ? '<span class="text-xs text-yellow-500 font-medium">⭐ Premium</span>' : ''}
+  ${isLocked ? '<span class="text-xs text-orange-500 font-medium">🔒</span>' : ''}
+  ${d.cards.some(c => c.isShared) ? '<span class="text-xs text-blue-500 font-medium">📦 Shared</span>' : ''}
+</div>
                 <div class="flex gap-1" onclick="event.stopPropagation()">
                   ${isAdmin && !isLocked ? `
                     <button onclick="showRenameDeck('${d.id}')" class="text-sec p-1 hover:text-accent transition-colors" title="Rename Deck">
@@ -3527,58 +3527,7 @@ if (calendar) {
     // ============================================================
     //  ADMIN FUNCTIONS - SHOW ADMIN IMPORT
     // ============================================================
-    function showAdminImport() {
-      if (!isAdmin) return;
-      switchTab('admin-import');
-      renderAdminDeckList();
-      renderCodeList();
-    }
-
-    function renderAdminDeckList() {
-      const decks = getDecks();
-      const container = document.getElementById('admin-deck-list');
-      if (!container) return;
-
-      if (decks.length === 0) {
-        container.innerHTML = '<p class="text-sec text-sm">No decks imported yet.</p>';
-        return;
-      }
-      container.innerHTML = decks.map(d => `
-          <div class="admin-deck-item flex items-center justify-between p-2 rounded-lg" style="background:var(--surface);border:1px solid var(--border);">
-            <div>
-              <span class="font-medium text-sm">${d.name}</span>
-              <span class="text-xs text-sec ml-2">${d.cards.length} cards</span>
-            </div>
-            <button onclick="deleteDeck('${d.id}')" class="text-red-500 p-1"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
-          </div>
-        `).join('');
-      if (typeof lucide !== 'undefined' && lucide.createIcons) {
-        lucide.createIcons();
-      }
-    }
-
-    function renderCodeList() {
-      const codes = getCodes();
-      const container = document.getElementById('code-list');
-      if (!container) return;
-
-      const entries = Object.entries(codes);
-      if (entries.length === 0) {
-        container.innerHTML = '<p class="text-sec">No codes generated yet.</p>';
-        return;
-      }
-      container.innerHTML = entries.map(([code, data]) => `
-          <div class="flex items-center justify-between p-1.5 rounded" style="background:var(--surface);border:1px solid var(--border);">
-            <span class="font-mono text-xs">${code}</span>
-            <span class="text-xs ${data.used ? 'text-red-500' : 'text-green-500'}">${data.used ? '✓ Used by ' + data.usedBy : 'Available'}</span>
-          </div>
-        `).join('');
-    }
-
-    // ============================================================
-    //  EXCEL IMPORT - MAIN
-    // ============================================================
-   function handleExcelImport(event) {
+ function handleExcelImport(event) {
   if (!isAdmin) {
     alert('Only admins can import decks.');
     return;
@@ -3614,6 +3563,10 @@ if (calendar) {
         showImportStatus('❌ No data found in Excel file.', 'error');
         return;
       }
+
+      // === PERBAIKAN 7: Baca checkbox premium (HANYA SEKALI) ===
+      const isPremium = document.getElementById('import-premium-toggle').checked;
+      console.log('📌 Import dengan status premium:', isPremium);
 
       let importedCount = 0;
       let skippedCount = 0;
@@ -3652,21 +3605,19 @@ if (calendar) {
         importedCount++;
       });
 
-      // Simpan setiap deck ke shared collection
+      // === PERBAIKAN 7 (lanjutan): Simpan deck dengan status premium ===
       let savedCount = 0;
       for (const deckKey in decksToShare) {
         const deck = decksToShare[deckKey];
-        const success = await saveSharedDeck(deck);
+        // ← kirim isPremium ke saveSharedDeck
+        const success = await saveSharedDeck(deck, isPremium);
         if (success) savedCount++;
       }
 
       // Reload shared decks dan merge ke allCards
       const sharedCards = await loadSharedDecks();
-      // Hapus shared cards lama dari allCards
       allCards = allCards.filter(c => !c.isShared);
-      // Tambahkan shared cards baru
       allCards.push(...sharedCards);
-      // Simpan ke local dan cloud (personal cards)
       saveUserData(currentUser);
 
       renderDecks();
