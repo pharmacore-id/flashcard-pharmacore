@@ -1729,58 +1729,9 @@ Science       | Biology       | What is DNA?             | Deoxyribonucleic acid
       measurementId: "G-DF38PK97GW"
     };
 
-  firebase.initializeApp(firebaseConfig);
-const db = firebase.firestore();
-const auth = firebase.auth();
-
-// ============================================================
-//  AUTH HANDLERS
-// ============================================================
-async function handleLogin(e) {
-  e.preventDefault();
-  const email = document.getElementById('login-email').value.trim();
-  const pw = document.getElementById('login-password').value;
-  const err = document.getElementById('login-error');
-
-  err.textContent = '';
-
-  try {
-    const userCredential = await firebase.auth().signInWithEmailAndPassword(email, pw);
-    const user = userCredential.user;
-
-    currentUser = email;
-    saveSession(email);
-
-    const cloudData = await loadFromFirebase(email);
-    if (cloudData && cloudData.cards) {
-      allCards = cloudData.cards;
-      userPlan = cloudData.plan || 'free';
-      localStorage.setItem(DATA_PREFIX + email, JSON.stringify(allCards));
-      localStorage.setItem('flashmind_plan_' + email, userPlan);
-    } else {
-      loadUserData(email);
-    }
-
-    isAdmin = ADMIN_EMAILS.includes(email);
-    enterApp();
-
-  } catch (error) {
-    console.error('Login error:', error);
-    if (error.code === 'auth/user-not-found') {
-      err.textContent = 'No account found. Please sign up first.';
-    } else if (error.code === 'auth/wrong-password') {
-      err.textContent = 'Incorrect password.';
-    } else if (error.code === 'auth/invalid-email') {
-      err.textContent = 'Invalid email address.';
-    } else if (error.code === 'auth/too-many-requests') {
-      err.textContent = 'Too many failed attempts. Please try again later.';
-    } else if (error.code === 'auth/invalid-credential') {
-      err.textContent = 'Invalid credentials. Please check your email and password.';
-    } else {
-      err.textContent = 'Login failed: ' + error.message;
-    }
-  }
-}
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+    const auth = firebase.auth();
 
     // ============================================================
     //  CONFIGURATION
@@ -2081,6 +2032,77 @@ async function handleLogin(e) {
     console.warn('⚠️ Firebase load failed:', err.message);
     updateSyncStatus('offline', 'Offline');
     return null;
+  }
+}
+
+// ============================================================
+//  SHARED DECKS - SAVE & LOAD
+// ============================================================
+
+async function saveSharedDeck(deckData, isPremium = false) {
+  if (!isAdmin) return;
+  try {
+    const docRef = db.collection('sharedDecks').doc();
+    await docRef.set({
+      deckName: deckData.deckName,
+      topic: deckData.topic || 'General',
+      subtopic: deckData.subtopic || '',
+      isPremium: isPremium,
+      cards: deckData.cards.map(c => ({
+      card_front: c.card_front,
+      card_back: c.card_back,
+      card_tags: c.card_tags || '',
+      card_background: c.card_background || ''   // ← tambahkan
+    }))
+      createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+      createdBy: currentUser
+    });
+    return true;
+  } catch (error) {
+    console.error('❌ Gagal menyimpan shared deck:', error);
+    return false;
+  }
+}
+
+async function loadSharedDecks() {
+  try {
+    const snapshot = await db.collection('sharedDecks').get();
+    const sharedCards = [];
+    const isPremiumUser = isPremiumActive();
+
+    snapshot.forEach(doc => {
+      const deck = doc.data();
+      if (!isPremiumUser && deck.isPremium === true) return;
+
+      if (deck.cards && deck.cards.length) {
+        deck.cards.forEach(c => {
+          sharedCards.push({
+            __id: 'shared_' + doc.id + '_' + Math.random().toString(36).slice(2, 6),
+            deck_id: 'shared_' + doc.id,
+            deck_name: deck.deckName || 'Shared Deck',
+            topic: deck.topic || 'General',
+            subtopic: deck.subtopic || '',
+            isPremium: deck.isPremium || false,
+            card_front: c.card_front,
+            card_back: c.card_back,
+            card_tags: c.card_tags || '',
+            card_background: c.card_background || '',
+            ease_factor: 2.5,
+            interval: 0,
+            repetitions: 0,
+            next_review: '',
+            last_review: '',
+            total_reviews: 0,
+            correct_count: 0,
+            isShared: true
+          });
+        });
+      }
+    });
+    return sharedCards;
+  } catch (error) {
+    console.warn('⚠️ Gagal memuat shared decks:', error);
+    return [];
   }
 }
     
@@ -2511,6 +2533,52 @@ async function handleLogin(e) {
         return;
       }
       switchTab('home');
+    }
+
+    async function handleLogin(e) {
+      e.preventDefault();
+      const email = document.getElementById('login-email').value.trim();
+      const pw = document.getElementById('login-password').value;
+      const err = document.getElementById('login-error');
+
+      err.textContent = '';
+
+      try {
+        const userCredential = await firebase.auth().signInWithEmailAndPassword(email, pw);
+        const user = userCredential.user;
+
+        currentUser = email;
+        saveSession(email);
+
+        const cloudData = await loadFromFirebase(email);
+        if (cloudData && cloudData.cards) {
+          allCards = cloudData.cards;
+          userPlan = cloudData.plan || 'free';
+          localStorage.setItem(DATA_PREFIX + email, JSON.stringify(allCards));
+          localStorage.setItem('flashmind_plan_' + email, userPlan);
+        } else {
+          loadUserData(email);
+        }
+
+        isAdmin = ADMIN_EMAILS.includes(email);
+        enterApp();
+
+      } catch (error) {
+        console.error('Login error:', error);
+        if (error.code === 'auth/user-not-found') {
+          err.textContent = 'No account found. Please sign up first.';
+        } else if (error.code === 'auth/wrong-password') {
+          err.textContent = 'Incorrect password.';
+        } else if (error.code === 'auth/invalid-email') {
+          err.textContent = 'Invalid email address.';
+        } else if (error.code === 'auth/too-many-requests') {
+          err.textContent = 'Too many failed attempts. Please try again later.';
+        } else if (error.code === 'auth/invalid-credential') {
+          err.textContent = 'Invalid credentials. Please check your email and password.';
+        } else {
+          err.textContent = 'Login failed: ' + error.message;
+        }
+      }
     }
 
     function loadUserData(email) {
@@ -4894,77 +4962,6 @@ if (calendar) {
       if (e.key === 'Escape') { closeUpgradeModal();
         closeContactAdmin(); }
     });
-
-    // ============================================================
-//  SHARED DECKS - SAVE & LOAD
-// ============================================================
-
-async function saveSharedDeck(deckData, isPremium = false) {
-  if (!isAdmin) return;
-  try {
-    const docRef = db.collection('sharedDecks').doc();
-    await docRef.set({
-      deckName: deckData.deckName,
-      topic: deckData.topic || 'General',
-      subtopic: deckData.subtopic || '',
-      isPremium: isPremium,
-      cards: deckData.cards.map(c => ({
-        card_front: c.card_front,
-        card_back: c.card_back,
-        card_tags: c.card_tags || '',
-        card_background: c.card_background || '',
-      })),
-      createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-      createdBy: currentUser
-    });
-    return true;
-  } catch (error) {
-    console.error('❌ Gagal menyimpan shared deck:', error);
-    return false;
-  }
-}
-
-async function loadSharedDecks() {
-  try {
-    const snapshot = await db.collection('sharedDecks').get();
-    const sharedCards = [];
-    const isPremiumUser = isPremiumActive();
-
-    snapshot.forEach(doc => {
-      const deck = doc.data();
-      if (!isPremiumUser && deck.isPremium === true) return;
-
-      if (deck.cards && deck.cards.length) {
-        deck.cards.forEach(c => {
-          sharedCards.push({
-            __id: 'shared_' + doc.id + '_' + Math.random().toString(36).slice(2, 6),
-            deck_id: 'shared_' + doc.id,
-            deck_name: deck.deckName || 'Shared Deck',
-            topic: deck.topic || 'General',
-            subtopic: deck.subtopic || '',
-            isPremium: deck.isPremium || false,
-            card_front: c.card_front,
-            card_back: c.card_back,
-            card_tags: c.card_tags || '',
-            card_background: c.card_background || '',
-            ease_factor: 2.5,
-            interval: 0,
-            repetitions: 0,
-            next_review: '',
-            last_review: '',
-            total_reviews: 0,
-            correct_count: 0,
-            isShared: true
-          });
-        });
-      }
-    });
-    return sharedCards;
-  } catch (error) {
-    console.warn('⚠️ Gagal memuat shared decks:', error);
-    return [];
-  }
-}
 
     // ============================================================
     //  INIT
