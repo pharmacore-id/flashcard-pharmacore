@@ -2049,10 +2049,11 @@ async function saveSharedDeck(deckData, isPremium = false) {
       subtopic: deckData.subtopic || '',
       isPremium: isPremium,
       cards: deckData.cards.map(c => ({
-        card_front: c.card_front,
-        card_back: c.card_back,
-        card_tags: c.card_tags || ''
-      })),
+      card_front: c.card_front,
+      card_back: c.card_back,
+      card_tags: c.card_tags || '',
+      card_background: c.card_background || ''   // ← tambahkan
+    }))
       createdAt: firebase.firestore.FieldValue.serverTimestamp(),
       createdBy: currentUser
     });
@@ -2085,6 +2086,7 @@ async function loadSharedDecks() {
             card_front: c.card_front,
             card_back: c.card_back,
             card_tags: c.card_tags || '',
+            card_background: c.card_background || '',
             ease_factor: 2.5,
             interval: 0,
             repetitions: 0,
@@ -3036,16 +3038,38 @@ if (calendar) {
       const colors = ['card-peach', 'card-green', 'card-blue', 'card-purple'];
       const isLocked = !isPremium && deckCount >= maxFreeDecks;
       const displayName = d.subtopic || d.name;
+     // Ambil background dari kartu pertama yang punya background
+      const bgCard = d.cards.find(c => c.card_background && c.card_background.trim() !== '');
+      const background = bgCard ? bgCard.card_background : '';
+      
+      let bgStyle = '';
+      let iconHtml = '';
+      if (background) {
+        if (background.startsWith('http')) {
+          bgStyle = `background: linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), url('${background}') center/cover no-repeat; color: white;`;
+        } else {
+          iconHtml = `<span class="text-4xl">${background}</span>`;
+        }
+      } else {
+        const colors = ['#fdebd0', '#d1fae5', '#dbeafe', '#ede9fe'];
+        bgStyle = `background: ${colors[i % 4]};`;
+      }
+      
       html += `
-        <div class="deck-item ${colors[i % 4]} ${isLocked ? 'opacity-60' : ''}"
-             onclick="${isLocked ? "showUpgradeModal()" : "openDeck('" + d.id + "')"}"
-             style="${isLocked ? 'cursor:not-allowed;' : ''}">
-          <div class="flex justify-between items-center">
-            <div class="flex items-center gap-2">
-              <span class="text-lg">${isLocked ? '🔒' : '💊'}</span>
-              <h3 class="font-bold truncate">${displayName}</h3>
-              ${d.cards.some(c => c.isPremium) ? '<span class="text-xs text-yellow-500 font-medium">⭐ Premium</span>' : ''}
-              ${d.cards.some(c => c.isShared) ? '<span class="text-xs text-blue-500 font-medium">📦 Shared</span>' : ''}
+        <div class="deck-item rounded-2xl p-4 shadow-card mb-3 cursor-pointer flex flex-col justify-center"
+             style="${bgStyle} height: 200px; ${isLocked ? 'cursor:not-allowed; opacity: 0.6;' : ''}"
+             onclick="${isLocked ? 'showUpgradeModal()' : `openDeck('${d.id}')`}">
+          <div class="flex items-center gap-4">
+            ${iconHtml}
+            <div class="flex-1">
+              <div class="flex items-center gap-2">
+                <span class="text-lg">${isLocked ? '🔒' : '💊'}</span>
+                <h3 class="font-bold truncate">${displayName}</h3>
+                ${d.cards.some(c => c.isPremium) ? '<span class="text-xs text-yellow-500 font-medium">⭐ Premium</span>' : ''}
+                ${d.cards.some(c => c.isShared) ? '<span class="text-xs text-blue-500 font-medium">📦 Shared</span>' : ''}
+              </div>
+              <p class="text-xs opacity-80">${d.cards.length} cards · ${due} due · ${pct}% mastered</p>
+              <div class="progress-bar h-1.5 my-2"><div class="progress-fill" style="width:${pct}%"></div></div>
             </div>
             <div class="flex gap-1" onclick="event.stopPropagation()">
               ${isAdmin && !isLocked ? `
@@ -3055,16 +3079,8 @@ if (calendar) {
               ` : ''}
             </div>
           </div>
-          <div class="progress-bar h-1.5 my-1"><div class="progress-fill" style="width:${pct}%"></div></div>
-          <p class="text-xs text-sec">${d.cards.length} cards · ${due} due · ${pct}% mastered</p>
         </div>
       `;
-      deckCount++;
-    });
-    container.innerHTML = html;
-    if (typeof lucide !== 'undefined' && lucide.createIcons) lucide.createIcons();
-    return;
-  }
 
   // ===== LEVEL 1: Daftar topik =====
   let html = '';
@@ -3535,6 +3551,7 @@ if (calendar) {
         const front = row['Front'] || row['front'] || row['FRONT'] || row['Question'] || row['question'] || row['QUESTION'];
         const back = row['Back'] || row['back'] || row['BACK'] || row['Answer'] || row['answer'] || row['ANSWER'];
         const tags = row['Tags'] || row['tags'] || row['TAGS'] || '';
+        const background = row['Background'] || row['background'] || row['BACKGROUND'] || '';
 
         if (!front || !back) {
           skippedCount++;
@@ -3556,7 +3573,8 @@ if (calendar) {
         decksToShare[deckKey].cards.push({
           card_front: front,
           card_back: back,
-          card_tags: tags
+          card_tags: tags,
+          card_background: background   // ← pastikan ini ada
         });
 
         importedCount++;
