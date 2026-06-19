@@ -4451,41 +4451,59 @@ if (calendar) {
     //  6. STUDY HEATMAP
     // ============================================================
     function renderHeatmap() {
-      const container = document.getElementById('heatmap-container');
-      if (!container) return;
+  const container = document.getElementById('heatmap-container');
+  if (!container) return;
 
-      const weeks = 4;
-      const days = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
-      const todayDate = new Date();
-      const firstDay = new Date(todayDate);
-      firstDay.setDate(firstDay.getDate() - (firstDay.getDay() === 0 ? 6 : firstDay.getDay() - 1));
-      firstDay.setDate(firstDay.getDate() - (weeks - 1) * 7);
+  const weeks = 4;
+  const days = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
+  const todayDate = new Date();
+  const firstDay = new Date(todayDate);
+  // Mundur ke Senin pertama (4 minggu lalu)
+  firstDay.setDate(firstDay.getDate() - (firstDay.getDay() === 0 ? 6 : firstDay.getDay() - 1));
+  firstDay.setDate(firstDay.getDate() - (weeks - 1) * 7);
 
-      let html = `<div class="heatmap-grid">`;
-      days.forEach(d => {
-        html += `<div class="day-label">${d}</div>`;
-      });
-
-      for (let w = 0; w < weeks; w++) {
-        for (let d = 0; d < 7; d++) {
-          const date = new Date(firstDay);
-          date.setDate(date.getDate() + w * 7 + d);
-          const dateStr = formatLocalDate(date);
-          const isToday = dateStr === today();
-          const count = getTotalReviewsForDate(dateStr);
-          let cls = 'heat-cell';
-          if (isToday) cls += ' today';
-          if (count > 0) cls += ' studied';
-          else cls += ' empty';
-
-          const label = count > 0 ? count : '';
-          html += `<div class="${cls}" title="${dateStr}: ${count} cards">${label}</div>`;
-        }
-      }
-      html += `</div>`;
-      container.innerHTML = html;
+  // Kumpulkan semua count untuk mencari nilai maksimum
+  const allCounts = [];
+  for (let w = 0; w < weeks; w++) {
+    for (let d = 0; d < 7; d++) {
+      const date = new Date(firstDay);
+      date.setDate(date.getDate() + w * 7 + d);
+      const dateStr = formatLocalDate(date);
+      allCounts.push(getTotalReviewsForDate(dateStr));
     }
+  }
+  const maxCount = Math.max(...allCounts, 1); // minimal 1 agar tidak dibagi nol
 
+  let html = `<div class="heatmap-grid">`;
+  days.forEach(d => {
+    html += `<div class="day-label">${d}</div>`;
+  });
+
+  for (let w = 0; w < weeks; w++) {
+    for (let d = 0; d < 7; d++) {
+      const date = new Date(firstDay);
+      date.setDate(date.getDate() + w * 7 + d);
+      const dateStr = formatLocalDate(date);
+      const isToday = dateStr === today();
+      const count = getTotalReviewsForDate(dateStr);
+
+      let cls = 'heat-cell';
+      if (isToday) cls += ' today';
+
+      // Hitung intensitas (0.25 untuk 1 kartu, 1.0 untuk max)
+      const intensity = count > 0 ? 0.25 + (count / maxCount) * 0.75 : 0;
+      const bgColor = count > 0
+        ? `rgba(249, 115, 22, ${intensity.toFixed(2)})` // oranye dengan opacity bervariasi
+        : 'var(--border)'; // abu‑abu default
+
+      const label = count > 0 ? count : '';
+
+      html += `<div class="${cls}" style="background:${bgColor};" title="${dateStr}: ${count} cards">${label}</div>`;
+    }
+  }
+  html += `</div>`;
+  container.innerHTML = html;
+}
     // ============================================================
     //  PROGRESS TOGGLE
     // ============================================================
