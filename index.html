@@ -2034,77 +2034,6 @@ Science       | Biology       | What is DNA?             | Deoxyribonucleic acid
     return null;
   }
 }
-
-// ============================================================
-//  SHARED DECKS - SAVE & LOAD
-// ============================================================
-
-async function saveSharedDeck(deckData, isPremium = false) {
-  if (!isAdmin) return;
-  try {
-    const docRef = db.collection('sharedDecks').doc();
-    await docRef.set({
-      deckName: deckData.deckName,
-      topic: deckData.topic || 'General',
-      subtopic: deckData.subtopic || '',
-      isPremium: isPremium,
-      cards: deckData.cards.map(c => ({
-        card_front: c.card_front,
-        card_back: c.card_back,
-        card_tags: c.card_tags || '',
-        card_background: c.card_background || '',
-      })),
-      createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-      createdBy: currentUser
-    });
-    return true;
-  } catch (error) {
-    console.error('❌ Gagal menyimpan shared deck:', error);
-    return false;
-  }
-}
-
-async function loadSharedDecks() {
-  try {
-    const snapshot = await db.collection('sharedDecks').get();
-    const sharedCards = [];
-    const isPremiumUser = isPremiumActive();
-
-    snapshot.forEach(doc => {
-      const deck = doc.data();
-      if (!isPremiumUser && deck.isPremium === true) return;
-
-      if (deck.cards && deck.cards.length) {
-        deck.cards.forEach(c => {
-          sharedCards.push({
-            __id: 'shared_' + doc.id + '_' + Math.random().toString(36).slice(2, 6),
-            deck_id: 'shared_' + doc.id,
-            deck_name: deck.deckName || 'Shared Deck',
-            topic: deck.topic || 'General',
-            subtopic: deck.subtopic || '',
-            isPremium: deck.isPremium || false,
-            card_front: c.card_front,
-            card_back: c.card_back,
-            card_tags: c.card_tags || '',
-            card_background: c.card_background || '',
-            ease_factor: 2.5,
-            interval: 0,
-            repetitions: 0,
-            next_review: '',
-            last_review: '',
-            total_reviews: 0,
-            correct_count: 0,
-            isShared: true
-          });
-        });
-      }
-    });
-    return sharedCards;
-  } catch (error) {
-    console.warn('⚠️ Gagal memuat shared decks:', error);
-    return [];
-  }
-}
     
     // ============================================================
     //  FIREBASE AUTH STATE LISTENER
@@ -4962,6 +4891,77 @@ if (calendar) {
       if (e.key === 'Escape') { closeUpgradeModal();
         closeContactAdmin(); }
     });
+
+    // ============================================================
+//  SHARED DECKS - SAVE & LOAD
+// ============================================================
+
+async function saveSharedDeck(deckData, isPremium = false) {
+  if (!isAdmin) return;
+  try {
+    const docRef = db.collection('sharedDecks').doc();
+    await docRef.set({
+      deckName: deckData.deckName,
+      topic: deckData.topic || 'General',
+      subtopic: deckData.subtopic || '',
+      isPremium: isPremium,
+      cards: deckData.cards.map(c => ({
+        card_front: c.card_front,
+        card_back: c.card_back,
+        card_tags: c.card_tags || '',
+        card_background: c.card_background || '',
+      })),
+      createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+      createdBy: currentUser
+    });
+    return true;
+  } catch (error) {
+    console.error('❌ Gagal menyimpan shared deck:', error);
+    return false;
+  }
+}
+
+async function loadSharedDecks() {
+  try {
+    const snapshot = await db.collection('sharedDecks').get();
+    const sharedCards = [];
+    const isPremiumUser = isPremiumActive();
+
+    snapshot.forEach(doc => {
+      const deck = doc.data();
+      if (!isPremiumUser && deck.isPremium === true) return;
+
+      if (deck.cards && deck.cards.length) {
+        deck.cards.forEach(c => {
+          sharedCards.push({
+            __id: 'shared_' + doc.id + '_' + Math.random().toString(36).slice(2, 6),
+            deck_id: 'shared_' + doc.id,
+            deck_name: deck.deckName || 'Shared Deck',
+            topic: deck.topic || 'General',
+            subtopic: deck.subtopic || '',
+            isPremium: deck.isPremium || false,
+            card_front: c.card_front,
+            card_back: c.card_back,
+            card_tags: c.card_tags || '',
+            card_background: c.card_background || '',
+            ease_factor: 2.5,
+            interval: 0,
+            repetitions: 0,
+            next_review: '',
+            last_review: '',
+            total_reviews: 0,
+            correct_count: 0,
+            isShared: true
+          });
+        });
+      }
+    });
+    return sharedCards;
+  } catch (error) {
+    console.warn('⚠️ Gagal memuat shared decks:', error);
+    return [];
+  }
+}
 
     // ============================================================
     //  INIT
