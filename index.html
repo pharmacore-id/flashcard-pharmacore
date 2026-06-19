@@ -1995,27 +1995,101 @@ Science       | Biology       | What is DNA?             | Deoxyribonucleic acid
     }
 
     async function loadFromFirebase(email) {
-      if (!email || !navigator.onLine) return null;
-      try {
-        updateSyncStatus('syncing', 'Loading...');
-        const doc = await db.collection('users').doc(email).get();
-        if (doc.exists) {
-          const data = doc.data();
-          if (data.nickname) {
-            localStorage.setItem(NICKNAME_KEY + email, data.nickname);
-          }
-          updateSyncStatus('', 'Synced');
-          return data;
-        }
-        updateSyncStatus('', 'Ready');
-        return null;
-      } catch (err) {
-        console.warn('⚠️ Firebase load failed:', err.message);
-        updateSyncStatus('offline', 'Offline');
-        return null;
-      }
+  if (!email || !navigator.onLine) return null;
+  try {
+    updateSyncStatus('syncing', 'Loading...');
+    
+    // 1. Ambil personal cards user
+    const userDoc = await db.collection('users').doc(email).get();
+    let personalCards = [];
+    let userPlan = 'free';
+    if (userDoc.exists) {
+      const data = userDoc.data();
+      if (data.nickname) localStorage.setItem(NICKNAME_KEY + email, data.nickname);
+      personalCards = data.cards || [];
+      userPlan = data.plan || 'free';
     }
 
+    // 2. Ambil shared decks (public)
+    const sharedCards = await loadSharedDecks();
+
+    // 3. Gabungkan personal + shared
+    const allCards = [...personalCards, ...sharedCards];
+    
+    updateSyncStatus('', 'Synced');
+    return { cards: allCards, plan: userPlan };
+    
+  } catch (err) {
+    console.warn('⚠️ Firebase load failed:', err.message);
+    updateSyncStatus('offline', 'Offline');
+    return null;
+  }
+}
+
+// ============================================================
+//  SHARED DECKS - SAVE & LOAD
+// ============================================================
+
+async function saveSharedDeck(deckData) {
+  if (!isAdmin) return;
+  try {
+    const docRef = db.collection('sharedDecks').doc();
+    await docRef.set({
+      deckName: deckData.deckName,
+      topic: deckData.topic || 'General',
+      subtopic: deckData.subtopic || '',
+      cards: deckData.cards.map(c => ({
+        card_front: c.card_front,
+        card_back: c.card_back,
+        card_tags: c.card_tags || ''
+      })),
+      createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+      createdBy: currentUser
+    });
+    console.log('✅ Shared deck saved:', deckData.deckName);
+    return true;
+  } catch (error) {
+    console.error('❌ Gagal menyimpan shared deck:', error);
+    return false;
+  }
+}
+
+async function loadSharedDecks() {
+  try {
+    const snapshot = await db.collection('sharedDecks').get();
+    const sharedCards = [];
+    snapshot.forEach(doc => {
+      const deck = doc.data();
+      if (deck.cards && deck.cards.length) {
+        deck.cards.forEach(c => {
+          sharedCards.push({
+            __id: 'shared_' + doc.id + '_' + Math.random().toString(36).slice(2, 6),
+            deck_id: 'shared_' + doc.id,
+            deck_name: deck.deckName || 'Shared Deck',
+            topic: deck.topic || 'General',
+            subtopic: deck.subtopic || '',
+            card_front: c.card_front,
+            card_back: c.card_back,
+            card_tags: c.card_tags || '',
+            ease_factor: 2.5,
+            interval: 0,
+            repetitions: 0,
+            next_review: '',
+            last_review: '',
+            total_reviews: 0,
+            correct_count: 0,
+            isShared: true
+          });
+        });
+      }
+    });
+    return sharedCards;
+  } catch (error) {
+    console.warn('⚠️ Gagal memuat shared decks:', error);
+    return [];
+  }
+}
+    
     // ============================================================
     //  FIREBASE AUTH STATE LISTENER
     // ============================================================
@@ -2566,9 +2640,11 @@ Science       | Biology       | What is DNA?             | Deoxyribonucleic acid
     }
 
     function saveUserData(email) {
-      localStorage.setItem(DATA_PREFIX + email, JSON.stringify(allCards));
-      saveToFirebase(email, allCards, userPlan);
-    }
+  // Filter cards: hanya simpan yang bukan shared (personal cards)
+  const personalCards = allCards.filter(c => !c.isShared);
+  localStorage.setItem(DATA_PREFIX + email, JSON.stringify(allCards)); // tetap simpan semua di local untuk offline
+  saveToFirebase(email, personalCards, userPlan); // simpan hanya personal ke cloud
+}
 
     function savePlan(email, plan, expiry) {
       localStorage.setItem('flashmind_plan_' + email, plan);
@@ -3273,12 +3349,21 @@ if (userRequestBtn) {
     // ============================================================
     //  ADMIN FUNCTIONS - DELETE DECK
     // ============================================================
-    function deleteDeck(deckId) {
-      if (!isAdmin) {
-        alert('Only admins can delete decks.');
-        return;
-      }
-      if (!confirm('Delete this deck and all cards?')) return;
+    async function deleteDeck(deckId) {
+  if (!isAdmin) {
+    alert('Only admins can delete decks.');
+    return;
+  }
+
+  // Cek apakah ini shared deck
+  const isSharedDeck = allCards.some(c => c.deck_id === deckId && c.isShared);
+  if (isSharedDeck) {
+    if (!confirm('Hapus shared deck ini? Semua user akan kehilangan deck ini.')) return;
+    try {
+      // Hapus dari Firestore sharedDecks
+      const docId = deckId.replace('shared_', '');
+      await db.collection('sharedDecks').doc(docId).delete();
+      // Hapus dari allCards
       allCards = allCards.filter(c => c.deck_id !== deckId);
       saveUserData(currentUser);
       renderDecks();
@@ -3286,7 +3371,23 @@ if (userRequestBtn) {
       if (document.getElementById('view-admin-import').classList.contains('active')) {
         renderAdminDeckList();
       }
+      alert('✅ Shared deck berhasil dihapus!');
+    } catch (error) {
+      alert('❌ Gagal menghapus shared deck: ' + error.message);
     }
+    return;
+  }
+
+  // Jika personal deck
+  if (!confirm('Delete this deck and all cards?')) return;
+  allCards = allCards.filter(c => c.deck_id !== deckId);
+  saveUserData(currentUser);
+  renderDecks();
+  updateHome();
+  if (document.getElementById('view-admin-import').classList.contains('active')) {
+    renderAdminDeckList();
+  }
+}
 
     // ============================================================
     //  ADMIN FUNCTIONS - IMPORT EXCEL TO DECK
@@ -3418,129 +3519,114 @@ if (userRequestBtn) {
     // ============================================================
     //  EXCEL IMPORT - MAIN
     // ============================================================
-    function handleExcelImport(event) {
-      if (!isAdmin) {
-        alert('Only admins can import decks.');
+   function handleExcelImport(event) {
+  if (!isAdmin) {
+    alert('Only admins can import decks.');
+    return;
+  }
+
+  const file = event.target.files[0];
+  if (!file) {
+    alert('No file selected.');
+    return;
+  }
+
+  if (typeof XLSX === 'undefined') {
+    alert('❌ Excel library not loaded. Please refresh and try again.');
+    return;
+  }
+
+  const reader = new FileReader();
+
+  reader.onload = async function(e) {
+    try {
+      const data = new Uint8Array(e.target.result);
+      const workbook = XLSX.read(data, { type: 'array' });
+
+      if (!workbook.SheetNames || workbook.SheetNames.length === 0) {
+        showImportStatus('❌ No sheets found in Excel file.', 'error');
         return;
       }
 
-      const file = event.target.files[0];
-      if (!file) {
-        alert('No file selected.');
+      const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+      const jsonData = XLSX.utils.sheet_to_json(firstSheet);
+
+      if (jsonData.length === 0) {
+        showImportStatus('❌ No data found in Excel file.', 'error');
         return;
       }
 
-      if (typeof XLSX === 'undefined') {
-        alert('❌ Excel library not loaded. Please refresh and try again.');
-        return;
-      }
+      let importedCount = 0;
+      let skippedCount = 0;
+      const decksToShare = {};
 
-      const reader = new FileReader();
+      jsonData.forEach((row) => {
+        const topic = row['Topic'] || row['topic'] || row['TOPIC'] || 'General';
+        const subtopic = row['Subtopic'] || row['subtopic'] || row['SUBTOPIC'] || '';
+        const front = row['Front'] || row['front'] || row['FRONT'] || row['Question'] || row['question'] || row['QUESTION'];
+        const back = row['Back'] || row['back'] || row['BACK'] || row['Answer'] || row['answer'] || row['ANSWER'];
+        const tags = row['Tags'] || row['tags'] || row['TAGS'] || '';
 
-      reader.onload = function(e) {
-        try {
-          const data = new Uint8Array(e.target.result);
-          const workbook = XLSX.read(data, { type: 'array' });
-
-          if (!workbook.SheetNames || workbook.SheetNames.length === 0) {
-            showImportStatus('❌ No sheets found in Excel file.', 'error');
-            return;
-          }
-
-          const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
-          const jsonData = XLSX.utils.sheet_to_json(firstSheet);
-
-          if (jsonData.length === 0) {
-            showImportStatus('❌ No data found in Excel file.', 'error');
-            return;
-          }
-
-          let importedCount = 0;
-          let skippedCount = 0;
-
-          jsonData.forEach((row, index) => {
-            const topic = row['Topic'] || row['topic'] || row['TOPIC'] || 'General';
-            const subtopic = row['Subtopic'] || row['subtopic'] || row['SUBTOPIC'] || '';
-            const front = row['Front'] || row['front'] || row['FRONT'] || row['Question'] || row['question'] || row[
-              'QUESTION'];
-            const back = row['Back'] || row['back'] || row['BACK'] || row['Answer'] || row['answer'] || row['ANSWER'];
-            const tags = row['Tags'] || row['tags'] || row['TAGS'] || '';
-
-            if (!front || !back) {
-              skippedCount++;
-              return;
-            }
-
-            const deckName = topic + (subtopic ? ' - ' + subtopic : '');
-            let deckId = null;
-
-            const existingDeck = allCards.find(c =>
-              c.deck_name === deckName &&
-              c.card_front === '__deck_placeholder__'
-            );
-
-            if (existingDeck) {
-              deckId = existingDeck.deck_id;
-            } else {
-              deckId = 'deck_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6);
-              allCards.push({
-                __id: generateId(),
-                deck_id: deckId,
-                deck_name: deckName,
-                card_front: '__deck_placeholder__',
-                card_back: '',
-                card_tags: '',
-                ease_factor: 2.5,
-                interval: 0,
-                repetitions: 0,
-                next_review: '',
-                last_review: '',
-                total_reviews: 0,
-                correct_count: 0,
-                topic: topic,
-                subtopic: subtopic
-              });
-            }
-
-            allCards.push({
-              __id: generateId(),
-              deck_id: deckId,
-              deck_name: deckName,
-              card_front: front,
-              card_back: back,
-              card_tags: tags,
-              ease_factor: 2.5,
-              interval: 0,
-              repetitions: 0,
-              next_review: today(),
-              last_review: '',
-              total_reviews: 0,
-              correct_count: 0,
-              topic: topic,
-              subtopic: subtopic
-            });
-
-            importedCount++;
-          });
-
-          saveUserData(currentUser);
-          renderDecks();
-          updateHome();
-          renderAdminDeckList();
-
-          const message =
-            `✅ Successfully imported ${importedCount} cards!${skippedCount > 0 ? ` (${skippedCount} rows skipped due to missing data)` : ''}`;
-          showImportStatus(message, 'success');
-
-        } catch (error) {
-          console.error('❌ Import error:', error);
-          showImportStatus('❌ Error importing file: ' + error.message, 'error');
+        if (!front || !back) {
+          skippedCount++;
+          return;
         }
-      };
 
-      reader.readAsArrayBuffer(file);
-      event.target.value = '';
+        const deckName = topic + (subtopic ? ' - ' + subtopic : '');
+        const deckKey = deckName;
+
+        if (!decksToShare[deckKey]) {
+          decksToShare[deckKey] = {
+            deckName: deckName,
+            topic: topic,
+            subtopic: subtopic,
+            cards: []
+          };
+        }
+
+        decksToShare[deckKey].cards.push({
+          card_front: front,
+          card_back: back,
+          card_tags: tags
+        });
+
+        importedCount++;
+      });
+
+      // Simpan setiap deck ke shared collection
+      let savedCount = 0;
+      for (const deckKey in decksToShare) {
+        const deck = decksToShare[deckKey];
+        const success = await saveSharedDeck(deck);
+        if (success) savedCount++;
+      }
+
+      // Reload shared decks dan merge ke allCards
+      const sharedCards = await loadSharedDecks();
+      // Hapus shared cards lama dari allCards
+      allCards = allCards.filter(c => !c.isShared);
+      // Tambahkan shared cards baru
+      allCards.push(...sharedCards);
+      // Simpan ke local dan cloud (personal cards)
+      saveUserData(currentUser);
+
+      renderDecks();
+      updateHome();
+      renderAdminDeckList();
+
+      const message =
+        `✅ Berhasil mengimpor ${importedCount} kartu ke ${savedCount} shared deck!${skippedCount > 0 ? ` (${skippedCount} baris dilewati karena data kosong)` : ''}`;
+      showImportStatus(message, 'success');
+
+    } catch (error) {
+      console.error('❌ Import error:', error);
+      showImportStatus('❌ Error importing file: ' + error.message, 'error');
     }
+  };
+
+  reader.readAsArrayBuffer(file);
+  event.target.value = '';
+}
 
     function showImportStatus(message, type) {
       const statusDiv = document.getElementById('import-status');
