@@ -2994,7 +2994,7 @@ if (calendar) {
         // ============================================================
     //  RENDER DECKS (VERSI BARU DENGAN TOPIC GROUPING)
     // ============================================================
-  function renderDecks() {
+ function renderDecks() {
   const container = document.getElementById('deck-list');
   const no = document.getElementById('no-decks');
   if (!container) return;
@@ -3018,10 +3018,9 @@ if (calendar) {
   const isPremium = isPremiumActive();
   const maxFreeDecks = 5;
 
-  // ===== LEVEL 2: Tampilkan subtopik dari topik yang dipilih =====
+  // ===== LEVEL 2: Subtopik dengan background =====
   if (currentTopic) {
     const subtopics = topicMap[currentTopic] || [];
-    // Tombol kembali ke daftar topik
     let html = `
       <div class="mb-4">
         <button onclick="currentTopic=null; renderDecks();" class="flex items-center gap-2 text-sec hover:text-accent transition-colors">
@@ -3036,19 +3035,40 @@ if (calendar) {
       const due = d.cards.filter(c => !c.next_review || c.next_review <= today()).length;
       const mastered = d.cards.filter(c => (c.interval || 0) >= 21).length;
       const pct = d.cards.length > 0 ? Math.round(mastered / d.cards.length * 100) : 0;
-      const colors = ['card-peach', 'card-green', 'card-blue', 'card-purple'];
       const isLocked = !isPremium && deckCount >= maxFreeDecks;
       const displayName = d.subtopic || d.name;
+
+      // Background handling
+      const bgCard = d.cards.find(c => c.card_background && c.card_background.trim() !== '');
+      const background = bgCard ? bgCard.card_background : '';
+      let bgStyle = '';
+      let iconHtml = '';
+      if (background) {
+        if (background.startsWith('http')) {
+          bgStyle = `background: linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), url('${background}') center/cover no-repeat; color: white;`;
+        } else {
+          iconHtml = `<span class="text-4xl">${background}</span>`;
+        }
+      } else {
+        const colors = ['#fdebd0', '#d1fae5', '#dbeafe', '#ede9fe'];
+        bgStyle = `background: ${colors[i % 4]};`;
+      }
+
       html += `
-        <div class="deck-item ${colors[i % 4]} ${isLocked ? 'opacity-60' : ''}"
-             onclick="${isLocked ? "showUpgradeModal()" : "openDeck('" + d.id + "')"}"
-             style="${isLocked ? 'cursor:not-allowed;' : ''}">
-          <div class="flex justify-between items-center">
-            <div class="flex items-center gap-2">
-              <span class="text-lg">${isLocked ? '🔒' : '💊'}</span>
-              <h3 class="font-bold truncate">${displayName}</h3>
-              ${d.cards.some(c => c.isPremium) ? '<span class="text-xs text-yellow-500 font-medium">⭐ Premium</span>' : ''}
-              ${d.cards.some(c => c.isShared) ? '<span class="text-xs text-blue-500 font-medium">📦 Shared</span>' : ''}
+        <div class="deck-item rounded-2xl p-5 shadow-card mb-3 cursor-pointer flex flex-col justify-center"
+             style="${bgStyle} height: 260px; ${isLocked ? 'cursor:not-allowed; opacity: 0.6;' : ''}"
+             onclick="${isLocked ? 'showUpgradeModal()' : `openDeck('${d.id}')`}">
+          <div class="flex items-center gap-4">
+            ${iconHtml}
+            <div class="flex-1">
+              <div class="flex items-center gap-2">
+                <span class="text-lg">${isLocked ? '🔒' : '💊'}</span>
+                <h3 class="font-bold text-lg truncate">${displayName}</h3>
+                ${d.cards.some(c => c.isPremium) ? '<span class="text-xs text-yellow-500 font-medium">⭐ Premium</span>' : ''}
+                ${d.cards.some(c => c.isShared) ? '<span class="text-xs text-blue-500 font-medium">📦 Shared</span>' : ''}
+              </div>
+              <p class="text-sm opacity-80 mt-1">${d.cards.length} cards · ${due} due · ${pct}% mastered</p>
+              <div class="progress-bar h-2 my-3"><div class="progress-fill" style="width:${pct}%"></div></div>
             </div>
             <div class="flex gap-1" onclick="event.stopPropagation()">
               ${isAdmin && !isLocked ? `
@@ -3058,8 +3078,6 @@ if (calendar) {
               ` : ''}
             </div>
           </div>
-          <div class="progress-bar h-1.5 my-1"><div class="progress-fill" style="width:${pct}%"></div></div>
-          <p class="text-xs text-sec">${d.cards.length} cards · ${due} due · ${pct}% mastered</p>
         </div>
       `;
       deckCount++;
