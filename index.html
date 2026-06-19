@@ -3037,9 +3037,10 @@ function renderDecks() {
       const pct = d.cards.length > 0 ? Math.round(mastered / d.cards.length * 100) : 0;
       const isLocked = !isPremium && deckCount >= maxFreeDecks;
       const displayName = d.subtopic || d.name;
-      const colors = ['#fdebd0', '#d1fae5', '#dbeafe', '#ede9fe'];
+
+      // Warna default (otomatis berubah saat dark mode via CSS variables)
+      const colors = ['var(--card-peach)', 'var(--card-green)', 'var(--card-blue)', 'var(--card-purple)'];
       const bgStyle = `background: ${colors[i % 4]};`;
-      // Cek apakah deck ini premium (ada kartu dengan flag isPremium)
       const isPremiumDeck = d.cards.some(c => c.isPremium);
 
       html += `
@@ -3047,7 +3048,7 @@ function renderDecks() {
              style="${bgStyle} height: 120px; ${isLocked ? 'cursor:not-allowed; opacity: 0.6;' : ''}"
              onclick="${isLocked ? 'showUpgradeModal()' : `openDeck('${d.id}')`}">
           <div class="flex-1" style="max-width: 66.666%;">
-            <h3 class="font-bold text-lg uppercase truncate" style="white-space: normal; word-break: break-word;">${displayName}</h3>
+            <h3 class="font-bold text-lg uppercase" style="white-space: normal; word-break: break-word;">${displayName}</h3>
             <p class="text-xs opacity-80 mt-1">${d.cards.length} cards · ${due} due · ${pct}% mastered</p>
             <div class="progress-bar h-1.5 mt-1"><div class="progress-fill" style="width:${pct}%"></div></div>
           </div>
@@ -3059,7 +3060,7 @@ function renderDecks() {
             ` : ''}
           </div>
           ${isPremiumDeck ? `
-            <div class="absolute bottom-2 left-2 bg-gradient-to-r from-yellow-500 to-amber-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-sm">
+            <div class="absolute top-2 right-2 bg-gradient-to-r from-yellow-500 to-amber-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-sm">
               PREMIUM
             </div>
           ` : ''}
@@ -3072,7 +3073,7 @@ function renderDecks() {
     return;
   }
 
-  // ===== LEVEL 1: Topik (200px) =====
+  // ===== LEVEL 1: Topik (150px) – tanpa chevron =====
   let html = '';
   sortedTopics.forEach((topic) => {
     const subtopics = topicMap[topic];
@@ -3095,14 +3096,11 @@ function renderDecks() {
 
     html += `
       <div class="topic-card surface rounded-2xl p-5 border border-theme shadow-card mb-4 cursor-pointer hover:shadow-lg transition-shadow flex items-center"
-           style="height: 200px; ${bgStyle}"
+           style="height: 150px; ${bgStyle}"
            onclick="currentTopic='${topic.replace(/'/g, "\\'")}'; renderDecks();">
-        <div class="flex-1" style="max-width: 66.666%;">
+        <div class="flex-1">
           <h3 class="font-bold text-lg uppercase" style="white-space: normal; word-break: break-word;">${topic}</h3>
           <p class="text-xs text-sec mt-0.5">${subtopics.length} subtopics · ${totalCards} cards</p>
-        </div>
-        <div class="flex-shrink-0">
-          <i data-lucide="chevron-right" class="w-5 h-5 text-sec"></i>
         </div>
       </div>
     `;
