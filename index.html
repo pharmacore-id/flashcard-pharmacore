@@ -1056,16 +1056,11 @@
               </button>
             </div>
           </div>
-          <div><label class="text-sm font-medium text-sec">Book Access Code (optional)</label><input type="text" id="signup-code" placeholder="e.g. PHARM-2024-ABCD" class="code-input" /></div>
           <div id="signup-error" class="text-sm text-red-500 min-h-[1.5rem]"></div>
           <button type="submit" class="btn-block accent-bg text-white">Create Account</button>
         </form>
         <div class="text-center mt-4 text-sm text-sec">or</div>
         <button onclick="showLogin()" class="btn-block border border-theme mt-2" style="background:transparent;color:var(--text-secondary)">Back to Sign In</button>
-        <div class="text-center mt-3 text-xs text-sec">
-          <p>📖 Enter the access code from your pharmacy book</p>
-          <p class="mt-1">No code? <a href="#" onclick="showFreeTrial()" class="text-accent font-medium">Start with free decks →</a></p>
-        </div>
       </div>
     </div>
 
@@ -2576,39 +2571,25 @@ async function loadSharedDecks() {
       const email = document.getElementById('signup-email').value.trim();
       const pw = document.getElementById('signup-password').value;
       const cf = document.getElementById('signup-confirm').value;
-      const code = document.getElementById('signup-code').value.trim().toUpperCase();
       const err = document.getElementById('signup-error');
-
+    
       err.textContent = '';
-
+    
       if (!un || !email || !pw || !cf) { err.textContent = 'All fields required.'; return; }
       if (pw.length < 6) { err.textContent = 'Password min 6 chars.'; return; }
       if (pw !== cf) { err.textContent = 'Passwords do not match.'; return; }
-
+    
       try {
         const userCredential = await firebase.auth().createUserWithEmailAndPassword(email, pw);
         const user = userCredential.user;
         await user.updateProfile({ displayName: un });
-
+    
         const isAdminUser = ADMIN_EMAILS.includes(email);
-
-        let isBookBuyer = false;
-        if (code) {
-          const codes = getCodes();
-          if (codes[code] && !codes[code].used) {
-            isBookBuyer = true;
-            codes[code].used = true;
-            codes[code].usedBy = email;
-            codes[code].usedAt = new Date().toISOString();
-            saveCodes(codes);
-          } else if (code) {
-            err.textContent = 'Invalid or already used access code. You can still create a free account.';
-          }
-        }
-
-        const plan = (isBookBuyer || isAdminUser) ? 'premium' : 'free';
-        const expiry = (isBookBuyer || isAdminUser) ? addMonths(new Date(), PLAN_DURATION_MONTHS).toISOString() : null;
-
+    
+        // Plan & expiry – admin langsung premium, user biasa free
+        const plan = isAdminUser ? 'premium' : 'free';
+        const expiry = isAdminUser ? addMonths(new Date(), PLAN_DURATION_MONTHS).toISOString() : null;
+    
         const users = getUsers();
         users[email] = {
           username: un,
@@ -2616,30 +2597,27 @@ async function loadSharedDecks() {
           password: pw,
           created: Date.now(),
           plan: plan,
-          isBookBuyer: isBookBuyer,
+          isBookBuyer: false,
           isAdmin: isAdminUser
         };
         saveUsers(users);
-
+    
         currentUser = email;
         saveSession(email);
         allCards = getSampleDecks();
         saveUserData(email);
-        if (isBookBuyer || isAdminUser) {
+        if (isAdminUser) {
           savePlan(email, 'premium', expiry);
         }
         await saveToFirebase(email, allCards, plan);
-
+    
         isAdmin = isAdminUser;
         enterApp();
-
-        if (isBookBuyer) {
-          alert('🎉 Access code validated! You now have Premium access for 3 months.');
-        }
+    
         if (isAdminUser) {
           alert('👑 Admin account created! You have full admin access.');
         }
-
+    
       } catch (error) {
         console.error('Signup error:', error);
         if (error.code === 'auth/email-already-in-use') {
