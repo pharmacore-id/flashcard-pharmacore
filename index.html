@@ -3018,7 +3018,7 @@ if (calendar) {
   const isPremium = isPremiumActive();
   const maxFreeDecks = 5;
 
-  // ===== LEVEL 2: Subtopik dengan background =====
+  // ===== LEVEL 2: Subtopik =====
   if (currentTopic) {
     const subtopics = topicMap[currentTopic] || [];
     let html = `
@@ -3056,7 +3056,7 @@ if (calendar) {
 
       html += `
         <div class="deck-item rounded-2xl p-5 shadow-card mb-3 cursor-pointer flex flex-col justify-center"
-             style="${bgStyle} height: 260px; ${isLocked ? 'cursor:not-allowed; opacity: 0.6;' : ''}"
+             style="${bgStyle} height: 200px; ${isLocked ? 'cursor:not-allowed; opacity: 0.6;' : ''}"
              onclick="${isLocked ? 'showUpgradeModal()' : `openDeck('${d.id}')`}">
           <div class="flex items-center gap-4">
             ${iconHtml}
@@ -3065,7 +3065,6 @@ if (calendar) {
                 <span class="text-lg">${isLocked ? '🔒' : '💊'}</span>
                 <h3 class="font-bold text-lg truncate">${displayName}</h3>
                 ${d.cards.some(c => c.isPremium) ? '<span class="text-xs text-yellow-500 font-medium">⭐ Premium</span>' : ''}
-                ${d.cards.some(c => c.isShared) ? '<span class="text-xs text-blue-500 font-medium">📦 Shared</span>' : ''}
               </div>
               <p class="text-sm opacity-80 mt-1">${d.cards.length} cards · ${due} due · ${pct}% mastered</p>
               <div class="progress-bar h-2 my-3"><div class="progress-fill" style="width:${pct}%"></div></div>
@@ -3087,15 +3086,16 @@ if (calendar) {
     return;
   }
 
-  // ===== LEVEL 1: Daftar topik =====
+  // ===== LEVEL 1: Topik =====
   let html = '';
   sortedTopics.forEach((topic, idx) => {
     const subtopics = topicMap[topic];
     const totalCards = subtopics.reduce((sum, d) => sum + d.cards.length, 0);
     html += `
-      <div class="topic-card surface rounded-2xl p-5 border border-theme shadow-card mb-4 cursor-pointer hover:shadow-lg transition-shadow"
+      <div class="topic-card surface rounded-2xl p-5 border border-theme shadow-card mb-4 cursor-pointer hover:shadow-lg transition-shadow flex items-center"
+           style="height: 240px;"
            onclick="currentTopic='${topic.replace(/'/g, "\\'")}'; renderDecks();">
-        <div class="flex items-center gap-4">
+        <div class="flex items-center gap-4 w-full">
           <span class="text-3xl">📚</span>
           <div class="flex-1">
             <h3 class="font-bold text-lg">${topic}</h3>
@@ -3109,18 +3109,6 @@ if (calendar) {
   container.innerHTML = html;
   if (typeof lucide !== 'undefined' && lucide.createIcons) lucide.createIcons();
 }
-
-    function toggleTopic(topicId) {
-      const content = document.getElementById(topicId);
-      const arrow = document.getElementById('topic-arrow-' + topicId.split('-')[1]);
-
-      if (content) {
-        content.classList.toggle('hidden');
-        if (arrow) {
-          arrow.style.transform = content.classList.contains('hidden') ? 'rotate(0deg)' : 'rotate(180deg)';
-        }
-      }
-    }
 
     // ============================================================
     //  ADMIN FUNCTIONS - RENAME DECK
