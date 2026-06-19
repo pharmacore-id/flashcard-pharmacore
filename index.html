@@ -3024,7 +3024,7 @@ function renderDecks() {
   const isPremium = isPremiumActive();
   const maxFreeDecks = 5;
 
-  // ===== LEVEL 2: Subtopik (120px) – font putih semua =====
+  // ===== LEVEL 2: Subtopik (120px) – semua font putih =====
   if (currentTopic) {
     const subtopics = topicMap[currentTopic] || [];
     let html = `
@@ -3068,8 +3068,8 @@ function renderDecks() {
              onclick="${isLocked ? 'showUpgradeModal()' : `openDeck('${d.id}')`}">
           <div class="flex-1" style="max-width: 66.666%;">
             ${iconHtml ? `<div class="mb-1">${iconHtml}</div>` : ''}
-            <h3 class="font-bold text-lg uppercase" style="white-space: normal; word-break: break-word;">${displayName}</h3>
-            <p class="text-sm mt-1">${d.cards.length} cards · ${due} due · ${pct}% mastered</p>
+            <h3 class="font-bold text-lg uppercase text-white" style="white-space: normal; word-break: break-word;">${displayName}</h3>
+            <p class="text-sm mt-1 text-white">${d.cards.length} cards · ${due} due · ${pct}% mastered</p>
             <div class="progress-bar h-1.5 mt-1 bg-white/30"><div class="progress-fill bg-white" style="width:${pct}%"></div></div>
           </div>
           <div class="flex gap-1 ml-auto flex-shrink-0" onclick="event.stopPropagation()">
@@ -3093,7 +3093,7 @@ function renderDecks() {
     return;
   }
 
-  // ===== LEVEL 1: Topik (150px) =====
+  // ===== LEVEL 1: Topik (150px) – semua font putih =====
   let html = '';
   sortedTopics.forEach((topic) => {
     const subtopics = topicMap[topic];
@@ -3113,16 +3113,20 @@ function renderDecks() {
         break;
       }
     }
+    // Jika tidak ada background, tetap pakai warna putih
+    if (!bgStyle) {
+      bgStyle = 'color: white; background: var(--surface);';
+    }
 
     html += `
-      <div class="topic-card surface rounded-2xl p-5 border border-theme shadow-card mb-4 cursor-pointer hover:shadow-lg transition-shadow flex items-center"
+      <div class="topic-card surface rounded-2xl p-5 border border-theme shadow-card mb-4 cursor-pointer hover:shadow-lg transition-shadow flex items-center text-white"
            style="height: 150px; ${bgStyle}"
            onclick="currentTopic='${topic.replace(/'/g, "\\'")}'; renderDecks();">
         <div class="flex items-center gap-4 w-full">
           ${iconHtml}
           <div class="flex-1">
-            <h3 class="font-bold text-lg uppercase" style="white-space: normal; word-break: break-word;">${topic}</h3>
-            <p class="text-sm text-sec mt-2">${subtopics.length} subtopics · ${totalCards} cards</p>
+            <h3 class="font-bold text-lg uppercase text-white" style="white-space: normal; word-break: break-word;">${topic}</h3>
+            <p class="text-sm text-white/80 mt-2">${subtopics.length} subtopics · ${totalCards} cards</p>
           </div>
         </div>
       </div>
@@ -3131,7 +3135,6 @@ function renderDecks() {
   container.innerHTML = html;
   if (typeof lucide !== 'undefined' && lucide.createIcons) lucide.createIcons();
 }
-
     // ============================================================
     //  ADMIN FUNCTIONS - RENAME DECK
     // ============================================================
