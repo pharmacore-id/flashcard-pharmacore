@@ -985,6 +985,20 @@
       pointer-events: none !important;
       opacity: 0 !important;
     }
+.flip-front,
+.flip-back {
+  overflow-y: auto;              /* scroll jika teks sangat panjang */
+  word-wrap: break-word;         /* paksa wrap kata */
+  overflow-wrap: break-word;
+}
+
+.flip-front p,
+.flip-back p {
+  word-break: break-word;        /* wrap di dalam paragraf */
+  white-space: normal;           /* izinkan baris baru */
+  max-width: 100%;
+  line-height: 1.6;
+}
   </style>
 </head>
 <body>
@@ -1746,6 +1760,7 @@ Science       | Biology       | What is DNA?             | Deoxyribonucleic acid
     let userPlan = 'free';
     let isAdmin = false;
     let currentDeckId = null;
+    let currentTopic = null;
     let studyQueue = [];
     let studyIdx = 0;
     let fcFlipped = false;
@@ -2121,6 +2136,13 @@ async function loadSharedDecks() {
       const month = String(date.getMonth() + 1).padStart(2, '0');
       const day = String(date.getDate()).padStart(2, '0');
       return `${year}-${month}-${day}`;
+    }
+
+    function formatExpiryDate(isoString) {
+      if (!isoString) return '';
+      const d = new Date(isoString);
+      const options = { year: 'numeric', month: 'short', day: 'numeric' };
+      return d.toLocaleDateString('en-US', options);
     }
 
     function addMonths(date, months) {
@@ -2585,7 +2607,7 @@ async function loadSharedDecks() {
     
         // Plan & expiry – admin langsung premium, user biasa free
         const plan = isAdminUser ? 'premium' : 'free';
-        const expiry = isAdminUser ? addMonths(new Date(), PLAN_DURATION_MONTHS).toISOString() : null;
+        const expiry = null; // admin tidak punya expiry
     
         const users = getUsers();
         users[email] = {
@@ -2787,12 +2809,15 @@ async function loadSharedDecks() {
         upgradeBtn.style.display = isPremium ? 'none' : 'inline-block';
       }
 
-      const expiryLabel = document.getElementById('expiry-label');
+     const expiryLabel = document.getElementById('expiry-label');
       if (expiryLabel) {
         if (isPremium) {
           const expiry = getPlanExpiry(currentUser);
-          const days = expiry ? daysUntil(expiry) : 0;
-          expiryLabel.textContent = `${days} days remaining`;
+          if (expiry) {
+            expiryLabel.textContent = 'Expires ' + formatExpiryDate(expiry);
+          } else {
+            expiryLabel.textContent = 'Permanent';   // ← admin
+          }
           expiryLabel.className = 'status premium';
         } else {
           expiryLabel.textContent = 'Not active';
@@ -2963,117 +2988,103 @@ if (calendar) {
         // ============================================================
     //  RENDER DECKS (VERSI BARU DENGAN TOPIC GROUPING)
     // ============================================================
-    function renderDecks() {
-      const container = document.getElementById('deck-list');
-      const no = document.getElementById('no-decks');
+  function renderDecks() {
+  const container = document.getElementById('deck-list');
+  const no = document.getElementById('no-decks');
+  if (!container) return;
 
-      const isPremium = isPremiumActive();
-      const maxFreeDecks = 5;
+  const decks = getDecks();
+  const topicMap = {};
+  decks.forEach(d => {
+    const topic = d.topic || 'General';
+    if (!topicMap[topic]) topicMap[topic] = [];
+    topicMap[topic].push(d);
+  });
+  const sortedTopics = Object.keys(topicMap).sort();
 
-      const decks = getDecks();
-      const topicMap = {};
+  if (decks.length === 0) {
+    container.innerHTML = '';
+    if (no) no.classList.remove('hidden');
+    return;
+  }
+  if (no) no.classList.add('hidden');
 
-      decks.forEach(d => {
-        const topic = d.topic || 'General';
-        if (!topicMap[topic]) {
-          topicMap[topic] = [];
-        }
-        topicMap[topic].push(d);
-      });
+  const isPremium = isPremiumActive();
+  const maxFreeDecks = 5;
 
-      const sortedTopics = Object.keys(topicMap).sort();
-
-      if (!container) return;
-
-      if (decks.length === 0) {
-        container.innerHTML = '';
-        if (no) no.classList.remove('hidden');
-        return;
-      }
-      if (no) no.classList.add('hidden');
-
-      let html = '';
-      let deckCount = 0;
-
-      sortedTopics.forEach((topic, topicIndex) => {
-        const subtopics = topicMap[topic];
-        const totalCardsInTopic = subtopics.reduce((sum, d) => sum + d.cards.length, 0);
-
-        html += `
-          <div class="topic-group mb-3">
-            <div class="topic-header surface rounded-2xl p-4 border border-theme shadow-card cursor-pointer flex items-center justify-between" 
-                 onclick="toggleTopic('topic-${topicIndex}')" 
-                 style="background:var(--bg);">
-              <div class="flex items-center gap-3">
-                <span class="text-xl">📚</span>
-                <div>
-                  <span class="font-bold text-base">${topic}</span>
-                  <span class="text-xs text-sec ml-2">${totalCardsInTopic} cards · ${subtopics.length} subtopics</span>
-                </div>
-              </div>
-              <div class="flex items-center gap-2">
-                <span id="topic-arrow-${topicIndex}" class="text-sec transition-transform duration-200">▼</span>
-              </div>
+  // ===== LEVEL 2: Tampilkan subtopik dari topik yang dipilih =====
+  if (currentTopic) {
+    const subtopics = topicMap[currentTopic] || [];
+    // Tombol kembali ke daftar topik
+    let html = `
+      <div class="mb-4">
+        <button onclick="currentTopic=null; renderDecks();" class="flex items-center gap-2 text-sec hover:text-accent transition-colors">
+          <i data-lucide="arrow-left" class="w-5 h-5"></i>
+          <span class="font-medium">Back to Topics</span>
+        </button>
+        <h2 class="text-xl font-bold mt-2">${currentTopic}</h2>
+      </div>
+    `;
+    let deckCount = 0;
+    subtopics.forEach((d, i) => {
+      const due = d.cards.filter(c => !c.next_review || c.next_review <= today()).length;
+      const mastered = d.cards.filter(c => (c.interval || 0) >= 21).length;
+      const pct = d.cards.length > 0 ? Math.round(mastered / d.cards.length * 100) : 0;
+      const colors = ['card-peach', 'card-green', 'card-blue', 'card-purple'];
+      const isLocked = !isPremium && deckCount >= maxFreeDecks;
+      const displayName = d.subtopic || d.name;
+      html += `
+        <div class="deck-item ${colors[i % 4]} ${isLocked ? 'opacity-60' : ''}"
+             onclick="${isLocked ? "showUpgradeModal()" : "openDeck('" + d.id + "')"}"
+             style="${isLocked ? 'cursor:not-allowed;' : ''}">
+          <div class="flex justify-between items-center">
+            <div class="flex items-center gap-2">
+              <span class="text-lg">${isLocked ? '🔒' : '💊'}</span>
+              <h3 class="font-bold truncate">${displayName}</h3>
+              ${d.cards.some(c => c.isPremium) ? '<span class="text-xs text-yellow-500 font-medium">⭐ Premium</span>' : ''}
+              ${d.cards.some(c => c.isShared) ? '<span class="text-xs text-blue-500 font-medium">📦 Shared</span>' : ''}
             </div>
-            <div id="topic-${topicIndex}" class="topic-content mt-2 ml-4 space-y-2 hidden">
-        `;
-
-        subtopics.forEach((d, i) => {
-          const due = d.cards.filter(c => !c.next_review || c.next_review <= today()).length;
-          const mastered = d.cards.filter(c => (c.interval || 0) >= 21).length;
-          const pct = d.cards.length > 0 ? Math.round(mastered / d.cards.length * 100) : 0;
-          const colors = ['card-peach', 'card-green', 'card-blue', 'card-purple'];
-
-          const isLocked = !isPremium && deckCount >= maxFreeDecks;
-          const displayName = d.subtopic || d.name;
-
-          html += `
-            <div class="deck-item ${colors[i % 4]} ${isLocked ? 'opacity-60' : ''}" 
-                 onclick="${isLocked ? "showUpgradeModal()" : "openDeck('" + d.id + "')"}"
-                 style="${isLocked ? 'cursor:not-allowed;' : ''}">
-              <div class="flex justify-between items-center">
-                <div>
-                 <div class="flex items-center gap-2">
-  <span class="text-lg">${isLocked ? '🔒' : '💊'}</span>
-  <h3 class="font-bold truncate">${displayName}</h3>
-  ${d.cards.some(c => c.isPremium) ? '<span class="text-xs text-yellow-500 font-medium">⭐ Premium</span>' : ''}
-  ${isLocked ? '<span class="text-xs text-orange-500 font-medium">🔒</span>' : ''}
-  ${d.cards.some(c => c.isShared) ? '<span class="text-xs text-blue-500 font-medium">📦 Shared</span>' : ''}
-</div>
-                <div class="flex gap-1" onclick="event.stopPropagation()">
-                  ${isAdmin && !isLocked ? `
-                    <button onclick="showRenameDeck('${d.id}')" class="text-sec p-1 hover:text-accent transition-colors" title="Rename Deck">
-                      <i data-lucide="pencil" class="w-4 h-4"></i>
-                    </button>
-                    <button onclick="showManageCards('${d.id}')" class="text-sec p-1 hover:text-blue-500 transition-colors" title="Manage Cards">
-                      <i data-lucide="list" class="w-4 h-4"></i>
-                    </button>
-                    <button onclick="deleteDeck('${d.id}')" class="text-sec p-1 hover:text-red-500 transition-colors" title="Delete Deck">
-                      <i data-lucide="trash-2" class="w-4 h-4"></i>
-                    </button>
-                  ` : ''}
-                </div>
-              </div>
-              <div class="progress-bar h-1.5 my-1"><div class="progress-fill" style="width:${pct}%"></div></div>
-              <p class="text-xs text-sec">${d.cards.length} cards · ${due} due · ${pct}% mastered</p>
-            </div>
-          `;
-
-          deckCount++;
-        });
-
-        html += `
+            <div class="flex gap-1" onclick="event.stopPropagation()">
+              ${isAdmin && !isLocked ? `
+                <button onclick="showRenameDeck('${d.id}')" class="text-sec p-1 hover:text-accent transition-colors" title="Rename"><i data-lucide="pencil" class="w-4 h-4"></i></button>
+                <button onclick="showManageCards('${d.id}')" class="text-sec p-1 hover:text-blue-500 transition-colors" title="Manage Cards"><i data-lucide="list" class="w-4 h-4"></i></button>
+                <button onclick="deleteDeck('${d.id}')" class="text-sec p-1 hover:text-red-500 transition-colors" title="Delete"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+              ` : ''}
             </div>
           </div>
-        `;
-      });
+          <div class="progress-bar h-1.5 my-1"><div class="progress-fill" style="width:${pct}%"></div></div>
+          <p class="text-xs text-sec">${d.cards.length} cards · ${due} due · ${pct}% mastered</p>
+        </div>
+      `;
+      deckCount++;
+    });
+    container.innerHTML = html;
+    if (typeof lucide !== 'undefined' && lucide.createIcons) lucide.createIcons();
+    return;
+  }
 
-      container.innerHTML = html;
-
-      if (typeof lucide !== 'undefined' && lucide.createIcons) {
-        lucide.createIcons();
-      }
-    }
+  // ===== LEVEL 1: Daftar topik =====
+  let html = '';
+  sortedTopics.forEach((topic, idx) => {
+    const subtopics = topicMap[topic];
+    const totalCards = subtopics.reduce((sum, d) => sum + d.cards.length, 0);
+    html += `
+      <div class="topic-card surface rounded-2xl p-5 border border-theme shadow-card mb-4 cursor-pointer hover:shadow-lg transition-shadow"
+           onclick="currentTopic='${topic.replace(/'/g, "\\'")}'; renderDecks();">
+        <div class="flex items-center gap-4">
+          <span class="text-3xl">📚</span>
+          <div class="flex-1">
+            <h3 class="font-bold text-lg">${topic}</h3>
+            <p class="text-xs text-sec mt-0.5">${subtopics.length} subtopics · ${totalCards} cards</p>
+          </div>
+          <i data-lucide="chevron-right" class="w-5 h-5 text-sec"></i>
+        </div>
+      </div>
+    `;
+  });
+  container.innerHTML = html;
+  if (typeof lucide !== 'undefined' && lucide.createIcons) lucide.createIcons();
+}
 
     function toggleTopic(topicId) {
       const content = document.getElementById(topicId);
