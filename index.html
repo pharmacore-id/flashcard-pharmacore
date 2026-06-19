@@ -4379,15 +4379,25 @@ if (calendar) {
     let labelText = '';
 
     if (days === 7) {
-      const weekLabels = getWeekLabels();
-      showLabel = true;
-      labelText = weekLabels[i]?.label || dayOfWeek.substring(0, 3);
-    } else {
-      if (i % labelStep === 0 || i === dates.length - 1) {
-        showLabel = true;
-        labelText = `${month} ${day}`;
-      }
-    }
+  showLabel = true;
+
+  const dayNames = [
+    'Sun',
+    'Mon',
+    'Tue',
+    'Wed',
+    'Thu',
+    'Fri',
+    'Sat'
+  ];
+
+  labelText = dayNames[dateObj.getDay()];
+} else {
+  if (i % labelStep === 0 || i === dates.length - 1) {
+    showLabel = true;
+    labelText = `${month} ${day}`;
+  }
+}
 
     const minWidth = Math.max(barWidth, 6);
 
