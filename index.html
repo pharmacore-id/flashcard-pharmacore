@@ -2142,6 +2142,13 @@ async function loadSharedDecks() {
       return `${year}-${month}-${day}`;
     }
 
+    function formatExpiryDate(isoString) {
+      if (!isoString) return '';
+      const d = new Date(isoString);
+      const options = { year: 'numeric', month: 'short', day: 'numeric' };
+      return d.toLocaleDateString('en-US', options);
+    }
+    
     function addMonths(date, months) {
       const d = new Date(date);
       d.setMonth(d.getMonth() + months);
@@ -2809,8 +2816,7 @@ async function loadSharedDecks() {
       if (expiryLabel) {
         if (isPremium) {
           const expiry = getPlanExpiry(currentUser);
-          const days = expiry ? daysUntil(expiry) : 0;
-          expiryLabel.textContent = `${days} days remaining`;
+          expiryLabel.textContent = expiry ? 'Expires ' + formatExpiryDate(expiry) : 'Active';
           expiryLabel.className = 'status premium';
         } else {
           expiryLabel.textContent = 'Not active';
