@@ -3039,29 +3039,30 @@ function renderDecks() {
       const displayName = d.subtopic || d.name;
       const colors = ['#fdebd0', '#d1fae5', '#dbeafe', '#ede9fe'];
       const bgStyle = `background: ${colors[i % 4]};`;
+      // Cek apakah deck ini premium (ada kartu dengan flag isPremium)
+      const isPremiumDeck = d.cards.some(c => c.isPremium);
 
       html += `
-        <div class="deck-item rounded-2xl p-4 shadow-card mb-3 cursor-pointer flex flex-col justify-center"
+        <div class="deck-item rounded-2xl p-4 shadow-card mb-3 cursor-pointer flex items-center relative"
              style="${bgStyle} height: 120px; ${isLocked ? 'cursor:not-allowed; opacity: 0.6;' : ''}"
              onclick="${isLocked ? 'showUpgradeModal()' : `openDeck('${d.id}')`}">
-          <div class="flex items-center gap-4">
-            <div class="flex-1">
-              <div class="flex items-center gap-2">
-                <span class="text-lg">${isLocked ? '🔒' : '💊'}</span>
-                <h3 class="font-bold text-lg truncate">${displayName}</h3>
-                ${d.cards.some(c => c.isPremium) ? '<span class="text-xs text-yellow-500 font-medium">⭐ Premium</span>' : ''}
-              </div>
-              <p class="text-sm opacity-80 mt-1">${d.cards.length} cards · ${due} due · ${pct}% mastered</p>
-              <div class="progress-bar h-2 my-2"><div class="progress-fill" style="width:${pct}%"></div></div>
-            </div>
-            <div class="flex gap-1" onclick="event.stopPropagation()">
-              ${isAdmin && !isLocked ? `
-                <button onclick="showRenameDeck('${d.id}')" class="text-sec p-1 hover:text-accent transition-colors" title="Rename"><i data-lucide="pencil" class="w-4 h-4"></i></button>
-                <button onclick="showManageCards('${d.id}')" class="text-sec p-1 hover:text-blue-500 transition-colors" title="Manage Cards"><i data-lucide="list" class="w-4 h-4"></i></button>
-                <button onclick="deleteDeck('${d.id}')" class="text-sec p-1 hover:text-red-500 transition-colors" title="Delete"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
-              ` : ''}
-            </div>
+          <div class="flex-1" style="max-width: 66.666%;">
+            <h3 class="font-bold text-lg uppercase truncate" style="white-space: normal; word-break: break-word;">${displayName}</h3>
+            <p class="text-xs opacity-80 mt-1">${d.cards.length} cards · ${due} due · ${pct}% mastered</p>
+            <div class="progress-bar h-1.5 mt-1"><div class="progress-fill" style="width:${pct}%"></div></div>
           </div>
+          <div class="flex gap-1 ml-auto flex-shrink-0" onclick="event.stopPropagation()">
+            ${isAdmin && !isLocked ? `
+              <button onclick="showRenameDeck('${d.id}')" class="text-sec p-1 hover:text-accent transition-colors" title="Rename"><i data-lucide="pencil" class="w-4 h-4"></i></button>
+              <button onclick="showManageCards('${d.id}')" class="text-sec p-1 hover:text-blue-500 transition-colors" title="Manage Cards"><i data-lucide="list" class="w-4 h-4"></i></button>
+              <button onclick="deleteDeck('${d.id}')" class="text-sec p-1 hover:text-red-500 transition-colors" title="Delete"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+            ` : ''}
+          </div>
+          ${isPremiumDeck ? `
+            <div class="absolute bottom-2 left-2 bg-gradient-to-r from-yellow-500 to-amber-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-sm">
+              PREMIUM
+            </div>
+          ` : ''}
         </div>
       `;
       deckCount++;
@@ -3071,7 +3072,7 @@ function renderDecks() {
     return;
   }
 
-  // ===== LEVEL 1: Topik (200px + background) =====
+  // ===== LEVEL 1: Topik (200px) =====
   let html = '';
   sortedTopics.forEach((topic) => {
     const subtopics = topicMap[topic];
@@ -3096,12 +3097,11 @@ function renderDecks() {
       <div class="topic-card surface rounded-2xl p-5 border border-theme shadow-card mb-4 cursor-pointer hover:shadow-lg transition-shadow flex items-center"
            style="height: 200px; ${bgStyle}"
            onclick="currentTopic='${topic.replace(/'/g, "\\'")}'; renderDecks();">
-        <div class="flex items-center gap-4 w-full">
-          ${iconHtml || '<span class="text-3xl">📚</span>'}
-          <div class="flex-1">
-            <h3 class="font-bold text-lg">${topic}</h3>
-            <p class="text-xs text-sec mt-0.5">${subtopics.length} subtopics · ${totalCards} cards</p>
-          </div>
+        <div class="flex-1" style="max-width: 66.666%;">
+          <h3 class="font-bold text-lg uppercase" style="white-space: normal; word-break: break-word;">${topic}</h3>
+          <p class="text-xs text-sec mt-0.5">${subtopics.length} subtopics · ${totalCards} cards</p>
+        </div>
+        <div class="flex-shrink-0">
           <i data-lucide="chevron-right" class="w-5 h-5 text-sec"></i>
         </div>
       </div>
