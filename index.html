@@ -4192,27 +4192,31 @@ if (!userIsPremium && deckIsPremium) {
     //  TEST MODE
     // ============================================================
     function startTest() {
-      
-      if (!isPremiumActive()) {
-        showUpgradeModal();
-        return;
-      if (!isPremiumActive()) {
-        showUpgradeModal();
-        return;
-      }
-      const all = getRealCards().filter(c => c.deck_id === currentDeckId);
-      if (all.length === 0) { alert('No cards.'); return }
-      const shuffled = [...all];
-      for (let i = shuffled.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1));
-        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]] }
-      studyQueue = shuffled.slice(0, 10);
-      studyIdx = 0;
-      tsCorrect = 0;
-      tsIncorrect = 0;
-      document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
-      document.getElementById('view-test').classList.add('active');
-      tsShowQuestion();
-    }
+  // Cegah free user belajar di deck premium
+  if (!isPremiumActive() && isCurrentDeckPremium()) {
+    showUpgradeModal();
+    return;
+  }
+  // Cegah free user dari Test di deck biasa
+  if (!isPremiumActive()) {
+    showUpgradeModal();
+    return;
+  }
+  const all = getRealCards().filter(c => c.deck_id === currentDeckId);
+  if (all.length === 0) { alert('No cards.'); return }
+  const shuffled = [...all];
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
+  studyQueue = shuffled.slice(0, 10);
+  studyIdx = 0;
+  tsCorrect = 0;
+  tsIncorrect = 0;
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.getElementById('view-test').classList.add('active');
+  tsShowQuestion();
+}
 
     function tsShowQuestion() {
       const results = document.getElementById('ts-results'),
