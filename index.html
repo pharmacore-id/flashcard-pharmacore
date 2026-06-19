@@ -2164,9 +2164,12 @@ async function loadSharedDecks() {
       const dates = [];
       const now = new Date();
       if (days === 7) {
-        for (let i = 6; i >= 0; i--) {
+        // Mulai dari Senin minggu ini hingga Minggu
+        const dayOfWeek = now.getDay(); // 0 = Minggu, 1 = Senin, ..., 6 = Sabtu
+        const mondayOffset = dayOfWeek === 0 ? -6 : 1 - dayOfWeek; // berapa hari ke belakang untuk mencapai Senin
+        for (let i = 0; i < 7; i++) {
           const d = new Date(now);
-          d.setDate(d.getDate() - i);
+          d.setDate(d.getDate() + mondayOffset + i);
           dates.push(formatLocalDate(d));
         }
       } else if (days === 30) {
@@ -4322,25 +4325,15 @@ if (calendar) {
     let labelText = '';
 
     if (days === 7) {
-  showLabel = true;
-
-  const dayNames = [
-    'Sun',
-    'Mon',
-    'Tue',
-    'Wed',
-    'Thu',
-    'Fri',
-    'Sat'
-  ];
-
-  labelText = dayNames[dateObj.getDay()];
-} else {
-  if (i % labelStep === 0 || i === dates.length - 1) {
-    showLabel = true;
-    labelText = `${month} ${day}`;
-  }
-}
+      showLabel = true;
+      const dayNames = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+      labelText = dayNames[i]; // i = 0 → Senin, 1 → Selasa, ... 6 → Minggu
+    } else {
+      if (i % labelStep === 0 || i === dates.length - 1) {
+        showLabel = true;
+        labelText = `${month} ${day}`;
+      }
+    }
 
     const minWidth = Math.max(barWidth, 6);
 
