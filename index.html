@@ -4338,7 +4338,7 @@ if (calendar) {
   const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
   // === PERBAIKAN: getWeekLabels dengan hari yang benar ===
-  const getWeekLabels = () => {
+ const getWeekLabels = () => {
   const todayDate = new Date();
   const dayOfWeek = todayDate.getDay(); // 0=Sunday
   const mondayOffset = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
@@ -4351,7 +4351,7 @@ if (calendar) {
     d.setDate(d.getDate() + i);
     labels.push({
       label: dayNames[i],
-      date: d.toISOString().split('T')[0]  // ← INI MASIH PAKAI UTC
+      date: formatLocalDate(d)  // ← PAKAI formatLocalDate
     });
   }
   return labels;
