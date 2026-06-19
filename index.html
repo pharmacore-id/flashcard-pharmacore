@@ -1586,7 +1586,7 @@ Science       | Biology       | What is DNA?             | Deoxyribonucleic acid
     </div>
 
     <!-- ===== BOTTOM NAV ===== -->
-    <div class="bottom-nav" id="bottomNav">
+    <div class="bottom-nav" id="bottomNav" style="display: none;">
       <button class="nav-item active" data-tab="home"><i data-lucide="home"></i><span>Home</span></button>
       <button class="nav-item" data-tab="decks"><i data-lucide="layers"></i><span>Decks</span></button>
       <button class="nav-item" data-tab="stats"><i data-lucide="bar-chart-2"></i><span>Stats</span></button>
@@ -2681,6 +2681,7 @@ async function loadSharedDecks() {
         document.getElementById('view-login').classList.add('active');
         document.getElementById('login-email').value = '';
         document.getElementById('login-password').value = '';
+        document.getElementById('bottomNav').style.display = 'none';
       }
     }
 
