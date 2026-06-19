@@ -71,14 +71,13 @@
       justify-content: center;
     }
 
-    /* ===== FIX: APP CONTAINER – PUSHES NAV TO BOTTOM ===== */
     #app {
       display: flex;
       flex-direction: column;
-      justify-content: flex-end;    /* ← NAV TO BOTTOM */
+      justify-content: flex-end;
       width: 100%;
       max-width: 430px;
-      height: 100dvh;              /* ← FULL VIEWPORT HEIGHT */
+      height: 100dvh;
       max-height: 932px;
       background: var(--bg);
       position: relative;
@@ -93,33 +92,32 @@
     .accent-text { color: var(--accent); }
     .shadow-card { box-shadow: var(--shadow); }
     
-    /* ===== VIEWS - PROPER STACKING ===== */
     .view {
-  display: none;
-  flex-direction: column;
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 68px;
-  padding: 1.25rem 1.25rem 0.5rem;
-  background: var(--bg);
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.15s ease;
-  z-index: 1;
-  overflow-y: auto;           /* ← scrollable vertically */
-  -webkit-overflow-scrolling: touch;
-  will-change: opacity, transform;
-}
+      display: none;
+      flex-direction: column;
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 68px;
+      padding: 1.25rem 1.25rem 0.5rem;
+      background: var(--bg);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.15s ease;
+      z-index: 1;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+      will-change: opacity, transform;
+    }
 
-.view.active {
-  display: flex !important;
-  opacity: 1;
-  pointer-events: all;
-  z-index: 2;
-  overflow-y: auto;           /* ← ensure scrolling when active */
-}
+    .view.active {
+      display: flex !important;
+      opacity: 1;
+      pointer-events: all;
+      z-index: 2;
+      overflow-y: auto;
+    }
     
     .view-scroll {
       flex: 1;
@@ -131,9 +129,8 @@
     .view-scroll::-webkit-scrollbar { width: 3px; }
     .view-scroll::-webkit-scrollbar-thumb { background: var(--border); border-radius: 99px; }
     
-    /* ===== BOTTOM NAV - PERMANENTLY AT BOTTOM ===== */
     .bottom-nav {
-      flex-shrink: 0;              /* ← PREVENTS SHRINKING */
+      flex-shrink: 0;
       height: 68px;
       width: 100%;
       background: var(--surface);
@@ -169,14 +166,12 @@
     .nav-item.active:hover { color: var(--accent); }
     .nav-item:active { transform: scale(0.95); }
     
-    /* ===== AUTH VIEWS ===== */
     #view-login, #view-signup {
       z-index: 200 !important;
       background: var(--bg) !important;
       bottom: 0 !important;
     }
     
-    /* ===== FLASHCARD ===== */
     .flip-card {
       perspective: 1000px;
       width: 100%;
@@ -351,14 +346,12 @@
       to { opacity: 1; transform: translateY(0); }
     }
     
-    /* ===== RESPONSIVE ===== */
     @media (max-width: 430px) {
       .view { padding: 0.75rem 0.75rem 0.25rem; }
       .auth-card { padding: 1.5rem; }
       .mode-btn { padding: 0.75rem 1rem; }
     }
     
-    /* ===== OTHER COMPONENTS ===== */
     #fc-done { pointer-events: all; cursor: pointer; }
     #fc-done .back-btn { pointer-events: all; touch-action: manipulation; }
     
@@ -981,20 +974,17 @@
       border: 2px solid var(--accent);
     }
 
-    /* Ensure the bottom nav is always on top and clickable */
-.bottom-nav {
-  position: relative;
-  z-index: 9999 !important;   /* above everything */
-  pointer-events: all !important;
-}
-
-/* Force the login view to be completely non‑interactive when hidden */
-#view-login:not(.active),
-#view-signup:not(.active) {
-  display: none !important;
-  pointer-events: none !important;
-  opacity: 0 !important;
-}
+    .bottom-nav {
+      position: relative;
+      z-index: 9999 !important;
+      pointer-events: all !important;
+    }
+    #view-login:not(.active),
+    #view-signup:not(.active) {
+      display: none !important;
+      pointer-events: none !important;
+      opacity: 0 !important;
+    }
   </style>
 </head>
 <body>
@@ -1079,7 +1069,7 @@
       </div>
     </div>
 
-    <!-- ===== FORGOT PASSWORD MODAL (with fp-error element) ===== -->
+    <!-- ===== FORGOT PASSWORD MODAL ===== -->
     <div id="forgot-password-modal" class="hidden fixed inset-0 z-50 flex items-end sm:items-center justify-center" style="background:rgba(0,0,0,0.5);" onclick="if(event.target===this) closeForgotPassword()">
       <div class="surface rounded-t-3xl sm:rounded-3xl w-full max-w-md p-6" onclick="event.stopPropagation()">
         <div class="flex justify-between items-center mb-4">
@@ -1089,7 +1079,6 @@
         <div id="fp-step-1">
           <p class="text-sm text-sec mb-4">Enter your email to receive a reset link.</p>
           <input type="email" id="fp-email" placeholder="you@example.com" class="w-full border rounded-2xl px-4 py-3 mb-4 surface text-base" style="border-color:var(--border)" />
-          <!-- fp-error element present -->
           <div id="fp-error" class="text-sm text-red-500 min-h-[1.5rem] mb-2"></div>
           <button onclick="sendResetCode()" class="w-full py-3 rounded-2xl accent-bg text-white font-bold hover:opacity-90 transition-opacity">Send Reset Link</button>
         </div>
@@ -1186,9 +1175,7 @@
     <div class="flex items-center justify-between mb-4">
   <h2 class="text-xl font-bold">Your Decks</h2>
   <div class="flex gap-2">
-    <!-- Admin import button (upload icon) -->
     <button id="admin-import-btn" onclick="showAdminImport()" class="hidden accent-bg text-white w-10 h-10 rounded-full flex items-center justify-center shadow-md"><i data-lucide="upload" class="w-5 h-5"></i></button>
-    <!-- Regular user request button (plus icon) -->
     <button id="user-request-btn" onclick="showContactAdmin()" class="hidden accent-bg text-white w-10 h-10 rounded-full flex items-center justify-center shadow-md"><i data-lucide="plus" class="w-5 h-5"></i></button>
   </div>
 </div>
@@ -1263,7 +1250,7 @@ Science       | Biology       | What is DNA?             | Deoxyribonucleic acid
         <div class="flex gap-2">
           <button onclick="showAddCardToDeck()" class="accent-bg text-white w-10 h-10 rounded-full flex items-center justify-center shadow-md"><i data-lucide="plus" class="w-5 h-5"></i></button>
           <button id="manage-import-btn" onclick="document.getElementById('manage-excel-file').click()" class="accent-bg text-white w-10 h-10 rounded-full flex items-center justify-center shadow-md"><i data-lucide="upload" class="w-5 h-5"></i></button>
-          <button onclick="bulkDeleteCards()" id="bulk-delete-cards-btn" class="bg-red-500 text-white w-10 h-10 rounded-full flex items-center justify-center shadow-md hover:opacity-80 transition-opacity hidden"><i data-lucide="trash-2" class="w-5 h-5"></i></button>
+          <button id="bulk-delete-cards-btn" onclick="deleteSelectedCards()" class="bg-red-500 text-white w-10 h-10 rounded-full flex items-center justify-center shadow-md hover:opacity-80 transition-opacity hidden"><i data-lucide="trash-2" class="w-5 h-5"></i></button>
         </div>
         <input type="file" id="manage-excel-file" accept=".xlsx,.xls" class="hidden" onchange="importExcelToDeck(event)" />
       </div>
@@ -1294,7 +1281,6 @@ Science       | Biology       | What is DNA?             | Deoxyribonucleic acid
         <button onclick="showUpgradeModal()" class="mt-2 text-sm accent-bg text-white px-4 py-1.5 rounded-xl font-medium">Upgrade Now</button>
       </div>
 
-      <!-- ===== DECK STATS (NEW) ===== -->
       <div id="deck-stats-container" class="surface rounded-2xl p-4 border border-theme shadow-card mt-4">
         <p class="text-sm font-semibold mb-3">📊 Performance Summary</p>
         <div class="grid grid-cols-4 gap-2">
@@ -1320,7 +1306,6 @@ Science       | Biology       | What is DNA?             | Deoxyribonucleic acid
         </div>
       </div>
 
-      <!-- ===== DUE CARDS ===== -->
       <div class="surface rounded-2xl p-3 border border-theme shadow-card mt-3">
         <p class="text-sm font-semibold mb-2">📅 Due Cards</p>
         <div class="flex justify-around">
@@ -1343,7 +1328,6 @@ Science       | Biology       | What is DNA?             | Deoxyribonucleic acid
         </div>
       </div>
 
-      <!-- ===== WEAKEST CARDS ===== -->
       <div id="weak-cards-container" class="surface rounded-2xl p-3 border border-theme shadow-card mt-3">
         <div class="flex items-center justify-between mb-2">
           <p class="text-sm font-semibold">⚠️ Weakest Cards</p>
@@ -1354,7 +1338,6 @@ Science       | Biology       | What is DNA?             | Deoxyribonucleic acid
         </div>
       </div>
 
-      <!-- ===== STUDY WEAK CARDS BUTTON ===== -->
       <button id="study-weak-btn" onclick="studyWeakCards()" class="w-full bg-red-500 text-white py-2.5 rounded-2xl font-bold text-sm mt-3 hover:opacity-90 transition-opacity">
         🔴 Study Weak Cards First
       </button>
@@ -1708,9 +1691,9 @@ Science       | Biology       | What is DNA?             | Deoxyribonucleic acid
           <div class="border-t border-theme pt-4 mt-2">
             <p class="font-semibold text-sm mb-3">Choose Payment Method</p>
             <div class="space-y-2">
-              <div class="payment-option" onclick="selectPayment('qris')"><div class="icon qris"><i data-lucide="smartphone" class="w-5 h-5"></i></div><div><p class="font-medium text-sm">QRIS</p><p class="text-xs text-sec">Scan with any e-wallet</p></div></div>
-              <div class="payment-option" onclick="selectPayment('bank')"><div class="icon bank"><i data-lucide="building-2" class="w-5 h-5"></i></div><div><p class="font-medium text-sm">Bank Transfer</p><p class="text-xs text-sec">BCA, Mandiri, BNI, BRI</p></div></div>
-              <div class="payment-option" onclick="selectPayment('ewallet')"><div class="icon ewallet"><i data-lucide="smartphone" class="w-5 h-5"></i></div><div><p class="font-medium text-sm">E-Wallet</p><p class="text-xs text-sec">GoPay, OVO, DANA, ShopeePay</p></div></div>
+              <div class="payment-option" onclick="selectPayment('qris', event)"><div class="icon qris"><i data-lucide="smartphone" class="w-5 h-5"></i></div><div><p class="font-medium text-sm">QRIS</p><p class="text-xs text-sec">Scan with any e-wallet</p></div></div>
+              <div class="payment-option" onclick="selectPayment('bank', event)"><div class="icon bank"><i data-lucide="building-2" class="w-5 h-5"></i></div><div><p class="font-medium text-sm">Bank Transfer</p><p class="text-xs text-sec">BCA, Mandiri, BNI, BRI</p></div></div>
+              <div class="payment-option" onclick="selectPayment('ewallet', event)"><div class="icon ewallet"><i data-lucide="smartphone" class="w-5 h-5"></i></div><div><p class="font-medium text-sm">E-Wallet</p><p class="text-xs text-sec">GoPay, OVO, DANA, ShopeePay</p></div></div>
             </div>
             <button id="pay-now-btn" onclick="processPayment()" class="w-full mt-4 py-3 rounded-2xl accent-bg text-white font-bold hover:opacity-90 transition-opacity">Pay Now</button>
             <p class="text-center text-xs text-sec mt-2">💳 Demo payment - premium unlocks instantly</p>
@@ -2004,33 +1987,36 @@ Science       | Biology       | What is DNA?             | Deoxyribonucleic acid
     updateSyncStatus('syncing', 'Loading...');
     
     const userDoc = await db.collection('users').doc(email).get();
-    let personalCards = [];
+    let userCards = [];
     let userPlan = 'free';
-    const isAdminUser = ADMIN_EMAILS.includes(email);
 
     if (userDoc.exists) {
       const data = userDoc.data();
       if (data.nickname) localStorage.setItem(NICKNAME_KEY + email, data.nickname);
-      personalCards = data.cards || [];
+      userCards = data.cards || [];
       userPlan = data.plan || 'free';
     }
 
-    // Ambil shared decks
+    // Ambil shared decks terbaru (mungkin ada deck baru dari admin)
     const sharedCards = await loadSharedDecks();
 
-    // === PERUBAHAN: user biasa hanya lihat shared cards ===
-    let allCards;
-    if (isAdminUser) {
-      // Admin: gabungkan personal + shared
-      allCards = [...personalCards, ...sharedCards];
-    } else {
-      // User biasa: HANYA shared cards (personalCards diabaikan)
-      allCards = [...sharedCards];
-    }
-    
+    // Gabungkan: userCards (dengan progress) + sharedCards baru yang belum ada di userCards
+    const mergedCards = [...userCards];
+    sharedCards.forEach(sharedCard => {
+      // Cek apakah kartu ini sudah ada di userCards (berdasarkan __id atau deck_id + card_front)
+      const exists = mergedCards.some(c =>
+        c.__id === sharedCard.__id ||
+        (c.deck_id === sharedCard.deck_id && c.card_front === sharedCard.card_front)
+      );
+      if (!exists) {
+        // Kartu baru dari admin, tambahkan dengan properti default
+        mergedCards.push({ ...sharedCard, ease_factor: 2.5, interval: 0, repetitions: 0, next_review: '', last_review: '', total_reviews: 0, correct_count: 0 });
+      }
+    });
+
     updateSyncStatus('', 'Synced');
-    return { cards: allCards, plan: userPlan };
-    
+    return { cards: mergedCards, plan: userPlan };
+
   } catch (err) {
     console.warn('⚠️ Firebase load failed:', err.message);
     updateSyncStatus('offline', 'Offline');
@@ -2050,7 +2036,7 @@ async function saveSharedDeck(deckData, isPremium = false) {
       deckName: deckData.deckName,
       topic: deckData.topic || 'General',
       subtopic: deckData.subtopic || '',
-      isPremium: isPremium,   // ← flag baru
+      isPremium: isPremium,
       cards: deckData.cards.map(c => ({
         card_front: c.card_front,
         card_back: c.card_back,
@@ -2070,11 +2056,10 @@ async function loadSharedDecks() {
   try {
     const snapshot = await db.collection('sharedDecks').get();
     const sharedCards = [];
-    const isPremiumUser = isPremiumActive(); // cek status user
+    const isPremiumUser = isPremiumActive();
 
     snapshot.forEach(doc => {
       const deck = doc.data();
-      // === PERUBAHAN: user free tidak lihat premium deck ===
       if (!isPremiumUser && deck.isPremium === true) return;
 
       if (deck.cards && deck.cards.length) {
@@ -2139,7 +2124,6 @@ async function loadSharedDecks() {
       return formatLocalDate(new Date());
     }
     
-    // ===== LOCAL DATE FORMAT (bukan UTC) =====
     function formatLocalDate(date) {
       const year = date.getFullYear();
       const month = String(date.getMonth() + 1).padStart(2, '0');
@@ -2668,17 +2652,9 @@ async function loadSharedDecks() {
     }
 
    function saveUserData(email) {
-  const isAdminUser = ADMIN_EMAILS.includes(email);
-  let personalCards = allCards.filter(c => !c.isShared);
-  
-  // User biasa: kosongkan personalCards (tidak disimpan ke cloud)
-  if (!isAdminUser) {
-    personalCards = [];
-  }
-  
-  localStorage.setItem(DATA_PREFIX + email, JSON.stringify(allCards));
-  saveToFirebase(email, personalCards, userPlan);
-}
+      localStorage.setItem(DATA_PREFIX + email, JSON.stringify(allCards));
+      saveToFirebase(email, allCards, userPlan);
+    }
 
     function savePlan(email, plan, expiry) {
       localStorage.setItem('flashmind_plan_' + email, plan);
@@ -2718,23 +2694,19 @@ async function loadSharedDecks() {
 
     function enterApp() {
       requestAnimationFrame(() => {
-        // Show bottom nav
         document.getElementById('bottomNav').style.display = 'flex';
 
-        // Hide all views
         document.querySelectorAll('.view').forEach(v => {
           v.classList.remove('active');
           v.style.display = 'none';
         });
 
-        // Show home
         const homeView = document.getElementById('view-home');
         if (homeView) {
           homeView.classList.add('active');
           homeView.style.display = 'flex';
         }
 
-        // Update nav
         document.querySelectorAll('.nav-item').forEach(b => {
           b.classList.toggle('active', b.dataset.tab === 'home');
         });
@@ -2774,15 +2746,14 @@ async function loadSharedDecks() {
       clearUserSampleDecks(currentUser);
     }
         
-        // Show/hide user request button
-const userRequestBtn = document.getElementById('user-request-btn');
-if (userRequestBtn) {
-  if (isAdmin) {
-    userRequestBtn.classList.add('hidden');
-  } else {
-    userRequestBtn.classList.remove('hidden');
-  }
-}
+        const userRequestBtn = document.getElementById('user-request-btn');
+        if (userRequestBtn) {
+          if (isAdmin) {
+            userRequestBtn.classList.add('hidden');
+          } else {
+            userRequestBtn.classList.remove('hidden');
+          }
+        }
         if (typeof lucide !== 'undefined' && lucide.createIcons) {
           lucide.createIcons();
         }
@@ -2940,9 +2911,8 @@ if (userRequestBtn) {
       const todayCountEl = document.getElementById('today-count');
       if (todayCountEl) todayCountEl.textContent = todayCount;
 
-      // Streak calendar
 const days = getStreakDays();
-const dayLabels = ['1', '2', '3', '4', '5', '6', '7']; // ← ganti dari ['M','T','W','T','F','S','S']
+const dayLabels = ['1', '2', '3', '4', '5', '6', '7'];
 const calendar = document.getElementById('streak-calendar');
 if (calendar) {
   calendar.innerHTML = days.map((d, i) => {
@@ -2990,10 +2960,7 @@ if (calendar) {
 
       updatePlanUI();
     }
-
-    // ============================================================
-    //  RENDER DECKS
-    // ============================================================
+    
    async function clearUserSampleDecks(email) {
   if (!email) return;
   const isAdminUser = ADMIN_EMAILS.includes(email);
@@ -3014,7 +2981,9 @@ if (calendar) {
     console.warn('⚠️ Gagal membersihkan sample decks:', err);
   }
 }
-    
+        // ============================================================
+    //  RENDER DECKS (VERSI BARU DENGAN TOPIC GROUPING)
+    // ============================================================
     function renderDecks() {
       const container = document.getElementById('deck-list');
       const no = document.getElementById('no-decks');
@@ -3414,15 +3383,12 @@ if (calendar) {
     return;
   }
 
-  // Cek apakah ini shared deck
   const isSharedDeck = allCards.some(c => c.deck_id === deckId && c.isShared);
   if (isSharedDeck) {
     if (!confirm('Hapus shared deck ini? Semua user akan kehilangan deck ini.')) return;
     try {
-      // Hapus dari Firestore sharedDecks
       const docId = deckId.replace('shared_', '');
       await db.collection('sharedDecks').doc(docId).delete();
-      // Hapus dari allCards
       allCards = allCards.filter(c => c.deck_id !== deckId);
       saveUserData(currentUser);
       renderDecks();
@@ -3437,7 +3403,6 @@ if (calendar) {
     return;
   }
 
-  // Jika personal deck
   if (!confirm('Delete this deck and all cards?')) return;
   allCards = allCards.filter(c => c.deck_id !== deckId);
   saveUserData(currentUser);
@@ -3564,7 +3529,6 @@ if (calendar) {
         return;
       }
 
-      // === PERBAIKAN 7: Baca checkbox premium (HANYA SEKALI) ===
       const isPremium = document.getElementById('import-premium-toggle').checked;
       console.log('📌 Import dengan status premium:', isPremium);
 
@@ -3605,16 +3569,13 @@ if (calendar) {
         importedCount++;
       });
 
-      // === PERBAIKAN 7 (lanjutan): Simpan deck dengan status premium ===
       let savedCount = 0;
       for (const deckKey in decksToShare) {
         const deck = decksToShare[deckKey];
-        // ← kirim isPremium ke saveSharedDeck
         const success = await saveSharedDeck(deck, isPremium);
         if (success) savedCount++;
       }
 
-      // Reload shared decks dan merge ke allCards
       const sharedCards = await loadSharedDecks();
       allCards = allCards.filter(c => !c.isShared);
       allCards.push(...sharedCards);
@@ -3738,7 +3699,6 @@ if (calendar) {
 
       currentTab = 'study-select';
 
-      // Update deck stats
       updateDeckStats();
 
       if (typeof lucide !== 'undefined' && lucide.createIcons) {
@@ -3753,28 +3713,22 @@ if (calendar) {
       const deckCards = getRealCards().filter(c => c.deck_id === currentDeckId);
       const total = deckCards.length;
 
-      // Retention
       const totalReviews = deckCards.reduce((s, c) => s + (c.total_reviews || 0), 0);
       const correctReviews = deckCards.reduce((s, c) => s + (c.correct_count || 0), 0);
       const retention = totalReviews > 0 ? Math.round((correctReviews / totalReviews) * 100) : 0;
       document.getElementById('deck-retention').textContent = retention + '%';
 
-      // Mastered
       const mastered = deckCards.filter(c => (c.interval || 0) >= 21).length;
       const masteredPct = total > 0 ? Math.round((mastered / total) * 100) : 0;
       document.getElementById('deck-mastered').textContent = masteredPct + '%';
 
-      // Avg time (just a mock – we don't track time per card)
       const avgTime = totalReviews > 0 ? Math.round(totalReviews / total * 2) : 0;
       document.getElementById('deck-avg-time').textContent = avgTime + 's';
 
-      // Total reviews
       document.getElementById('deck-reviews').textContent = totalReviews;
 
-      // Trend (mock)
       document.getElementById('deck-trend').textContent = '📈 +0% from last week';
 
-      // Due cards
       const due = getDueCards(currentDeckId);
       const todayStr = today();
       const dueToday = due.filter(c => c.next_review === todayStr || !c.next_review).length;
@@ -3792,7 +3746,6 @@ if (calendar) {
       document.getElementById('deck-due-week').textContent = dueWeek;
       document.getElementById('deck-total-cards').textContent = total;
 
-      // Weakest cards
       const weak = deckCards.filter(c => (c.total_reviews || 0) >= 2 && (c.correct_count || 0) / (c.total_reviews || 1) < 0.5)
         .sort((a, b) => (a.correct_count / (a.total_reviews || 1)) - (b.correct_count / (b.total_reviews || 1)))
         .slice(0, 5);
@@ -3814,7 +3767,6 @@ if (calendar) {
         }
       }
 
-      // Study weak button
       const weakBtn = document.getElementById('study-weak-btn');
       if (weakBtn) {
         weakBtn.style.display = weak.length > 0 ? 'block' : 'none';
@@ -3991,12 +3943,10 @@ if (calendar) {
     //  EXIT STUDY - COMPLETE RESET
     // ============================================================
     function exitStudy() {
-      // Reset state
       studyQueue = [];
       studyIdx = 0;
       fcFlipped = false;
 
-      // Reset LEARN
       const lnAnswerBox = document.getElementById('ln-answer-box');
       const lnShowBtn = document.getElementById('ln-show-btn');
       const lnGradeBtns = document.getElementById('ln-grade-btns');
@@ -4014,7 +3964,6 @@ if (calendar) {
       if (lnProgressFill) lnProgressFill.style.width = '0%';
       if (lnProgress) lnProgress.textContent = '0/0';
 
-      // Reset TEST
       const tsResults = document.getElementById('ts-results');
       const tsQuestionArea = document.getElementById('ts-question-area');
       const tsProgressFill = document.getElementById('ts-progress-fill');
@@ -4028,14 +3977,12 @@ if (calendar) {
       if (tsProgressFill) tsProgressFill.style.width = '0%';
       if (tsProgress) tsProgress.textContent = '0/0';
 
-      // Reset STUDY SELECT
       const studySelect = document.getElementById('view-study-select');
       if (studySelect) {
         studySelect.classList.remove('active');
         studySelect.style.display = 'none';
       }
 
-      // Reset FLASHCARDS
       const btns = document.getElementById('fc-buttons');
       const done = document.getElementById('fc-done');
       const card = document.getElementById('fc-card');
@@ -4059,7 +4006,6 @@ if (calendar) {
       if (fcProgress) fcProgress.textContent = '0/0';
       if (fcProgressFill) fcProgressFill.style.width = '0%';
 
-      // HIDE ALL STUDY VIEWS
       const studyViews = ['view-flashcards', 'view-learn', 'view-test'];
       studyViews.forEach(id => {
         const el = document.getElementById(id);
@@ -4069,7 +4015,6 @@ if (calendar) {
         }
       });
 
-      // Show DECKS view
       const decksView = document.getElementById('view-decks');
       if (decksView) {
         decksView.classList.add('active');
@@ -4277,8 +4222,7 @@ if (calendar) {
 
     function tsNext() { studyIdx++;
       tsShowQuestion() }
-
-    // ============================================================
+        // ============================================================
     //  STATS RENDERING
     // ============================================================
     function renderStats() {
@@ -4325,7 +4269,7 @@ if (calendar) {
   container.className = 'flex items-end gap-1';
   container.style.minHeight = '80px';
   container.style.width = '100%';
-  container.style.padding = '4px 2px 4px 2px'; // ← padding dikurangi
+  container.style.padding = '4px 2px 4px 2px';
   container.style.flexWrap = 'nowrap';
 
   if (days > 14) container.classList.add('month');
@@ -4337,10 +4281,9 @@ if (calendar) {
 
   const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
-  // === PERBAIKAN: getWeekLabels dengan hari yang benar ===
  const getWeekLabels = () => {
   const todayDate = new Date();
-  const dayOfWeek = todayDate.getDay(); // 0=Sunday
+  const dayOfWeek = todayDate.getDay();
   const mondayOffset = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
   const startOfWeek = new Date(todayDate);
   startOfWeek.setDate(todayDate.getDate() - mondayOffset);
@@ -4351,7 +4294,7 @@ if (calendar) {
     d.setDate(d.getDate() + i);
     labels.push({
       label: dayNames[i],
-      date: formatLocalDate(d)  // ← PAKAI formatLocalDate
+      date: formatLocalDate(d)
     });
   }
   return labels;
@@ -4592,7 +4535,6 @@ if (calendar) {
     function switchTab(tab) {
       if (currentTab === tab && tab !== 'study-select') return;
 
-      // If in study select, only allow going to decks
       if (currentTab === 'study-select' && tab !== 'decks' && tab !== 'home') {
         return;
       }
@@ -4631,6 +4573,64 @@ if (calendar) {
     }
 
     // ============================================================
+    //  FUNCTIONS YANG SEMPAT HILANG
+    // ============================================================
+    function showAdminImport() {
+      if (!isAdmin) {
+        alert('Only admins can import decks.');
+        return;
+      }
+      document.querySelectorAll('.view').forEach(v => {
+        v.classList.remove('active');
+        v.style.display = 'none';
+      });
+      const adminImportView = document.getElementById('view-admin-import');
+      if (adminImportView) {
+        adminImportView.classList.add('active');
+        adminImportView.style.display = 'flex';
+      }
+      currentTab = 'admin-import';
+      renderAdminDeckList();
+      renderCodeList();
+      if (typeof lucide !== 'undefined' && lucide.createIcons) {
+        lucide.createIcons();
+      }
+    }
+
+    function renderAdminDeckList() {
+      const container = document.getElementById('admin-deck-list');
+      if (!container) return;
+      const decks = getDecks();
+      if (decks.length === 0) {
+        container.innerHTML = '<p class="text-xs text-sec">No decks yet.</p>';
+        return;
+      }
+      container.innerHTML = decks.map(d => `
+        <div class="flex items-center justify-between p-2 bg-gray-50 dark:bg-gray-800 rounded-lg">
+          <span class="text-sm font-medium truncate flex-1">${d.name} (${d.cards.length} cards)</span>
+          <button onclick="deleteDeck('${d.id}')" class="text-red-500 hover:text-red-700 text-xs ml-2">🗑️</button>
+        </div>
+      `).join('');
+    }
+
+    function renderCodeList() {
+      const container = document.getElementById('code-list');
+      if (!container) return;
+      const codes = getCodes();
+      const list = Object.values(codes);
+      if (list.length === 0) {
+        container.innerHTML = '<p class="text-xs text-sec">No codes generated yet.</p>';
+        return;
+      }
+      container.innerHTML = list.map(c => `
+        <div class="flex items-center justify-between text-xs p-1 bg-gray-50 dark:bg-gray-800 rounded">
+          <span class="font-mono">${c.code}</span>
+          <span class="${c.used ? 'text-red-500' : 'text-green-500'}">${c.used ? 'Used' : 'Available'}</span>
+        </div>
+      `).join('');
+    }
+
+    // ============================================================
     //  NAV CLICK HANDLER - DEBOUNCED
     // ============================================================
     function navClickHandler() {
@@ -4641,7 +4641,6 @@ if (calendar) {
 
       const tab = this.dataset.tab;
 
-      // If in study mode, ask to exit
       if (document.getElementById('view-flashcards').classList.contains('active')) {
         if (!confirm('Exit current study session?')) return;
         exitStudy();
@@ -4880,9 +4879,9 @@ if (calendar) {
       document.getElementById('modal-price-label').textContent = type === 'book' ? 'Book Buyer Price' : 'Regular Price';
     }
 
-    function selectPayment(method) {
+    function selectPayment(method, evt) {
       document.querySelectorAll('.payment-option').forEach(el => el.classList.remove('selected'));
-      event.currentTarget.classList.add('selected');
+      evt.currentTarget.classList.add('selected');
     }
 
     function processPayment() {
@@ -4968,27 +4967,21 @@ if (calendar) {
     // ============================================================
     if (localStorage.getItem('flashmind_theme') === 'dark') document.documentElement.classList.add('dark');
 
-    // Check if user is logged in
     const logged = checkSession();
 
-    // If not logged in, show login
     if (!logged) {
       document.getElementById('view-login').classList.add('active');
       document.getElementById('view-login').style.display = 'flex';
     } else {
-      // Session restored, enter app
       enterApp();
     }
 
-    // Use event delegation on the nav container
-document.getElementById('bottomNav').addEventListener('click', function(e) {
-  const btn = e.target.closest('.nav-item');
-  if (!btn) return;
-  // Call the navClickHandler with the button context
-  navClickHandler.call(btn, e);
-});
+    document.getElementById('bottomNav').addEventListener('click', function(e) {
+      const btn = e.target.closest('.nav-item');
+      if (!btn) return;
+      navClickHandler.call(btn, e);
+    });
 
-    // Drag and drop for Excel upload
     const uploadZone = document.getElementById('upload-zone');
     if (uploadZone) {
       uploadZone.addEventListener('dragover', (e) => {
