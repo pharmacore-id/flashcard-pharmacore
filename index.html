@@ -4893,9 +4893,6 @@ function renderDeckPerformance() {
     // ============================================================
     function switchTab(tab) {
       if (currentTab === tab && tab !== 'study-select') return;
-
-      if (currentTab === 'study-select' && tab !== 'decks' && tab !== 'home') {
-        return;
       }
 
       currentTab = tab;
