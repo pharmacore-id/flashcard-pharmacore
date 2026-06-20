@@ -2702,7 +2702,7 @@ async function loadSharedDecks() {
     interval, 
     repetitions: reps, 
     next_review: next.toISOString().split('T')[0], 
-    last_review: new Date().toISOString(),  // ← HARUS ADA
+    last_review: new Date().toLocaleString('sv-SE'),
     total_reviews: (card.total_reviews || 0) + 1,
     correct_count: (card.correct_count || 0) + (quality >= 2 ? 1 : 0) 
   };
