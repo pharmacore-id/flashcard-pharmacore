@@ -2565,47 +2565,6 @@ async function loadSharedDecks() {
       return best;
     }
 
-    // ============================================================
-    //  SAMPLE DECKS
-    // ============================================================
-    function getSampleDecks() {
-      const decks = [];
-      const topics = [
-        { name: 'Pharmacy Basics', subtopics: ['Introduction', 'Drug Classifications', 'Pharmacology'] },
-        { name: 'Clinical Pharmacy', subtopics: ['Drug Interactions', 'Dosage Calculations', 'Therapeutics'] },
-        { name: 'Science', subtopics: ['Biology', 'Chemistry', 'Physics'] },
-        { name: 'Languages', subtopics: ['Spanish', 'French', 'German'] },
-        { name: 'History', subtopics: ['World History', 'US History'] }
-      ];
-      let deckId = 1;
-      topics.forEach(topic => {
-        topic.subtopics.forEach(subtopic => {
-          const cardCount = 5;
-          for (let i = 0; i < cardCount; i++) {
-            decks.push({
-              __id: 'card_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6),
-              deck_id: 'deck_' + deckId,
-              deck_name: topic.name + ' - ' + subtopic,
-              card_front: `Question ${i+1} about ${subtopic}?`,
-              card_back: `Answer ${i+1} for ${subtopic}`,
-              card_tags: `${topic.name.toLowerCase()},${subtopic.toLowerCase()}`,
-              ease_factor: 2.5,
-              interval: 0,
-              repetitions: 0,
-              next_review: '',
-              last_review: '',
-              total_reviews: 0,
-              correct_count: 0,
-              topic: topic.name,
-              subtopic: subtopic
-            });
-          }
-          deckId++;
-        });
-      });
-      return decks;
-    }
-
     function getRealCards() {
       return allCards.filter(c => c.card_front && c.card_front !== '__deck_placeholder__' && c.card_front.trim() !== '');
     }
@@ -2794,73 +2753,69 @@ async function loadSharedDecks() {
       isAdmin = ADMIN_EMAILS.includes(email);
     }
 
-    async function handleSignup(e) {
-      e.preventDefault();
-      const un = document.getElementById('signup-username').value.trim();
-      const email = document.getElementById('signup-email').value.trim();
-      const pw = document.getElementById('signup-password').value;
-      const cf = document.getElementById('signup-confirm').value;
-      const err = document.getElementById('signup-error');
-    
-      err.textContent = '';
-    
-      if (!un || !email || !pw || !cf) { err.textContent = 'All fields required.'; return; }
-      if (pw.length < 6) { err.textContent = 'Password min 6 chars.'; return; }
-      if (pw !== cf) { err.textContent = 'Passwords do not match.'; return; }
-    
-      try {
-        const userCredential = await firebase.auth().createUserWithEmailAndPassword(email, pw);
-        const user = userCredential.user;
-        await user.updateProfile({ displayName: un });
-    
-        const isAdminUser = ADMIN_EMAILS.includes(email);
-    
-        // Plan & expiry – admin langsung premium, user biasa free
-        const plan = isAdminUser ? 'premium' : 'free';
-        const expiry = null; // admin tidak punya expiry
-    
-        const users = getUsers();
-        users[email] = {
-          username: un,
-          email,
-          password: pw,
-          created: Date.now(),
-          plan: plan,
-          isBookBuyer: false,
-          isAdmin: isAdminUser
-        };
-        saveUsers(users);
-    
-        currentUser = email;
-        saveSession(email);
-        const sharedDecks = await loadSharedDecks();
-        allCards = sharedDecks;
-        saveUserData(email);
-        if (isAdminUser) {
-          savePlan(email, 'premium', expiry);
-        }
-        await saveToFirebase(email, allCards, plan);
-    
-        isAdmin = isAdminUser;
-        enterApp();
-    
-        if (isAdminUser) {
-          alert('👑 Admin account created! You have full admin access.');
-        }
-    
-      } catch (error) {
-        console.error('Signup error:', error);
-        if (error.code === 'auth/email-already-in-use') {
-          err.textContent = 'Email already registered. Please login or use another email.';
-        } else if (error.code === 'auth/weak-password') {
-          err.textContent = 'Password is too weak. Use at least 6 characters.';
-        } else if (error.code === 'auth/invalid-email') {
-          err.textContent = 'Invalid email address.';
-        } else {
-          err.textContent = 'Signup failed: ' + error.message;
-        }
-      }
+  async function handleSignup(e) {
+  e.preventDefault();
+  const un = document.getElementById('signup-username').value.trim();
+  const email = document.getElementById('signup-email').value.trim();
+  const pw = document.getElementById('signup-password').value;
+  const cf = document.getElementById('signup-confirm').value;
+  const err = document.getElementById('signup-error');
+
+  err.textContent = '';
+
+  if (!un || !email || !pw || !cf) { err.textContent = 'All fields required.'; return; }
+  if (pw.length < 6) { err.textContent = 'Password min 6 chars.'; return; }
+  if (pw !== cf) { err.textContent = 'Passwords do not match.'; return; }
+
+  try {
+    const userCredential = await firebase.auth().createUserWithEmailAndPassword(email, pw);
+    const user = userCredential.user;
+    await user.updateProfile({ displayName: un });
+
+    const isAdminUser = ADMIN_EMAILS.includes(email);
+
+    const plan = isAdminUser ? 'premium' : 'free';
+    const expiry = null;
+
+    const users = getUsers();
+    users[email] = {
+      username: un,
+      email,
+      password: pw,
+      created: Date.now(),
+      plan: plan,
+      isBookBuyer: false,
+      isAdmin: isAdminUser
+    };
+    saveUsers(users);
+
+    currentUser = email;
+    saveSession(email);
+    allCards = await loadSharedDecks();
+    if (isAdminUser) {
+      savePlan(email, 'premium', expiry);
     }
+
+    isAdmin = isAdminUser;
+    enterApp();
+
+    if (isAdminUser) {
+      alert('👑 Admin account created! You have full admin access.');
+    }
+
+  } catch (error) {
+    console.error('Signup error:', error);
+    if (error.code === 'auth/email-already-in-use') {
+      err.textContent = 'Email already registered. Please login or use another email.';
+    } else if (error.code === 'auth/weak-password') {
+      err.textContent = 'Password is too weak. Use at least 6 characters.';
+    } else if (error.code === 'auth/invalid-email') {
+      err.textContent = 'Invalid email address.';
+    } else {
+      err.textContent = 'Signup failed: ' + error.message;
+    }
+  }
+}
 
 function saveUserData(email) {
   localStorage.setItem(DATA_PREFIX + email, JSON.stringify(allCards));
@@ -2953,10 +2908,6 @@ function saveUserData(email) {
         updatePlanUI();
         updateHome();
         renderDecks();
-
-         if (currentUser && !isAdmin) {
-      clearUserSampleDecks(currentUser);
-    }
         
         const userRequestBtn = document.getElementById('user-request-btn');
         if (userRequestBtn) {
