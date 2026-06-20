@@ -4465,7 +4465,7 @@ if (!userIsPremium && deckIsPremium) {
   tsShowQuestion();
 }
 
- function toggleFAQ(button) {
+function toggleFAQ(button) {
   const answer = button.nextElementSibling;
   const icon = button.querySelector('[data-lucide]');
   
@@ -4891,45 +4891,51 @@ function renderDeckPerformance() {
     // ============================================================
     //  NAVIGATION
     // ============================================================
-    function switchTab(tab) {
-      if (currentTab === tab && tab !== 'study-select') return;
+ function switchTab(tab) {
+  if (currentTab === tab && tab !== 'study-select') return;
 
-      if (currentTab === 'study-select' && tab !== 'decks' && tab !== 'home') {
-        return;
-      }
+  currentTab = tab;
 
-      currentTab = tab;
+  const allViews = ['home', 'decks', 'study-select', 'flashcards', 'learn', 'test', 'stats', 'settings', 'admin-import', 'admin-cards', 'faq'];
 
-      const allViews = ['home', 'decks', 'study-select', 'flashcards', 'learn', 'test', 'stats', 'settings', 'admin-import',
-        'admin-cards','faq'
-      ];
+  allViews.forEach(v => {
+    const el = document.getElementById('view-' + v);
+    if (el) {
+      el.classList.remove('active');
+      el.style.display = 'none';
+    }
+  });
 
-      allViews.forEach(v => {
-        const el = document.getElementById('view-' + v);
-        if (el) {
-          el.classList.remove('active');
-          el.style.display = 'none';
-        }
-      });
+  const targetView = document.getElementById('view-' + tab);
+  if (targetView) {
+    targetView.classList.add('active');
+    targetView.style.display = 'flex';
+  }
 
-      const targetView = document.getElementById('view-' + tab);
-      if (targetView) {
-        targetView.classList.add('active');
-        targetView.style.display = 'flex';
-      }
+  document.querySelectorAll('.nav-item').forEach(b => {
+    b.classList.toggle('active', b.dataset.tab === tab);
+  });
 
-      document.querySelectorAll('.nav-item').forEach(b => {
-        b.classList.toggle('active', b.dataset.tab === tab);
-      });
+  if (tab === 'stats') renderStats();
+  if (tab === 'home') updateHome();
+  if (tab === 'decks') {
+    currentTopic = null;
+    renderDecks();
+  }
 
-      if (tab === 'stats') renderStats();
-      if (tab === 'home') updateHome();
-      if (tab === 'decks') renderDecks();
-
+  // Render ikon untuk FAQ
+  if (tab === 'faq') {
+    setTimeout(() => {
       if (typeof lucide !== 'undefined' && lucide.createIcons) {
         lucide.createIcons();
       }
-    }
+    }, 150);
+  }
+
+  if (typeof lucide !== 'undefined' && lucide.createIcons) {
+    lucide.createIcons();
+  }
+}
 
     // ============================================================
     //  FUNCTIONS YANG SEMPAT HILANG
