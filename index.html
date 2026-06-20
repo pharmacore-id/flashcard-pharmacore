@@ -5205,36 +5205,34 @@ async function deleteSelectedDecks() {
     function closeUpgradeModal() { document.getElementById('upgrade-modal').classList.add('hidden') }
 
     function validateUpgradeCode() {
-      const code = document.getElementById('upgrade-code-input').value.trim().toUpperCase();
-      const status = document.getElementById('upgrade-code-status');
+  const code = document.getElementById('upgrade-code-input').value.trim().toUpperCase();
+  const status = document.getElementById('upgrade-code-status');
 
-      if (!code) {
-        status.textContent = 'Please enter an access code.';
-        status.style.color = '#ef4444';
-        return;
-      }
+  if (!code) {
+    status.textContent = 'Please enter an access code.';
+    status.style.color = '#ef4444';
+    return;
+  }
 
-      const codes = getCodes();
-      if (codes[code] && !codes[code].used) {
-        hasValidCode = true;
-        status.textContent = '✅ Valid access code! You get the book buyer discount.';
-        status.style.color = '#059669';
-        document.getElementById('book-buyer-card').style.borderColor = '#d97706';
-        document.getElementById('modal-price-display').textContent = 'Rp 35.000';
-        document.getElementById('modal-price-label').textContent = 'Book Buyer Price (Discounted)';
-        selectPlan('book');
-      } else if (codes[code] && codes[code].used) {
-        hasValidCode = false;
-        status.textContent = '❌ This code has already been used.';
-        status.style.color = '#ef4444';
-      } else {
-        hasValidCode = false;
-        status.textContent = '❌ Invalid access code. You can still upgrade at regular price.';
-        status.style.color = '#ef4444';
-        document.getElementById('modal-price-display').textContent = 'Rp 65.000';
-        document.getElementById('modal-price-label').textContent = 'Regular Price';
-      }
-    }
+  const codes = getCodes();
+  console.log('Available codes:', codes); // ← debug
+  console.log('Entered code:', code); // ← debug
+
+  if (codes[code] && !codes[code].used) {
+    hasValidCode = true;
+    status.textContent = '✅ Valid access code!';
+    status.style.color = '#059669';
+    selectPlan('book');
+  } else if (codes[code] && codes[code].used) {
+    hasValidCode = false;
+    status.textContent = '❌ This code has already been used.';
+    status.style.color = '#ef4444';
+  } else {
+    hasValidCode = false;
+    status.textContent = '❌ Invalid access code.';
+    status.style.color = '#ef4444';
+  }
+}
 
     function selectPlan(type) {
       if (isPremiumActive()) {
