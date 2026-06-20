@@ -3221,9 +3221,9 @@ function renderDecks() {
   if (no) no.classList.add('hidden');
 
   const isPremium = isPremiumActive();
-  const maxFreeDecks = 999;
+  const maxFreeDecks = 5;
 
-  // ===== LEVEL 2: Subtopik (120px) – semua font putih =====
+  // ===== LEVEL 2: Subtopik (120px) =====
   if (currentTopic) {
     const subtopics = topicMap[currentTopic] || [];
     let html = `
@@ -3243,7 +3243,6 @@ function renderDecks() {
       const isLocked = !isPremium && deckCount >= maxFreeDecks;
       const displayName = d.subtopic || d.name;
 
-      // Background handling
       const bgCard = d.cards.find(c => c.card_background && c.card_background.trim() !== '');
       const background = bgCard ? bgCard.card_background : '';
       let bgStyle = '';
@@ -3267,9 +3266,9 @@ function renderDecks() {
              onclick="${isLocked ? 'showUpgradeModal()' : `openDeck('${d.id}')`}">
           <div class="flex-1" style="max-width: 66.666%;">
             ${iconHtml ? `<div class="mb-1">${iconHtml}</div>` : ''}
-            <h3 class="font-bold text-lg uppercase text-white" style="white-space: normal; word-break: break-word;">${displayName}</h3>
-            <p class="text-sm mt-1 text-white">${d.cards.length} cards · ${due} due · ${pct}% mastered</p>
-            <div class="progress-bar h-1.5 mt-1 bg-white/30"><div class="progress-fill bg-white" style="width:${pct}%"></div></div>
+            <h3 class="font-bold uppercase text-white" style="font-size: 16px; line-height: 1.2; white-space: normal; word-break: break-word;">${displayName}</h3>
+            <p class="text-white" style="font-size: 11px; line-height: 1.2; margin-top: 2px;">${d.cards.length} cards · ${due} due · ${pct}% mastered</p>
+            <div class="progress-bar bg-white/30" style="height: 4px; margin-top: 2px;"><div class="progress-fill bg-white" style="width:${pct}%; height: 4px;"></div></div>
           </div>
           <div class="flex gap-1 ml-auto flex-shrink-0" onclick="event.stopPropagation()">
             ${isAdmin && !isLocked ? `
@@ -3292,7 +3291,7 @@ function renderDecks() {
     return;
   }
 
-  // ===== LEVEL 1: Topik (150px) – semua font putih =====
+  // ===== LEVEL 1: Topik (150px) =====
   let html = '';
   sortedTopics.forEach((topic) => {
     const subtopics = topicMap[topic];
@@ -3312,7 +3311,6 @@ function renderDecks() {
         break;
       }
     }
-    // Jika tidak ada background, tetap pakai warna putih
     if (!bgStyle) {
       bgStyle = 'color: white; background: var(--surface);';
     }
