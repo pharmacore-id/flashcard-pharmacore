@@ -3623,11 +3623,38 @@ function renderDecks() {
         importedCount++;
       });
 
-      let savedCount = 0;
+            let savedCount = 0;
       for (const deckKey in decksToShare) {
         const deck = decksToShare[deckKey];
-        const success = await saveSharedDeck(deck, isPremium);
-        if (success) savedCount++;
+        const deckName = deck.deckName;
+
+        // Cari apakah deck dengan nama yang sama sudah ada di Firestore
+        const existingDocs = await db.collection('sharedDecks')
+          .where('deckName', '==', deckName)
+          .get();
+
+        if (existingDocs.empty) {
+          // Deck baru – simpan sebagai dokumen baru
+          const success = await saveSharedDeck(deck, isPremium);
+          if (success) savedCount++;
+        } else {
+          // Deck sudah ada – update isinya (tanpa mengubah deck_id)
+          const docRef = existingDocs.docs[0].ref;
+          await docRef.update({
+            cards: deck.cards.map(c => ({
+              card_front: c.card_front,
+              card_back: c.card_back,
+              card_tags: c.card_tags || '',
+              card_background: c.card_background || '',
+            })),
+            isPremium: isPremium,
+            topic: deck.topic,
+            subtopic: deck.subtopic,
+            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+          });
+          savedCount++;
+          console.log('✅ Deck updated:', deckName);
+        }
       }
 
       const sharedCards = await loadSharedDecks();
