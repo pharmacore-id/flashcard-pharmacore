@@ -2862,11 +2862,10 @@ async function loadSharedDecks() {
       }
     }
 
-  function saveUserData(email) {
-  // Simpan SEMUA kartu (termasuk shared dengan progress) ke localStorage
+function saveUserData(email) {
   localStorage.setItem(DATA_PREFIX + email, JSON.stringify(allCards));
-  // Kirim SEMUA kartu ke Firebase
   saveToFirebase(email, allCards, userPlan);
+  return Promise.resolve(); // biar bisa di-await
 }
 
     function savePlan(email, plan, expiry) {
@@ -4237,7 +4236,7 @@ if (!userIsPremium && deckIsPremium) {
       }
     }
 
-   function fcRate(q) {
+   async function fcRate(q) {
   if (!studyQueue || studyIdx >= studyQueue.length) {
     exitStudy();
     return;
@@ -4253,13 +4252,15 @@ if (!userIsPremium && deckIsPremium) {
     allCards.push(updated);
   }
   
-  saveUserData(currentUser);
+ await saveUserData(currentUser);
   addStudyTime(0.5);
   studyIdx++;
   fcShowCard();
   
-  setTimeout(() => updateHome(), 100);
-}
+  requestAnimationFrame(() => {
+  updateHome();
+  setTimeout(() => updateHome(), 500); // backup
+});
 
     // ============================================================
     //  EXIT STUDY - COMPLETE RESET
