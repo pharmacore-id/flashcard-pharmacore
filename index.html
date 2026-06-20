@@ -1780,6 +1780,7 @@ Science       | Biology       | What is DNA?             | Deoxyribonucleic acid
     let resetCode = '';
     let resetEmail = '';
     let selectedCardIds = [];
+    let selectedDeckIds = [];
 
     // ============================================================
     //  PASSWORD TOGGLE
@@ -3429,40 +3430,37 @@ function renderDecks() {
     // ============================================================
     //  ADMIN FUNCTIONS - DELETE DECK
     // ============================================================
-    async function deleteDeck(deckId) {
+   async function deleteDeck(deckId) {
   if (!isAdmin) {
     alert('Only admins can delete decks.');
     return;
   }
 
   const isSharedDeck = allCards.some(c => c.deck_id === deckId && c.isShared);
+  
   if (isSharedDeck) {
-    if (!confirm('Hapus shared deck ini? Semua user akan kehilangan deck ini.')) return;
+    if (!confirm('Delete this shared deck? All users will lose this deck.')) return;
     try {
       const docId = deckId.replace('shared_', '');
       await db.collection('sharedDecks').doc(docId).delete();
-      allCards = allCards.filter(c => c.deck_id !== deckId);
-      saveUserData(currentUser);
-      renderDecks();
-      updateHome();
-      if (document.getElementById('view-admin-import').classList.contains('active')) {
-        renderAdminDeckList();
-      }
-      alert('✅ Shared deck berhasil dihapus!');
     } catch (error) {
-      alert('❌ Gagal menghapus shared deck: ' + error.message);
+      alert('❌ Failed to delete shared deck: ' + error.message);
+      return;
     }
-    return;
+  } else {
+    if (!confirm('Delete this deck and all its cards?')) return;
   }
 
-  if (!confirm('Delete this deck and all cards?')) return;
   allCards = allCards.filter(c => c.deck_id !== deckId);
   saveUserData(currentUser);
   renderDecks();
   updateHome();
+  
   if (document.getElementById('view-admin-import').classList.contains('active')) {
     renderAdminDeckList();
   }
+  
+  alert('✅ Deck deleted successfully!');
 }
 
     // ============================================================
@@ -4725,6 +4723,40 @@ if (!userIsPremium && deckIsPremium) {
     // ============================================================
     //  FUNCTIONS YANG SEMPAT HILANG
     // ============================================================
+    async function toggleDeckPremium(deckId) {
+  if (!isAdmin) return;
+
+  const deckCards = allCards.filter(c => c.deck_id === deckId && c.isShared);
+  if (deckCards.length === 0) return;
+
+  const isCurrentlyPremium = deckCards.some(c => c.isPremium);
+  const newPremiumStatus = !isCurrentlyPremium;
+
+  allCards.forEach(c => {
+    if (c.deck_id === deckId && c.isShared) {
+      c.isPremium = newPremiumStatus;
+    }
+  });
+
+  const docId = deckId.replace('shared_', '');
+  try {
+    await db.collection('sharedDecks').doc(docId).update({
+      isPremium: newPremiumStatus,
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+
+    saveUserData(currentUser);
+    renderDecks();
+    updateHome();
+    renderAdminDeckList();
+
+    alert(`✅ Deck status changed to ${newPremiumStatus ? 'PREMIUM' : 'FREE'}!`);
+  } catch (error) {
+    console.error('❌ Failed to update deck status:', error);
+    alert('❌ Failed to update deck status.');
+  }
+}
+    
     function showAdminImport() {
       if (!isAdmin) {
         alert('Only admins can import decks.');
@@ -4747,21 +4779,130 @@ if (!userIsPremium && deckIsPremium) {
       }
     }
 
-    function renderAdminDeckList() {
-      const container = document.getElementById('admin-deck-list');
-      if (!container) return;
-      const decks = getDecks();
-      if (decks.length === 0) {
-        container.innerHTML = '<p class="text-xs text-sec">No decks yet.</p>';
-        return;
-      }
-      container.innerHTML = decks.map(d => `
-        <div class="flex items-center justify-between p-2 bg-gray-50 dark:bg-gray-800 rounded-lg">
-          <span class="text-sm font-medium truncate flex-1">${d.name} (${d.cards.length} cards)</span>
-          <button onclick="deleteDeck('${d.id}')" class="text-red-500 hover:text-red-700 text-xs ml-2">🗑️</button>
+    let selectedDeckIds = [];
+
+function renderAdminDeckList() {
+  const container = document.getElementById('admin-deck-list');
+  if (!container) return;
+
+  const decks = getDecks();
+  if (decks.length === 0) {
+    container.innerHTML = '<p class="text-xs text-sec">No decks yet.</p>';
+    return;
+  }
+
+  selectedDeckIds = [];
+
+  let html = `
+    <div class="flex items-center gap-3 mb-3">
+      <input type="checkbox" id="select-all-decks" onchange="toggleAllDecks()" />
+      <label for="select-all-decks" class="text-xs font-medium">Select All</label>
+      <button onclick="deleteSelectedDecks()" id="delete-selected-decks-btn" 
+              class="bg-red-500 text-white text-xs px-3 py-1 rounded-lg hover:bg-red-600 transition-colors" disabled>
+        Delete Selected
+      </button>
+      <span class="text-xs text-sec ml-auto" id="selected-decks-count">0 selected</span>
+    </div>
+  `;
+
+  decks.forEach(d => {
+    const isDeckPremium = d.cards.some(c => c.isPremium);
+    const premiumBadge = isDeckPremium ? '⭐ PREMIUM' : 'Free';
+    const premiumColor = isDeckPremium ? 'text-yellow-500' : 'text-sec';
+
+    html += `
+      <div class="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded-xl mb-2">
+        <div class="flex items-center gap-3 flex-1 min-w-0">
+          <input type="checkbox" class="deck-checkbox" data-deck-id="${d.id}" 
+                 onchange="toggleDeckSelection('${d.id}', this)" />
+          <div class="flex-1 min-w-0">
+            <span class="text-sm font-medium truncate block">${d.name} (${d.cards.length} cards)</span>
+            <span class="text-xs ${premiumColor} font-medium">${premiumBadge}</span>
+          </div>
         </div>
-      `).join('');
+        <div class="flex gap-2 flex-shrink-0">
+          <button onclick="toggleDeckPremium('${d.id}')" 
+                  class="px-2 py-1 rounded-lg text-xs font-bold text-white transition-colors
+                         ${isDeckPremium ? 'bg-gray-400 hover:bg-gray-500' : 'bg-yellow-500 hover:bg-yellow-600'}">
+            ${isDeckPremium ? 'Set Free' : 'Set Premium'}
+          </button>
+          <button onclick="deleteDeck('${d.id}')" class="text-red-500 hover:text-red-700 text-xs">🗑️</button>
+        </div>
+      </div>
+    `;
+  });
+
+  container.innerHTML = html;
+}
+
+function toggleDeckSelection(deckId, checkbox) {
+  if (checkbox.checked) {
+    if (!selectedDeckIds.includes(deckId)) selectedDeckIds.push(deckId);
+  } else {
+    selectedDeckIds = selectedDeckIds.filter(id => id !== deckId);
+  }
+  updateDeckSelectionUI();
+}
+
+function toggleAllDecks() {
+  const selectAll = document.getElementById('select-all-decks');
+  const checkboxes = document.querySelectorAll('.deck-checkbox');
+
+  checkboxes.forEach(cb => {
+    cb.checked = selectAll.checked;
+    const deckId = cb.dataset.deckId;
+    if (selectAll.checked) {
+      if (!selectedDeckIds.includes(deckId)) selectedDeckIds.push(deckId);
+    } else {
+      selectedDeckIds = selectedDeckIds.filter(id => id !== deckId);
     }
+  });
+  updateDeckSelectionUI();
+}
+
+function updateDeckSelectionUI() {
+  const count = selectedDeckIds.length;
+  document.getElementById('selected-decks-count').textContent = count + ' selected';
+  document.getElementById('delete-selected-decks-btn').disabled = count === 0;
+
+  const totalCheckboxes = document.querySelectorAll('.deck-checkbox').length;
+  const checkedCheckboxes = document.querySelectorAll('.deck-checkbox:checked').length;
+  document.getElementById('select-all-decks').checked = totalCheckboxes > 0 && checkedCheckboxes === totalCheckboxes;
+}
+
+async function deleteSelectedDecks() {
+  if (selectedDeckIds.length === 0) {
+    alert('No decks selected.');
+    return;
+  }
+
+  if (!confirm(`Delete ${selectedDeckIds.length} selected deck(s)?`)) return;
+
+  for (const deckId of selectedDeckIds) {
+    const isSharedDeck = allCards.some(c => c.deck_id === deckId && c.isShared);
+    if (isSharedDeck) {
+      const docId = deckId.replace('shared_', '');
+      try {
+        await db.collection('sharedDecks').doc(docId).delete();
+      } catch (error) {
+        console.error('Failed to delete shared deck:', error);
+      }
+    }
+    allCards = allCards.filter(c => c.deck_id !== deckId);
+  }
+
+  saveUserData(currentUser);
+  selectedDeckIds = [];
+  renderDecks();
+  updateHome();
+  renderAdminDeckList();
+
+  document.getElementById('select-all-decks').checked = false;
+  document.getElementById('delete-selected-decks-btn').disabled = true;
+  document.getElementById('selected-decks-count').textContent = '0 selected';
+
+  alert(`✅ ${selectedDeckIds.length} deck(s) deleted successfully!`);
+}
 
     function renderCodeList() {
       const container = document.getElementById('code-list');
