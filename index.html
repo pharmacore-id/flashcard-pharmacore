@@ -978,14 +978,11 @@
       border: 2px solid var(--accent);
     }
 
-.bottom-nav {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  z-index: 9999 !important;
-  pointer-events: all !important;
-}
+    .bottom-nav {
+      position: relative;
+      z-index: 9999 !important;
+      pointer-events: all !important;
+    }
     #view-login:not(.active),
     #view-signup:not(.active) {
       display: none !important;
@@ -1501,128 +1498,117 @@ Science       | Biology       | What is DNA?             | Deoxyribonucleic acid
       </div>
     </div>
 
-<!-- ===== SETTINGS ===== -->
-<div id="view-settings" class="view">
-  <h2 class="text-xl font-bold mb-4">⚙️ Settings</h2>
-  <div class="view-scroll space-y-3">
+    <!-- ===== SETTINGS ===== -->
+    <div id="view-settings" class="view">
+      <h2 class="text-xl font-bold mb-4">⚙️ Settings</h2>
+      <div class="view-scroll space-y-3">
 
-    <!-- FAQ Button -->
-    <button onclick="switchTab('faq')" class="w-full surface rounded-2xl border border-theme p-4 text-left flex items-center gap-3 shadow-card">
-      <i data-lucide="help-circle" class="w-5 h-5 text-sec"></i>
-      <span class="font-medium text-sm">FAQ & Troubleshooting</span>
-    </button>
-
-    <!-- Account -->
-    <div class="surface rounded-2xl border border-theme p-4 shadow-card">
-      <p class="text-sm text-sec font-medium mb-1">Account</p>
-      <div class="flex items-center justify-between">
-        <span id="settings-username" class="font-semibold">User</span>
-        <button onclick="handleLogout()" class="px-4 py-1.5 rounded-xl text-white text-sm font-medium bg-red-500">Logout</button>
-      </div>
-    </div>
-
-    <!-- Change Password -->
-    <div class="surface rounded-2xl border border-theme p-4 shadow-card">
-      <p class="text-sm text-sec font-medium mb-2">🔑 Change Password</p>
-      <div class="space-y-3">
-        <div>
-          <label class="text-xs text-sec font-medium">Current Password</label>
-          <div class="password-wrapper">
-            <input type="password" id="current-password" placeholder="Enter current password" class="w-full border rounded-xl px-3 py-2 surface text-sm" style="border-color:var(--border)" />
-            <button type="button" class="toggle-eye" onclick="togglePassword('current-password', this)">
-              <i data-lucide="eye" class="w-4 h-4"></i>
-            </button>
+<button onclick="switchTab('faq')" class="w-full surface rounded-2xl border border-theme p-4 text-left flex items-center gap-3 shadow-card">
+  <i data-lucide="help-circle" class="w-5 h-5 text-sec"></i>
+  <span class="font-medium text-sm">FAQ & Troubleshooting</span>
+</button>
+        
+        <div class="surface rounded-2xl border border-theme p-4 shadow-card">
+          <p class="text-sm text-sec font-medium mb-1">Account</p>
+          <div class="flex items-center justify-between">
+            <span id="settings-username" class="font-semibold">User</span>
+            <button onclick="handleLogout()" class="px-4 py-1.5 rounded-xl text-white text-sm font-medium bg-red-500">Logout</button>
           </div>
         </div>
-        <div>
-          <label class="text-xs text-sec font-medium">New Password</label>
-          <div class="password-wrapper">
-            <input type="password" id="new-password" placeholder="Min 6 characters" class="w-full border rounded-xl px-3 py-2 surface text-sm" style="border-color:var(--border)" />
-            <button type="button" class="toggle-eye" onclick="togglePassword('new-password', this)">
-              <i data-lucide="eye" class="w-4 h-4"></i>
-            </button>
+
+        <div class="surface rounded-2xl border border-theme p-4 shadow-card">
+          <p class="text-sm text-sec font-medium mb-2">🔑 Change Password</p>
+          <div class="space-y-3">
+            <div>
+              <label class="text-xs text-sec font-medium">Current Password</label>
+              <div class="password-wrapper">
+                <input type="password" id="current-password" placeholder="Enter current password" class="w-full border rounded-xl px-3 py-2 surface text-sm" style="border-color:var(--border)" />
+                <button type="button" class="toggle-eye" onclick="togglePassword('current-password', this)">
+                  <i data-lucide="eye" class="w-4 h-4"></i>
+                </button>
+              </div>
+            </div>
+            <div>
+              <label class="text-xs text-sec font-medium">New Password</label>
+              <div class="password-wrapper">
+                <input type="password" id="new-password" placeholder="Min 6 characters" class="w-full border rounded-xl px-3 py-2 surface text-sm" style="border-color:var(--border)" />
+                <button type="button" class="toggle-eye" onclick="togglePassword('new-password', this)">
+                  <i data-lucide="eye" class="w-4 h-4"></i>
+                </button>
+              </div>
+            </div>
+            <div>
+              <label class="text-xs text-sec font-medium">Confirm New Password</label>
+              <div class="password-wrapper">
+                <input type="password" id="confirm-new-password" placeholder="Confirm new password" class="w-full border rounded-xl px-3 py-2 surface text-sm" style="border-color:var(--border)" />
+                <button type="button" class="toggle-eye" onclick="togglePassword('confirm-new-password', this)">
+                  <i data-lucide="eye" class="w-4 h-4"></i>
+                </button>
+              </div>
+            </div>
+            <div id="change-password-error" class="text-xs text-red-500 min-h-[1.25rem]"></div>
+            <button onclick="changePassword()" class="w-full accent-bg text-white py-2 rounded-xl text-sm font-medium hover:opacity-90 transition-opacity">Change Password</button>
           </div>
         </div>
-        <div>
-          <label class="text-xs text-sec font-medium">Confirm New Password</label>
-          <div class="password-wrapper">
-            <input type="password" id="confirm-new-password" placeholder="Confirm new password" class="w-full border rounded-xl px-3 py-2 surface text-sm" style="border-color:var(--border)" />
-            <button type="button" class="toggle-eye" onclick="togglePassword('confirm-new-password', this)">
-              <i data-lucide="eye" class="w-4 h-4"></i>
-            </button>
+
+        <div class="surface rounded-2xl border border-theme p-4 shadow-card">
+          <p class="text-sm text-sec font-medium mb-2">👤 Display Name</p>
+          <div class="flex gap-2">
+            <input type="text" id="nickname-input" placeholder="Your name" class="flex-1 border rounded-xl px-3 py-2 surface text-sm" style="border-color:var(--border)" />
+            <button onclick="saveNickname()" class="accent-bg text-white px-4 py-2 rounded-xl text-sm font-medium">Save</button>
+          </div>
+          <p class="text-xs text-sec mt-1">This name will appear on your home screen.</p>
+        </div>
+
+        <div class="surface rounded-2xl border border-theme p-4 shadow-card">
+          <p class="text-sm text-sec font-medium mb-2">🎯 Daily Goal</p>
+          <div class="settings-goal">
+            <span class="text-sm">Study</span>
+            <input type="number" id="goal-input" min="1" max="500" value="20" />
+            <span class="text-sm">cards per day</span>
+            <button onclick="setDailyGoal()" class="accent-bg text-white px-4 py-2 rounded-xl text-sm font-medium">Set</button>
+          </div>
+          <p class="text-xs text-sec mt-2">Set how many cards you want to study each day.</p>
+        </div>
+
+        <div class="surface rounded-2xl border border-theme p-4 shadow-card">
+          <p class="text-sm text-sec font-medium mb-2">Plan</p>
+          <div class="flex items-center justify-between mb-3">
+            <span id="settings-plan-label" class="font-semibold">Free</span>
+            <button onclick="showUpgradeModal()" id="settings-upgrade-btn" class="px-4 py-1.5 rounded-xl text-white text-sm font-medium" style="background:linear-gradient(135deg,var(--premium-gold),var(--premium-purple));">Upgrade</button>
+          </div>
+          <div class="feature-list mt-2">
+            <div class="feature-item"><i data-lucide="layers" class="icon gold"></i><span class="label">Decks Available</span><span class="status free" id="deck-limit-label">5 decks</span></div>
+            <div class="feature-item"><i data-lucide="book-open" class="icon gold"></i><span class="label">Study Modes</span><span class="status free" id="mode-limit-label">Flashcards only</span></div>
+            <div class="feature-item"><i data-lucide="brain" class="icon gold"></i><span class="label">SRS Controls</span><span class="status free" id="srs-limit-label">Basic</span></div>
+            <div class="feature-item"><i data-lucide="bar-chart-2" class="icon gold"></i><span class="label">Analytics</span><span class="status free" id="analytics-limit-label">Limited</span></div>
+            <div class="feature-item" id="expiry-feature"><i data-lucide="clock" class="icon gold"></i><span class="label">Premium Expires</span><span class="status free" id="expiry-label">Not active</span></div>
           </div>
         </div>
-        <div id="change-password-error" class="text-xs text-red-500 min-h-[1.25rem]"></div>
-        <button onclick="changePassword()" class="w-full accent-bg text-white py-2 rounded-xl text-sm font-medium hover:opacity-90 transition-opacity">Change Password</button>
-      </div>
-    </div>
 
-    <!-- Display Name -->
-    <div class="surface rounded-2xl border border-theme p-4 shadow-card">
-      <p class="text-sm text-sec font-medium mb-2">👤 Display Name</p>
-      <div class="flex gap-2">
-        <input type="text" id="nickname-input" placeholder="Your name" class="flex-1 border rounded-xl px-3 py-2 surface text-sm" style="border-color:var(--border)" />
-        <button onclick="saveNickname()" class="accent-bg text-white px-4 py-2 rounded-xl text-sm font-medium">Save</button>
-      </div>
-      <p class="text-xs text-sec mt-1">This name will appear on your home screen.</p>
-    </div>
-
-    <!-- Daily Goal -->
-    <div class="surface rounded-2xl border border-theme p-4 shadow-card">
-      <p class="text-sm text-sec font-medium mb-2">🎯 Daily Goal</p>
-      <div class="settings-goal">
-        <span class="text-sm">Study</span>
-        <input type="number" id="goal-input" min="1" max="500" value="20" />
-        <span class="text-sm">cards per day</span>
-        <button onclick="setDailyGoal()" class="accent-bg text-white px-4 py-2 rounded-xl text-sm font-medium">Set</button>
-      </div>
-      <p class="text-xs text-sec mt-2">Set how many cards you want to study each day.</p>
-    </div>
-
-    <!-- Plan -->
-    <div class="surface rounded-2xl border border-theme p-4 shadow-card">
-      <p class="text-sm text-sec font-medium mb-2">Plan</p>
-      <div class="flex items-center justify-between mb-3">
-        <span id="settings-plan-label" class="font-semibold">Free</span>
-        <button onclick="showUpgradeModal()" id="settings-upgrade-btn" class="px-4 py-1.5 rounded-xl text-white text-sm font-medium" style="background:linear-gradient(135deg,var(--premium-gold),var(--premium-purple));">Upgrade</button>
-      </div>
-      <div class="feature-list mt-2">
-        <div class="feature-item"><i data-lucide="layers" class="icon gold"></i><span class="label">Decks Available</span><span class="status free" id="deck-limit-label">5 decks</span></div>
-        <div class="feature-item"><i data-lucide="book-open" class="icon gold"></i><span class="label">Study Modes</span><span class="status free" id="mode-limit-label">Flashcards only</span></div>
-        <div class="feature-item"><i data-lucide="brain" class="icon gold"></i><span class="label">SRS Controls</span><span class="status free" id="srs-limit-label">Basic</span></div>
-        <div class="feature-item"><i data-lucide="bar-chart-2" class="icon gold"></i><span class="label">Analytics</span><span class="status free" id="analytics-limit-label">Limited</span></div>
-        <div class="feature-item" id="expiry-feature"><i data-lucide="clock" class="icon gold"></i><span class="label">Premium Expires</span><span class="status free" id="expiry-label">Not active</span></div>
-      </div>
-    </div>
-
-    <!-- Dark Mode -->
-    <div class="surface rounded-2xl border border-theme p-4 flex items-center justify-between shadow-card">
-      <span class="font-medium text-sm">Dark Mode</span>
-      <button onclick="toggleTheme()" id="theme-toggle-btn" class="w-12 h-7 rounded-full relative transition-colors border border-theme" style="background:var(--border)">
-        <div id="theme-toggle-dot" class="w-5 h-5 rounded-full accent-bg absolute top-1 left-1 transition-transform shadow-sm"></div>
-      </button>
-    </div>
-
-    <!-- Ease Factor -->
-    <div class="surface rounded-2xl border border-theme p-4 shadow-card">
-      <label class="text-sm font-medium">Ease Factor</label>
-      <input id="ease-input" type="number" step="0.1" min="1.3" max="4.0" value="2.5" class="w-full border rounded-xl px-3 py-2 mt-2 surface text-sm" style="border-color:var(--border)" />
-    </div>
-
-    <!-- Interval Multiplier -->
-    <div class="surface rounded-2xl border border-theme p-4 shadow-card">
-      <label class="text-sm font-medium">Interval Multiplier</label>
-      <input id="interval-input" type="number" step="0.1" min="0.5" max="3.0" value="1.0" class="w-full border rounded-xl px-3 py-2 mt-2 surface text-sm" style="border-color:var(--border)" />
-    </div>
-
-    <!-- Export Data -->
-    <button onclick="exportData()" class="w-full surface rounded-2xl border border-theme p-4 text-left flex items-center gap-3 shadow-card">
-      <i data-lucide="download" class="w-5 h-5 text-sec"></i>
-      <span class="font-medium text-sm">Export Data</span>
-    </button>
-
+        <div class="surface rounded-2xl border border-theme p-4 flex items-center justify-between shadow-card">
+          <span class="font-medium text-sm">Dark Mode</span>
+          <button onclick="toggleTheme()" id="theme-toggle-btn" class="w-12 h-7 rounded-full relative transition-colors border border-theme" style="background:var(--border)">
+            <div id="theme-toggle-dot" class="w-5 h-5 rounded-full accent-bg absolute top-1 left-1 transition-transform shadow-sm"></div>
+          </button>
+        </div>
   </div>
-</div>
+      
+        <div class="surface rounded-2xl border border-theme p-4 shadow-card">
+          <label class="text-sm font-medium">Ease Factor</label>
+          <input id="ease-input" type="number" step="0.1" min="1.3" max="4.0" value="2.5" class="w-full border rounded-xl px-3 py-2 mt-2 surface text-sm" style="border-color:var(--border)" />
+        </div>
+        <div class="surface rounded-2xl border border-theme p-4 shadow-card">
+          <label class="text-sm font-medium">Interval Multiplier</label>
+          <input id="interval-input" type="number" step="0.1" min="0.5" max="3.0" value="1.0" class="w-full border rounded-xl px-3 py-2 mt-2 surface text-sm" style="border-color:var(--border)" />
+        </div>
+
+        <button onclick="exportData()" class="w-full surface rounded-2xl border border-theme p-4 text-left flex items-center gap-3 shadow-card">
+          <i data-lucide="download" class="w-5 h-5 text-sec"></i>
+          <span class="font-medium text-sm">Export Data</span>
+        </button>
+      </div>
+    </div>
 
      <!-- ===== FAQ ===== -->
 <div id="view-faq" class="view">
