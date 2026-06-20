@@ -4237,23 +4237,29 @@ if (!userIsPremium && deckIsPremium) {
       }
     }
 
-    function fcRate(q) {
-      if (!studyQueue || studyIdx >= studyQueue.length) {
-        exitStudy();
-        return;
-      }
+   function fcRate(q) {
+  if (!studyQueue || studyIdx >= studyQueue.length) {
+    exitStudy();
+    return;
+  }
 
-      const c = studyQueue[studyIdx];
-      const updated = applySRS(c, q);
-      const idx = allCards.findIndex(x => x.__id === updated.__id);
-      if (idx !== -1) allCards[idx] = updated;
-      else allCards.push(updated);
-      saveUserData(currentUser);
-      addStudyTime(0.5);
-      studyIdx++;
-      fcShowCard();
-      setTimeout(() => updateHome(), 100);
-    }
+  const c = studyQueue[studyIdx];
+  const updated = applySRS(c, q);
+  
+  const idx = allCards.findIndex(x => x.__id === updated.__id);
+  if (idx !== -1) {
+    allCards[idx] = updated;
+  } else {
+    allCards.push(updated);
+  }
+  
+  saveUserData(currentUser);
+  addStudyTime(0.5);
+  studyIdx++;
+  fcShowCard();
+  
+  setTimeout(() => updateHome(), 100);
+}
 
     // ============================================================
     //  EXIT STUDY - COMPLETE RESET
@@ -4416,18 +4422,21 @@ if (!userIsPremium && deckIsPremium) {
       document.getElementById('ln-grade-btns').classList.remove('hidden');
     }
 
-    function lnGrade(correct) {
-      const c = studyQueue[studyIdx];
-      const updated = applySRS(c, correct ? 2 : 0);
-      const idx = allCards.findIndex(x => x.__id === updated.__id);
-      if (idx !== -1) allCards[idx] = updated;
-      else allCards.push(updated);
-      saveUserData(currentUser);
-      addStudyTime(0.5);
-      studyIdx++;
-      lnShowQuestion();
-      setTimeout(() => updateHome(), 100);
-    }
+   function lnGrade(correct) {
+  const c = studyQueue[studyIdx];
+  const updated = applySRS(c, correct ? 2 : 0);
+  
+  const idx = allCards.findIndex(x => x.__id === updated.__id);
+  if (idx !== -1) allCards[idx] = updated;
+  else allCards.push(updated);
+  
+  saveUserData(currentUser);
+  addStudyTime(0.5);
+  studyIdx++;
+  lnShowQuestion();
+  
+  setTimeout(() => updateHome(), 100);
+}
 
     // ============================================================
     //  TEST MODE
