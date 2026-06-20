@@ -3267,7 +3267,7 @@ function renderDecks() {
           <div class="flex-1" style="max-width: 66.666%;">
             ${iconHtml ? `<div class="mb-1">${iconHtml}</div>` : ''}
             <h3 class="font-bold uppercase text-white" style="font-size: 16px; line-height: 1.2; white-space: normal; word-break: break-word;">${displayName}</h3>
-            <p class="text-white" style="font-size: 11px; line-height: 1.2; margin-top: 2px;">${d.cards.length} cards · ${due} due · ${pct}% mastered</p>
+            <p class="text-white" style="font-size: 11px; line-height: 1.2; margin-top: 4px;">${d.cards.length} cards · ${due} due · ${pct}% mastered</p>
             <div class="progress-bar bg-white/30" style="height: 4px; margin-top: 2px;"><div class="progress-fill bg-white" style="width:${pct}%; height: 4px;"></div></div>
           </div>
           <div class="flex gap-1 ml-auto flex-shrink-0" onclick="event.stopPropagation()">
@@ -4717,10 +4717,10 @@ if (!userIsPremium && deckIsPremium) {
       return getDateRange(days);
     }
 
-    // ============================================================
-    //  2. DECK PERFORMANCE
-    // ============================================================
-   function renderDeckPerformance() {
+  // ============================================================
+//  2. DECK PERFORMANCE (scroll vertikal)
+// ============================================================
+function renderDeckPerformance() {
   const perf = getDeckPerformance();
   const container = document.getElementById('deck-performance-list');
   if (!container) return;
@@ -4729,8 +4729,11 @@ if (!userIsPremium && deckIsPremium) {
     container.innerHTML = '<p class="text-xs text-sec">No decks yet.</p>';
     return;
   }
+  
+  container.style.maxHeight = '300px';
+  container.style.overflowY = 'auto';
+  
   container.innerHTML = perf.map(d => {
-    // Ambil subtopic saja (setelah " - ")
     const displayName = d.name.includes(' - ') ? d.name.split(' - ').pop() : d.name;
     const color = d.accuracy >= 80 ? '#059669' : d.accuracy >= 60 ? '#f59e0b' : '#ef4444';
     return `<div class="deck-perf-bar">
