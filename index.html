@@ -5322,55 +5322,54 @@ async function deleteSelectedDecks() {
       evt.currentTarget.classList.add('selected');
     }
 
-   async function processPayment() {
-      if (!selectedPlan) {
-        alert('Please select a plan first.');
-        return;
-      }
-
-      if (isPremiumActive()) {
-        alert('You already have Premium access!');
-        closeUpgradeModal();
-        return;
-      }
-
-      const price = selectedPlan === 'book' ? PRICING.book.price : PRICING.regular.price;
-      const label = selectedPlan === 'book' ? 'Book Buyer' : 'Regular';
-
-      const btn = document.getElementById('pay-now-btn');
-      btn.textContent = 'Processing...';
-      btn.disabled = true;
-
-      setTimeout(() => {
-        const expiry = addMonths(new Date(), PLAN_DURATION_MONTHS).toISOString();
-        savePlan(currentUser, 'premium', expiry);
-
-        if (selectedPlan === 'book' && hasValidCode) {
-  const code = document.getElementById('upgrade-code-input').value.trim().toUpperCase();
-  try {
-    await db.collection('accessCodes').doc(code).update({
-      used: true,
-      usedBy: currentUser,
-      usedAt: firebase.firestore.FieldValue.serverTimestamp()
-    });
-  } catch (error) {
-    console.error('Failed to mark code as used:', error);
+  async function processPayment() {   // ← HARUS ADA async
+  if (!selectedPlan) {
+    alert('Please select a plan first.');
+    return;
   }
-}
 
-        userPlan = 'premium';
-        updatePlanUI();
-        updateHome();
-        renderDecks();
-        closeUpgradeModal();
+  if (isPremiumActive()) {
+    alert('You already have Premium access!');
+    closeUpgradeModal();
+    return;
+  }
 
-        btn.textContent = `Pay Rp ${price.toLocaleString()} (${label})`;
-        btn.disabled = false;
+  const price = selectedPlan === 'book' ? PRICING.book.price : PRICING.regular.price;
+  const label = selectedPlan === 'book' ? 'Book Buyer' : 'Regular';
 
-        alert(`🎉 Premium unlocked! You have access for ${PLAN_DURATION_MONTHS} months.`);
-      }, 1500);
+  const btn = document.getElementById('pay-now-btn');
+  btn.textContent = 'Processing...';
+  btn.disabled = true;
+
+  setTimeout(async () => {   // ← INI JUGA HARUS async KARENA ADA await DI DALAM
+    const expiry = addMonths(new Date(), PLAN_DURATION_MONTHS).toISOString();
+    savePlan(currentUser, 'premium', expiry);
+
+    if (selectedPlan === 'book' && hasValidCode) {
+      const code = document.getElementById('upgrade-code-input').value.trim().toUpperCase();
+      try {
+        await db.collection('accessCodes').doc(code).update({
+          used: true,
+          usedBy: currentUser,
+          usedAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+      } catch (error) {
+        console.error('Failed to mark code as used:', error);
+      }
     }
 
+    userPlan = 'premium';
+    updatePlanUI();
+    updateHome();
+    renderDecks();
+    closeUpgradeModal();
+
+    btn.textContent = `Pay Rp ${price.toLocaleString()} (${label})`;
+    btn.disabled = false;
+
+    alert(`🎉 Premium unlocked! You have access for ${PLAN_DURATION_MONTHS} months.`);
+  }, 1500);
+}
     // ============================================================
     //  KEYBOARD SHORTCUTS
     // ============================================================
