@@ -4892,7 +4892,13 @@ function renderDeckPerformance() {
     function switchTab(tab) {
       if (currentTab === tab && tab !== 'study-select') return;
       }
-
+if (tab === 'faq') {
+  setTimeout(() => {
+    if (typeof lucide !== 'undefined' && lucide.createIcons) {
+      lucide.createIcons();
+    }
+  }, 100);
+}
       currentTab = tab;
 
       const allViews = ['home', 'decks', 'study-select', 'flashcards', 'learn', 'test', 'stats', 'settings', 'admin-import',
