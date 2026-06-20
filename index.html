@@ -4234,7 +4234,7 @@ if (!userIsPremium && deckIsPremium) {
       }
     }
 
- function fcRate(q) {
+function fcRate(q) {
   if (!studyQueue || studyIdx >= studyQueue.length) {
     exitStudy();
     return;
@@ -4256,25 +4256,6 @@ if (!userIsPremium && deckIsPremium) {
   fcShowCard();
   updateHome();
 }
-
-  const c = studyQueue[studyIdx];
-  const updated = applySRS(c, q);
-  
-  const idx = allCards.findIndex(x => x.__id === updated.__id);
-  if (idx !== -1) {
-    allCards[idx] = updated;
-  } else {
-    allCards.push(updated);
-  }
-  
-  saveUserData(currentUser);
-  addStudyTime(0.5);
-  studyIdx++;
-  fcShowCard();
-  updateHome();
-  setTimeout(() => updateHome(), 500);
-}
-
     // ============================================================
     //  EXIT STUDY - COMPLETE RESET
     // ============================================================
