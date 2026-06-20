@@ -5322,7 +5322,7 @@ async function deleteSelectedDecks() {
       evt.currentTarget.classList.add('selected');
     }
 
-    function processPayment() {
+   async function processPayment() {
       if (!selectedPlan) {
         alert('Please select a plan first.');
         return;
