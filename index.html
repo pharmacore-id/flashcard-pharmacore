@@ -1198,7 +1198,8 @@
         <button onclick="switchTab('decks')" class="text-sec"><i data-lucide="arrow-left" class="w-6 h-6"></i></button>
         <h2 class="text-xl font-bold flex-1">📥 Admin - Import Decks</h2>
       </div>
-      <div class="flex items-center gap-3 mt-3">
+      
+      <div class="flex items-center gap-4 mt-3">
   <input type="checkbox" id="import-premium-toggle" />
   <label for="import-premium-toggle" class="text-sm font-medium">⭐ Tandai deck ini sebagai PREMIUM</label>
 </div>
@@ -1234,6 +1235,13 @@
           <h3 class="font-bold mb-2">📋 Current Decks</h3>
           <div id="admin-deck-list" class="space-y-2"></div>
         </div>
+
+        <div class="surface rounded-2xl p-4 border border-theme shadow-card mt-4">
+  <h3 class="font-bold mb-2">📩 User Requests</h3>
+  <div id="request-list" class="space-y-2">
+    <p class="text-xs text-sec">Loading...</p>
+  </div>
+</div>
 
         <div class="surface rounded-2xl p-4 border border-theme shadow-card mt-4">
           <h3 class="font-bold mb-2">📝 Sample Excel Format</h3>
@@ -4723,6 +4731,75 @@ if (!userIsPremium && deckIsPremium) {
     // ============================================================
     //  FUNCTIONS YANG SEMPAT HILANG
     // ============================================================
+  async function renderRequestList() {
+  const container = document.getElementById('request-list');
+  if (!container) return;
+
+  try {
+    const snapshot = await db.collection('deckRequests')
+      .orderBy('date', 'desc')
+      .limit(50)
+      .get();
+
+    if (snapshot.empty) {
+      container.innerHTML = '<p class="text-xs text-sec">No requests yet.</p>';
+      return;
+    }
+
+    container.innerHTML = '';
+    snapshot.forEach(doc => {
+      const req = doc.data();
+      const date = req.date?.toDate?.() || new Date(req.date);
+      const dateStr = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+
+      const div = document.createElement('div');
+      div.className = 'p-3 bg-gray-50 dark:bg-gray-800 rounded-xl';
+      div.innerHTML = `
+        <div class="flex justify-between items-start">
+          <div>
+            <p class="text-sm font-medium">${req.topic}${req.subtopic ? ' - ' + req.subtopic : ''}</p>
+            <p class="text-xs text-sec mt-0.5">${req.notes || 'No notes'}</p>
+            <p class="text-xs text-sec mt-1">From: ${req.user} · ${dateStr}</p>
+          </div>
+          <div class="flex gap-2">
+            <button onclick="markRequestDone('${doc.id}')" 
+                    class="text-xs bg-green-500 text-white px-2 py-1 rounded-lg hover:bg-green-600">
+              Done
+            </button>
+            <button onclick="deleteRequest('${doc.id}')" 
+                    class="text-xs bg-red-500 text-white px-2 py-1 rounded-lg hover:bg-red-600">
+              Delete
+            </button>
+          </div>
+        </div>
+      `;
+      container.appendChild(div);
+    });
+  } catch (error) {
+    console.error('Failed to load requests:', error);
+    container.innerHTML = '<p class="text-xs text-red-500">Failed to load requests.</p>';
+  }
+}
+
+async function markRequestDone(requestId) {
+  try {
+    await db.collection('deckRequests').doc(requestId).update({ status: 'done' });
+    renderRequestList();
+  } catch (error) {
+    console.error('Failed to update request:', error);
+  }
+}
+
+async function deleteRequest(requestId) {
+  if (!confirm('Delete this request?')) return;
+  try {
+    await db.collection('deckRequests').doc(requestId).delete();
+    renderRequestList();
+  } catch (error) {
+    console.error('Failed to delete request:', error);
+  }
+}
+    
     async function toggleDeckPremium(deckId) {
   if (!isAdmin) return;
 
@@ -4780,6 +4857,7 @@ if (!userIsPremium && deckIsPremium) {
     }
 
   selectedTopicIds = [];
+  renderRequestList();
 
 function renderAdminDeckList() {
   const container = document.getElementById('admin-deck-list');
@@ -4965,27 +5043,33 @@ async function deleteSelectedDecks() {
       document.getElementById('contact-admin-modal').classList.add('hidden');
     }
 
-    function sendDeckRequest(e) {
-      e.preventDefault();
-      const topic = document.getElementById('request-topic').value.trim();
-      const subtopic = document.getElementById('request-subtopic').value.trim();
-      const notes = document.getElementById('request-notes').value.trim();
+  async function sendDeckRequest(e) {
+  e.preventDefault();
+  const topic = document.getElementById('request-topic').value.trim();
+  const subtopic = document.getElementById('request-subtopic').value.trim();
+  const notes = document.getElementById('request-notes').value.trim();
 
-      const requests = JSON.parse(localStorage.getItem('deck_requests') || '[]');
-      requests.push({
-        id: Date.now(),
-        user: currentUser || 'anonymous',
-        topic: topic,
-        subtopic: subtopic,
-        notes: notes,
-        date: new Date().toISOString(),
-        status: 'pending'
-      });
-      localStorage.setItem('deck_requests', JSON.stringify(requests));
+  if (!topic) {
+    alert('Please enter a topic.');
+    return;
+  }
 
-      alert('✅ Request sent! We\'ll review it and add new decks soon.');
-      closeContactAdmin();
-    }
+  try {
+    await db.collection('deckRequests').add({
+      user: currentUser || 'anonymous',
+      topic: topic,
+      subtopic: subtopic,
+      notes: notes,
+      date: firebase.firestore.FieldValue.serverTimestamp(),
+      status: 'pending'
+    });
+    alert('✅ Request sent! Mincore will review it soon.');
+    closeContactAdmin();
+  } catch (error) {
+    console.error('Failed to send request:', error);
+    alert('❌ Failed to send request. Please try again.');
+  }
+}
 
     // ============================================================
     //  ACCESS CODES (ADMIN)
