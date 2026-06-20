@@ -4236,7 +4236,7 @@ if (!userIsPremium && deckIsPremium) {
       }
     }
 
-   async function fcRate(q) {
+  function fcRate(q) {
   if (!studyQueue || studyIdx >= studyQueue.length) {
     exitStudy();
     return;
@@ -4252,15 +4252,13 @@ if (!userIsPremium && deckIsPremium) {
     allCards.push(updated);
   }
   
- await saveUserData(currentUser);
+  saveUserData(currentUser);
   addStudyTime(0.5);
   studyIdx++;
   fcShowCard();
-  
-  requestAnimationFrame(() => {
   updateHome();
-  setTimeout(() => updateHome(), 500); // backup
-});
+  setTimeout(() => updateHome(), 500);
+}
 
     // ============================================================
     //  EXIT STUDY - COMPLETE RESET
