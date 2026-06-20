@@ -2824,11 +2824,11 @@ function saveUserData(email) {
 }
 
     function savePlan(email, plan, expiry) {
-      localStorage.setItem('flashmind_plan_' + email, plan);
-      if (expiry) localStorage.setItem('flashmind_expiry_' + email, expiry);
-      userPlan = plan;
-      saveToFirebase(email, allCards, plan);
-    }
+  localStorage.setItem('flashmind_plan_' + email, plan);
+  if (expiry) localStorage.setItem('flashmind_expiry_' + email, expiry);
+  userPlan = plan;
+  // HAPUS: saveToFirebase(email, allCards, plan);
+}
 
     async function handleLogout() {
       if (confirm('Logout?')) {
