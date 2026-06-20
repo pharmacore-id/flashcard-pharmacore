@@ -71,6 +71,10 @@
       justify-content: center;
     }
 
+    .faq-card:hover {
+  border-color: var(--accent);
+  transition: border-color 0.2s ease;
+}
     #app {
       display: flex;
       flex-direction: column;
@@ -1499,6 +1503,11 @@ Science       | Biology       | What is DNA?             | Deoxyribonucleic acid
       <h2 class="text-xl font-bold mb-4">⚙️ Settings</h2>
       <div class="view-scroll space-y-3">
 
+<button onclick="switchTab('faq')" class="w-full surface rounded-2xl border border-theme p-4 text-left flex items-center gap-3 shadow-card">
+  <i data-lucide="help-circle" class="w-5 h-5 text-sec"></i>
+  <span class="font-medium text-sm">FAQ & Troubleshooting</span>
+</button>
+        
         <div class="surface rounded-2xl border border-theme p-4 shadow-card">
           <p class="text-sm text-sec font-medium mb-1">Account</p>
           <div class="flex items-center justify-between">
@@ -1583,6 +1592,163 @@ Science       | Biology       | What is DNA?             | Deoxyribonucleic acid
             <div id="theme-toggle-dot" class="w-5 h-5 rounded-full accent-bg absolute top-1 left-1 transition-transform shadow-sm"></div>
           </button>
         </div>
+
+        
+
+        <!-- ===== FAQ ===== -->
+<div id="view-faq" class="view">
+  <h2 class="text-xl font-bold mb-4">❓ FAQ & Troubleshooting</h2>
+  <div class="view-scroll">
+    
+    <div class="space-y-3">
+      <!-- Item 1 -->
+      <div class="faq-card surface rounded-2xl border border-theme shadow-card overflow-hidden">
+        <button onclick="toggleFAQ(this)" class="w-full text-left p-4 flex justify-between items-center hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+          <span class="font-semibold text-sm pr-4">Apa itu FlashMind?</span>
+          <i data-lucide="chevron-down" class="w-5 h-5 text-sec transition-transform duration-200 flex-shrink-0"></i>
+        </button>
+        <div class="faq-answer hidden px-4 pb-4 text-sm text-sec leading-relaxed">
+          FlashMind adalah aplikasi flashcard untuk mahasiswa farmasi. Menggunakan <b>Spaced Repetition System (SRS)</b> agar kamu bisa menghafal materi dengan lebih efektif dan efisien.
+        </div>
+      </div>
+
+      <!-- Item 2 -->
+      <div class="faq-card surface rounded-2xl border border-theme shadow-card overflow-hidden">
+        <button onclick="toggleFAQ(this)" class="w-full text-left p-4 flex justify-between items-center hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+          <span class="font-semibold text-sm pr-4">Bagaimana cara mulai belajar?</span>
+          <i data-lucide="chevron-down" class="w-5 h-5 text-sec transition-transform duration-200 flex-shrink-0"></i>
+        </button>
+        <div class="faq-answer hidden px-4 pb-4 text-sm text-sec leading-relaxed">
+          <ol class="list-decimal ml-4 space-y-1">
+            <li>Buka tab <b>Decks</b></li>
+            <li>Pilih topik → pilih subtopik</li>
+            <li>Pilih mode: <b>Flashcards</b> (rekomendasi), <b>Learn</b>, atau <b>Test</b></li>
+            <li>Mulai review dan nilai setiap kartu</li>
+          </ol>
+        </div>
+      </div>
+
+      <!-- Item 3 -->
+      <div class="faq-card surface rounded-2xl border border-theme shadow-card overflow-hidden">
+        <button onclick="toggleFAQ(this)" class="w-full text-left p-4 flex justify-between items-center hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+          <span class="font-semibold text-sm pr-4">Kenapa Learn & Test terkunci?</span>
+          <i data-lucide="chevron-down" class="w-5 h-5 text-sec transition-transform duration-200 flex-shrink-0"></i>
+        </button>
+        <div class="faq-answer hidden px-4 pb-4 text-sm text-sec leading-relaxed">
+          Mode <b>Learn</b> & <b>Test</b> hanya tersedia untuk user <b>Premium</b>. Free user hanya bisa menggunakan Flashcards.
+        </div>
+      </div>
+
+      <!-- Item 4 -->
+      <div class="faq-card surface rounded-2xl border border-theme shadow-card overflow-hidden">
+        <button onclick="toggleFAQ(this)" class="w-full text-left p-4 flex justify-between items-center hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+          <span class="font-semibold text-sm pr-4">Kenapa deck saya ada yang terkunci?</span>
+          <i data-lucide="chevron-down" class="w-5 h-5 text-sec transition-transform duration-200 flex-shrink-0"></i>
+        </button>
+        <div class="faq-answer hidden px-4 pb-4 text-sm text-sec leading-relaxed">
+          Free user dibatasi <b>5 deck</b>. Deck selebihnya terkunci (🔒). <b>Upgrade ke Premium</b> untuk akses semua deck.
+        </div>
+      </div>
+
+      <!-- Item 5 -->
+      <div class="faq-card surface rounded-2xl border border-theme shadow-card overflow-hidden">
+        <button onclick="toggleFAQ(this)" class="w-full text-left p-4 flex justify-between items-center hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+          <span class="font-semibold text-sm pr-4">Streak saya hilang / tidak bertambah</span>
+          <i data-lucide="chevron-down" class="w-5 h-5 text-sec transition-transform duration-200 flex-shrink-0"></i>
+        </button>
+        <div class="faq-answer hidden px-4 pb-4 text-sm text-sec leading-relaxed">
+          <ul class="list-disc ml-4 space-y-1">
+            <li>Pastikan menyelesaikan review (jangan exit di tengah)</li>
+            <li>Pastikan koneksi internet stabil</li>
+            <li>Coba <b>logout</b> dan <b>login</b> kembali</li>
+            <li>Jika masih bermasalah, hubungi admin</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Item 6 -->
+      <div class="faq-card surface rounded-2xl border border-theme shadow-card overflow-hidden">
+        <button onclick="toggleFAQ(this)" class="w-full text-left p-4 flex justify-between items-center hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+          <span class="font-semibold text-sm pr-4">Progress hilang setelah ganti perangkat</span>
+          <i data-lucide="chevron-down" class="w-5 h-5 text-sec transition-transform duration-200 flex-shrink-0"></i>
+        </button>
+        <div class="faq-answer hidden px-4 pb-4 text-sm text-sec leading-relaxed">
+          Progress tersimpan otomatis ke cloud. Pastikan login dengan <b>email yang sama</b> di perangkat baru.
+        </div>
+      </div>
+
+      <!-- Item 7 -->
+      <div class="faq-card surface rounded-2xl border border-theme shadow-card overflow-hidden">
+        <button onclick="toggleFAQ(this)" class="w-full text-left p-4 flex justify-between items-center hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+          <span class="font-semibold text-sm pr-4">Kode akses tidak valid</span>
+          <i data-lucide="chevron-down" class="w-5 h-5 text-sec transition-transform duration-200 flex-shrink-0"></i>
+        </button>
+        <div class="faq-answer hidden px-4 pb-4 text-sm text-sec leading-relaxed">
+          <ul class="list-disc ml-4 space-y-1">
+            <li>Gunakan <b>huruf kapital</b> semua</li>
+            <li>Jangan ada spasi di awal/akhir</li>
+            <li>Kode hanya bisa dipakai <b>sekali</b></li>
+            <li>Hubungi admin jika tetap tidak bisa</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Item 8 -->
+      <div class="faq-card surface rounded-2xl border border-theme shadow-card overflow-hidden">
+        <button onclick="toggleFAQ(this)" class="w-full text-left p-4 flex justify-between items-center hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+          <span class="font-semibold text-sm pr-4">Lupa password</span>
+          <i data-lucide="chevron-down" class="w-5 h-5 text-sec transition-transform duration-200 flex-shrink-0"></i>
+        </button>
+        <div class="faq-answer hidden px-4 pb-4 text-sm text-sec leading-relaxed">
+          Di halaman login, klik <b>"Forgot Password?"</b>. Masukkan email, link reset akan dikirim. <b>Cek folder spam</b> jika tidak muncul.
+        </div>
+      </div>
+
+      <!-- Item 9 -->
+      <div class="faq-card surface rounded-2xl border border-theme shadow-card overflow-hidden">
+        <button onclick="toggleFAQ(this)" class="w-full text-left p-4 flex justify-between items-center hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+          <span class="font-semibold text-sm pr-4">Aplikasi lemot / tidak responsif</span>
+          <i data-lucide="chevron-down" class="w-5 h-5 text-sec transition-transform duration-200 flex-shrink-0"></i>
+        </button>
+        <div class="faq-answer hidden px-4 pb-4 text-sm text-sec leading-relaxed">
+          <ul class="list-disc ml-4 space-y-1">
+            <li>Tutup tab lain yang berat</li>
+            <li>Refresh halaman</li>
+            <li>Clear cache browser</li>
+            <li>Gunakan <b>Chrome/Edge</b> (bukan Safari)</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Item 10 -->
+      <div class="faq-card surface rounded-2xl border border-theme shadow-card overflow-hidden">
+        <button onclick="toggleFAQ(this)" class="w-full text-left p-4 flex justify-between items-center hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+          <span class="font-semibold text-sm pr-4">Deck tidak muncul / gambar tidak tampil</span>
+          <i data-lucide="chevron-down" class="w-5 h-5 text-sec transition-transform duration-200 flex-shrink-0"></i>
+        </button>
+        <div class="faq-answer hidden px-4 pb-4 text-sm text-sec leading-relaxed">
+          <ul class="list-disc ml-4 space-y-1">
+            <li>Logout dan login kembali</li>
+            <li>Pastikan internet stabil</li>
+            <li>URL gambar mungkin tidak valid – hubungi admin</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Item 11 -->
+      <div class="faq-card surface rounded-2xl border border-theme shadow-card overflow-hidden">
+        <button onclick="toggleFAQ(this)" class="w-full text-left p-4 flex justify-between items-center hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+          <span class="font-semibold text-sm pr-4">Masih ada masalah?</span>
+          <i data-lucide="chevron-down" class="w-5 h-5 text-sec transition-transform duration-200 flex-shrink-0"></i>
+        </button>
+        <div class="faq-answer hidden px-4 pb-4 text-sm text-sec leading-relaxed">
+          Hubungi admin: <b>adm.pharmacore@gmail.com</b>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
 
         <div class="surface rounded-2xl border border-theme p-4 shadow-card">
           <label class="text-sm font-medium">Ease Factor</label>
@@ -4293,6 +4459,13 @@ if (!userIsPremium && deckIsPremium) {
   tsShowQuestion();
 }
 
+   function toggleFAQ(button) {
+  const answer = button.nextElementSibling;
+  const icon = button.querySelector('i');
+  answer.classList.toggle('hidden');
+  icon.style.transform = answer.classList.contains('hidden') ? 'rotate(0deg)' : 'rotate(180deg)';
+}
+    
     function tsShowQuestion() {
       const results = document.getElementById('ts-results'),
         qArea = document.getElementById('ts-question-area'),
@@ -4712,7 +4885,7 @@ if (!userIsPremium && deckIsPremium) {
       currentTab = tab;
 
       const allViews = ['home', 'decks', 'study-select', 'flashcards', 'learn', 'test', 'stats', 'settings', 'admin-import',
-        'admin-cards'
+        'admin-cards','faq'
       ];
 
       allViews.forEach(v => {
