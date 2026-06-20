@@ -3438,7 +3438,21 @@ function renderDecks() {
     // ============================================================
     //  ADMIN FUNCTIONS - DELETE DECK
     // ============================================================
-   async function deleteDeck(deckId) {
+  async function deleteCode(code) {
+  if (!isAdmin) return;
+  if (!confirm(`Delete code "${code}"?`)) return;
+  
+  try {
+    await db.collection('accessCodes').doc(code).delete();
+    alert(`✅ Code "${code}" deleted!`);
+    renderCodeList();
+  } catch (error) {
+    console.error('Failed to delete code:', error);
+    alert('❌ Failed to delete code.');
+  }
+}
+    
+    async function deleteDeck(deckId) {
   if (!isAdmin) {
     alert('Only admins can delete decks.');
     return;
@@ -4982,22 +4996,40 @@ async function deleteSelectedDecks() {
   alert(`✅ ${selectedDeckIds.length} deck(s) deleted successfully!`);
 }
 
-    function renderCodeList() {
-      const container = document.getElementById('code-list');
-      if (!container) return;
-      const codes = getCodes();
-      const list = Object.values(codes);
-      if (list.length === 0) {
-        container.innerHTML = '<p class="text-xs text-sec">No codes generated yet.</p>';
-        return;
-      }
-      container.innerHTML = list.map(c => `
-        <div class="flex items-center justify-between text-xs p-1 bg-gray-50 dark:bg-gray-800 rounded">
-          <span class="font-mono">${c.code}</span>
-          <span class="${c.used ? 'text-red-500' : 'text-green-500'}">${c.used ? 'Used' : 'Available'}</span>
-        </div>
-      `).join('');
+   async function renderCodeList() {
+  const container = document.getElementById('code-list');
+  if (!container) return;
+
+  try {
+    const snapshot = await db.collection('accessCodes')
+      .orderBy('createdAt', 'desc')
+      .limit(50)
+      .get();
+
+    if (snapshot.empty) {
+      container.innerHTML = '<p class="text-xs text-sec">No codes generated yet.</p>';
+      return;
     }
+
+    container.innerHTML = '';
+    snapshot.forEach(doc => {
+      const c = doc.data();
+      const div = document.createElement('div');
+      div.className = 'flex items-center justify-between text-xs p-1 bg-gray-50 dark:bg-gray-800 rounded';
+      div.innerHTML = `
+        <span class="font-mono">${c.code}</span>
+        <div class="flex items-center gap-2">
+          <span class="${c.used ? 'text-red-500' : 'text-green-500'}">${c.used ? 'Used' : 'Available'}</span>
+          <button onclick="deleteCode('${c.code}')" class="text-red-400 hover:text-red-600" title="Delete code">🗑️</button>
+        </div>
+      `;
+      container.appendChild(div);
+    });
+  } catch (error) {
+    console.error('Failed to load codes:', error);
+    container.innerHTML = '<p class="text-xs text-red-500">Failed to load codes.</p>';
+  }
+}
 
     // ============================================================
     //  NAV CLICK HANDLER - DEBOUNCED
@@ -5074,51 +5106,72 @@ async function deleteSelectedDecks() {
     // ============================================================
     //  ACCESS CODES (ADMIN)
     // ============================================================
-    function generateCodes(count) {
-      if (!isAdmin) return;
-      const codes = getCodes();
-      const prefix = 'PHARM';
-      const year = new Date().getFullYear();
+   async function generateCodes(count) {
+  if (!isAdmin) return;
+  
+  const prefix = 'PC';
+  const year = new Date().getFullYear();
+  let generated = 0;
 
-      for (let i = 0; i < count; i++) {
-        const random = Math.random().toString(36).substring(2, 8).toUpperCase();
-        const code = `${prefix}-${year}-${random}`;
-        if (!codes[code]) {
-          codes[code] = {
-            code: code,
-            used: false,
-            usedBy: null,
-            usedAt: null,
-            createdAt: new Date().toISOString()
-          };
-        }
+  for (let i = 0; i < count; i++) {
+    const random = Math.random().toString(36).substring(2, 8).toUpperCase();
+    const code = `${prefix}-${year}-${random}`;
+    
+    try {
+      const existing = await db.collection('accessCodes').doc(code).get();
+      
+      if (!existing.exists) {
+        await db.collection('accessCodes').doc(code).set({
+          code: code,
+          used: false,
+          usedBy: null,
+          usedAt: null,
+          createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+          createdBy: currentUser
+        });
+        generated++;
       }
-      saveCodes(codes);
-      renderCodeList();
-      alert(`✅ Generated ${count} new access codes!`);
+    } catch (error) {
+      console.error('Failed to generate code:', error);
+    }
+  }
+  
+  alert(`✅ Generated ${generated} new access codes!`);
+  renderCodeList();
+}
+
+  async function exportCodes() {
+  if (!isAdmin) return;
+
+  try {
+    const snapshot = await db.collection('accessCodes').get();
+    
+    if (snapshot.empty) {
+      alert('No codes to export. Generate some first!');
+      return;
     }
 
-    function exportCodes() {
-      if (!isAdmin) return;
-      const codes = getCodes();
-      const data = Object.values(codes).map(c => ({
+    const data = [];
+    snapshot.forEach(doc => {
+      const c = doc.data();
+      data.push({
         Code: c.code,
         Used: c.used ? 'Yes' : 'No',
         'Used By': c.usedBy || '',
-        'Used At': c.usedAt || '',
-        'Created At': c.createdAt
-      }));
+        'Used At': c.usedAt?.toDate?.() || c.usedAt || '',
+        'Created At': c.createdAt?.toDate?.() || c.createdAt || ''
+      });
+    });
 
-      if (data.length === 0) {
-        alert('No codes to export. Generate some first!');
-        return;
-      }
-
-      const wb = XLSX.utils.book_new();
-      const ws = XLSX.utils.json_to_sheet(data);
-      XLSX.utils.book_append_sheet(wb, ws, 'Access Codes');
-      XLSX.writeFile(wb, 'flashmind_access_codes.xlsx');
-    }
+    const wb = XLSX.utils.book_new();
+    const ws = XLSX.utils.json_to_sheet(data);
+    XLSX.utils.book_append_sheet(wb, ws, 'Access Codes');
+    XLSX.writeFile(wb, 'flashmind_access_codes.xlsx');
+  } catch (error) {
+    console.error('Export error:', error);
+    alert('❌ Failed to export codes.');
+  }
+}
 
     // ============================================================
     //  DOWNLOAD SAMPLE EXCEL
@@ -5204,7 +5257,7 @@ async function deleteSelectedDecks() {
 
     function closeUpgradeModal() { document.getElementById('upgrade-modal').classList.add('hidden') }
 
-    function validateUpgradeCode() {
+   async function validateUpgradeCode() {
   const code = document.getElementById('upgrade-code-input').value.trim().toUpperCase();
   const status = document.getElementById('upgrade-code-status');
 
@@ -5214,22 +5267,34 @@ async function deleteSelectedDecks() {
     return;
   }
 
-  const codes = getCodes();
-  console.log('Available codes:', codes); // ← debug
-  console.log('Entered code:', code); // ← debug
+  try {
+    const docRef = await db.collection('accessCodes').doc(code).get();
+    
+    if (!docRef.exists) {
+      hasValidCode = false;
+      status.textContent = '❌ Invalid access code.';
+      status.style.color = '#ef4444';
+      return;
+    }
 
-  if (codes[code] && !codes[code].used) {
-    hasValidCode = true;
-    status.textContent = '✅ Valid access code!';
-    status.style.color = '#059669';
-    selectPlan('book');
-  } else if (codes[code] && codes[code].used) {
-    hasValidCode = false;
-    status.textContent = '❌ This code has already been used.';
-    status.style.color = '#ef4444';
-  } else {
-    hasValidCode = false;
-    status.textContent = '❌ Invalid access code.';
+    const codeData = docRef.data();
+    
+    if (codeData.used) {
+      hasValidCode = false;
+      status.textContent = '❌ This code has already been used.';
+      status.style.color = '#ef4444';
+    } else {
+      hasValidCode = true;
+      status.textContent = '✅ Valid access code! You get the book buyer discount.';
+      status.style.color = '#059669';
+      document.getElementById('book-buyer-card').style.borderColor = '#d97706';
+      document.getElementById('modal-price-display').textContent = 'Rp 35.000';
+      document.getElementById('modal-price-label').textContent = 'Book Buyer Price (Discounted)';
+      selectPlan('book');
+    }
+  } catch (error) {
+    console.error('Validation error:', error);
+    status.textContent = '❌ Error validating code. Please try again.';
     status.style.color = '#ef4444';
   }
 }
@@ -5281,15 +5346,17 @@ async function deleteSelectedDecks() {
         savePlan(currentUser, 'premium', expiry);
 
         if (selectedPlan === 'book' && hasValidCode) {
-          const code = document.getElementById('upgrade-code-input').value.trim().toUpperCase();
-          const codes = getCodes();
-          if (codes[code]) {
-            codes[code].used = true;
-            codes[code].usedBy = currentUser;
-            codes[code].usedAt = new Date().toISOString();
-            saveCodes(codes);
-          }
-        }
+  const code = document.getElementById('upgrade-code-input').value.trim().toUpperCase();
+  try {
+    await db.collection('accessCodes').doc(code).update({
+      used: true,
+      usedBy: currentUser,
+      usedAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+  } catch (error) {
+    console.error('Failed to mark code as used:', error);
+  }
+}
 
         userPlan = 'premium';
         updatePlanUI();
