@@ -4720,25 +4720,26 @@ if (!userIsPremium && deckIsPremium) {
     // ============================================================
     //  2. DECK PERFORMANCE
     // ============================================================
-    function renderDeckPerformance() {
-      const perf = getDeckPerformance();
-      const container = document.getElementById('deck-performance-list');
-      if (!container) return;
+   function renderDeckPerformance() {
+  const perf = getDeckPerformance();
+  const container = document.getElementById('deck-performance-list');
+  if (!container) return;
 
-      if (perf.length === 0) {
-        container.innerHTML = '<p class="text-xs text-sec">No decks yet.</p>';
-        return;
-      }
-      container.innerHTML = perf.map(d => {
-        const color = d.accuracy >= 80 ? '#059669' : d.accuracy >= 60 ? '#f59e0b' : '#ef4444';
-        return `<div class="deck-perf-bar">
-                  <span class="name" title="${d.name}">${d.name}</span>
-                  <div class="bar-track"><div class="bar-fill" style="width:${d.accuracy}%; background:${color};"></div></div>
-                  <span class="pct" style="color:${color}">${d.accuracy}%</span>
-                </div>`;
-      }).join('');
-    }
-
+  if (perf.length === 0) {
+    container.innerHTML = '<p class="text-xs text-sec">No decks yet.</p>';
+    return;
+  }
+  container.innerHTML = perf.map(d => {
+    // Ambil subtopic saja (setelah " - ")
+    const displayName = d.name.includes(' - ') ? d.name.split(' - ').pop() : d.name;
+    const color = d.accuracy >= 80 ? '#059669' : d.accuracy >= 60 ? '#f59e0b' : '#ef4444';
+    return `<div class="deck-perf-bar">
+              <span class="name" title="${displayName}" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 120px;">${displayName}</span>
+              <div class="bar-track"><div class="bar-fill" style="width:${d.accuracy}%; background:${color};"></div></div>
+              <span class="pct" style="color:${color}">${d.accuracy}%</span>
+            </div>`;
+  }).join('');
+}
     // ============================================================
     //  3. RETENTION RATE
     // ============================================================
