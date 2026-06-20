@@ -4039,7 +4039,7 @@ if (!userIsPremium && deckIsPremium) {
       addStudyTime(0.5);
       studyIdx++;
       fcShowCard();
-      updateHome();
+      setTimeout(() => updateHome(), 100);
     }
 
     // ============================================================
@@ -4213,7 +4213,7 @@ if (!userIsPremium && deckIsPremium) {
       addStudyTime(0.5);
       studyIdx++;
       lnShowQuestion();
-      updateHome();
+      setTimeout(() => updateHome(), 100);
     }
 
     // ============================================================
@@ -4329,7 +4329,7 @@ if (!userIsPremium && deckIsPremium) {
       else allCards.push(updated);
       saveUserData(currentUser);
       addStudyTime(0.5);
-      updateHome();
+      setTimeout(() => updateHome(), 100);
       if (typeof lucide !== 'undefined' && lucide.createIcons) {
         lucide.createIcons();
       }
