@@ -4465,11 +4465,17 @@ if (!userIsPremium && deckIsPremium) {
   tsShowQuestion();
 }
 
-   function toggleFAQ(button) {
+ function toggleFAQ(button) {
   const answer = button.nextElementSibling;
-  const icon = button.querySelector('i');
+  const icon = button.querySelector('[data-lucide]');
+  
+  if (!answer) return;
+  
   answer.classList.toggle('hidden');
-  icon.style.transform = answer.classList.contains('hidden') ? 'rotate(0deg)' : 'rotate(180deg)';
+  
+  if (icon) {
+    icon.style.transform = answer.classList.contains('hidden') ? 'rotate(0deg)' : 'rotate(180deg)';
+  }
 }
     
     function tsShowQuestion() {
