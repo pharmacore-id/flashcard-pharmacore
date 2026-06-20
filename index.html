@@ -978,11 +978,14 @@
       border: 2px solid var(--accent);
     }
 
-    .bottom-nav {
-      position: relative;
-      z-index: 9999 !important;
-      pointer-events: all !important;
-    }
+.bottom-nav {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 9999 !important;
+  pointer-events: all !important;
+}
     #view-login:not(.active),
     #view-signup:not(.active) {
       display: none !important;
