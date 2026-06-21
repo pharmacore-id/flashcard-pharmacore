@@ -2817,10 +2817,31 @@ async function loadSharedDecks() {
   }
 }
 
-function saveUserData(email) {
-  localStorage.setItem(DATA_PREFIX + email, JSON.stringify(allCards));
-  saveToFirebase(email, allCards, userPlan);
-  return Promise.resolve(); // biar bisa di-await
+async function saveUserData(email) {
+  if (!email) return;
+
+  try {
+    // Save locally first (instant)
+    localStorage.setItem(
+      DATA_PREFIX + email,
+      JSON.stringify(allCards)
+    );
+
+    // Wait for Firebase save to finish
+    await saveToFirebase(
+      email,
+      allCards,
+      userPlan
+    );
+
+    console.log('✅ User progress saved');
+
+  } catch (err) {
+    console.error(
+      '❌ Failed saving user data:',
+      err
+    );
+  }
 }
 
     function savePlan(email, plan, expiry) {
@@ -3309,7 +3330,8 @@ function renderDecks() {
         }
       });
 
-      saveUserData(currentUser);
+     saveUserData(currentUser)
+  .catch(console.error);
       closeRenameDeck();
       renderDecks();
       updateHome();
@@ -3452,7 +3474,8 @@ function renderDecks() {
       if (!confirm(`Delete ${selectedCardIds.length} selected cards?`)) return;
 
       allCards = allCards.filter(c => !selectedCardIds.includes(c.__id));
-      saveUserData(currentUser);
+      saveUserData(currentUser)
+  .catch(console.error);
       selectedCardIds = [];
       renderManageCards();
       renderDecks();
@@ -3492,7 +3515,8 @@ function renderDecks() {
         total_reviews: 0,
         correct_count: 0
       });
-      saveUserData(currentUser);
+      saveUserData(currentUser)
+  .catch(console.error);
       closeCardModal();
       renderManageCards();
       renderDecks();
@@ -3530,7 +3554,8 @@ function renderDecks() {
       if (card) {
         card.card_front = front;
         card.card_back = back;
-        saveUserData(currentUser);
+        saveUserData(currentUser)
+  .catch(console.error);
         closeEditCard();
         renderManageCards();
         renderDecks();
@@ -3543,7 +3568,8 @@ function renderDecks() {
       if (!isAdmin) return;
       if (!confirm('Delete this card?')) return;
       allCards = allCards.filter(c => c.__id !== cardId);
-      saveUserData(currentUser);
+      saveUserData(currentUser)
+  .catch(console.error);
       renderManageCards();
       renderDecks();
       updateHome();
@@ -3588,7 +3614,7 @@ function renderDecks() {
   }
 
   allCards = allCards.filter(c => c.deck_id !== deckId);
-  saveUserData(currentUser);
+  await saveUserData(currentUser);
   renderDecks();
   updateHome();
   
@@ -3662,7 +3688,8 @@ function renderDecks() {
             importedCount++;
           });
 
-          saveUserData(currentUser);
+         saveUserData(currentUser)
+  .catch(console.error);
           renderManageCards();
           renderDecks();
           alert(`✅ Imported ${importedCount} new cards to this deck!`);
@@ -3794,7 +3821,8 @@ function renderDecks() {
       const sharedCards = await loadSharedDecks();
       allCards = allCards.filter(c => !c.isShared);
       allCards.push(...sharedCards);
-      saveUserData(currentUser);
+      saveUserData(currentUser)
+  .catch(console.error);
 
       renderDecks();
       updateHome();
@@ -4201,7 +4229,8 @@ function fcRate(q) {
     allCards.push(updated);
   }
   
-  saveUserData(currentUser);
+  saveUserData(currentUser)
+  .catch(console.error);
   addStudyTime(0.5);
   studyIdx++;
   fcShowCard();
@@ -4376,7 +4405,8 @@ function fcRate(q) {
   if (idx !== -1) allCards[idx] = updated;
   else allCards.push(updated);
   
-  saveUserData(currentUser);
+  saveUserData(currentUser)
+  .catch(console.error);
   addStudyTime(0.5);
   studyIdx++;
   lnShowQuestion();
@@ -4508,7 +4538,8 @@ function toggleFAQ(button) {
       const idx = allCards.findIndex(x => x.__id === updated.__id);
       if (idx !== -1) allCards[idx] = updated;
       else allCards.push(updated);
-      saveUserData(currentUser);
+      saveUserData(currentUser)
+  .catch(console.error);
       addStudyTime(0.5);
       setTimeout(() => updateHome(), 100);
       if (typeof lucide !== 'undefined' && lucide.createIcons) {
@@ -4980,7 +5011,7 @@ async function deleteRequest(requestId) {
       updatedAt: firebase.firestore.FieldValue.serverTimestamp()
     });
 
-    saveUserData(currentUser);
+    await saveUserData(currentUser);
     renderDecks();
     updateHome();
     renderAdminDeckList();
@@ -5127,7 +5158,7 @@ async function deleteSelectedDecks() {
     allCards = allCards.filter(c => c.deck_id !== deckId);
   }
 
-  saveUserData(currentUser);
+  await saveUserData(currentUser);
   selectedDeckIds = [];
   renderDecks();
   updateHome();
