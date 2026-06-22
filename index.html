@@ -4801,101 +4801,141 @@ function fcRate(q) {
     // ============================================================
     //  EXIT STUDY - COMPLETE RESET
     // ============================================================
-    function exitStudy() {
-      studyQueue = [];
-      studyIdx = 0;
-      fcFlipped = false;
+   function exitStudy() {
+    // Reset study state
+    studyQueue = [];
+    studyIdx = 0;
+    fcFlipped = false;
 
-      const lnAnswerBox = document.getElementById('ln-answer-box');
-      const lnShowBtn = document.getElementById('ln-show-btn');
-      const lnGradeBtns = document.getElementById('ln-grade-btns');
-      const lnDone = document.getElementById('ln-done');
-      const lnProgressFill = document.getElementById('ln-progress-fill');
-      const lnProgress = document.getElementById('ln-progress');
+    // Reset challenge mode
+    challengeMode = false;
+    challengeCards = [];
 
-      if (lnAnswerBox) lnAnswerBox.classList.add('hidden');
-      if (lnShowBtn) lnShowBtn.style.display = '';
-      if (lnGradeBtns) lnGradeBtns.classList.add('hidden');
-      if (lnDone) {
+    // ===== Learn mode reset =====
+    const lnAnswerBox = document.getElementById('ln-answer-box');
+    const lnShowBtn = document.getElementById('ln-show-btn');
+    const lnGradeBtns = document.getElementById('ln-grade-btns');
+    const lnDone = document.getElementById('ln-done');
+    const lnProgressFill = document.getElementById('ln-progress-fill');
+    const lnProgress = document.getElementById('ln-progress');
+
+    if (lnAnswerBox) lnAnswerBox.classList.add('hidden');
+    if (lnShowBtn) lnShowBtn.style.display = '';
+    if (lnGradeBtns) lnGradeBtns.classList.add('hidden');
+
+    if (lnDone) {
         lnDone.classList.add('hidden');
         lnDone.style.display = 'none';
-      }
-      if (lnProgressFill) lnProgressFill.style.width = '0%';
-      if (lnProgress) lnProgress.textContent = '0/0';
+    }
 
-      const tsResults = document.getElementById('ts-results');
-      const tsQuestionArea = document.getElementById('ts-question-area');
-      const tsProgressFill = document.getElementById('ts-progress-fill');
-      const tsProgress = document.getElementById('ts-progress');
+    if (lnProgressFill) lnProgressFill.style.width = '0%';
+    if (lnProgress) lnProgress.textContent = '0/0';
 
-      if (tsResults) {
+
+    // ===== Test mode reset =====
+    const tsResults = document.getElementById('ts-results');
+    const tsQuestionArea = document.getElementById('ts-question-area');
+    const tsProgressFill = document.getElementById('ts-progress-fill');
+    const tsProgress = document.getElementById('ts-progress');
+
+    if (tsResults) {
         tsResults.classList.add('hidden');
         tsResults.style.display = 'none';
-      }
-      if (tsQuestionArea) tsQuestionArea.style.display = '';
-      if (tsProgressFill) tsProgressFill.style.width = '0%';
-      if (tsProgress) tsProgress.textContent = '0/0';
+    }
 
-      const studySelect = document.getElementById('view-study-select');
-      if (studySelect) {
+    if (tsQuestionArea) tsQuestionArea.style.display = '';
+
+    if (tsProgressFill) tsProgressFill.style.width = '0%';
+    if (tsProgress) tsProgress.textContent = '0/0';
+
+
+    // ===== Study select reset =====
+    const studySelect = document.getElementById('view-study-select');
+
+    if (studySelect) {
         studySelect.classList.remove('active');
         studySelect.style.display = 'none';
-      }
+    }
 
-      const btns = document.getElementById('fc-buttons');
-      const done = document.getElementById('fc-done');
-      const card = document.getElementById('fc-card');
-      const hint = document.querySelector('.swipe-hint');
-      const fcProgress = document.getElementById('fc-progress');
-      const fcProgressFill = document.getElementById('fc-progress-fill');
 
-      if (btns) {
+    // ===== Flashcard reset =====
+    const btns = document.getElementById('fc-buttons');
+    const done = document.getElementById('fc-done');
+    const card = document.getElementById('fc-card');
+    const hint = document.querySelector('.swipe-hint');
+    const fcProgress = document.getElementById('fc-progress');
+    const fcProgressFill = document.getElementById('fc-progress-fill');
+
+    if (btns) {
         btns.classList.add('hidden');
         btns.style.display = 'none';
-      }
-      if (done) {
+    }
+
+    if (done) {
         done.classList.add('hidden');
         done.style.display = 'none';
-      }
-      if (card) {
+    }
+
+    if (card) {
         card.style.display = '';
         card.classList.remove('flipped');
-      }
-      if (hint) hint.style.display = '';
-      if (fcProgress) fcProgress.textContent = '0/0';
-      if (fcProgressFill) fcProgressFill.style.width = '0%';
+    }
 
-      const studyViews = ['view-flashcards', 'view-learn', 'view-test'];
-      studyViews.forEach(id => {
+    if (hint) hint.style.display = '';
+
+    if (fcProgress) fcProgress.textContent = '0/0';
+    if (fcProgressFill) fcProgressFill.style.width = '0%';
+
+
+    // ===== Hide study pages =====
+    const studyViews = [
+        'view-flashcards',
+        'view-learn',
+        'view-test'
+    ];
+
+    studyViews.forEach(id => {
         const el = document.getElementById(id);
+
         if (el) {
-          el.classList.remove('active');
-          el.style.display = 'none';
+            el.classList.remove('active');
+            el.style.display = 'none';
         }
-      });
+    });
 
-      const decksView = document.getElementById('view-decks');
-      if (decksView) {
-        decksView.classList.add('active');
-        decksView.style.display = 'flex';
-      }
 
-      document.querySelectorAll('.nav-item').forEach(b => {
-        b.classList.toggle('active', b.dataset.tab === 'decks');
-      });
+    // ===== Return to HOME =====
+    const homeView = document.getElementById('view-home');
 
-      currentTab = 'decks';
-      renderDecks();
+    if (homeView) {
+        homeView.classList.add('active');
+        homeView.style.display = 'flex';
+    }
 
-      if (typeof lucide !== 'undefined' && lucide.createIcons) {
+    document.querySelectorAll('.nav-item').forEach(b => {
+        b.classList.toggle(
+            'active',
+            b.dataset.tab === 'home'
+        );
+    });
+
+    currentTab = 'home';
+
+    renderDecks();
+    updateHome();
+
+
+    // ===== Icons refresh =====
+    if (typeof lucide !== 'undefined' && lucide.createIcons) {
         lucide.createIcons();
-      }
+    }
 
-      if (navTimeout) {
+    // ===== Clear navigation timeout =====
+    if (navTimeout) {
         clearTimeout(navTimeout);
         navTimeout = null;
-      }
     }
+}
 
     // ============================================================
     //  LEARN MODE
