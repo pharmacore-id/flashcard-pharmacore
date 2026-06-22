@@ -4600,46 +4600,66 @@ function startFlashcards() {
 let challengeMode = false;
 let challengeCards = [];
 
-function startRandomChallenge(cardCount){
+function startRandomChallenge(cardCount) {
 
     const cards = getRealCards();
 
-    if(cards.length===0){
-        alert("No cards available");
+    if (!cards.length) {
+        alert("❌ No cards available");
         return;
     }
 
-    const shuffled=[...cards]
-    .sort(()=>Math.random()-0.5);
+    // Shuffle cards
+    const shuffled = [...cards].sort(() => Math.random() - 0.5);
 
-    challengeCards=shuffled.slice(
+    // Take selected amount
+    challengeCards = shuffled.slice(
         0,
-        Math.min(cardCount,cards.length)
+        Math.min(cardCount, cards.length)
     );
 
-    challengeMode=true;
+    challengeMode = true;
 
-    startFlashcards();
+    // Use challenge cards directly as study queue
+    studyQueue = challengeCards;
+    studyIdx = 0;
+    fcFlipped = false;
+
+    // Open flashcard page normally
+    document.querySelectorAll('.view').forEach(v=>{
+        v.classList.remove('active');
+        v.style.display='none';
+    });
+
+    const flashcardView =
+        document.getElementById('view-flashcards');
+
+    if (flashcardView){
+        flashcardView.classList.add('active');
+        flashcardView.style.display='flex';
+    }
+
+    fcShowCard();
 }
 
-function startCustomChallenge(){
+function startCustomChallenge() {
 
-    const total=getRealCards().length;
+    const total = getRealCards().length;
 
-    let amount=prompt(
-        `Choose cards (1-${total})`
+    let amount = prompt(
+        `Choose number of cards (1-${total})`
     );
 
-    if(!amount) return;
+    if (!amount) return;
 
-    amount=parseInt(amount);
+    amount = parseInt(amount);
 
-    if(
-        isNaN(amount)||
-        amount<1||
-        amount>total
-    ){
-        alert("Invalid amount");
+    if (
+        isNaN(amount) ||
+        amount < 1 ||
+        amount > total
+    ) {
+        alert("❌ Invalid amount");
         return;
     }
 
@@ -4760,11 +4780,6 @@ function fcRate(q) {
     exitStudy();
     return;
   }
-  if(currentChallengeCards.length>0){
-
-    nextChallengeCard();
-
-}
 
   const c = studyQueue[studyIdx];
   const updated = applySRS(c, q);
