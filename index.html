@@ -2587,183 +2587,239 @@ onclick="event.stopPropagation()"
 style="max-height:90vh;overflow-y:auto;">
 
 <div class="flex justify-between items-center mb-4">
+    <h3 class="font-bold text-xl">
+        ✨ Upgrade to Premium
+    </h3>
 
-<h3 class="font-bold text-xl">
-✨ Upgrade to Premium
-</h3>
-
-<button onclick="closeUpgradeModal()" class="text-sec">
-<i data-lucide="x" class="w-6 h-6"></i>
-</button>
-
+    <button onclick="closeUpgradeModal()" class="text-sec">
+        <i data-lucide="x" class="w-6 h-6"></i>
+    </button>
 </div>
-
 
 <div class="upgrade-container">
 
-<!-- HEADER -->
+    <!-- HEADER -->
 
-<div class="upgrade-header">
+    <div class="upgrade-header">
 
-<div class="upgrade-icon">
-👑
+        <div class="upgrade-icon">
+            👑
+        </div>
+
+        <h2>Upgrade to Premium</h2>
+
+        <p>
+            Unlock all pharmacy decks and study modes
+        </p>
+
+    </div>
+
+
+    <!-- PLAN -->
+
+    <div class="upgrade-section">
+
+        <div class="section-title">
+            Choose Plan
+        </div>
+
+        <div class="pricing-card-grid">
+
+            <div
+            class="pricing-card popular"
+            id="book-buyer-card"
+            onclick="selectPlan('book')">
+
+                <span class="badge-popular">
+                    ⭐ Best Value
+                </span>
+
+                <p class="plan-name">
+                    Book Buyer
+                </p>
+
+                <p class="plan-desc">
+                    Requires valid access code
+                </p>
+
+            </div>
+
+
+            <div
+            class="pricing-card"
+            id="regular-card"
+            onclick="selectPlan('regular')">
+
+                <p class="plan-name">
+                    Regular User
+                </p>
+
+                <p class="plan-desc">
+                    No access code required
+                </p>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- ACCESS CODE -->
+
+    <div class="upgrade-section">
+
+        <input
+        id="upgrade-code-input"
+        type="text"
+        placeholder="Enter access code"
+        class="w-full border rounded-xl px-4 py-3">
+
+        <button
+        onclick="validateUpgradeCode()"
+        class="w-full mt-2 accent-bg text-white py-3 rounded-xl font-bold">
+
+            Validate Token
+
+        </button>
+
+        <div
+        id="upgrade-code-status"
+        class="text-xs mt-2">
+        </div>
+
+    </div>
+
+
+    <!-- DURATION -->
+
+    <div class="upgrade-section">
+
+        <div class="section-title">
+
+            Duration
+
+        </div>
+
+        <div class="duration-grid">
+
+            <button
+            class="duration-btn"
+            onclick="selectDuration(1,event)">
+
+                1 Month
+
+            </button>
+
+            <button
+            class="duration-btn active"
+            onclick="selectDuration(3,event)">
+
+                3 Months
+
+            </button>
+
+            <button
+            class="duration-btn"
+            onclick="selectDuration(6,event)">
+
+                6 Months
+
+            </button>
+
+        </div>
+
+    </div>
+
+
+    <!-- PRICE SUMMARY -->
+
+    <div class="price-summary">
+
+        <div>
+
+            <p class="summary-label">
+
+                Total Price
+
+            </p>
+
+            <h2 id="modal-price-display">
+
+                Rp68,000
+
+            </h2>
+
+            <p id="modal-price-label">
+
+                Regular · 3 Months
+
+            </p>
+
+        </div>
+
+        <div class="daily-price">
+
+            <span id="price-per-day">
+
+                Rp756/day
+
+            </span>
+
+        </div>
+
+    </div>
+
+
+    <!-- PAYMENT -->
+
+    <div class="payment-box">
+
+        <div class="payment-title">
+
+            QRIS Payment
+
+        </div>
+
+        <p class="payment-sub">
+
+            Supports GoPay, DANA, OVO, ShopeePay, BCA, Mandiri and other QRIS apps
+
+        </p>
+
+        <button
+        id="pay-now-btn"
+        onclick="processPayment()"
+        class="pay-btn">
+
+            Pay Rp68,000
+
+        </button>
+
+    </div>
+
+
+    <p class="text-center text-xs text-sec mt-4">
+
+        💳 Demo payment — premium unlocks instantly
+
+    </p>
+
 </div>
-
-<h2>
-Upgrade to Premium
-</h2>
-
-<p>
-Unlock all pharmacy decks and study modes
-</p>
-
-</div>
-
-
-<!-- ACCESS CODE AREA -->
-
-<div
-
-id="book-code-section"
-
-class="mt-4">
-
-<input
-
-id="upgrade-code-input"
-
-type="text"
-
-placeholder="Enter access code"
-
-class="w-full border rounded-xl px-4 py-3"
-
-/>
-
-<button
-
-onclick="validateUpgradeCode()"
-
-class="w-full mt-2 accent-bg text-white py-3 rounded-xl font-bold">
-
-Validate Token
-
-</button>
-
-<div
-
-id="upgrade-code-status"
-
-class="text-xs mt-2">
-
-</div>
-
-</div>
-
-</div>
-
-<div class="duration-grid">
-
-<button class="duration-btn"
-onclick="selectDuration(1,event)">
-1 Month
-</button>
-
-<button class="duration-btn active"
-onclick="selectDuration(3,event)">
-3 Months
-</button>
-
-<button class="duration-btn"
-onclick="selectDuration(6,event)">
-6 Months
-</button>
-</div>
-
-</div>
-
-
-<!-- PRICE -->
-
-<div class="price-summary">
-
-<div>
-
-<p class="summary-label">
-Total Price
-</p>
-
-<h2 id="modal-price-display">
-Rp68000
-</h2>
-
-<p id="modal-price-label">
-Regular · 3 Months
-</p>
-
-</div>
-
-<div class="daily-price">
-
-<span id="price-per-day">
-Rp756/day
-</span>
-
-</div>
-
-</div>
-
-
-<!-- PAYMENT -->
-
-<div class="payment-box">
-
-<div class="payment-title">
-
-QRIS Payment
-
-</div>
-
-<p class="payment-sub">
-
-Supports GoPay, DANA, OVO, ShopeePay, BCA, Mandiri and other QRIS apps
-
-</p>
-
-<button
-id="pay-now-btn"
-onclick="processPayment()"
-class="pay-btn">
-
-Pay with QRIS
-
-</button>
-
-</div>
-
-
-<p class="text-center text-xs text-sec mt-3">
-
-💳 Demo payment — premium unlocks instantly
-
-</p>
 
 
 <div class="text-center text-xs text-sec mt-3">
 
-Current plan:
-<span id="upgrade-current-plan"
-class="font-semibold">
+    Current plan:
 
-Free
+    <span
+    id="upgrade-current-plan"
+    class="font-semibold">
 
-</span>
+        Free
 
-</div>
+    </span>
 
-</div>
-
-</div>
 </div>
 
   <script>
