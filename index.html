@@ -4646,93 +4646,101 @@ function startCustomChallenge(){
     startRandomChallenge(amount);
 }
     
+function fcShowCard() {
+    const card = document.getElementById('fc-card');
+    const done = document.getElementById('fc-done');
+    const btns = document.getElementById('fc-buttons');
+    const hint = document.querySelector('.swipe-hint');
 
-    function fcShowCard() {
-      const card = document.getElementById('fc-card');
-      const done = document.getElementById('fc-done');
-      const btns = document.getElementById('fc-buttons');
-      const hint = document.querySelector('.swipe-hint');
+    // Finished studying
+    if (!studyQueue || studyQueue.length === 0 || studyIdx >= studyQueue.length) {
 
-      if (!studyQueue || studyQueue.length === 0 || studyIdx >= studyQueue.length) {
+        if (card) card.style.display = 'none';
 
-    if (card) card.style.display = 'none';
+        if (btns) {
+            btns.classList.add('hidden');
+            btns.style.display = 'none';
+        }
+
+        if (hint) hint.style.display = 'none';
+
+        if (done) {
+            done.classList.remove('hidden');
+            done.style.display = 'flex';
+        }
+
+        const progress = document.getElementById('fc-progress');
+        if (progress) {
+            progress.textContent =
+                `${studyQueue ? studyQueue.length : 0}/${studyQueue ? studyQueue.length : 0}`;
+        }
+
+        const progressFill = document.getElementById('fc-progress-fill');
+        if (progressFill) {
+            progressFill.style.width = '100%';
+        }
+
+        // Reset challenge mode
+        challengeMode = false;
+        challengeCards = [];
+
+        if (typeof lucide !== 'undefined' && lucide.createIcons) {
+            lucide.createIcons();
+        }
+
+        return;
+    }
+
+    // Show card normally
+    if (card) {
+        card.style.display = '';
+        card.classList.remove('flipped');
+    }
+
+    if (done) {
+        done.classList.add('hidden');
+        done.style.display = 'none';
+    }
 
     if (btns) {
         btns.classList.add('hidden');
         btns.style.display = 'none';
     }
 
-    if (hint) hint.style.display = 'none';
+    if (hint) hint.style.display = '';
 
-    if (done) {
-        done.classList.remove('hidden');
-        done.style.display = 'flex';
+    const c = studyQueue[studyIdx];
+
+    if (!c) {
+        studyIdx++;
+        fcShowCard();
+        return;
     }
 
-    const progress =
-        document.getElementById('fc-progress');
+    const frontText = document.getElementById('fc-front-text');
+    const backText = document.getElementById('fc-back-text');
 
+    if (frontText) frontText.textContent = c.card_front || 'Empty';
+    if (backText) backText.textContent = c.card_back || 'Empty';
+
+    fcFlipped = false;
+
+    const progress = document.getElementById('fc-progress');
     if (progress) {
-        progress.textContent =
-            `${studyQueue ? studyQueue.length : 0}/${studyQueue ? studyQueue.length : 0}`;
+        progress.textContent = `${studyIdx + 1}/${studyQueue.length}`;
     }
 
-    const progressFill =
-        document.getElementById('fc-progress-fill');
-
+    const progressFill = document.getElementById('fc-progress-fill');
     if (progressFill) {
-        progressFill.style.width = '100%';
+        progressFill.style.width =
+            `${((studyIdx + 1) / studyQueue.length) * 100}%`;
     }
 
     if (typeof lucide !== 'undefined' && lucide.createIcons) {
         lucide.createIcons();
     }
-
-    // Reset challenge mode
-    challengeMode = false;
-    challengeCards = [];
-
-    return;
 }
-      }
-
-      if (card) {
-        card.style.display = '';
-        card.classList.remove('flipped');
-      }
-      if (done) {
-        done.classList.add('hidden');
-        done.style.display = 'none';
-      }
-      if (btns) {
-        btns.classList.add('hidden');
-        btns.style.display = 'none';
-      }
-      if (hint) hint.style.display = '';
-
-      const c = studyQueue[studyIdx];
-      if (!c) {
-        studyIdx++;
-        fcShowCard();
-        return;
-      }
-
-      const frontText = document.getElementById('fc-front-text');
-      const backText = document.getElementById('fc-back-text');
-      if (frontText) frontText.textContent = c.card_front || 'Empty';
-      if (backText) backText.textContent = c.card_back || 'Empty';
-      fcFlipped = false;
-
-      const progress = document.getElementById('fc-progress');
-      if (progress) progress.textContent = `${studyIdx + 1}/${studyQueue.length}`;
-      const progressFill = document.getElementById('fc-progress-fill');
-      if (progressFill) progressFill.style.width = `${(studyIdx / studyQueue.length) * 100}%`;
-
-      if (typeof lucide !== 'undefined' && lucide.createIcons) {
-        lucide.createIcons();
-      }
-    }
-
+   
     function fcFlip() {
       if (studyIdx >= studyQueue.length) return;
       if (!fcFlipped) {
