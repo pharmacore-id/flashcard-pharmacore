@@ -1025,7 +1025,65 @@
 .challenge-buttons button:hover{
     transform:translateY(-2px);
 }
-    
+
+    /* =========================
+   Flashcard Subtopic Badge
+========================= */
+
+.challenge-source{
+
+    display:flex;
+    align-items:center;
+    justify-content:center;
+
+    width:fit-content;
+
+    margin:0 auto 14px auto;
+
+    padding:8px 16px;
+
+    border-radius:999px;
+
+    background:linear-gradient(
+        135deg,
+        rgba(255,248,214,.95),
+        rgba(255,226,138,.95)
+    );
+
+    border:1px solid rgba(
+        255,
+        180,
+        0,
+        .18
+    );
+
+    box-shadow:
+        0 6px 16px
+        rgba(
+            255,
+            180,
+            0,
+            .10
+        );
+
+    font-size:12px;
+    font-weight:700;
+
+    color:#6b4f00;
+
+    gap:6px;
+
+    position:relative;
+
+    z-index:2;
+}
+
+.challenge-source::before{
+
+    content:"📚";
+
+    font-size:13px;
+}
     .heatmap-grid {
       display: grid;
       grid-template-columns: repeat(7, 1fr);
