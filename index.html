@@ -1583,6 +1583,7 @@ Science       | Biology       | What is DNA?             | Deoxyribonucleic acid
       <div class="progress-bar mb-3"><div id="fc-progress-fill" class="progress-fill" style="width:0%"></div></div>
       <div class="flex-1 flex items-center justify-center">
         <div id="fc-card" class="flip-card cursor-pointer" onclick="fcFlip()">
+          <div id="challenge-source" class="challenge-source hidden"></div>
           <div class="flip-inner"><div class="flip-front"><p id="fc-front-text" class="text-xl font-bold text-center leading-relaxed"></p></div><div class="flip-back"><p id="fc-back-text" class="text-xl font-semibold text-center leading-relaxed"></p></div></div>
         </div>
       </div>
@@ -5236,11 +5237,39 @@ Back
 
     const c = studyQueue[studyIdx];
 
-    if (!c) {
-        studyIdx++;
-        fcShowCard();
-        return;
-    }
+if (!c) {
+    studyIdx++;
+    fcShowCard();
+    return;
+}
+
+// ===== Card source / subtopic =====
+const sourceLabel =
+    document.getElementById(
+        'challenge-source'
+    );
+
+if(sourceLabel){
+
+    const deck =
+        getDecks().find(
+            d => d.id === c.deck_id
+        );
+
+    sourceLabel.textContent =
+        deck?.subtopic ||
+        deck?.name ||
+        '';
+
+    sourceLabel.classList.remove(
+        'hidden'
+    );
+}
+
+const frontText =
+    document.getElementById(
+        'fc-front-text'
+    );
 
     const frontText =
         document.getElementById(
