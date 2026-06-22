@@ -4672,19 +4672,14 @@ function renderDecks() {
       }, 5000);
     }
 
-    function openDeck(deckId) {
-      const decks = getDecks();
-      const deckIndex = decks.findIndex(d => d.id === deckId);
-      const isPremium = isPremiumActive();
+   function openDeck(deckId){
 
-      if (!isPremium && deckIndex >= 5) {
-        showUpgradeModal();
-        return;
-      }
+    if(!deckId) return;
 
-      currentDeckId = deckId;
-      openStudySelect();
-    }
+    currentDeckId = deckId;
+
+    openStudySelect();
+}
 
     // ============================================================
     //  STUDY MODES
