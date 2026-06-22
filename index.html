@@ -2597,19 +2597,29 @@ async function loadSharedDecks() {
       return allCards.filter(c => c.last_review && c.last_review.startsWith(todayStr)).length;
     }
 
-   function getCardsByDate(date) {
+  function getCardsByDate(date) {
 
     return allCards.filter(card => {
 
-        if (card.review_history) {
+        // New system
+        if (card.review_history &&
+            card.review_history.length > 0) {
+
             return card.review_history.includes(date);
         }
 
-        // backward compatibility
-        return (
+        // Old cards: convert old data once
+        if (
             card.last_review &&
             card.last_review.startsWith(date)
-        );
+        ) {
+
+            card.review_history = [date];
+
+            return true;
+        }
+
+        return false;
 
     });
 
@@ -2618,7 +2628,7 @@ async function loadSharedDecks() {
     function getTotalReviewsForDate(date) {
     return getCardsByDate(date).length;
 }
-
+    
     function getSubjectBreakdown() {
       const subjects = {};
       getRealCards().forEach(c => {
