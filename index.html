@@ -1141,6 +1141,44 @@
     font-weight:600;
     font-size:14px;
 }
+
+    .locked-deck{
+    position:relative;
+}
+
+.lock-overlay{
+    position:absolute;
+    top:50%;
+    left:50%;
+
+    transform:translate(-50%,-50%);
+
+    font-size:70px;
+    opacity:.6;
+
+    z-index:5;
+
+    pointer-events:none;
+}
+
+.premium-badge{
+    position:absolute;
+
+    top:10px;
+    right:10px;
+
+    padding:6px 10px;
+
+    background:#f59e0b;
+    color:white;
+
+    border-radius:999px;
+
+    font-size:11px;
+    font-weight:700;
+
+    z-index:5;
+}
   </style>
 </head>
 <body>
@@ -3773,73 +3811,307 @@ function renderDecks() {
   const isPremium = isPremiumActive();
   const maxFreeDecks = 999;
 
-  // ===== LEVEL 2: Subtopik (120px) =====
-  if (currentTopic) {
+ // ===== LEVEL 2: Subtopik (120px) =====
+if (currentTopic) {
+
     const subtopics = topicMap[currentTopic] || [];
-    let html = `
-      <div class="mb-4">
-        <button onclick="currentTopic=null; renderDecks();" class="flex items-center gap-2 text-sec hover:text-accent transition-colors">
-          <i data-lucide="arrow-left" class="w-5 h-5"></i>
-          <span class="font-medium">Back to Topics</span>
+
+    let html=`
+    <div class="mb-4">
+        <button
+            onclick="currentTopic=null;renderDecks();"
+            class="flex items-center gap-2 text-sec hover:text-accent transition-colors">
+
+            <i data-lucide="arrow-left"
+               class="w-5 h-5"></i>
+
+            <span class="font-medium">
+                Back to Topics
+            </span>
+
         </button>
-        <h2 class="text-xl font-bold mt-2">${currentTopic}</h2>
-      </div>
+
+        <h2 class="text-xl font-bold mt-2">
+            ${currentTopic}
+        </h2>
+
+    </div>
     `;
-    let deckCount = 0;
-    subtopics.forEach((d, i) => {
-      const due = d.cards.filter(c => !c.next_review || c.next_review <= today()).length;
-      const mastered = d.cards.filter(c => (c.interval || 0) >= 21).length;
-      const pct = d.cards.length > 0 ? Math.round(mastered / d.cards.length * 100) : 0;
-      const isLocked = !isPremium && deckCount >= maxFreeDecks;
-      const displayName = d.subtopic || d.name;
 
-      const bgCard = d.cards.find(c => c.card_background && c.card_background.trim() !== '');
-      const background = bgCard ? bgCard.card_background : '';
-      let bgStyle = '';
-      let iconHtml = '';
-      if (background) {
-        if (background.startsWith('http')) {
-          bgStyle = `background: linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), url('${background}') center/cover no-repeat; color: white;`;
-        } else {
-          iconHtml = `<span class="text-3xl mr-2">${background}</span>`;
+    subtopics.forEach((d,i)=>{
+
+        const due=
+            d.cards.filter(
+                c=>!c.next_review ||
+                c.next_review<=today()
+            ).length;
+
+        const mastered=
+            d.cards.filter(
+                c=>(c.interval||0)>=21
+            ).length;
+
+        const pct=
+            d.cards.length>0
+            ?Math.round(
+                mastered/d.cards.length*100
+            )
+            :0;
+
+        const displayName=
+            d.subtopic || d.name;
+
+        const bgCard=
+            d.cards.find(
+                c=>
+                c.card_background &&
+                c.card_background.trim()!==''
+            );
+
+        const background=
+            bgCard
+            ?bgCard.card_background
+            :'';
+
+        let bgStyle='';
+        let iconHtml='';
+
+        if(background){
+
+            if(
+                background.startsWith(
+                    'http'
+                )
+            ){
+
+                bgStyle=
+                `background:
+                linear-gradient(
+                    rgba(0,0,0,.4),
+                    rgba(0,0,0,.4)
+                ),
+                url('${background}')
+                center/cover no-repeat;
+                color:white;`;
+
+            }else{
+
+                iconHtml=
+                `<span class="text-3xl mr-2">
+                    ${background}
+                </span>`;
+            }
+
+        }else{
+
+            const colors=[
+                'var(--card-peach)',
+                'var(--card-green)',
+                'var(--card-blue)',
+                'var(--card-purple)'
+            ];
+
+            bgStyle=
+            `background:
+            ${colors[i%4]};
+            color:white;`;
+
         }
-      } else {
-        const colors = ['var(--card-peach)', 'var(--card-green)', 'var(--card-blue)', 'var(--card-purple)'];
-        bgStyle = `background: ${colors[i % 4]}; color: white;`;
-      }
 
-      const isPremiumDeck = d.cards.some(c => c.isPremium);
+        const isPremiumDeck=
+            d.cards.some(
+                c=>c.isPremium
+            );
 
-      html += `
-        <div class="deck-item rounded-2xl p-4 shadow-card mb-3 cursor-pointer flex items-center relative text-white"
-             style="${bgStyle} height: 120px; ${isLocked ? 'cursor:not-allowed; opacity: 0.6;' : ''}"
-             onclick="${isLocked ? 'showUpgradeModal()' : `openDeck('${d.id}')`}">
-          <div class="flex-1" style="max-width: 66.666%;">
-            ${iconHtml ? `<div class="mb-1">${iconHtml}</div>` : ''}
-            <h3 class="font-bold uppercase text-white" style="font-size: 16px; line-height: 1.2; white-space: normal; word-break: break-word;">${displayName}</h3>
-            <p class="text-white" style="font-size: 11px; line-height: 1.2; margin-top: 4px;">${d.cards.length} cards · ${due} due · ${pct}% mastered</p>
-            <div class="progress-bar bg-white/30" style="height: 4px; margin-top: 2px;"><div class="progress-fill bg-white" style="width:${pct}%; height: 4px;"></div></div>
-          </div>
-          <div class="flex gap-1 ml-auto flex-shrink-0" onclick="event.stopPropagation()">
-            ${isAdmin && !isLocked ? `
-              <button onclick="showRenameDeck('${d.id}')" class="text-white/80 p-1 hover:text-white transition-colors" title="Rename"><i data-lucide="pencil" class="w-4 h-4"></i></button>
-              <button onclick="showManageCards('${d.id}')" class="text-white/80 p-1 hover:text-white transition-colors" title="Manage Cards"><i data-lucide="list" class="w-4 h-4"></i></button>
-              <button onclick="deleteDeck('${d.id}')" class="text-white/80 p-1 hover:text-white transition-colors" title="Delete"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
-            ` : ''}
-          </div>
-          ${isPremiumDeck ? `
-            <div class="absolute top-2 right-2 bg-gradient-to-r from-yellow-500 to-amber-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-sm">
-              PREMIUM
-            </div>
-          ` : ''}
-        </div>
-      `;
-      deckCount++;
+        const isLockedPremium=
+            isPremiumDeck &&
+            !isPremiumActive();
+
+html+=`
+
+<div class="
+    deck-item
+    rounded-2xl
+    p-4
+    shadow-card
+    mb-3
+    cursor-pointer
+    flex
+    items-center
+    relative
+    text-white
+    ${isLockedPremium?'locked-deck':''}
+"
+
+style="
+${bgStyle}
+height:120px;
+"
+
+onclick="
+openDeck('${d.id}')
+">
+
+<div class="flex-1"
+style="max-width:66.666%;">
+
+${iconHtml ?
+`<div class="mb-1">
+${iconHtml}
+</div>`
+:''}
+
+<h3
+class="font-bold uppercase text-white"
+
+style="
+font-size:16px;
+line-height:1.2;
+white-space:normal;
+word-break:break-word;
+">
+
+${displayName}
+
+</h3>
+
+<p
+class="text-white"
+
+style="
+font-size:11px;
+line-height:1.2;
+margin-top:4px;
+">
+
+${d.cards.length}
+cards ·
+${due}
+due ·
+${pct}%
+mastered
+
+</p>
+
+<div
+class="progress-bar bg-white/30"
+style="
+height:4px;
+margin-top:2px;
+">
+
+<div
+class="progress-fill bg-white"
+
+style="
+width:${pct}%;
+height:4px;
+">
+</div>
+
+</div>
+
+</div>
+
+<div
+class="
+flex
+gap-1
+ml-auto
+flex-shrink-0
+"
+
+onclick="
+event.stopPropagation()
+">
+
+${isAdmin?`
+
+<button
+onclick="
+showRenameDeck(
+'${d.id}'
+)
+">
+
+<i
+data-lucide="pencil"
+class="w-4 h-4">
+</i>
+
+</button>
+
+<button
+onclick="
+showManageCards(
+'${d.id}'
+)
+">
+
+<i
+data-lucide="list"
+class="w-4 h-4">
+</i>
+
+</button>
+
+<button
+onclick="
+deleteDeck(
+'${d.id}'
+)
+">
+
+<i
+data-lucide="trash-2"
+class="w-4 h-4">
+</i>
+
+</button>
+
+`:''}
+
+</div>
+
+${isPremiumDeck?`
+
+<div
+class="premium-badge">
+
+PREMIUM
+
+</div>
+
+`:''}
+
+${isLockedPremium?`
+
+<div
+class="lock-overlay">
+
+🔒
+
+</div>
+
+`:''}
+
+</div>
+
+`;
+
     });
-    container.innerHTML = html;
-    if (typeof lucide !== 'undefined' && lucide.createIcons) lucide.createIcons();
+
+    container.innerHTML=html;
+
+    if(
+        typeof lucide!=='undefined' &&
+        lucide.createIcons
+    ){
+        lucide.createIcons();
+    }
+
     return;
-  }
+}
 
   // ===== LEVEL 1: Topik (150px) =====
   let html = '';
