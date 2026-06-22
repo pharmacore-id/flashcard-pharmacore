@@ -6941,76 +6941,158 @@ async function deleteSelectedDecks() {
   }
 }
 
-    function selectPlan(type) {
-      if (isPremiumActive()) {
-        alert('You already have Premium access!');
-        return;
-      }
-      selectedPlan = type;
-      document.getElementById('payment-section').classList.remove('hidden');
+   function selectPlan(type, duration) {
 
-      document.getElementById('book-buyer-card').style.borderColor = type === 'book' ? '#d97706' : 'var(--border)';
-      document.getElementById('regular-card').style.borderColor = type === 'regular' ? '#d97706' : 'var(--border)';
+  if (isPremiumActive()) {
+    alert('You already have Premium access!');
+    return;
+  }
 
-      const price = type === 'book' ? PRICING.book.price : PRICING.regular.price;
-      const label = type === 'book' ? 'Book Buyer' : 'Regular';
-      document.getElementById('pay-now-btn').textContent = `Pay Rp ${price.toLocaleString()} (${label})`;
-      document.getElementById('modal-price-display').textContent = `Rp ${price.toLocaleString()}`;
-      document.getElementById('modal-price-label').textContent = type === 'book' ? 'Book Buyer Price' : 'Regular Price';
-    }
+  selectedPlan = type;
+  selectedDuration = duration;
+
+  document
+    .getElementById('payment-section')
+    .classList.remove('hidden');
+
+  // reset semua card
+  document.querySelectorAll('.plan-card')
+    .forEach(card=>{
+      card.style.borderColor='var(--border)';
+    });
+
+  // highlight selected
+  document
+    .getElementById(`${type}-${duration}`)
+    .style.borderColor='#d97706';
+
+  const price = PRICING[type][duration];
+
+  const label =
+    type === 'book'
+    ? 'Book Buyer'
+    : 'Regular';
+
+  document.getElementById(
+    'pay-now-btn'
+  ).textContent =
+  `Pay Rp ${price.toLocaleString()}`;
+
+  document.getElementById(
+    'modal-price-display'
+  ).textContent =
+  `Rp ${price.toLocaleString()}`;
+
+  document.getElementById(
+    'modal-price-label'
+  ).textContent =
+  `${label} • ${duration} Month`;
+}
 
     function selectPayment(method, evt) {
       document.querySelectorAll('.payment-option').forEach(el => el.classList.remove('selected'));
       evt.currentTarget.classList.add('selected');
     }
 
-  async function processPayment() {   // ← HARUS ADA async
-  if (!selectedPlan) {
-    alert('Please select a plan first.');
+  async function processPayment() {
+
+  if (!selectedPlan){
+    alert('Please select a plan.');
     return;
   }
 
-  if (isPremiumActive()) {
+  if(isPremiumActive()){
     alert('You already have Premium access!');
-    closeUpgradeModal();
     return;
   }
 
-  const price = selectedPlan === 'book' ? PRICING.book.price : PRICING.regular.price;
-  const label = selectedPlan === 'book' ? 'Book Buyer' : 'Regular';
+  const price =
+    PRICING[selectedPlan][selectedDuration];
 
-  const btn = document.getElementById('pay-now-btn');
-  btn.textContent = 'Processing...';
-  btn.disabled = true;
+  const btn =
+    document.getElementById(
+      'pay-now-btn'
+    );
 
-  setTimeout(async () => {   // ← INI JUGA HARUS async KARENA ADA await DI DALAM
-    const expiry = addMonths(new Date(), PLAN_DURATION_MONTHS).toISOString();
-    savePlan(currentUser, 'premium', expiry);
+  btn.disabled=true;
+  btn.textContent='Processing...';
 
-    if (selectedPlan === 'book' && hasValidCode) {
-      const code = document.getElementById('upgrade-code-input').value.trim().toUpperCase();
-      try {
-        await db.collection('accessCodes').doc(code).update({
-          used: true,
-          usedBy: currentUser,
-          usedAt: firebase.firestore.FieldValue.serverTimestamp()
+  setTimeout(async()=>{
+
+    const expiry =
+      addMonths(
+        new Date(),
+        selectedDuration
+      ).toISOString();
+
+    savePlan(
+      currentUser,
+      'premium',
+      expiry
+    );
+
+    // hanya tandai used jika book buyer
+    if(
+      selectedPlan==='book'
+      && hasValidCode
+    ){
+
+      const code =
+      document
+      .getElementById(
+        'upgrade-code-input'
+      )
+      .value
+      .trim()
+      .toUpperCase();
+
+      try{
+
+        await db
+        .collection('accessCodes')
+        .doc(code)
+        .update({
+
+          used:true,
+          usedBy:currentUser,
+
+          usedAt:
+          firebase.firestore
+          .FieldValue
+          .serverTimestamp()
+
         });
-      } catch (error) {
-        console.error('Failed to mark code as used:', error);
+
+      }catch(err){
+
+        console.error(
+          'Failed updating code',
+          err
+        );
+
       }
+
     }
 
-    userPlan = 'premium';
+    userPlan='premium';
+
     updatePlanUI();
     updateHome();
     renderDecks();
+
     closeUpgradeModal();
 
-    btn.textContent = `Pay Rp ${price.toLocaleString()} (${label})`;
-    btn.disabled = false;
+    btn.disabled=false;
 
-    alert(`🎉 Premium unlocked! You have access for ${PLAN_DURATION_MONTHS} months.`);
-  }, 1500);
+    btn.textContent=
+    `Pay Rp ${price.toLocaleString()}`;
+
+    alert(
+      `🎉 Premium unlocked for ${selectedDuration} month(s)!`
+    );
+
+  },1500);
+
 }
     // ============================================================
     //  KEYBOARD SHORTCUTS
