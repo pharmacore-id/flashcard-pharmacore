@@ -1257,6 +1257,234 @@ border-color:#d97706;
 border:2px solid #d97706;
 background:rgba(217,119,6,.08);
 }
+
+    .upgrade-header{
+text-align:center;
+margin-bottom:24px;
+}
+
+.upgrade-icon{
+width:70px;
+height:70px;
+border-radius:50%;
+margin:auto;
+font-size:32px;
+
+display:flex;
+align-items:center;
+justify-content:center;
+
+background:linear-gradient(
+135deg,
+#f97316,
+#ea580c
+);
+
+color:white;
+box-shadow:0 10px 25px rgba(249,115,22,.3);
+}
+
+.upgrade-header h2{
+font-size:24px;
+font-weight:800;
+margin-top:12px;
+}
+
+.upgrade-header p{
+font-size:13px;
+opacity:.7;
+}
+
+.upgrade-section{
+margin-top:24px;
+}
+
+.section-title{
+font-size:13px;
+font-weight:700;
+margin-bottom:10px;
+opacity:.8;
+}
+
+.pricing-card-grid{
+display:flex;
+flex-direction:column;
+gap:12px;
+}
+
+.pricing-card{
+
+padding:16px;
+
+border-radius:20px;
+
+border:2px solid var(--border);
+
+background:var(--card);
+
+cursor:pointer;
+
+transition:.3s;
+}
+
+.pricing-card:hover{
+transform:translateY(-2px);
+}
+
+.pricing-card.selected{
+
+border-color:#f97316;
+
+box-shadow:
+0 10px 25px rgba(249,115,22,.2);
+
+}
+
+.plan-name{
+font-size:15px;
+font-weight:700;
+}
+
+.plan-desc{
+font-size:12px;
+opacity:.6;
+margin-top:2px;
+}
+
+.duration-grid{
+display:grid;
+grid-template-columns:repeat(3,1fr);
+gap:10px;
+}
+
+.duration-btn{
+
+padding:12px;
+
+border-radius:14px;
+
+font-size:13px;
+
+font-weight:700;
+
+background:transparent;
+
+border:1px solid var(--border);
+
+}
+
+.duration-btn.active{
+
+background:#f97316;
+
+color:white;
+
+border:none;
+
+}
+
+.price-summary{
+
+margin-top:24px;
+
+padding:18px;
+
+border-radius:20px;
+
+background:rgba(249,115,22,.08);
+
+display:flex;
+
+justify-content:space-between;
+
+align-items:center;
+}
+
+.summary-label{
+
+font-size:12px;
+
+opacity:.7;
+}
+
+#modal-price-display{
+
+font-size:28px;
+
+font-weight:800;
+}
+
+#modal-price-label{
+
+font-size:12px;
+
+opacity:.6;
+}
+
+.daily-price{
+
+font-size:12px;
+
+font-weight:700;
+
+padding:8px 12px;
+
+border-radius:999px;
+
+background:white;
+}
+
+.payment-box{
+
+margin-top:24px;
+
+padding:20px;
+
+border-radius:20px;
+
+border:1px solid var(--border);
+}
+
+.payment-title{
+
+font-size:14px;
+
+font-weight:700;
+}
+
+.payment-sub{
+
+font-size:11px;
+
+opacity:.7;
+
+margin-top:5px;
+
+margin-bottom:16px;
+}
+
+.pay-btn{
+
+width:100%;
+
+padding:14px;
+
+border:none;
+
+border-radius:16px;
+
+font-weight:700;
+
+font-size:14px;
+
+background:linear-gradient(
+135deg,
+#f97316,
+#ea580c
+);
+
+color:white;
+}
     
   </style>
 </head>
@@ -2352,134 +2580,163 @@ Back to Settings
     <div id="upgrade-modal" class="hidden fixed inset-0 z-[9999] flex items-end sm:items-center justify-center" style="background:rgba(0,0,0,0.5);" onclick="if(event.target===this) closeUpgradeModal()">
       <div class="surface rounded-t-3xl sm:rounded-3xl w-full max-w-md p-6" onclick="event.stopPropagation()" style="max-height:90vh;overflow-y:auto;">
         <div class="flex justify-between items-center mb-4"><h3 class="font-bold text-xl">✨ Upgrade to Premium</h3><button onclick="closeUpgradeModal()" class="text-sec"><i data-lucide="x" class="w-6 h-6"></i></button></div>
-        <div class="pricing-header">
-          <p class="text-sm opacity-80">3-Month Study Plan</p>
-          <div class="big-price" id="modal-price-display">Rp 35.000 <small>/ 3 mo</small></div>
-          <p class="text-sm opacity-80 mt-1" id="modal-price-label">Book Buyer Price</p>
+<div class="upgrade-container">
+
+    <div class="upgrade-header">
+        <div class="upgrade-icon">
+            👑
         </div>
-        <div class="mb-4">
-          <label class="text-sm font-medium text-sec">Have a book access code?</label>
-          <div class="flex gap-2 mt-1">
-            <input type="text" id="upgrade-code-input" placeholder="e.g. PC-2024-ABCD" class="code-input flex-1 border rounded-xl px-3 py-2 surface text-sm" style="border-color:var(--border)" />
-            <button onclick="validateUpgradeCode()" class="accent-bg text-white px-4 py-2 rounded-xl text-sm font-medium">Validate</button>
-          </div>
-          <div id="upgrade-code-status" class="text-xs mt-1 min-h-[1.25rem]"></div>
+
+        <h2>Upgrade to Premium</h2>
+
+        <p>
+            Unlock all pharmacy decks and study modes
+        </p>
+    </div>
+
+
+    <!-- PLAN TYPE -->
+
+    <div class="upgrade-section">
+
+        <div class="section-title">
+            Choose Plan
         </div>
-        <div class="space-y-3 mb-4">
-         <div class="pricing-card popular" id="book-buyer-card">
 
-<div class="flex justify-between items-center mb-3">
-<div>
-<span class="badge-popular">⭐ Best Value</span>
-<p class="font-bold mt-1 text-sm">
-Book Buyer
-</p>
-<p class="text-xs text-sec">
-With valid access code
-</p>
-</div>
-</div>
+        <div class="pricing-card-grid">
 
-<div class="grid grid-cols-3 gap-2">
+            <div class="pricing-card popular"
+            id="book-buyer-card"
+            onclick="selectPlan('book')">
 
-<div class="plan-option"
-onclick="selectPlan('book',1)">
-<div class="text-xs font-bold">
-1M
-</div>
-<div class="text-sm font-extrabold">
-15K
-</div>
-<div class="text-[10px] text-sec">
-500/day
-</div>
-</div>
+                <span class="badge-popular">
+                    ⭐ Best Value
+                </span>
 
-<div class="plan-option"
-onclick="selectPlan('book',3)">
-<div class="text-xs font-bold">
-3M
-</div>
-<div class="text-sm font-extrabold">
-38K
-</div>
-<div class="text-[10px] text-sec">
-422/day
-</div>
-</div>
+                <p class="plan-name">
+                    Book Buyer
+                </p>
 
-<div class="plan-option"
-onclick="selectPlan('book',6)">
-<div class="text-xs font-bold">
-6M
-</div>
-<div class="text-sm font-extrabold">
-70K
-</div>
-<div class="text-[10px] text-sec">
-389/day
-</div>
-</div>
+                <p class="plan-desc">
+                    Requires valid access code
+                </p>
 
-</div>
-</div>
+            </div>
 
 
+            <div class="pricing-card"
+            id="regular-card"
+            onclick="selectPlan('regular')">
 
-<div class="pricing-card" id="regular-card">
+                <p class="plan-name">
+                    Regular User
+                </p>
 
-<div class="mb-3">
-<p class="font-bold text-sm">
-Regular User
-</p>
-<p class="text-xs text-sec">
-No code needed
-</p>
+                <p class="plan-desc">
+                    No access code required
+                </p>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- DURATION -->
+
+    <div class="upgrade-section">
+
+        <div class="section-title">
+            Duration
+        </div>
+
+        <div class="duration-grid">
+
+            <button class="duration-btn"
+            onclick="selectDuration(1)">
+            1 Month
+            </button>
+
+            <button class="duration-btn active"
+            onclick="selectDuration(3)">
+            3 Months
+            </button>
+
+            <button class="duration-btn"
+            onclick="selectDuration(6)">
+            6 Months
+            </button>
+
+        </div>
+
+    </div>
+
+
+    <!-- PRICE SUMMARY -->
+
+    <div class="price-summary">
+
+        <div>
+
+            <p class="summary-label">
+                Total Price
+            </p>
+
+            <h2 id="modal-price-display">
+                Rp68000
+            </h2>
+
+            <p id="modal-price-label">
+                Regular · 3 Months
+            </p>
+
+        </div>
+
+        <div class="daily-price">
+
+            <span id="price-per-day">
+
+            Rp756/day
+
+            </span>
+
+        </div>
+
+    </div>
+
+
+    <!-- QRIS -->
+
+    <div class="payment-box">
+
+        <div class="payment-title">
+
+            QRIS Payment
+
+        </div>
+
+        <p class="payment-sub">
+
+            Supports GoPay, DANA, OVO, ShopeePay, BCA, Mandiri and other QRIS apps
+
+        </p>
+
+        <button
+        id="pay-now-btn"
+        onclick="processPayment()"
+        class="pay-btn">
+
+            Pay with QRIS
+
+        </button>
+
+    </div>
+
 </div>
 
-<div class="grid grid-cols-3 gap-2">
 
-<div class="plan-option"
-onclick="selectPlan('regular',1)">
-<div class="text-xs font-bold">
-1M
-</div>
-<div class="text-sm font-extrabold">
-25K
-</div>
-<div class="text-[10px] text-sec">
-833/day
-</div>
-</div>
-
-<div class="plan-option"
-onclick="selectPlan('regular',3)">
-<div class="text-xs font-bold">
-3M
-</div>
-<div class="text-sm font-extrabold">
-68K
-</div>
-<div class="text-[10px] text-sec">
-756/day
-</div>
-</div>
-
-<div class="plan-option"
-onclick="selectPlan('regular',6)">
-<div class="text-xs font-bold">
-6M
-</div>
-<div class="text-sm font-extrabold">
-120K
-</div>
-<div class="text-[10px] text-sec">
-667/day
-</div>
-</div>
-
-</div>
-</div>
+        
         <div id="payment-section" class="hidden">
           <div class="border-t border-theme pt-4 mt-2">
             <p class="font-semibold text-sm mb-3">Choose Payment Method</p>
@@ -2554,6 +2811,7 @@ onclick="selectPlan('regular',6)">
       tsIncorrect = 0,
       tsCurrentAnswer = '';
     let selectedPlan = null;
+    let selectedDuration = 3;
     let hasValidCode = false;
     let currentTab = 'home';
     let navTimeout = null;
@@ -7116,104 +7374,128 @@ async function deleteSelectedDecks() {
       evt.currentTarget.classList.add('selected');
     }
 
-  async function processPayment() {
+ async function processPayment(){
 
-  if (!selectedPlan){
-    alert('Please select a plan.');
+if(!selectedPlanType || !selectedDuration){
+    alert("Please select a plan");
     return;
-  }
+}
 
-  if(isPremiumActive()){
-    alert('You already have Premium access!');
+if(isPremiumActive()){
+    alert("You already have Premium access!");
     return;
-  }
+}
 
-  const price =
-    PRICING[selectedPlan][selectedDuration];
+const price=
+PRICING[selectedPlanType][selectedDuration];
 
-  const btn =
-    document.getElementById(
-      'pay-now-btn'
-    );
+const btn=
+document.getElementById(
+'pay-now-btn'
+);
 
-  btn.disabled=true;
-  btn.textContent='Processing...';
+btn.disabled=true;
+btn.textContent=
+"Processing...";
 
-  setTimeout(async()=>{
 
-    const expiry =
-      addMonths(
-        new Date(),
-        selectedDuration
-      ).toISOString();
+// TEMP PAYMENT SIMULATION
+setTimeout(async()=>{
 
-    savePlan(
-      currentUser,
-      'premium',
-      expiry
-    );
+const confirmed=
+confirm(
+`Simulate successful payment?\n\nPlan: ${selectedDuration} month\nPrice: Rp${price.toLocaleString()}`
+);
 
-    // hanya tandai used jika book buyer
-    if(
-      selectedPlan==='book'
-      && hasValidCode
-    ){
+if(!confirmed){
 
-      const code =
-      document
-      .getElementById(
-        'upgrade-code-input'
-      )
-      .value
-      .trim()
-      .toUpperCase();
+btn.disabled=false;
 
-      try{
+btn.textContent=
+"Pay with QRIS";
 
-        await db
-        .collection('accessCodes')
-        .doc(code)
-        .update({
+return;
+}
 
-          used:true,
-          usedBy:currentUser,
 
-          usedAt:
-          firebase.firestore
-          .FieldValue
-          .serverTimestamp()
+// activate premium
+const expiry=
+addMonths(
+new Date(),
+selectedDuration
+).toISOString();
 
-        });
+savePlan(
+currentUser,
+'premium',
+expiry
+);
 
-      }catch(err){
 
-        console.error(
-          'Failed updating code',
-          err
-        );
+// mark code used ONLY if book buyer
+if(
+selectedPlanType==="book"
+&& hasValidCode
+){
 
-      }
+const code=
+document
+.getElementById(
+'upgrade-code-input'
+)
+.value
+.trim()
+.toUpperCase();
 
-    }
+try{
 
-    userPlan='premium';
+await db
+.collection(
+'accessCodes'
+)
+.doc(code)
+.update({
 
-    updatePlanUI();
-    updateHome();
-    renderDecks();
+used:true,
 
-    closeUpgradeModal();
+usedBy:currentUser,
 
-    btn.disabled=false;
+usedAt:
+firebase
+.firestore
+.FieldValue
+.serverTimestamp()
 
-    btn.textContent=
-    `Pay Rp ${price.toLocaleString()}`;
+});
 
-    alert(
-      `🎉 Premium unlocked for ${selectedDuration} month(s)!`
-    );
+}catch(error){
 
-  },1500);
+console.error(error);
+
+}
+
+}
+
+userPlan='premium';
+
+updatePlanUI();
+
+updateHome();
+
+renderDecks();
+
+closeUpgradeModal();
+
+btn.disabled=false;
+
+btn.textContent=
+"Pay with QRIS";
+
+alert(
+`🎉 Premium activated for ${selectedDuration} month(s)!`
+);
+
+},1000);
 
 }
     // ============================================================
@@ -7400,6 +7682,63 @@ document.addEventListener(
     },
     { passive: true }
 );
+
+function selectDuration(months){
+
+selectedDuration=months;
+
+document
+.querySelectorAll(
+'.duration-btn'
+)
+.forEach(btn=>{
+
+btn.classList.remove(
+'active'
+);
+
+});
+
+event.target.classList.add(
+'active'
+);
+
+updatePricingDisplay();
+
+}
+
+    function updatePricingDisplay(){
+
+if(!selectedPlanType)return;
+
+const price=
+PRICING[selectedPlanType]
+[selectedDuration];
+
+document
+.getElementById(
+'modal-price-display'
+)
+.textContent=
+`Rp${price.toLocaleString()}`;
+
+document
+.getElementById(
+'modal-price-label'
+)
+.textContent=
+`${selectedDuration} Month`;
+
+document
+.getElementById(
+'price-per-day'
+)
+.textContent=
+`Rp${Math.round(
+price/(selectedDuration*30)
+).toLocaleString()}/day`;
+
+}
     
   </script>
 </body>
