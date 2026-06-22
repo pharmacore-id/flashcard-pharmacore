@@ -1085,6 +1085,62 @@
   max-width: 100%;
   line-height: 1.6;
 }
+
+    /* ===== Session Summary ===== */
+
+.session-summary{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    text-align:center;
+    width:100%;
+    min-height:55vh;
+}
+
+.session-summary h2{
+    font-size:28px;
+    font-weight:700;
+    margin-bottom:6px;
+}
+
+.summary-sub{
+    font-size:14px;
+    opacity:.7;
+    margin-bottom:18px;
+}
+
+.summary-grid{
+    display:grid;
+    grid-template-columns:repeat(2,1fr);
+    gap:12px;
+    width:100%;
+    max-width:280px;
+}
+
+.summary-box{
+    background:var(--card-bg);
+    padding:14px;
+    border-radius:16px;
+    border:1px solid var(--border);
+}
+
+.summary-box span{
+    display:block;
+    font-size:22px;
+    font-weight:700;
+}
+
+.summary-box small{
+    font-size:12px;
+    opacity:.7;
+}
+
+.summary-total{
+    margin-top:16px;
+    font-weight:600;
+    font-size:14px;
+}
   </style>
 </head>
 <body>
@@ -2071,6 +2127,7 @@ Science       | Biology       | What is DNA?             | Deoxyribonucleic acid
     let selectedCardIds = [];
     let selectedDeckIds = [];
     let sessionStats = {
+    again: 0,
     hard: 0,
     good: 0,
     easy: 0
@@ -4751,13 +4808,18 @@ function startCustomChallenge() {
 }
     
 function fcShowCard() {
+
     const card = document.getElementById('fc-card');
     const done = document.getElementById('fc-done');
     const btns = document.getElementById('fc-buttons');
     const hint = document.querySelector('.swipe-hint');
 
-    // Finished studying
-    if (!studyQueue || studyQueue.length === 0 || studyIdx >= studyQueue.length) {
+    // ===== Session Finished =====
+    if (
+        !studyQueue ||
+        studyQueue.length === 0 ||
+        studyIdx >= studyQueue.length
+    ) {
 
         if (card) card.style.display = 'none';
 
@@ -4766,86 +4828,92 @@ function fcShowCard() {
             btns.style.display = 'none';
         }
 
-        if (hint) hint.style.display = 'none';
-
-        if (done) {
-    done.classList.remove('hidden');
-    done.style.display = 'flex';
-
-    done.innerHTML = `
-        <div style="
-            display:flex;
-            flex-direction:column;
-            justify-content:center;
-            align-items:center;
-            height:100%;
-            text-align:center;
-            gap:14px;
-        ">
-            <div style="font-size:28px;font-weight:700">
-                🎉 All Done!
-            </div>
-
-            <div style="
-                color:var(--text-secondary);
-                font-size:14px;
-            ">
-                Session review
-            </div>
-
-            <div style="
-                display:flex;
-                flex-direction:column;
-                gap:8px;
-                width:100%;
-                max-width:240px;
-            ">
-                <div class="surface rounded-xl p-3">
-                    😵 Hard: ${sessionStats.hard}
-                </div>
-
-                <div class="surface rounded-xl p-3">
-                    👍 Good: ${sessionStats.good}
-                </div>
-
-                <div class="surface rounded-xl p-3">
-                    🚀 Easy: ${sessionStats.easy}
-                </div>
-            </div>
-
-            <button
-                onclick="exitStudy()"
-                class="accent-bg text-white rounded-xl px-5 py-3"
-            >
-                Back Home
-            </button>
-        </div>
-    `;
-}
-
-        const progress = document.getElementById('fc-progress');
-        if (progress) {
-            progress.textContent =
-                `${studyQueue ? studyQueue.length : 0}/${studyQueue ? studyQueue.length : 0}`;
+        if (hint) {
+            hint.style.display = 'none';
         }
 
-        const progressFill = document.getElementById('fc-progress-fill');
+        if (done) {
+
+            const total =
+                sessionStats.again +
+                sessionStats.hard +
+                sessionStats.good +
+                sessionStats.easy;
+
+            done.innerHTML = `
+            <div class="session-summary">
+
+                <h2>🎉 All Done!</h2>
+
+                <p class="summary-sub">
+                    Session completed
+                </p>
+
+                <div class="summary-grid">
+
+                    <div class="summary-box">
+                        <span>${sessionStats.again}</span>
+                        <small>Again</small>
+                    </div>
+
+                    <div class="summary-box">
+                        <span>${sessionStats.hard}</span>
+                        <small>Hard</small>
+                    </div>
+
+                    <div class="summary-box">
+                        <span>${sessionStats.good}</span>
+                        <small>Good</small>
+                    </div>
+
+                    <div class="summary-box">
+                        <span>${sessionStats.easy}</span>
+                        <small>Easy</small>
+                    </div>
+
+                </div>
+
+                <p class="summary-total">
+                    ${total} cards reviewed
+                </p>
+
+            </div>
+            `;
+
+            done.classList.remove('hidden');
+            done.style.display = 'flex';
+        }
+
+        const progress =
+            document.getElementById('fc-progress');
+
+        if (progress) {
+            progress.textContent =
+                `${studyQueue.length}/${studyQueue.length}`;
+        }
+
+        const progressFill =
+            document.getElementById('fc-progress-fill');
+
         if (progressFill) {
             progressFill.style.width = '100%';
         }
 
-        // Reset challenge mode
         challengeMode = false;
         challengeCards = [];
 
-        if (typeof lucide !== 'undefined' && lucide.createIcons) {
+        if (
+            typeof lucide !== 'undefined' &&
+            lucide.createIcons
+        ) {
             lucide.createIcons();
         }
 
         return;
     }
 
-    // Show card normally
+    // ===== Normal Card View =====
+
     if (card) {
         card.style.display = '';
         card.classList.remove('flipped');
@@ -4861,7 +4929,9 @@ function fcShowCard() {
         btns.style.display = 'none';
     }
 
-    if (hint) hint.style.display = '';
+    if (hint) {
+        hint.style.display = '';
+    }
 
     const c = studyQueue[studyIdx];
 
@@ -4871,26 +4941,52 @@ function fcShowCard() {
         return;
     }
 
-    const frontText = document.getElementById('fc-front-text');
-    const backText = document.getElementById('fc-back-text');
+    const frontText =
+        document.getElementById(
+            'fc-front-text'
+        );
 
-    if (frontText) frontText.textContent = c.card_front || 'Empty';
-    if (backText) backText.textContent = c.card_back || 'Empty';
+    const backText =
+        document.getElementById(
+            'fc-back-text'
+        );
+
+    if (frontText) {
+        frontText.textContent =
+            c.card_front || 'Empty';
+    }
+
+    if (backText) {
+        backText.textContent =
+            c.card_back || 'Empty';
+    }
 
     fcFlipped = false;
 
-    const progress = document.getElementById('fc-progress');
+    const progress =
+        document.getElementById(
+            'fc-progress'
+        );
+
     if (progress) {
-        progress.textContent = `${studyIdx + 1}/${studyQueue.length}`;
+        progress.textContent =
+            `${studyIdx + 1}/${studyQueue.length}`;
     }
 
-    const progressFill = document.getElementById('fc-progress-fill');
+    const progressFill =
+        document.getElementById(
+            'fc-progress-fill'
+        );
+
     if (progressFill) {
         progressFill.style.width =
-            `${((studyIdx + 1) / studyQueue.length) * 100}%`;
+            `${(studyIdx / studyQueue.length) * 100}%`;
     }
 
-    if (typeof lucide !== 'undefined' && lucide.createIcons) {
+    if (
+        typeof lucide !== 'undefined' &&
+        lucide.createIcons
+    ) {
         lucide.createIcons();
     }
 }
@@ -4910,30 +5006,34 @@ function fcShowCard() {
     }
 
 function fcRate(q) {
+
   if (!studyQueue || studyIdx >= studyQueue.length) {
-    exitStudy();
-    return;
+      exitStudy();
+      return;
   }
 
-  if (q === 1) sessionStats.hard++;
-  if (q === 3) sessionStats.good++;
-  if (q === 5) sessionStats.easy++;
+  // Session stats
+  if (q === 0) sessionStats.again++;
+  else if (q === 1) sessionStats.hard++;
+  else if (q === 2) sessionStats.good++;
+  else if (q === 3) sessionStats.easy++;
+
   const c = studyQueue[studyIdx];
-  const updated = applySRS(c, q);
-  
-  const idx = allCards.findIndex(x => x.__id === updated.__id);
-  if (idx !== -1) {
-    allCards[idx] = updated;
-  } else {
-    allCards.push(updated);
-  }
-  
-  saveUserData(currentUser)
-  .catch(console.error);
-  addStudyTime(0.5);
+
+  const updated = applySRS(c,q);
+
+  const idx = allCards.findIndex(
+      x => x.__id === updated.__id
+  );
+
+  if (idx !== -1)
+      allCards[idx] = updated;
+
+  saveUserData(currentUser);
+
   studyIdx++;
+
   fcShowCard();
-  updateHome();
 }
     // ============================================================
     //  EXIT STUDY - COMPLETE RESET
