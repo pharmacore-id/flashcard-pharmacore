@@ -1619,11 +1619,6 @@ Science       | Biology       | What is DNA?             | Deoxyribonucleic acid
     <div id="view-settings" class="view">
       <h2 class="text-xl font-bold mb-4">⚙️ Settings</h2>
       <div class="view-scroll space-y-3">
-
-<button onclick="switchTab('faq')" class="w-full surface rounded-2xl border border-theme p-4 text-left flex items-center gap-3 shadow-card">
-  <i data-lucide="help-circle" class="w-5 h-5 text-sec"></i>
-  <span class="font-medium text-sm">FAQ & Troubleshooting</span>
-</button>
         
         <div class="surface rounded-2xl border border-theme p-4 shadow-card">
           <p class="text-sm text-sec font-medium mb-1">Account</p>
@@ -1710,9 +1705,28 @@ Science       | Biology       | What is DNA?             | Deoxyribonucleic acid
           </button>
         </div>
 
-        
+        <div class="surface rounded-2xl border border-theme p-4 shadow-card">
+          <label class="text-sm font-medium">Ease Factor</label>
+          <input id="ease-input" type="number" step="0.1" min="1.3" max="4.0" value="2.5" class="w-full border rounded-xl px-3 py-2 mt-2 surface text-sm" style="border-color:var(--border)" />
+        </div>
+        <div class="surface rounded-2xl border border-theme p-4 shadow-card">
+          <label class="text-sm font-medium">Interval Multiplier</label>
+          <input id="interval-input" type="number" step="0.1" min="0.5" max="3.0" value="1.0" class="w-full border rounded-xl px-3 py-2 mt-2 surface text-sm" style="border-color:var(--border)" />
+        </div>
 
-        <!-- ===== FAQ ===== -->
+        <button onclick="switchTab('faq')" class="w-full surface rounded-2xl border border-theme p-4 text-left flex items-center gap-3 shadow-card">
+          <i data-lucide="help-circle" class="w-5 h-5 text-sec"></i>
+          <span class="font-medium text-sm">FAQ & Troubleshooting</span>
+        </button>
+
+        <button onclick="exportData()" class="w-full surface rounded-2xl border border-theme p-4 text-left flex items-center gap-3 shadow-card">
+          <i data-lucide="download" class="w-5 h-5 text-sec"></i>
+          <span class="font-medium text-sm">Export Data</span>
+        </button>
+      </div>
+    </div>
+
+       <!-- ===== FAQ ===== -->
 <div id="view-faq" class="view">
   <h2 class="text-xl font-bold mb-4">❓ FAQ & Troubleshooting</h2>
   <div class="view-scroll">
@@ -1866,22 +1880,6 @@ Science       | Biology       | What is DNA?             | Deoxyribonucleic acid
 
   </div>
 </div>
-
-        <div class="surface rounded-2xl border border-theme p-4 shadow-card">
-          <label class="text-sm font-medium">Ease Factor</label>
-          <input id="ease-input" type="number" step="0.1" min="1.3" max="4.0" value="2.5" class="w-full border rounded-xl px-3 py-2 mt-2 surface text-sm" style="border-color:var(--border)" />
-        </div>
-        <div class="surface rounded-2xl border border-theme p-4 shadow-card">
-          <label class="text-sm font-medium">Interval Multiplier</label>
-          <input id="interval-input" type="number" step="0.1" min="0.5" max="3.0" value="1.0" class="w-full border rounded-xl px-3 py-2 mt-2 surface text-sm" style="border-color:var(--border)" />
-        </div>
-
-        <button onclick="exportData()" class="w-full surface rounded-2xl border border-theme p-4 text-left flex items-center gap-3 shadow-card">
-          <i data-lucide="download" class="w-5 h-5 text-sec"></i>
-          <span class="font-medium text-sm">Export Data</span>
-        </button>
-      </div>
-    </div>
 
     <!-- ===== BOTTOM NAV ===== -->
     <div class="bottom-nav" id="bottomNav" style="display: none;">
