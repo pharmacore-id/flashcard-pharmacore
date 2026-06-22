@@ -2990,46 +2990,77 @@ async function saveUserData(email) {
       return new Date(expiry) > new Date();
     }
 
- function enterApp() {
+function enterApp() {
 
+    // Show bottom navigation
     document.getElementById('bottomNav').style.display = 'flex';
 
+    // Hide all views
     document.querySelectorAll('.view').forEach(v => {
         v.classList.remove('active');
         v.style.display = 'none';
     });
 
-    const homeView =
-        document.getElementById('view-home');
+    // Show Home view
+    const homeView = document.getElementById('view-home');
 
     if (homeView) {
         homeView.classList.add('active');
         homeView.style.display = 'flex';
     }
 
-    document.querySelectorAll('.nav-item')
-    .forEach(btn => {
+    // Highlight Home tab
+    document.querySelectorAll('.nav-item').forEach(btn => {
         btn.classList.toggle(
             'active',
             btn.dataset.tab === 'home'
         );
     });
 
+    // Load user settings
     loadNickname();
     loadDailyGoal();
 
     updateThemeToggle();
     updatePlanUI();
 
+    // Render content
     renderDecks();
-
-    // IMPORTANT:
-    // remove your old setTimeout(updateHome,500)
     updateHome();
+
+    // ==========================
+    // Admin / Premium UI
+    // ==========================
+
+    const adminBadge =
+        document.getElementById('admin-badge');
+
+    const adminImportBtn =
+        document.getElementById('admin-import-btn');
 
     const userRequestBtn =
         document.getElementById('user-request-btn');
 
+    const proBadge =
+        document.getElementById('pro-badge');
+
+    // Show admin badge for admins only
+    if (adminBadge) {
+        adminBadge.classList.toggle(
+            'hidden',
+            !isAdmin
+        );
+    }
+
+    // Show admin import button for admins only
+    if (adminImportBtn) {
+        adminImportBtn.classList.toggle(
+            'hidden',
+            !isAdmin
+        );
+    }
+
+    // Hide user request button for admins
     if (userRequestBtn) {
         userRequestBtn.classList.toggle(
             'hidden',
@@ -3037,6 +3068,15 @@ async function saveUserData(email) {
         );
     }
 
+    // Hide Pro badge for admins
+    if (proBadge) {
+        proBadge.classList.toggle(
+            'hidden',
+            isAdmin
+        );
+    }
+
+    // Refresh icons
     if (
         typeof lucide !== 'undefined' &&
         lucide.createIcons
