@@ -7347,52 +7347,35 @@ async function deleteSelectedDecks() {
   }
 }
 
-   function selectPlan(type, duration) {
+  function selectPlan(type){
 
-  if (isPremiumActive()) {
-    alert('You already have Premium access!');
-    return;
-  }
+if(isPremiumActive()){
+alert('You already have Premium access!');
+return;
+}
 
-  selectedPlan = type;
-  selectedDuration = duration;
+selectedPlan=type;
 
-  document
-    .getElementById('payment-section')
-    .classList.remove('hidden');
+document
+.getElementById('payment-section')
+?.classList.remove('hidden');
 
-  // reset semua card
-  document.querySelectorAll('.plan-card')
-    .forEach(card=>{
-      card.style.borderColor='var(--border)';
-    });
+document
+.getElementById('book-buyer-card')
+.style.borderColor=
+type==='book'
+? '#d97706'
+: 'var(--border)';
 
-  // highlight selected
-  document
-    .getElementById(`${type}-${duration}`)
-    .style.borderColor='#d97706';
+document
+.getElementById('regular-card')
+.style.borderColor=
+type==='regular'
+? '#d97706'
+: 'var(--border)';
 
-  const price = PRICING[type][duration];
+updatePricingDisplay();
 
-  const label =
-    type === 'book'
-    ? 'Book Buyer'
-    : 'Regular';
-
-  document.getElementById(
-    'pay-now-btn'
-  ).textContent =
-  `Pay Rp ${price.toLocaleString()}`;
-
-  document.getElementById(
-    'modal-price-display'
-  ).textContent =
-  `Rp ${price.toLocaleString()}`;
-
-  document.getElementById(
-    'modal-price-label'
-  ).textContent =
-  `${label} • ${duration} Month`;
 }
 
     function selectPayment(method, evt) {
@@ -7721,17 +7704,22 @@ btn.classList.remove('active');
 
 event.currentTarget.classList.add('active');
 
-updatePricingDisplay();
+function updatePricingDisplay(){
 
-}
-
-    function updatePricingDisplay(){
-
-if(!selectedPlanType)return;
+if(!selectedPlan)return;
 
 const price=
-PRICING[selectedPlanType]
-[selectedDuration];
+PRICING[selectedPlan][selectedDuration];
+
+const perDay=
+Math.round(
+price/(selectedDuration*30)
+);
+
+const label=
+selectedPlan==='book'
+? 'Book Buyer'
+: 'Regular';
 
 document
 .getElementById(
@@ -7745,16 +7733,21 @@ document
 'modal-price-label'
 )
 .textContent=
-`${selectedDuration} Month`;
+`${label} · ${selectedDuration} Month`;
 
 document
 .getElementById(
 'price-per-day'
 )
 .textContent=
-`Rp${Math.round(
-price/(selectedDuration*30)
-).toLocaleString()}/day`;
+`Rp${perDay.toLocaleString()}/day`;
+
+document
+.getElementById(
+'pay-now-btn'
+)
+.textContent=
+`Pay Rp${price.toLocaleString()}`;
 
 }
     
