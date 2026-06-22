@@ -4832,7 +4832,11 @@ function fcShowCard() {
         studyIdx >= studyQueue.length
     ) {
 
-        if (card) card.style.display = 'none';
+        if (card) {
+    card.style.display = 'none';
+    card.style.height = '0';
+    card.style.margin = '0';
+}
 
         if (btns) {
             btns.classList.add('hidden');
@@ -4933,9 +4937,11 @@ function fcShowCard() {
     // ===== Normal Card View =====
 
     if (card) {
-        card.style.display = '';
-        card.classList.remove('flipped');
-    }
+    card.style.display = '';
+    card.style.height = '';
+    card.style.margin = '';
+    card.classList.remove('flipped');
+}
 
     if (done) {
         done.classList.add('hidden');
