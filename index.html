@@ -114,32 +114,6 @@
       -webkit-overflow-scrolling: touch;
       will-change: opacity, transform;
     }
-
-    .challenge-card{
-    background:var(--card-bg);
-    border:1px solid var(--border-color);
-    border-radius:16px;
-    padding:16px;
-    margin-top:16px;
-}
-
-.challenge-card h3{
-    margin-bottom:8px;
-}
-
-.challenge-card p{
-    color:var(--text-secondary);
-    margin-bottom:12px;
-}
-
-.challenge-buttons{
-    display:flex;
-    gap:10px;
-}
-
-.challenge-buttons button{
-    flex:1;
-}
     .view.active {
       display: flex !important;
       opacity: 1;
@@ -967,6 +941,36 @@
       font-size: 0.55rem;
       color: var(--text-secondary);
       font-weight: 600;
+    }
+
+    /* =========================
+       Random Challenge Card
+    ========================= */
+    
+    .challenge-card{
+        background:var(--card-bg);
+        border:1px solid var(--border-color);
+        border-radius:16px;
+        padding:16px;
+        margin-top:16px;
+    }
+    
+    .challenge-card h3{
+        margin-bottom:8px;
+    }
+    
+    .challenge-card p{
+        color:var(--text-secondary);
+        margin-bottom:12px;
+    }
+    
+    .challenge-buttons{
+        display:flex;
+        gap:10px;
+    }
+    
+    .challenge-buttons button{
+        flex:1;
     }
     
     .heatmap-grid {
