@@ -4835,10 +4835,10 @@ function fcShowCard() {
         if (done) {
 
             const total =
-                sessionStats.again +
-                sessionStats.hard +
-                sessionStats.good +
-                sessionStats.easy;
+(sessionStats.again || 0) +
+(sessionStats.hard || 0) +
+(sessionStats.good || 0) +
+(sessionStats.easy || 0);
 
             done.innerHTML = `
             <div class="session-summary">
@@ -5014,9 +5014,9 @@ function fcRate(q) {
 
   // Session stats
   if (q === 0) sessionStats.again++;
-  else if (q === 1) sessionStats.hard++;
-  else if (q === 2) sessionStats.good++;
-  else if (q === 3) sessionStats.easy++;
+if (q === 1) sessionStats.hard++;
+if (q === 2) sessionStats.good++;
+if (q === 3) sessionStats.easy++;
 
   const c = studyQueue[studyIdx];
 
