@@ -2070,6 +2070,11 @@ Science       | Biology       | What is DNA?             | Deoxyribonucleic acid
     let resetEmail = '';
     let selectedCardIds = [];
     let selectedDeckIds = [];
+    let sessionStats = {
+    hard: 0,
+    good: 0,
+    easy: 0
+};
 
     // ============================================================
     //  PASSWORD TOGGLE
@@ -4573,6 +4578,10 @@ function startFlashcards() {
         [studyQueue[j], studyQueue[i]];
     }
 
+    sessionStats = {
+    hard: 0,
+    good: 0,
+    easy: 0};
     studyIdx = 0;
     fcFlipped = false;
 
@@ -4685,9 +4694,59 @@ function fcShowCard() {
         if (hint) hint.style.display = 'none';
 
         if (done) {
-            done.classList.remove('hidden');
-            done.style.display = 'flex';
-        }
+    done.classList.remove('hidden');
+    done.style.display = 'flex';
+
+    done.innerHTML = `
+        <div style="
+            display:flex;
+            flex-direction:column;
+            justify-content:center;
+            align-items:center;
+            height:100%;
+            text-align:center;
+            gap:14px;
+        ">
+            <div style="font-size:28px;font-weight:700">
+                🎉 All Done!
+            </div>
+
+            <div style="
+                color:var(--text-secondary);
+                font-size:14px;
+            ">
+                Session review
+            </div>
+
+            <div style="
+                display:flex;
+                flex-direction:column;
+                gap:8px;
+                width:100%;
+                max-width:240px;
+            ">
+                <div class="surface rounded-xl p-3">
+                    😵 Hard: ${sessionStats.hard}
+                </div>
+
+                <div class="surface rounded-xl p-3">
+                    👍 Good: ${sessionStats.good}
+                </div>
+
+                <div class="surface rounded-xl p-3">
+                    🚀 Easy: ${sessionStats.easy}
+                </div>
+            </div>
+
+            <button
+                onclick="exitStudy()"
+                class="accent-bg text-white rounded-xl px-5 py-3"
+            >
+                Back Home
+            </button>
+        </div>
+    `;
+}
 
         const progress = document.getElementById('fc-progress');
         if (progress) {
@@ -4781,6 +4840,9 @@ function fcRate(q) {
     return;
   }
 
+  if (q === 1) sessionStats.hard++;
+  if (q === 3) sessionStats.good++;
+  if (q === 5) sessionStats.easy++;
   const c = studyQueue[studyIdx];
   const updated = applySRS(c, q);
   
