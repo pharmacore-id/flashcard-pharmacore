@@ -1144,10 +1144,14 @@
 
 .challenge-source{
     text-align:center;
-    font-size:11px;
-    opacity:.65;
-    margin-bottom:8px;
+    font-size:12px;
+    color:#8a7f73;
+    margin-bottom:10px;
     font-weight:500;
+}
+
+.hidden{
+    display:none !important;
 }
     
   </style>
@@ -1553,37 +1557,33 @@ Science       | Biology       | What is DNA?             | Deoxyribonucleic acid
       </div>
       <div class="progress-bar mb-3"><div id="fc-progress-fill" class="progress-fill" style="width:0%"></div></div>
       <div class="flex-1 flex items-center justify-center">
-        <div id="fc-card" class="flip-card cursor-pointer" onclick="fcFlip()">
+       <!-- Challenge source ABOVE card -->
+<div id="challenge-source"
+     class="challenge-source hidden">
+</div>
+
+<div id="fc-card"
+     class="flip-card cursor-pointer"
+     onclick="fcFlip()">
 
     <div class="flip-inner">
 
         <div class="flip-front">
-
-            <div id="challenge-source"
-                 class="challenge-source hidden">
-            </div>
-
             <p id="fc-front-text"
                class="text-xl font-bold text-center leading-relaxed">
             </p>
-
         </div>
 
         <div class="flip-back">
-
-            <div id="challenge-source-back"
-                 class="challenge-source hidden">
-            </div>
-
             <p id="fc-back-text"
                class="text-xl font-semibold text-center leading-relaxed">
             </p>
-
         </div>
 
     </div>
 
 </div>
+        
       <div class="swipe-hint mt-1">👆 Tap to flip · Rate below</div>
       <div id="fc-buttons" class="hidden grid grid-cols-4 gap-2 mt-2">
         <button onclick="fcRate(0)" class="py-3 rounded-2xl text-white font-semibold text-sm" style="background:#ef4444">Again</button>
