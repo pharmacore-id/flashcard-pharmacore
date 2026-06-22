@@ -5722,6 +5722,105 @@ async function deleteSelectedDecks() {
     console.log('📚 Cards:', getRealCards().length, 'Decks:', getDecks().length);
     console.log('☁️ Firebase: Connected & Syncing');
     console.log('📝 Admin email: adm.pharmacore@gmail.com');
+
+// ======================================================
+// PULL TO REFRESH
+// ======================================================
+
+let touchStartY = 0;
+let touchEndY = 0;
+let isRefreshing = false;
+
+const PULL_THRESHOLD = 80; // pixels
+
+document.addEventListener(
+    "touchstart",
+    e => {
+
+        // Only trigger if already at top
+        if (window.scrollY === 0) {
+            touchStartY = e.touches[0].clientY;
+        }
+
+    },
+    { passive: true }
+);
+
+document.addEventListener(
+    "touchmove",
+    e => {
+
+        if (window.scrollY !== 0) return;
+
+        touchEndY = e.touches[0].clientY;
+
+    },
+    { passive: true }
+);
+
+document.addEventListener(
+    "touchend",
+    async () => {
+
+        if (isRefreshing) return;
+
+        const pullDistance =
+            touchEndY - touchStartY;
+
+        if (pullDistance > PULL_THRESHOLD) {
+
+            isRefreshing = true;
+
+            try {
+
+                console.log("🔄 Refreshing...");
+
+                // Optional loading indicator
+                updateSyncStatus(
+                    "syncing",
+                    "Refreshing..."
+                );
+
+                await loadUserData(currentUser);
+
+                renderDecks();
+                updateHome();
+
+                updateSyncStatus(
+                    "",
+                    "Synced"
+                );
+
+                console.log(
+                    "✅ Refresh complete"
+                );
+
+            } catch(err) {
+
+                console.error(
+                    "Refresh failed:",
+                    err
+                );
+
+                updateSyncStatus(
+                    "offline",
+                    "Refresh failed"
+                );
+
+            } finally {
+
+                isRefreshing = false;
+
+                touchStartY = 0;
+                touchEndY = 0;
+
+            }
+        }
+
+    },
+    { passive: true }
+);
+    
   </script>
 </body>
 </html>
