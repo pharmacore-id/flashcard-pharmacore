@@ -4879,12 +4879,13 @@ if (!userIsPremium && deckIsPremium) {
 // ============================================================
 function startFlashcards() {
 
+    // Free user tidak boleh flashcard deck premium
     if (
-    !isPremiumActive() &&
-    isCurrentDeckPremium()
-){
-    return;
-}
+        !isPremiumActive() &&
+        isCurrentDeckPremium()
+    ){
+        return;
+    }
 
     let allCardsInDeck;
 
@@ -4897,8 +4898,10 @@ function startFlashcards() {
 
     } else {
 
-        allCardsInDeck = getRealCards()
-            .filter(c => c.deck_id === currentDeckId);
+        allCardsInDeck =
+            getRealCards().filter(
+                c => c.deck_id === currentDeckId
+            );
 
     }
 
@@ -4907,7 +4910,8 @@ function startFlashcards() {
         return;
     }
 
-    const dueCards = challengeMode
+    const dueCards =
+        challengeMode
         ? allCardsInDeck
         : getDueCards(currentDeckId);
 
@@ -4917,7 +4921,12 @@ function startFlashcards() {
         : allCardsInDeck;
 
     // Shuffle
-    for (let i = studyQueue.length - 1; i > 0; i--) {
+    for (
+        let i = studyQueue.length - 1;
+        i > 0;
+        i--
+    ) {
+
         const j = Math.floor(
             Math.random() * (i + 1)
         );
@@ -4927,16 +4936,23 @@ function startFlashcards() {
     }
 
     sessionStats = {
-    hard: 0,
-    good: 0,
-    easy: 0};
+        again: 0,
+        hard: 0,
+        good: 0,
+        easy: 0
+    };
+
     studyIdx = 0;
     fcFlipped = false;
 
-    document.querySelectorAll('.view').forEach(v=>{
-        v.classList.remove('active');
-        v.style.display='none';
-    });
+    document
+        .querySelectorAll('.view')
+        .forEach(v => {
+
+            v.classList.remove('active');
+            v.style.display='none';
+
+        });
 
     const flashcardView =
         document.getElementById(
@@ -4944,8 +4960,13 @@ function startFlashcards() {
         );
 
     if (flashcardView){
-        flashcardView.classList.add('active');
-        flashcardView.style.display='flex';
+
+        flashcardView.classList.add(
+            'active'
+        );
+
+        flashcardView.style.display =
+            'flex';
     }
 
     fcShowCard();
@@ -4957,70 +4978,111 @@ function startFlashcards() {
 let challengeMode = false;
 let challengeCards = [];
 
-function startRandomChallenge(cardCount) {
+function startRandomChallenge(cardCount){
 
-    const cards = getRealCards();
+    let cards = getRealCards();
 
-    if (!cards.length) {
+    // Free user → hanya non-premium
+    if(!isPremiumActive()){
+
+        cards = cards.filter(
+            c => !c.isPremium
+        );
+
+    }
+
+    if(!cards.length){
         alert("❌ No cards available");
         return;
     }
 
-    // Shuffle cards
-    const shuffled = [...cards].sort(() => Math.random() - 0.5);
+    // Shuffle
+    const shuffled =
+        [...cards].sort(
+            ()=>Math.random()-0.5
+        );
 
     // Take selected amount
-    challengeCards = shuffled.slice(
-        0,
-        Math.min(cardCount, cards.length)
-    );
+    challengeCards =
+        shuffled.slice(
+            0,
+            Math.min(
+                cardCount,
+                cards.length
+            )
+        );
 
     challengeMode = true;
 
-    // Use challenge cards directly as study queue
     studyQueue = challengeCards;
     studyIdx = 0;
     fcFlipped = false;
 
-    // Open flashcard page normally
-    document.querySelectorAll('.view').forEach(v=>{
-        v.classList.remove('active');
-        v.style.display='none';
-    });
+    document
+        .querySelectorAll('.view')
+        .forEach(v=>{
+
+            v.classList.remove(
+                'active'
+            );
+
+            v.style.display='none';
+
+        });
 
     const flashcardView =
-        document.getElementById('view-flashcards');
+        document.getElementById(
+            'view-flashcards'
+        );
 
-    if (flashcardView){
-        flashcardView.classList.add('active');
-        flashcardView.style.display='flex';
+    if(flashcardView){
+
+        flashcardView.classList.add(
+            'active'
+        );
+
+        flashcardView.style.display =
+            'flex';
+
     }
 
     fcShowCard();
 }
 
-function startCustomChallenge() {
+function startCustomChallenge(){
 
-    const total = getRealCards().length;
+    const availableCards =
+        isPremiumActive()
+        ? getRealCards()
+        : getRealCards().filter(
+            c=>!c.isPremium
+        );
+
+    const total =
+        availableCards.length;
 
     let amount = prompt(
         `Choose number of cards (1-${total})`
     );
 
-    if (!amount) return;
+    if(!amount) return;
 
     amount = parseInt(amount);
 
-    if (
+    if(
         isNaN(amount) ||
-        amount < 1 ||
-        amount > total
-    ) {
-        alert("❌ Invalid amount");
+        amount<1 ||
+        amount>total
+    ){
+        alert(
+            "❌ Invalid amount"
+        );
         return;
     }
 
-    startRandomChallenge(amount);
+    startRandomChallenge(
+        amount
+    );
 }
     
 function fcShowCard() {
