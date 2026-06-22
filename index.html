@@ -956,7 +956,7 @@
     );
 
     border-radius:28px;
-    padding:24px;
+    padding:18px;
     margin-top:8px;
 
     display:flex;
@@ -971,42 +971,40 @@
 }
 
 .challenge-card h3{
-    font-size:22px;
+    font-size:16px;     /* smaller */
     font-weight:800;
-    margin:0 0 10px;
+    margin:0 0 6px;     /* less gap */
     color:#6b4f00;
 }
 
 .challenge-card p{
-    font-size:16px;
-    line-height:1.5;
+    font-size:13px;     /* smaller text */
+    line-height:1.4;
     color:#876b1c;
 
-    text-align:center;
-    margin:0 auto 22px auto;
-    max-width:280px;
+    margin:0 0 14px;    /* reduced spacing */
+    max-width:250px;
 }
 
 .challenge-buttons{
     display:flex;
     width:100%;
-    gap:12px;
+    gap:8px;            /* smaller button spacing */
 }
 
 .challenge-buttons button{
     flex:1;
 
     border:none;
-    border-radius:18px;
+    border-radius:16px;
 
-    padding:14px 10px;
+    padding:10px 8px;   /* smaller button height */
 
-    font-size:16px;
+    font-size:14px;     /* smaller button text */
     font-weight:700;
 
     cursor:pointer;
-
-    transition:all .25s ease;
+    transition:.25s;
 }
 
 .challenge-buttons button:nth-child(1){
@@ -1020,12 +1018,12 @@
 }
 
 .challenge-buttons button:nth-child(3){
-    background:rgba(255,255,255,.75);
+    background:rgba(255,255,255,.7);
     color:#6b4f00;
 }
 
 .challenge-buttons button:hover{
-    transform:translateY(-3px);
+    transform:translateY(-2px);
 }
     
     .heatmap-grid {
