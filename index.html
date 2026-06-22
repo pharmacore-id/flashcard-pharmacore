@@ -2744,14 +2744,41 @@ async function loadSharedDecks() {
       }
     }
 
-    function loadUserData(email) {
-      const key = DATA_PREFIX + email;
-      try { allCards = JSON.parse(localStorage.getItem(key)) || [] } catch { allCards = [] }
-      if (!Array.isArray(allCards) || allCards.length === 0) allCards = getSampleDecks();
-      const pk = 'flashmind_plan_' + email;
-      userPlan = localStorage.getItem(pk) || 'free';
-      isAdmin = ADMIN_EMAILS.includes(email);
+  async function loadUserData(email) {
+  if (!email) return;
+
+  try {
+    const cloudData = await loadFromFirebase(email);
+    if (cloudData && cloudData.cards) {
+      allCards = cloudData.cards;
+      // Sync localStorage with latest cloud data
+      localStorage.setItem(
+        DATA_PREFIX + email,
+        JSON.stringify(allCards)
+      );
+      console.log('✅ Loaded from cloud:', allCards.length, 'cards');
+      return;
     }
+  } catch (err) {
+    console.warn('⚠️ Cloud load failed, using localStorage:', err.message);
+  }
+
+  // Fallback: load from localStorage
+  const key = DATA_PREFIX + email;
+  try {
+    allCards = JSON.parse(localStorage.getItem(key)) || [];
+    if (!Array.isArray(allCards) || allCards.length === 0) {
+      allCards = getSampleDecks();
+    }
+    console.log('✅ Loaded from localStorage:', allCards.length, 'cards');
+  } catch {
+    allCards = getSampleDecks();
+    console.log('⚠️ No saved data found, using sample decks');
+  }
+
+  userPlan = localStorage.getItem('flashmind_plan_' + email) || 'free';
+  isAdmin = ADMIN_EMAILS.includes(email);
+}
 
   async function handleSignup(e) {
   e.preventDefault();
@@ -2820,27 +2847,38 @@ async function loadSharedDecks() {
 async function saveUserData(email) {
   if (!email) return;
 
-  try {
-    // Save locally first (instant)
-    localStorage.setItem(
-      DATA_PREFIX + email,
-      JSON.stringify(allCards)
-    );
+  // 1. Always save to localStorage first (instant, no network needed)
+  localStorage.setItem(
+    DATA_PREFIX + email,
+    JSON.stringify(allCards)
+  );
 
-    // Wait for Firebase save to finish
-    await saveToFirebase(
-      email,
-      allCards,
-      userPlan
-    );
+  // 2. Retry Firestore save up to 3 times
+  let retries = 3;
+  let firebaseSaved = false;
 
-    console.log('✅ User progress saved');
+  while (retries > 0 && !firebaseSaved) {
+    try {
+      await saveToFirebase(email, allCards, userPlan);
+      firebaseSaved = true;
+      console.log('✅ User progress saved to cloud');
+    } catch (err) {
+      retries--;
+      console.warn(
+        `⚠️ Firebase save failed (${3 - retries}/3 retries):`,
+        err.message
+      );
 
-  } catch (err) {
-    console.error(
-      '❌ Failed saving user data:',
-      err
-    );
+      if (retries > 0) {
+        // Wait before retrying (exponential backoff: 2s, 4s, 6s)
+        await new Promise(r => setTimeout(r, 2000 * (4 - retries)));
+      } else {
+        console.error(
+          '❌ Firebase save failed after 3 retries. ' +
+          'Progress is saved locally and will retry on next save.'
+        );
+      }
+    }
   }
 }
 
