@@ -2726,6 +2726,10 @@ async function loadSharedDecks() {
           loadUserData(email);
         }
 
+        setTimeout(() => {
+          updateHome();
+        }, 500);
+        
         isAdmin = ADMIN_EMAILS.includes(email);
         enterApp();
 
@@ -2998,6 +3002,11 @@ async function saveUserData(email) {
 
         loadNickname();
         loadDailyGoal();
+
+        // Pastikan updateHome dipanggil setelah data siap
+setTimeout(() => {
+  updateHome();
+}, 500);
 
         if (userPlan === 'premium') {
           const expiry = getPlanExpiry(currentUser);
