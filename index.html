@@ -1183,8 +1183,7 @@ Refreshing...
         <div class="stat-card"><div class="icon" style="color:#059669;"><i data-lucide="target" class="w-5 h-5 mx-auto"></i></div><div class="number" style="color:#059669;" id="stat-accuracy">0%</div><div class="label">Accuracy</div></div>
         <div class="stat-card"><div class="icon" style="color:#2563eb;"><i data-lucide="trophy" class="w-5 h-5 mx-auto"></i></div><div class="number" style="color:#2563eb;" id="stat-mastered">0</div><div class="label">Mastered</div></div>
       </div>
-
-      <div class="last-study-time" id="study-time-display">⏰ 0 min studied today</div>
+    
 
       <div class="home-quick-actions">
         <button onclick="continueStudying()" class="primary" id="home-review-btn">📖 Continue Studying</button>
@@ -3238,10 +3237,6 @@ if (calendar) {
           lastStudyText.textContent = 'Last studied: Never';
         }
       }
-
-      const studyMins = getStudyTime();
-      const studyTimeDisplay = document.getElementById('study-time-display');
-      if (studyTimeDisplay) studyTimeDisplay.textContent = `⏰ ${studyMins} min studied today`;
 
       const btn = document.getElementById('home-review-btn');
       if (btn) {
