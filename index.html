@@ -1237,6 +1237,27 @@
 
     z-index:5;
 }
+
+.plan-option{
+padding:10px 6px;
+border:1px solid var(--border);
+border-radius:14px;
+text-align:center;
+cursor:pointer;
+transition:.25s;
+background:var(--surface);
+}
+
+.plan-option:hover{
+transform:translateY(-2px);
+border-color:#d97706;
+}
+
+.plan-option.selected{
+border:2px solid #d97706;
+background:rgba(217,119,6,.08);
+}
+    
   </style>
 </head>
 <body>
@@ -2345,19 +2366,120 @@ Back to Settings
           <div id="upgrade-code-status" class="text-xs mt-1 min-h-[1.25rem]"></div>
         </div>
         <div class="space-y-3 mb-4">
-          <div class="pricing-card popular" id="book-buyer-card" onclick="selectPlan('book')">
-            <div class="flex justify-between items-start">
-              <div><span class="badge-popular">⭐ Best Value</span><p class="font-bold mt-1">Book Buyer</p><p class="text-xs text-sec">With valid access code</p></div>
-              <div class="text-right"><div class="price">Rp 35.000 <small>/ 3 mo</small></div><div class="per-day">Rp 389 / day</div></div>
-            </div>
-          </div>
-          <div class="pricing-card" id="regular-card" onclick="selectPlan('regular')">
-            <div class="flex justify-between items-start">
-              <div><p class="font-bold">Regular User</p><p class="text-xs text-sec">No code needed</p></div>
-              <div class="text-right"><div class="price">Rp 65.000 <small>/ 3 mo</small></div><div class="per-day">Rp 722 / day</div></div>
-            </div>
-          </div>
-        </div>
+         <div class="pricing-card popular" id="book-buyer-card">
+
+<div class="flex justify-between items-center mb-3">
+<div>
+<span class="badge-popular">⭐ Best Value</span>
+<p class="font-bold mt-1 text-sm">
+Book Buyer
+</p>
+<p class="text-xs text-sec">
+With valid access code
+</p>
+</div>
+</div>
+
+<div class="grid grid-cols-3 gap-2">
+
+<div class="plan-option"
+onclick="selectPlan('book',1)">
+<div class="text-xs font-bold">
+1M
+</div>
+<div class="text-sm font-extrabold">
+15K
+</div>
+<div class="text-[10px] text-sec">
+500/day
+</div>
+</div>
+
+<div class="plan-option"
+onclick="selectPlan('book',3)">
+<div class="text-xs font-bold">
+3M
+</div>
+<div class="text-sm font-extrabold">
+38K
+</div>
+<div class="text-[10px] text-sec">
+422/day
+</div>
+</div>
+
+<div class="plan-option"
+onclick="selectPlan('book',6)">
+<div class="text-xs font-bold">
+6M
+</div>
+<div class="text-sm font-extrabold">
+70K
+</div>
+<div class="text-[10px] text-sec">
+389/day
+</div>
+</div>
+
+</div>
+</div>
+
+
+
+<div class="pricing-card" id="regular-card">
+
+<div class="mb-3">
+<p class="font-bold text-sm">
+Regular User
+</p>
+<p class="text-xs text-sec">
+No code needed
+</p>
+</div>
+
+<div class="grid grid-cols-3 gap-2">
+
+<div class="plan-option"
+onclick="selectPlan('regular',1)">
+<div class="text-xs font-bold">
+1M
+</div>
+<div class="text-sm font-extrabold">
+25K
+</div>
+<div class="text-[10px] text-sec">
+833/day
+</div>
+</div>
+
+<div class="plan-option"
+onclick="selectPlan('regular',3)">
+<div class="text-xs font-bold">
+3M
+</div>
+<div class="text-sm font-extrabold">
+68K
+</div>
+<div class="text-[10px] text-sec">
+756/day
+</div>
+</div>
+
+<div class="plan-option"
+onclick="selectPlan('regular',6)">
+<div class="text-xs font-bold">
+6M
+</div>
+<div class="text-sm font-extrabold">
+120K
+</div>
+<div class="text-[10px] text-sec">
+667/day
+</div>
+</div>
+
+</div>
+</div>
         <div id="payment-section" class="hidden">
           <div class="border-t border-theme pt-4 mt-2">
             <p class="font-semibold text-sm mb-3">Choose Payment Method</p>
