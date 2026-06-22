@@ -3112,99 +3112,285 @@ function enterApp() {
     // ============================================================
     //  PLAN UI
     // ============================================================
-    function updatePlanUI() {
-      const isPremium = isPremiumActive();
+   function updatePlanUI() {
 
-      const badge = document.getElementById('plan-badge');
-      if (badge) {
-        if (isPremium) {
-          badge.className = 'premium-badge';
-          badge.textContent = 'PRO';
+    const isPremium = isPremiumActive();
+    const isAdminUser = isAdmin;
+
+    // ======================
+    // Top badge
+    // ======================
+
+    const badge =
+        document.getElementById('plan-badge');
+
+    if (badge) {
+
+        if (isAdminUser) {
+
+            badge.className =
+                'hidden';
+
+        } else if (isPremium) {
+
+            badge.className =
+                'premium-badge';
+
+            badge.textContent =
+                'PRO';
+
         } else {
-          badge.className = 'free-badge';
-          badge.textContent = 'FREE';
+
+            badge.className =
+                'free-badge';
+
+            badge.textContent =
+                'FREE';
+
         }
-      }
-
-      const planLabel = document.getElementById('settings-plan-label');
-      if (planLabel) {
-        if (isPremium) {
-          const expiry = getPlanExpiry(currentUser);
-          const days = expiry ? daysUntil(expiry) : 0;
-          planLabel.textContent = `Premium ✦ (${days} days left)`;
-        } else {
-          planLabel.textContent = 'Free';
-        }
-      }
-
-      const upgradeBtn = document.getElementById('settings-upgrade-btn');
-      if (upgradeBtn) {
-        upgradeBtn.style.display = isPremium ? 'none' : 'inline-block';
-      }
-
-     const expiryLabel = document.getElementById('expiry-label');
-      if (expiryLabel) {
-        if (isPremium) {
-          const expiry = getPlanExpiry(currentUser);
-          if (expiry) {
-            expiryLabel.textContent = formatExpiryDate(expiry);
-          } else {
-            expiryLabel.textContent = 'Permanent';   // ← admin
-          }
-          expiryLabel.className = 'status premium';
-        } else {
-          expiryLabel.textContent = 'Not active';
-          expiryLabel.className = 'status free';
-        }
-      }
-
-      const deckLimitLabel = document.getElementById('deck-limit-label');
-      if (deckLimitLabel) {
-        deckLimitLabel.textContent = isPremium ? '♾️ All decks' : '5 free decks';
-        deckLimitLabel.className = `status ${isPremium ? 'premium' : 'free'}`;
-      }
-
-      const modeLabel = document.getElementById('mode-limit-label');
-      if (modeLabel) {
-        modeLabel.textContent = isPremium ? '✅ All modes' : 'Flashcards only';
-        modeLabel.className = `status ${isPremium ? 'premium' : 'free'}`;
-      }
-
-      const srsLabel = document.getElementById('srs-limit-label');
-      if (srsLabel) {
-        srsLabel.textContent = isPremium ? '✅ Advanced' : 'Basic';
-        srsLabel.className = `status ${isPremium ? 'premium' : 'free'}`;
-      }
-
-      const analyticsLabel = document.getElementById('analytics-limit-label');
-      if (analyticsLabel) {
-        analyticsLabel.textContent = isPremium ? '✅ Full' : 'Limited';
-        analyticsLabel.className = `status ${isPremium ? 'premium' : 'free'}`;
-      }
-
-      const currentPlanLabel = document.getElementById('upgrade-current-plan');
-      if (currentPlanLabel) {
-        currentPlanLabel.textContent = isPremium ? 'Premium ✦' : 'Free';
-        currentPlanLabel.className = isPremium ? 'premium-badge' : 'free-badge';
-      }
-
-      const easeInput = document.getElementById('ease-input');
-      const intervalInput = document.getElementById('interval-input');
-      if (easeInput) easeInput.disabled = !isPremium;
-      if (intervalInput) intervalInput.disabled = !isPremium;
-      if (easeInput) easeInput.style.opacity = isPremium ? '1' : '0.5';
-      if (intervalInput) intervalInput.style.opacity = isPremium ? '1' : '0.5';
-
-      const lockMsg = document.getElementById('premium-lock-msg');
-      if (lockMsg) {
-        lockMsg.classList.toggle('hidden', isPremium);
-      }
-
-      const prompt = document.getElementById('home-upgrade-prompt');
-      if (prompt) {
-        prompt.style.display = isPremium ? 'none' : 'flex';
-      }
     }
+
+    // ======================
+    // Settings plan label
+    // ======================
+
+    const planLabel =
+        document.getElementById(
+            'settings-plan-label'
+        );
+
+    if (planLabel) {
+
+        if (isAdminUser) {
+
+            planLabel.textContent =
+                'Admin 👑';
+
+        } else if (isPremium) {
+
+            const expiry =
+                getPlanExpiry(currentUser);
+
+            const days =
+                expiry
+                ? daysUntil(expiry)
+                : 0;
+
+            planLabel.textContent =
+                `Premium ✦ (${days} days left)`;
+
+        } else {
+
+            planLabel.textContent =
+                'Free';
+        }
+    }
+
+    // ======================
+    // Upgrade button
+    // ======================
+
+    const upgradeBtn =
+        document.getElementById(
+            'settings-upgrade-btn'
+        );
+
+    if (upgradeBtn) {
+
+        upgradeBtn.style.display =
+            (isPremium || isAdminUser)
+            ? 'none'
+            : 'inline-block';
+    }
+
+    // ======================
+    // Expiry
+    // ======================
+
+    const expiryLabel =
+        document.getElementById(
+            'expiry-label'
+        );
+
+    if (expiryLabel) {
+
+        if (isAdminUser) {
+
+            expiryLabel.textContent =
+                'Permanent';
+
+            expiryLabel.className =
+                'status premium';
+
+        } else if (isPremium) {
+
+            const expiry =
+                getPlanExpiry(currentUser);
+
+            expiryLabel.textContent =
+                expiry
+                ? formatExpiryDate(expiry)
+                : 'Permanent';
+
+            expiryLabel.className =
+                'status premium';
+
+        } else {
+
+            expiryLabel.textContent =
+                'Not active';
+
+            expiryLabel.className =
+                'status free';
+        }
+    }
+
+    // ======================
+    // Feature labels
+    // ======================
+
+    const premiumEnabled =
+        isPremium || isAdminUser;
+
+    const deckLimitLabel =
+        document.getElementById(
+            'deck-limit-label'
+        );
+
+    if (deckLimitLabel) {
+
+        deckLimitLabel.textContent =
+            premiumEnabled
+            ? '♾️ All decks'
+            : '5 free decks';
+
+        deckLimitLabel.className =
+            `status ${
+                premiumEnabled
+                ? 'premium'
+                : 'free'
+            }`;
+    }
+
+    const modeLabel =
+        document.getElementById(
+            'mode-limit-label'
+        );
+
+    if (modeLabel) {
+
+        modeLabel.textContent =
+            premiumEnabled
+            ? '✅ All modes'
+            : 'Flashcards only';
+
+        modeLabel.className =
+            `status ${
+                premiumEnabled
+                ? 'premium'
+                : 'free'
+            }`;
+    }
+
+    const srsLabel =
+        document.getElementById(
+            'srs-limit-label'
+        );
+
+    if (srsLabel) {
+
+        srsLabel.textContent =
+            premiumEnabled
+            ? '✅ Advanced'
+            : 'Basic';
+
+        srsLabel.className =
+            `status ${
+                premiumEnabled
+                ? 'premium'
+                : 'free'
+            }`;
+    }
+
+    const analyticsLabel =
+        document.getElementById(
+            'analytics-limit-label'
+        );
+
+    if (analyticsLabel) {
+
+        analyticsLabel.textContent =
+            premiumEnabled
+            ? '✅ Full'
+            : 'Limited';
+
+        analyticsLabel.className =
+            `status ${
+                premiumEnabled
+                ? 'premium'
+                : 'free'
+            }`;
+    }
+
+    // ======================
+    // Inputs
+    // ======================
+
+    const easeInput =
+        document.getElementById(
+            'ease-input'
+        );
+
+    const intervalInput =
+        document.getElementById(
+            'interval-input'
+        );
+
+    if (easeInput) {
+        easeInput.disabled =
+            !premiumEnabled;
+
+        easeInput.style.opacity =
+            premiumEnabled
+            ? '1'
+            : '0.5';
+    }
+
+    if (intervalInput) {
+        intervalInput.disabled =
+            !premiumEnabled;
+
+        intervalInput.style.opacity =
+            premiumEnabled
+            ? '1'
+            : '0.5';
+    }
+
+    const lockMsg =
+        document.getElementById(
+            'premium-lock-msg'
+        );
+
+    if (lockMsg) {
+        lockMsg.classList.toggle(
+            'hidden',
+            premiumEnabled
+        );
+    }
+
+    const prompt =
+        document.getElementById(
+            'home-upgrade-prompt'
+        );
+
+    if (prompt) {
+
+        prompt.style.display =
+            premiumEnabled
+            ? 'none'
+            : 'flex';
+    }
+}
 
     // ============================================================
     //  UI RENDERING
