@@ -1009,6 +1009,23 @@
 
   <div id="app">
 
+    <div id="pull-indicator"
+style="
+position:fixed;
+top:10px;
+left:50%;
+transform:translateX(-50%);
+background:#222;
+color:white;
+padding:8px 14px;
+border-radius:20px;
+font-size:12px;
+display:none;
+z-index:9999;
+">
+Refreshing...
+</div>
+
     <!-- ===== AUTH: LOGIN ===== -->
     <div id="view-login" class="view active" style="padding:1rem;justify-content:center;z-index:200;bottom:0;">
       <div class="auth-card">
@@ -5776,10 +5793,9 @@ document.addEventListener(
                 console.log("🔄 Refreshing...");
 
                 // Optional loading indicator
-                updateSyncStatus(
-                    "syncing",
-                    "Refreshing..."
-                );
+               document.getElementById(
+    "pull-indicator"
+).style.display="block";
 
                 await loadUserData(currentUser);
 
@@ -5809,12 +5825,16 @@ document.addEventListener(
 
             } finally {
 
-                isRefreshing = false;
+    document.getElementById(
+        "pull-indicator"
+    ).style.display = "none";
 
-                touchStartY = 0;
-                touchEndY = 0;
+    isRefreshing = false;
 
-            }
+    touchStartY = 0;
+    touchEndY = 0;
+
+}
         }
 
     },
