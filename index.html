@@ -2131,7 +2131,16 @@ Science       | Biology       | What is DNA?             | Deoxyribonucleic acid
     hard: 0,
     good: 0,
     easy: 0
-};
+    };
+
+function resetSessionStats(){
+    sessionStats = {
+        again: 0,
+        hard: 0,
+        good: 0,
+        easy: 0
+    };
+}
 
     // ============================================================
     //  PASSWORD TOGGLE
@@ -4674,6 +4683,8 @@ function startFlashcards() {
 
     let allCardsInDeck;
 
+    resetSessionStats();
+
     // Challenge mode
     if (challengeMode) {
 
@@ -4834,83 +4845,51 @@ function fcShowCard() {
 
         if (done) {
 
-            const total =
-(sessionStats.again || 0) +
-(sessionStats.hard || 0) +
-(sessionStats.good || 0) +
-(sessionStats.easy || 0);
+           const total =
+    Number(sessionStats.again || 0) +
+    Number(sessionStats.hard || 0) +
+    Number(sessionStats.good || 0) +
+    Number(sessionStats.easy || 0);
 
-            done.innerHTML = `
-            <div class="session-summary">
+done.innerHTML=`
+<div class="session-summary">
 
-                <h2>🎉 All Done!</h2>
+    <h2>🎉 All Done!</h2>
 
-                <p class="summary-sub">
-                    Session completed
-                </p>
+    <p class="summary-sub">
+        Session completed
+    </p>
 
-                <div class="summary-grid">
+    <div class="summary-grid">
 
-                    <div class="summary-box">
-                        <span>${sessionStats.again}</span>
-                        <small>Again</small>
-                    </div>
+        <div class="summary-box">
+            <span>${sessionStats.again || 0}</span>
+            <small>Again</small>
+        </div>
 
-                    <div class="summary-box">
-                        <span>${sessionStats.hard}</span>
-                        <small>Hard</small>
-                    </div>
+        <div class="summary-box">
+            <span>${sessionStats.hard || 0}</span>
+            <small>Hard</small>
+        </div>
 
-                    <div class="summary-box">
-                        <span>${sessionStats.good}</span>
-                        <small>Good</small>
-                    </div>
+        <div class="summary-box">
+            <span>${sessionStats.good || 0}</span>
+            <small>Good</small>
+        </div>
 
-                    <div class="summary-box">
-                        <span>${sessionStats.easy}</span>
-                        <small>Easy</small>
-                    </div>
+        <div class="summary-box">
+            <span>${sessionStats.easy || 0}</span>
+            <small>Easy</small>
+        </div>
 
-                </div>
+    </div>
 
-                <p class="summary-total">
-                    ${total} cards reviewed
-                </p>
+    <p class="summary-total">
+        ${total} cards reviewed
+    </p>
 
-            </div>
-            `;
-
-            done.classList.remove('hidden');
-            done.style.display = 'flex';
-        }
-
-        const progress =
-            document.getElementById('fc-progress');
-
-        if (progress) {
-            progress.textContent =
-                `${studyQueue.length}/${studyQueue.length}`;
-        }
-
-        const progressFill =
-            document.getElementById('fc-progress-fill');
-
-        if (progressFill) {
-            progressFill.style.width = '100%';
-        }
-
-        challengeMode = false;
-        challengeCards = [];
-
-        if (
-            typeof lucide !== 'undefined' &&
-            lucide.createIcons
-        ) {
-            lucide.createIcons();
-        }
-
-        return;
-    }
+</div>
+`;
 
     // ===== Normal Card View =====
 
@@ -5005,12 +4984,19 @@ function fcShowCard() {
       }
     }
 
-function fcRate(q) {
+function fcRate(q){
 
-  if (!studyQueue || studyIdx >= studyQueue.length) {
-      exitStudy();
-      return;
-  }
+    if(q===0) sessionStats.again++;
+    else if(q===1) sessionStats.hard++;
+    else if(q===2) sessionStats.good++;
+    else if(q===3) sessionStats.easy++;
+
+    if (!studyQueue || studyIdx >= studyQueue.length){
+        exitStudy();
+        return;
+    }
+
+    // keep the rest of your existing fcRate code below this
 
   // Session stats
   if (q === 0) sessionStats.again++;
