@@ -2299,26 +2299,31 @@ async function loadSharedDecks() {
     // ============================================================
     //  FIREBASE AUTH STATE LISTENER
     // ============================================================
-    firebase.auth().onAuthStateChanged(async user => {
-      if (user) {
-        console.log('✅ Firebase Auth: User signed in:', user.email);
-        isAdmin = ADMIN_EMAILS.includes(user.email);
-        if (isAdmin) {
-          document.getElementById('admin-badge').classList.remove('hidden');
-          document.getElementById('admin-import-btn').classList.remove('hidden');
-        }
-        const email = user.email;
-        const cloudData = await loadFromFirebase(email);
-        if (cloudData && cloudData.cards) {
-          allCards = cloudData.cards;
-          userPlan = cloudData.plan || 'free';
-          localStorage.setItem(DATA_PREFIX + email, JSON.stringify(allCards));
-          localStorage.setItem('flashmind_plan_' + email, userPlan);
-        }
-      } else {
-        console.log('❌ Firebase Auth: User signed out');
-      }
-    });
+   firebase.auth().onAuthStateChanged(async user => {
+
+    if (!user) {
+        return;
+    }
+
+    try {
+
+        currentUser = user.email;
+
+        isAdmin =
+            ADMIN_EMAILS.includes(user.email);
+
+        await loadUserData(user.email);
+
+        enterApp();
+
+    } catch(err) {
+        console.error(
+            "Initialization failed:",
+            err
+        );
+    }
+
+});
 
     // ============================================================
     //  HELPERS
@@ -2725,10 +2730,6 @@ async function loadSharedDecks() {
         } else {
           loadUserData(email);
         }
-
-        setTimeout(() => {
-          updateHome();
-        }, 500);
         
         isAdmin = ADMIN_EMAILS.includes(email);
         enterApp();
@@ -2807,9 +2808,6 @@ async function loadUserData(email) {
     userPlan = localData.user_plan || localStorage.getItem('flashmind_plan_' + email) || 'free';
     
     console.log('✅ Loaded from localStorage:', allCards.length, 'cards | Last updated:', new Date(localData.last_updated).toLocaleString());
-    
-    // Trigger sync to cloud (local data might be newer)
-    setTimeout(() => saveUserData(email), 1000);
     
   } else {
     // No data at all — use sample decks
@@ -2976,88 +2974,84 @@ async function saveUserData(email) {
       return new Date(expiry) > new Date();
     }
 
-    function enterApp() {
-      requestAnimationFrame(() => {
-        document.getElementById('bottomNav').style.display = 'flex';
+ function enterApp() {
 
-        document.querySelectorAll('.view').forEach(v => {
-          v.classList.remove('active');
-          v.style.display = 'none';
-        });
+    document.getElementById('bottomNav').style.display = 'flex';
 
-        const homeView = document.getElementById('view-home');
-        if (homeView) {
-          homeView.classList.add('active');
-          homeView.style.display = 'flex';
-        }
+    document.querySelectorAll('.view').forEach(v => {
+        v.classList.remove('active');
+        v.style.display = 'none';
+    });
 
-        document.querySelectorAll('.nav-item').forEach(b => {
-          b.classList.toggle('active', b.dataset.tab === 'home');
-        });
+    const homeView =
+        document.getElementById('view-home');
 
-        const users = getUsers();
-        if (currentUser && users[currentUser]) {
-          isAdmin = users[currentUser].isAdmin || ADMIN_EMAILS.includes(currentUser);
-        }
-
-        loadNickname();
-        loadDailyGoal();
-
-        // Pastikan updateHome dipanggil setelah data siap
-setTimeout(() => {
-  updateHome();
-}, 500);
-
-        if (userPlan === 'premium') {
-          const expiry = getPlanExpiry(currentUser);
-          if (expiry && new Date(expiry) <= new Date()) {
-            savePlan(currentUser, 'free', null);
-            userPlan = 'free';
-            localStorage.removeItem('flashmind_expiry_' + currentUser);
-          }
-        }
-
-        if (isAdmin) {
-          document.getElementById('admin-badge').classList.remove('hidden');
-          document.getElementById('admin-import-btn').classList.remove('hidden');
-        } else {
-          document.getElementById('admin-badge').classList.add('hidden');
-          document.getElementById('admin-import-btn').classList.add('hidden');
-        }
-
-        updateThemeToggle();
-        updatePlanUI();
-        updateHome();
-        renderDecks();
-        
-        const userRequestBtn = document.getElementById('user-request-btn');
-        if (userRequestBtn) {
-          if (isAdmin) {
-            userRequestBtn.classList.add('hidden');
-          } else {
-            userRequestBtn.classList.remove('hidden');
-          }
-        }
-        if (typeof lucide !== 'undefined' && lucide.createIcons) {
-          lucide.createIcons();
-        }
-      });
+    if (homeView) {
+        homeView.classList.add('active');
+        homeView.style.display = 'flex';
     }
 
-    function checkSession() {
-      const s = getSession();
-      if (s && s.email) {
-        const users = getUsers();
-        if (users[s.email]) {
-          currentUser = s.email;
-          loadUserData(s.email);
-          isAdmin = users[s.email].isAdmin || ADMIN_EMAILS.includes(s.email);
-          enterApp();
-          return true;
-        }
-      }
-      return false;
+    document.querySelectorAll('.nav-item')
+    .forEach(btn => {
+        btn.classList.toggle(
+            'active',
+            btn.dataset.tab === 'home'
+        );
+    });
+
+    loadNickname();
+    loadDailyGoal();
+
+    updateThemeToggle();
+    updatePlanUI();
+
+    renderDecks();
+
+    // IMPORTANT:
+    // remove your old setTimeout(updateHome,500)
+    updateHome();
+
+    const userRequestBtn =
+        document.getElementById('user-request-btn');
+
+    if (userRequestBtn) {
+        userRequestBtn.classList.toggle(
+            'hidden',
+            isAdmin
+        );
     }
+
+    if (
+        typeof lucide !== 'undefined' &&
+        lucide.createIcons
+    ) {
+        lucide.createIcons();
+    }
+}
+
+   async function checkSession() {
+    const s = getSession();
+
+    if (!s?.email) return false;
+
+    const users = getUsers();
+
+    if (!users[s.email]) {
+        return false;
+    }
+
+    currentUser = s.email;
+
+    isAdmin =
+        users[s.email].isAdmin ||
+        ADMIN_EMAILS.includes(s.email);
+
+    await loadUserData(s.email);
+
+    enterApp();
+
+    return true;
+}
 
     // ============================================================
     //  PLAN UI
