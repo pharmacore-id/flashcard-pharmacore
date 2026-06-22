@@ -4525,111 +4525,120 @@ if (!userIsPremium && deckIsPremium) {
       openStudySelect();
     }
 
-    // ============================================================
-    //  FLASHCARDS MODE
-    // ============================================================
-    function startFlashcards() {
-      if (!isPremiumActive() && isCurrentDeckPremium()) {
-  showUpgradeModal();
-  return;
-}
-      const allCardsInDeck = getRealCards().filter(c => c.deck_id === currentDeckId);
+   // ============================================================
+// FLASHCARDS MODE
+// ============================================================
+function startFlashcards() {
 
-      if (allCardsInDeck.length === 0) {
-        alert('❌ No cards in this deck. Please add some cards first.');
+    if (!isPremiumActive() && isCurrentDeckPremium()) {
+        showUpgradeModal();
         return;
-      }
-
-      const dueCards = getDueCards(currentDeckId);
-      studyQueue = dueCards.length > 0 ? dueCards : allCardsInDeck;
-
-      for (let i = studyQueue.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [studyQueue[i], studyQueue[j]] = [studyQueue[j], studyQueue[i]];
-      }
-
-      studyIdx = 0;
-      fcFlipped = false;
-
-      document.querySelectorAll('.view').forEach(v => {
-        v.classList.remove('active');
-        v.style.display = 'none';
-      });
-
-      const flashcardView = document.getElementById('view-flashcards');
-      if (flashcardView) {
-        flashcardView.classList.add('active');
-        flashcardView.style.display = 'flex';
-      }
-
-      fcShowCard();
     }
 
+    let allCardsInDeck;
+
+    // Challenge mode
+    if (challengeMode) {
+
+        allCardsInDeck = challengeCards;
+
+    } else {
+
+        allCardsInDeck = getRealCards()
+            .filter(c => c.deck_id === currentDeckId);
+
+    }
+
+    if (allCardsInDeck.length === 0) {
+        alert('❌ No cards available.');
+        return;
+    }
+
+    const dueCards = challengeMode
+        ? allCardsInDeck
+        : getDueCards(currentDeckId);
+
+    studyQueue =
+        dueCards.length > 0
+        ? dueCards
+        : allCardsInDeck;
+
+    // Shuffle
+    for (let i = studyQueue.length - 1; i > 0; i--) {
+        const j = Math.floor(
+            Math.random() * (i + 1)
+        );
+
+        [studyQueue[i], studyQueue[j]] =
+        [studyQueue[j], studyQueue[i]];
+    }
+
+    studyIdx = 0;
+    fcFlipped = false;
+
+    document.querySelectorAll('.view').forEach(v=>{
+        v.classList.remove('active');
+        v.style.display='none';
+    });
+
+    const flashcardView =
+        document.getElementById(
+            'view-flashcards'
+        );
+
+    if (flashcardView){
+        flashcardView.classList.add('active');
+        flashcardView.style.display='flex';
+    }
+
+    fcShowCard();
+}
 // ======================================================
 // CHALLENGE MODE
 // ======================================================
 
-function startRandomChallenge(cardCount) {
+let challengeMode = false;
+let challengeCards = [];
+
+function startRandomChallenge(cardCount){
 
     const cards = getRealCards();
 
-    if (!cards.length) {
+    if(cards.length===0){
         alert("No cards available");
         return;
     }
 
-    // Shuffle cards
-    const shuffled = [...cards]
-        .sort(() => Math.random() - 0.5);
+    const shuffled=[...cards]
+    .sort(()=>Math.random()-0.5);
 
-    // Take selected amount
-    const selectedCards = shuffled.slice(
+    challengeCards=shuffled.slice(
         0,
-        Math.min(cardCount, cards.length)
+        Math.min(cardCount,cards.length)
     );
 
-    // Save original deck
-    window.originalDeckId = currentDeckId;
+    challengeMode=true;
 
-    // Create temporary challenge deck
-    currentDeckId = "__challenge__";
-
-    // Temporary challenge cards
-    window.challengeCards = selectedCards;
-
-    // Override card source
-    const originalGetRealCards = getRealCards;
-
-    getRealCards = function() {
-        if (currentDeckId === "__challenge__") {
-            return window.challengeCards;
-        }
-
-        return originalGetRealCards();
-    };
-
-    // Start normal Flashcards mode
     startFlashcards();
 }
 
+function startCustomChallenge(){
 
-function startCustomChallenge() {
+    const total=getRealCards().length;
 
-    const total = getRealCards().length;
-
-    let amount = prompt(
-        `Choose number of cards (1-${total})`
+    let amount=prompt(
+        `Choose cards (1-${total})`
     );
 
-    if (!amount) return;
+    if(!amount) return;
 
-    amount = parseInt(amount);
+    amount=parseInt(amount);
 
-    if (
-        isNaN(amount) ||
-        amount < 1 ||
-        amount > total
-    ) {
+    if(
+        isNaN(amount)||
+        amount<1||
+        amount>total
+    ){
         alert("Invalid amount");
         return;
     }
@@ -4645,25 +4654,46 @@ function startCustomChallenge() {
       const hint = document.querySelector('.swipe-hint');
 
       if (!studyQueue || studyQueue.length === 0 || studyIdx >= studyQueue.length) {
-        if (card) card.style.display = 'none';
-        if (btns) {
-          btns.classList.add('hidden');
-          btns.style.display = 'none';
-        }
-        if (hint) hint.style.display = 'none';
-        if (done) {
-          done.classList.remove('hidden');
-          done.style.display = 'flex';
-        }
-        const progress = document.getElementById('fc-progress');
-        if (progress) progress.textContent = `${studyQueue ? studyQueue.length : 0}/${studyQueue ? studyQueue.length : 0}`;
-        const progressFill = document.getElementById('fc-progress-fill');
-        if (progressFill) progressFill.style.width = '100%';
 
-        if (typeof lucide !== 'undefined' && lucide.createIcons) {
-          lucide.createIcons();
-        }
-        return;
+    if (card) card.style.display = 'none';
+
+    if (btns) {
+        btns.classList.add('hidden');
+        btns.style.display = 'none';
+    }
+
+    if (hint) hint.style.display = 'none';
+
+    if (done) {
+        done.classList.remove('hidden');
+        done.style.display = 'flex';
+    }
+
+    const progress =
+        document.getElementById('fc-progress');
+
+    if (progress) {
+        progress.textContent =
+            `${studyQueue ? studyQueue.length : 0}/${studyQueue ? studyQueue.length : 0}`;
+    }
+
+    const progressFill =
+        document.getElementById('fc-progress-fill');
+
+    if (progressFill) {
+        progressFill.style.width = '100%';
+    }
+
+    if (typeof lucide !== 'undefined' && lucide.createIcons) {
+        lucide.createIcons();
+    }
+
+    // Reset challenge mode
+    challengeMode = false;
+    challengeCards = [];
+
+    return;
+}
       }
 
       if (card) {
