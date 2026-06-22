@@ -1142,23 +1142,27 @@
     font-size:14px;
 }
 
+#view-flashcards{
+    width:100%;
+    max-width:100%;
+    flex:1;
+}
+
+#fc-card{
+    position:relative;
+    margin:0 auto;
+}
+
 .challenge-source{
     position:absolute;
     top:-24px;
     left:50%;
     transform:translateX(-50%);
-
     font-size:11px;
     color:#8a7f73;
     font-weight:500;
-
     white-space:nowrap;
-    text-align:center;
     z-index:2;
-}
-
-.flip-card{
-    position:relative;
 }
 
 .hidden{
@@ -1560,7 +1564,15 @@ Science       | Biology       | What is DNA?             | Deoxyribonucleic acid
     </div>
 
     <!-- ===== FLASHCARDS MODE ===== -->
-    <div id="view-flashcards" class="view" style="padding:0.75rem 1rem 0.5rem;">
+    <div id="view-flashcards"
+     class="view"
+     style="
+     display:none;
+     flex-direction:column;
+     height:100%;
+     position:relative;
+     overflow:hidden;
+">
       <div class="flex items-center justify-between mb-2">
         <button onclick="exitStudy()" class="text-sec"><i data-lucide="x" class="w-6 h-6"></i></button>
         <p id="fc-progress" class="text-sm text-sec font-medium">0/0</p>
