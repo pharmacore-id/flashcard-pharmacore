@@ -4056,7 +4056,7 @@ function renderDecks() {
     return;
   }
 
- // ===== LEVEL 1: Topik (150px) =====
+// ===== LEVEL 1: Topik (150px) =====
 let html = '';
 
 sortedTopics.forEach((topic) => {
@@ -4086,11 +4086,7 @@ sortedTopics.forEach((topic) => {
             const background =
                 bgCard.card_background;
 
-            if (
-                background.startsWith(
-                    'http'
-                )
-            ) {
+            if (background.startsWith('http')) {
 
                 bgStyle =
                 `background:
@@ -4114,10 +4110,10 @@ sortedTopics.forEach((topic) => {
         }
     }
 
-    // fallback kalau background tidak ketemu
-    if(!bgStyle && !iconHtml){
+    // fallback
+    if (!bgStyle && !iconHtml) {
 
-        const colors=[
+        const colors = [
             'var(--card-peach)',
             'var(--card-green)',
             'var(--card-blue)',
@@ -4129,8 +4125,7 @@ sortedTopics.forEach((topic) => {
             colors[
                 sortedTopics.indexOf(topic)%4
             ]
-        };
-        color:white;`;
+        }; color:white;`;
     }
 
     html += `
