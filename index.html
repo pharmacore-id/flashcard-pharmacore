@@ -2678,24 +2678,20 @@ Duration
 
 <div class="duration-grid">
 
-<button
-class="duration-btn"
+<button class="duration-btn"
 onclick="selectDuration(1,event)">
 1 Month
 </button>
 
-<button
-class="duration-btn active"
+<button class="duration-btn active"
 onclick="selectDuration(3,event)">
 3 Months
 </button>
 
-<button
-class="duration-btn"
+<button class="duration-btn"
 onclick="selectDuration(6,event)">
 6 Months
 </button>
-
 </div>
 
 </div>
@@ -2813,51 +2809,71 @@ Free
     };
     const PLAN_DURATION_MONTHS = 3;
 
-    // ============================================================
-    //  AUTH & DATA LAYER
-    // ============================================================
-    const USERS_KEY = 'flashmind_users';
-    const SESSION_KEY = 'flashmind_session';
-    const DATA_PREFIX = 'flashmind_data_';
-    const CODES_KEY = 'flashmind_codes';
-    const GOAL_KEY = 'flashmind_goal';
-    const STUDY_TIME_KEY = 'flashmind_study_time';
-    const NICKNAME_KEY = 'flashmind_nickname_';
+ // ============================================================
+ // AUTH & DATA LAYER
+ // ============================================================
+const USERS_KEY='flashmind_users';
+const SESSION_KEY='flashmind_session';
+const DATA_PREFIX='flashmind_data_';
+const CODES_KEY='flashmind_codes';
+const GOAL_KEY='flashmind_goal';
+const STUDY_TIME_KEY='flashmind_study_time';
+const NICKNAME_KEY='flashmind_nickname_';
 
-    let currentUser = null;
-    let allCards = [];
-    let userPlan = 'free';
-    let isAdmin = false;
-    let currentDeckId = null;
-    let currentTopic = null;
-    let studyQueue = [];
-    let studyIdx = 0;
-    let fcFlipped = false;
-    let tsCorrect = 0,
-      tsIncorrect = 0,
-      tsCurrentAnswer = '';
-    let selectedPlan = null;
-    let selectedDuration = 3;
-    let hasValidCode = false;
-    let currentTab = 'home';
-    let navTimeout = null;
-    let progressPeriod = 'week';
-    let isSyncing = false;
-    let renameDeckId = null;
-    let manageDeckId = null;
-    let editCardId = null;
-    let addingToDeckId = null;
-    let previousView = 'decks';
-    let resetCode = '';
-    let resetEmail = '';
-    let selectedCardIds = [];
-    let selectedDeckIds = [];
-    let sessionStats = {
-    again: 0,
-    hard: 0,
-    good: 0,
-    easy: 0
-    };
+let currentUser=null;
+let allCards=[];
+let userPlan='free';
+let isAdmin=false;
+let currentDeckId=null;
+let currentTopic=null;
+let studyQueue=[];
+let studyIdx=0;
+let fcFlipped=false;
+
+let tsCorrect=0,
+tsIncorrect=0,
+tsCurrentAnswer='';
+
+let selectedPlan='regular';
+let selectedDuration=3;
+
+let hasValidCode=false;
+let currentTab='home';
+let navTimeout=null;
+let progressPeriod='week';
+let isSyncing=false;
+let renameDeckId=null;
+let manageDeckId=null;
+let editCardId=null;
+let addingToDeckId=null;
+let previousView='decks';
+let resetCode='';
+let resetEmail='';
+let selectedCardIds=[];
+let selectedDeckIds=[];
+
+let sessionStats={
+again:0,
+hard:0,
+good:0,
+easy:0
+};
+
+const PRICING={
+
+book:{
+1:15000,
+3:38000,
+6:70000
+},
+
+regular:{
+1:25000,
+3:68000,
+6:120000
+}
+
+};
 
 function resetSessionStats(){
     sessionStats = {
@@ -7347,7 +7363,7 @@ async function deleteSelectedDecks() {
   }
 }
 
-  function selectPlan(type){
+function selectPlan(type){
 
 if(isPremiumActive()){
 alert('You already have Premium access!');
@@ -7355,10 +7371,6 @@ return;
 }
 
 selectedPlan=type;
-
-document
-.getElementById('payment-section')
-?.classList.remove('hidden');
 
 document
 .getElementById('book-buyer-card')
@@ -7377,26 +7389,25 @@ type==='regular'
 updatePricingDisplay();
 
 }
-
     function selectPayment(method, evt) {
       document.querySelectorAll('.payment-option').forEach(el => el.classList.remove('selected'));
       evt.currentTarget.classList.add('selected');
     }
 
- async function processPayment(){
+async function processPayment(){
 
-if(!selectedPlanType || !selectedDuration){
-    alert("Please select a plan");
-    return;
+if(!selectedPlan || !selectedDuration){
+alert("Please select a plan");
+return;
 }
 
 if(isPremiumActive()){
-    alert("You already have Premium access!");
-    return;
+alert("You already have Premium access!");
+return;
 }
 
 const price=
-PRICING[selectedPlanType][selectedDuration];
+PRICING[selectedPlan][selectedDuration];
 
 const btn=
 document.getElementById(
@@ -7407,27 +7418,22 @@ btn.disabled=true;
 btn.textContent=
 "Processing...";
 
-
-// TEMP PAYMENT SIMULATION
 setTimeout(async()=>{
 
 const confirmed=
 confirm(
-`Simulate successful payment?\n\nPlan: ${selectedDuration} month\nPrice: Rp${price.toLocaleString()}`
+`Simulate successful payment?\n\nPlan: ${selectedDuration} month(s)\nPrice: Rp${price.toLocaleString()}`
 );
 
 if(!confirmed){
 
 btn.disabled=false;
-
-btn.textContent=
-"Pay with QRIS";
+updatePricingDisplay();
 
 return;
+
 }
 
-
-// activate premium
 const expiry=
 addMonths(
 new Date(),
@@ -7441,9 +7447,8 @@ expiry
 );
 
 
-// mark code used ONLY if book buyer
 if(
-selectedPlanType==="book"
+selectedPlan==="book"
 && hasValidCode
 ){
 
@@ -7497,8 +7502,7 @@ closeUpgradeModal();
 
 btn.disabled=false;
 
-btn.textContent=
-"Pay with QRIS";
+updatePricingDisplay();
 
 alert(
 `🎉 Premium activated for ${selectedDuration} month(s)!`
@@ -7699,10 +7703,17 @@ selectedDuration=months;
 document
 .querySelectorAll('.duration-btn')
 .forEach(btn=>{
+
 btn.classList.remove('active');
+
 });
 
 event.currentTarget.classList.add('active');
+
+updatePricingDisplay();
+
+}
+
 
 function updatePricingDisplay(){
 
@@ -7733,7 +7744,7 @@ document
 'modal-price-label'
 )
 .textContent=
-`${label} · ${selectedDuration} Month`;
+`${label} · ${selectedDuration} Months`;
 
 document
 .getElementById(
