@@ -2122,6 +2122,7 @@ Science       | Biology       | What is DNA?             | Deoxyribonucleic acid
     let manageDeckId = null;
     let editCardId = null;
     let addingToDeckId = null;
+    let previousView = 'decks';
     let resetCode = '';
     let resetEmail = '';
     let selectedCardIds = [];
@@ -4892,12 +4893,10 @@ function fcShowCard() {
                     ${total} cards reviewed
                 </p>
 
-                <button
-                    onclick="exitStudy()"
-                    class="back-btn mt-4 accent-bg text-white px-6 py-2 rounded-2xl font-bold"
-                >
-                    Back Home
-                </button>
+                <button onclick="goBackAfterStudy()"
+class="back-btn mt-4 accent-bg text-white px-6 py-2.5 rounded-2xl font-bold">
+Back
+</button>
 
             </div>
             `;
@@ -5014,7 +5013,50 @@ function fcShowCard() {
         lucide.createIcons();
     }
 }
-   
+
+    function goBackAfterStudy(){
+
+    studyQueue = [];
+    studyIdx = 0;
+    fcFlipped = false;
+
+    document.querySelectorAll('.view')
+        .forEach(v=>{
+            v.classList.remove('active');
+            v.style.display='none';
+        });
+
+    const view =
+        document.getElementById(
+            'view-' + previousView
+        );
+
+    if(view){
+        view.classList.add('active');
+        view.style.display='flex';
+    }
+
+    currentTab = previousView;
+
+    document.querySelectorAll('.nav-item')
+        .forEach(btn=>{
+            btn.classList.toggle(
+                'active',
+                btn.dataset.tab===previousView
+            );
+        });
+
+    if(previousView==='decks'){
+        renderDecks();
+    }
+
+    updateHome();
+
+    if(typeof lucide!=='undefined'){
+        lucide.createIcons();
+    }
+}
+    
     function fcFlip() {
       if (studyIdx >= studyQueue.length) return;
       if (!fcFlipped) {
