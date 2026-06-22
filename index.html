@@ -4949,10 +4949,13 @@ if (!userIsPremium && deckIsPremium) {
 // ============================================================
 function startFlashcards() {
 
-    if (!isPremiumActive() && isCurrentDeckPremium()) {
-        showUpgradeModal();
-        return;
-    }
+    const isLocked =
+    !isPremiumActive() &&
+    isCurrentDeckPremium();
+
+if (isLocked) {
+    return;
+}
 
     let allCardsInDeck;
 
@@ -5534,14 +5537,14 @@ function fcRate(q){
     //  LEARN MODE
     // ============================================================
     function startLearn() {
-      if (!isPremiumActive() && isCurrentDeckPremium()) {
-  showUpgradeModal();
-  return;
+
+      const isLocked =
+    !isPremiumActive() &&
+    isCurrentDeckPremium();
+
+if (isLocked) {
+    return;
 }
-      if (!isPremiumActive()) {
-        showUpgradeModal();
-        return;
-      }
       studyQueue = getDueCards(currentDeckId);
       if (studyQueue.length === 0) studyQueue = getRealCards().filter(c => c.deck_id === currentDeckId);
       if (studyQueue.length === 0) { alert('No cards.'); return }
@@ -5613,16 +5616,13 @@ function fcRate(q){
     //  TEST MODE
     // ============================================================
     function startTest() {
-  // Cegah free user belajar di deck premium
-  if (!isPremiumActive() && isCurrentDeckPremium()) {
-    showUpgradeModal();
+ const isLocked =
+    !isPremiumActive() &&
+    isCurrentDeckPremium();
+
+if (isLocked) {
     return;
-  }
-  // Cegah free user dari Test di deck biasa
-  if (!isPremiumActive()) {
-    showUpgradeModal();
-    return;
-  }
+}
   const all = getRealCards().filter(c => c.deck_id === currentDeckId);
   if (all.length === 0) { alert('No cards.'); return }
   const shuffled = [...all];
