@@ -2620,60 +2620,46 @@ Unlock all pharmacy decks and study modes
 </div>
 
 
-<!-- PLAN -->
+<!-- ACCESS CODE AREA -->
 
-<div class="upgrade-section">
+<div
 
-<div class="section-title">
-Choose Plan
-</div>
+id="book-code-section"
 
-<div class="pricing-card-grid">
+class="mt-4">
 
-<div class="pricing-card popular"
-id="book-buyer-card"
-onclick="selectPlan('book')">
+<input
 
-<span class="badge-popular">
-⭐ Best Value
-</span>
+id="upgrade-code-input"
 
-<p class="plan-name">
-Book Buyer
-</p>
+type="text"
 
-<p class="plan-desc">
-Requires valid access code
-</p>
+placeholder="Enter access code"
 
-</div>
+class="w-full border rounded-xl px-4 py-3"
 
+/>
 
-<div class="pricing-card"
-id="regular-card"
-onclick="selectPlan('regular')">
+<button
 
-<p class="plan-name">
-Regular User
-</p>
+onclick="validateUpgradeCode()"
 
-<p class="plan-desc">
-No access code required
-</p>
+class="w-full mt-2 accent-bg text-white py-3 rounded-xl font-bold">
+
+Validate Token
+
+</button>
+
+<div
+
+id="upgrade-code-status"
+
+class="text-xs mt-2">
 
 </div>
 
 </div>
 
-</div>
-
-
-<!-- DURATION -->
-
-<div class="upgrade-section">
-
-<div class="section-title">
-Duration
 </div>
 
 <div class="duration-grid">
@@ -7316,46 +7302,104 @@ async function deleteSelectedDecks() {
 
     function closeUpgradeModal() { document.getElementById('upgrade-modal').classList.add('hidden') }
 
-   async function validateUpgradeCode() {
-  const code = document.getElementById('upgrade-code-input').value.trim().toUpperCase();
-  const status = document.getElementById('upgrade-code-status');
+  async function validateUpgradeCode(){
 
-  if (!code) {
-    status.textContent = 'Please enter an access code.';
-    status.style.color = '#ef4444';
-    return;
-  }
+const code=
+document
+.getElementById(
+'upgrade-code-input'
+)
+.value
+.trim()
+.toUpperCase();
 
-  try {
-    const docRef = await db.collection('accessCodes').doc(code).get();
-    
-    if (!docRef.exists) {
-      hasValidCode = false;
-      status.textContent = '❌ Invalid access code.';
-      status.style.color = '#ef4444';
-      return;
-    }
+const status=
+document
+.getElementById(
+'upgrade-code-status'
+);
 
-    const codeData = docRef.data();
-    
-    if (codeData.used) {
-      hasValidCode = false;
-      status.textContent = '❌ This code has already been used.';
-      status.style.color = '#ef4444';
-    } else {
-      hasValidCode = true;
-      status.textContent = '✅ Valid access code! You get the book buyer discount.';
-      status.style.color = '#059669';
-      document.getElementById('book-buyer-card').style.borderColor = '#d97706';
-      document.getElementById('modal-price-display').textContent = 'Rp 35.000';
-      document.getElementById('modal-price-label').textContent = 'Book Buyer Price (Discounted)';
-      selectPlan('book');
-    }
-  } catch (error) {
-    console.error('Validation error:', error);
-    status.textContent = '❌ Error validating code. Please try again.';
-    status.style.color = '#ef4444';
-  }
+if(!code){
+
+hasValidCode=false;
+
+status.textContent=
+'Please enter access code';
+
+status.style.color=
+'#ef4444';
+
+updatePricingDisplay();
+
+return;
+}
+
+try{
+
+const docRef=
+await db
+.collection('accessCodes')
+.doc(code)
+.get();
+
+if(!docRef.exists){
+
+hasValidCode=false;
+
+status.textContent=
+'❌ Invalid access code';
+
+status.style.color=
+'#ef4444';
+
+updatePricingDisplay();
+
+return;
+}
+
+const codeData=
+docRef.data();
+
+if(codeData.used){
+
+hasValidCode=false;
+
+status.textContent=
+'❌ This code has already been used';
+
+status.style.color=
+'#ef4444';
+
+updatePricingDisplay();
+
+return;
+
+}
+
+hasValidCode=true;
+
+status.textContent=
+'✅ Access code verified';
+
+status.style.color=
+'#10b981';
+
+updatePricingDisplay();
+
+}catch(error){
+
+console.error(error);
+
+hasValidCode=false;
+
+status.textContent=
+'❌ Validation error';
+
+status.style.color=
+'#ef4444';
+
+}
+
 }
 
 function selectPlan(type){
@@ -7748,12 +7792,37 @@ document
 .textContent=
 `Rp${perDay.toLocaleString()}/day`;
 
-document
-.getElementById(
+const payBtn=
+document.getElementById(
 'pay-now-btn'
-)
-.textContent=
+);
+
+payBtn.textContent=
 `Pay Rp${price.toLocaleString()}`;
+
+
+// Disable payment for book buyer until token valid
+
+if(
+selectedPlan==="book"
+&& !hasValidCode
+){
+
+payBtn.disabled=true;
+
+payBtn.style.opacity=".5";
+
+payBtn.textContent=
+'Validate access code first';
+
+}
+else{
+
+payBtn.disabled=false;
+
+payBtn.style.opacity="1";
+
+}
 
 }
     
