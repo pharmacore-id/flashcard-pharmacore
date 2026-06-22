@@ -2577,186 +2577,212 @@ Back to Settings
       </div>
     </div>
 
-    <div id="upgrade-modal" class="hidden fixed inset-0 z-[9999] flex items-end sm:items-center justify-center" style="background:rgba(0,0,0,0.5);" onclick="if(event.target===this) closeUpgradeModal()">
-      <div class="surface rounded-t-3xl sm:rounded-3xl w-full max-w-md p-6" onclick="event.stopPropagation()" style="max-height:90vh;overflow-y:auto;">
-        <div class="flex justify-between items-center mb-4"><h3 class="font-bold text-xl">✨ Upgrade to Premium</h3><button onclick="closeUpgradeModal()" class="text-sec"><i data-lucide="x" class="w-6 h-6"></i></button></div>
-<div class="upgrade-container">
+<div id="upgrade-modal"
+class="hidden fixed inset-0 z-[9999] flex items-end sm:items-center justify-center"
+style="background:rgba(0,0,0,0.5);"
+onclick="if(event.target===this) closeUpgradeModal()">
 
-    <div class="upgrade-header">
-        <div class="upgrade-icon">
-            👑
-        </div>
+<div class="surface rounded-t-3xl sm:rounded-3xl w-full max-w-md p-6"
+onclick="event.stopPropagation()"
+style="max-height:90vh;overflow-y:auto;">
 
-        <h2>Upgrade to Premium</h2>
+<div class="flex justify-between items-center mb-4">
 
-        <p>
-            Unlock all pharmacy decks and study modes
-        </p>
-    </div>
+<h3 class="font-bold text-xl">
+✨ Upgrade to Premium
+</h3>
 
-
-    <!-- PLAN TYPE -->
-
-    <div class="upgrade-section">
-
-        <div class="section-title">
-            Choose Plan
-        </div>
-
-        <div class="pricing-card-grid">
-
-            <div class="pricing-card popular"
-            id="book-buyer-card"
-            onclick="selectPlan('book')">
-
-                <span class="badge-popular">
-                    ⭐ Best Value
-                </span>
-
-                <p class="plan-name">
-                    Book Buyer
-                </p>
-
-                <p class="plan-desc">
-                    Requires valid access code
-                </p>
-
-            </div>
-
-
-            <div class="pricing-card"
-            id="regular-card"
-            onclick="selectPlan('regular')">
-
-                <p class="plan-name">
-                    Regular User
-                </p>
-
-                <p class="plan-desc">
-                    No access code required
-                </p>
-
-            </div>
-
-        </div>
-
-    </div>
-
-
-    <!-- DURATION -->
-
-    <div class="upgrade-section">
-
-        <div class="section-title">
-            Duration
-        </div>
-
-        <div class="duration-grid">
-
-            <button class="duration-btn"
-            onclick="selectDuration(1)">
-            1 Month
-            </button>
-
-            <button class="duration-btn active"
-            onclick="selectDuration(3)">
-            3 Months
-            </button>
-
-            <button class="duration-btn"
-            onclick="selectDuration(6)">
-            6 Months
-            </button>
-
-        </div>
-
-    </div>
-
-
-    <!-- PRICE SUMMARY -->
-
-    <div class="price-summary">
-
-        <div>
-
-            <p class="summary-label">
-                Total Price
-            </p>
-
-            <h2 id="modal-price-display">
-                Rp68000
-            </h2>
-
-            <p id="modal-price-label">
-                Regular · 3 Months
-            </p>
-
-        </div>
-
-        <div class="daily-price">
-
-            <span id="price-per-day">
-
-            Rp756/day
-
-            </span>
-
-        </div>
-
-    </div>
-
-
-    <!-- QRIS -->
-
-    <div class="payment-box">
-
-        <div class="payment-title">
-
-            QRIS Payment
-
-        </div>
-
-        <p class="payment-sub">
-
-            Supports GoPay, DANA, OVO, ShopeePay, BCA, Mandiri and other QRIS apps
-
-        </p>
-
-        <button
-        id="pay-now-btn"
-        onclick="processPayment()"
-        class="pay-btn">
-
-            Pay with QRIS
-
-        </button>
-
-    </div>
+<button onclick="closeUpgradeModal()" class="text-sec">
+<i data-lucide="x" class="w-6 h-6"></i>
+</button>
 
 </div>
 
 
-        
-        <div id="payment-section" class="hidden">
-          <div class="border-t border-theme pt-4 mt-2">
-            <p class="font-semibold text-sm mb-3">Choose Payment Method</p>
-            <div class="space-y-2">
-              <div class="payment-option" onclick="selectPayment('qris', event)"><div class="icon qris"><i data-lucide="smartphone" class="w-5 h-5"></i></div><div><p class="font-medium text-sm">QRIS</p><p class="text-xs text-sec">Scan with any e-wallet</p></div></div>
-              <div class="payment-option" onclick="selectPayment('bank', event)"><div class="icon bank"><i data-lucide="building-2" class="w-5 h-5"></i></div><div><p class="font-medium text-sm">Bank Transfer</p><p class="text-xs text-sec">BCA, Mandiri, BNI, BRI</p></div></div>
-              <div class="payment-option" onclick="selectPayment('ewallet', event)"><div class="icon ewallet"><i data-lucide="smartphone" class="w-5 h-5"></i></div><div><p class="font-medium text-sm">E-Wallet</p><p class="text-xs text-sec">GoPay, OVO, DANA, ShopeePay</p></div></div>
-            </div>
-            <button id="pay-now-btn" onclick="processPayment()" class="w-full mt-4 py-3 rounded-2xl accent-bg text-white font-bold hover:opacity-90 transition-opacity">Pay Now</button>
-            <p class="text-center text-xs text-sec mt-2">💳 Demo payment - premium unlocks instantly</p>
-          </div>
-        </div>
-        <div class="text-center text-xs text-sec mt-3">
-          <span>Current plan: </span>
-          <span id="upgrade-current-plan" class="font-semibold">Free</span>
-        </div>
-      </div>
-    </div>
+<div class="upgrade-container">
 
-  </div>
+<!-- HEADER -->
+
+<div class="upgrade-header">
+
+<div class="upgrade-icon">
+👑
+</div>
+
+<h2>
+Upgrade to Premium
+</h2>
+
+<p>
+Unlock all pharmacy decks and study modes
+</p>
+
+</div>
+
+
+<!-- PLAN -->
+
+<div class="upgrade-section">
+
+<div class="section-title">
+Choose Plan
+</div>
+
+<div class="pricing-card-grid">
+
+<div class="pricing-card popular"
+id="book-buyer-card"
+onclick="selectPlan('book')">
+
+<span class="badge-popular">
+⭐ Best Value
+</span>
+
+<p class="plan-name">
+Book Buyer
+</p>
+
+<p class="plan-desc">
+Requires valid access code
+</p>
+
+</div>
+
+
+<div class="pricing-card"
+id="regular-card"
+onclick="selectPlan('regular')">
+
+<p class="plan-name">
+Regular User
+</p>
+
+<p class="plan-desc">
+No access code required
+</p>
+
+</div>
+
+</div>
+
+</div>
+
+
+<!-- DURATION -->
+
+<div class="upgrade-section">
+
+<div class="section-title">
+Duration
+</div>
+
+<div class="duration-grid">
+
+<button
+class="duration-btn"
+onclick="selectDuration(1,event)">
+1 Month
+</button>
+
+<button
+class="duration-btn active"
+onclick="selectDuration(3,event)">
+3 Months
+</button>
+
+<button
+class="duration-btn"
+onclick="selectDuration(6,event)">
+6 Months
+</button>
+
+</div>
+
+</div>
+
+
+<!-- PRICE -->
+
+<div class="price-summary">
+
+<div>
+
+<p class="summary-label">
+Total Price
+</p>
+
+<h2 id="modal-price-display">
+Rp68000
+</h2>
+
+<p id="modal-price-label">
+Regular · 3 Months
+</p>
+
+</div>
+
+<div class="daily-price">
+
+<span id="price-per-day">
+Rp756/day
+</span>
+
+</div>
+
+</div>
+
+
+<!-- PAYMENT -->
+
+<div class="payment-box">
+
+<div class="payment-title">
+
+QRIS Payment
+
+</div>
+
+<p class="payment-sub">
+
+Supports GoPay, DANA, OVO, ShopeePay, BCA, Mandiri and other QRIS apps
+
+</p>
+
+<button
+id="pay-now-btn"
+onclick="processPayment()"
+class="pay-btn">
+
+Pay with QRIS
+
+</button>
+
+</div>
+
+
+<p class="text-center text-xs text-sec mt-3">
+
+💳 Demo payment — premium unlocks instantly
+
+</p>
+
+
+<div class="text-center text-xs text-sec mt-3">
+
+Current plan:
+<span id="upgrade-current-plan"
+class="font-semibold">
+
+Free
+
+</span>
+
+</div>
+
+</div>
+
+</div>
+</div>
 
   <script>
     // ============================================================
@@ -7683,25 +7709,17 @@ document.addEventListener(
     { passive: true }
 );
 
-function selectDuration(months){
+function selectDuration(months,event){
 
 selectedDuration=months;
 
 document
-.querySelectorAll(
-'.duration-btn'
-)
+.querySelectorAll('.duration-btn')
 .forEach(btn=>{
-
-btn.classList.remove(
-'active'
-);
-
+btn.classList.remove('active');
 });
 
-event.target.classList.add(
-'active'
-);
+event.currentTarget.classList.add('active');
 
 updatePricingDisplay();
 
