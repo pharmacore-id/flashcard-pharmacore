@@ -943,65 +943,89 @@
       font-weight: 600;
     }
 
-   /* =========================
+/* =========================
    Random Challenge Card
 ========================= */
 
 .challenge-card{
-    background: white;
-    border:1px solid #e8dcca;
-    border-radius:24px;
-    padding:22px;
-    margin-top:20px;
+    background:linear-gradient(
+        135deg,
+        #fff8d6 0%,
+        #ffe28a 45%,
+        #ffc94d 100%
+    );
+
+    border-radius:28px;
+    padding:24px;
+    margin-top:8px;
+
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+
+    text-align:center;
+
+    box-shadow:
+        0 8px 24px rgba(255,180,0,.12);
 }
 
 .challenge-card h3{
-    font-size:28px;
-    font-weight:700;
-    margin-bottom:8px;
-    color:var(--text-primary);
+    font-size:22px;
+    font-weight:800;
+    margin:0 0 10px;
+    color:#6b4f00;
 }
 
 .challenge-card p{
-    color:var(--text-secondary);
     font-size:16px;
-    line-height:1.6;
-    margin-bottom:18px;
+    line-height:1.5;
+    color:#876b1c;
+
+    text-align:center;
+    margin:0 auto 22px auto;
+    max-width:280px;
 }
 
 .challenge-buttons{
     display:flex;
+    width:100%;
     gap:12px;
 }
 
 .challenge-buttons button{
     flex:1;
+
     border:none;
-    border-radius:16px;
-    padding:14px;
-    font-size:18px;
+    border-radius:18px;
+
+    padding:14px 10px;
+
+    font-size:16px;
     font-weight:700;
+
     cursor:pointer;
-    transition:all .2s ease;
+
+    transition:all .25s ease;
 }
 
 .challenge-buttons button:nth-child(1){
-    background:#ff6b00;
+    background:#ff9500;
     color:white;
 }
 
 .challenge-buttons button:nth-child(2){
-    background:#ff8c32;
+    background:#ffb12a;
     color:white;
 }
 
 .challenge-buttons button:nth-child(3){
-    background:#f5efe5;
-    color:#222;
+    background:rgba(255,255,255,.75);
+    color:#6b4f00;
 }
 
 .challenge-buttons button:hover{
-    transform:translateY(-2px);
+    transform:translateY(-3px);
 }
     
     .heatmap-grid {
@@ -1244,30 +1268,23 @@ Refreshing...
         <div class="stat-card"><div class="icon" style="color:#2563eb;"><i data-lucide="trophy" class="w-5 h-5 mx-auto"></i></div><div class="number" style="color:#2563eb;" id="stat-mastered">0</div><div class="label">Mastered</div></div>
       </div>
 
-     <div class="challenge-card">
-
+    <div class="challenge-card">
     <h3>🎲 Feeling confident?</h3>
-
     <p>
-        Shuffle random cards from all decks and challenge your memory.
+        Shuffle random cards from all decks and challenge your memory
     </p>
 
     <div class="challenge-buttons">
-
         <button onclick="startRandomChallenge(50)">
             50 Cards
         </button>
-
         <button onclick="startRandomChallenge(100)">
             100 Cards
         </button>
-
         <button onclick="showCustomChallenge()">
             Custom
         </button>
-
     </div>
-
 </div>
 
       <div class="home-quick-actions">
