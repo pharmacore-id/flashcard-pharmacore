@@ -4565,6 +4565,79 @@ if (!userIsPremium && deckIsPremium) {
       fcShowCard();
     }
 
+// ======================================================
+// CHALLENGE MODE
+// ======================================================
+
+function startRandomChallenge(cardCount) {
+
+    const cards = getRealCards();
+
+    if (!cards.length) {
+        alert("No cards available");
+        return;
+    }
+
+    // Shuffle cards
+    const shuffled = [...cards]
+        .sort(() => Math.random() - 0.5);
+
+    // Take selected amount
+    const selectedCards = shuffled.slice(
+        0,
+        Math.min(cardCount, cards.length)
+    );
+
+    // Save original deck
+    window.originalDeckId = currentDeckId;
+
+    // Create temporary challenge deck
+    currentDeckId = "__challenge__";
+
+    // Temporary challenge cards
+    window.challengeCards = selectedCards;
+
+    // Override card source
+    const originalGetRealCards = getRealCards;
+
+    getRealCards = function() {
+        if (currentDeckId === "__challenge__") {
+            return window.challengeCards;
+        }
+
+        return originalGetRealCards();
+    };
+
+    // Start normal Flashcards mode
+    startFlashcards();
+}
+
+
+function startCustomChallenge() {
+
+    const total = getRealCards().length;
+
+    let amount = prompt(
+        `Choose number of cards (1-${total})`
+    );
+
+    if (!amount) return;
+
+    amount = parseInt(amount);
+
+    if (
+        isNaN(amount) ||
+        amount < 1 ||
+        amount > total
+    ) {
+        alert("Invalid amount");
+        return;
+    }
+
+    startRandomChallenge(amount);
+}
+    
+
     function fcShowCard() {
       const card = document.getElementById('fc-card');
       const done = document.getElementById('fc-done');
@@ -5784,134 +5857,6 @@ async function deleteSelectedDecks() {
   }
 }
 
-
-
-
-    // =====================================
-// RANDOM CHALLENGE
-// =====================================
-
-let currentChallengeCards = [];
-let challengeIndex = 0;
-
-function shuffleArray(array){
-
-    const arr=[...array];
-
-    for(
-        let i=arr.length-1;
-        i>0;
-        i--
-    ){
-
-        const j=Math.floor(
-            Math.random()*(i+1)
-        );
-
-        [arr[i],arr[j]]=
-        [arr[j],arr[i]];
-    }
-
-    return arr;
-}
-
-
-function showCustomChallenge(){
-
-    const totalCards =
-        getRealCards().length;
-
-    let count=prompt(
-        `How many random cards?\n(Max ${totalCards})`
-    );
-
-    count=parseInt(count);
-
-    if(
-        isNaN(count) ||
-        count<=0
-    ){
-        return;
-    }
-
-    startRandomChallenge(count);
-}
-
-
-function startRandomChallenge(count){
-
-    const cards=
-        getRealCards();
-
-    if(cards.length===0){
-
-        alert(
-            "No cards available."
-        );
-
-        return;
-    }
-
-    // Prevent requesting more cards than exist
-    count=Math.min(
-        count,
-        cards.length
-    );
-
-    const shuffled=
-        shuffleArray(cards);
-
-    currentChallengeCards=
-        shuffled.slice(
-            0,
-            count
-        );
-
-    challengeIndex=0;
-
-    alert(
-        `🎲 Starting challenge with ${count} cards`
-    );
-
-    startChallengeStudy();
-}
-
-    // ============================================================
-    // CHALLENGESTUDY
-    // ============================================================
-
-function startChallengeStudy(){
-
-    if(
-        challengeIndex >=
-        currentChallengeCards.length
-    ){
-
-        alert(
-            "🎉 Challenge completed!"
-        );
-
-        return;
-    }
-
-    currentCard =
-        currentChallengeCards[
-            challengeIndex
-        ];
-
-    openFlashcard(
-        currentCard
-    );
-}
-
-
-// Call this after rating card
-function nextChallengeCard(){
-
-    challengeIndex++;
-
-    startChallengeStudy();
-}
     // ============================================================
     //  DOWNLOAD SAMPLE EXCEL
     // ============================================================
