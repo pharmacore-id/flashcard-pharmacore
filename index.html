@@ -1141,34 +1141,6 @@
     font-weight:600;
     font-size:14px;
 }
-
-#view-flashcards{
-    width:100%;
-    max-width:100%;
-    flex:1;
-}
-
-#fc-card{
-    position:relative;
-    margin:0 auto;
-}
-
-.challenge-source{
-    position:absolute;
-    top:-24px;
-    left:50%;
-    transform:translateX(-50%);
-    font-size:11px;
-    color:#8a7f73;
-    font-weight:500;
-    white-space:nowrap;
-    z-index:2;
-}
-
-.hidden{
-    display:none !important;
-}
-    
   </style>
 </head>
 <body>
@@ -1564,15 +1536,7 @@ Science       | Biology       | What is DNA?             | Deoxyribonucleic acid
     </div>
 
     <!-- ===== FLASHCARDS MODE ===== -->
-    <div id="view-flashcards"
-     class="view"
-     style="
-     display:none;
-     flex-direction:column;
-     height:100%;
-     position:relative;
-     overflow:hidden;
-">
+    <div id="view-flashcards" class="view" style="padding:0.75rem 1rem 0.5rem;">
       <div class="flex items-center justify-between mb-2">
         <button onclick="exitStudy()" class="text-sec"><i data-lucide="x" class="w-6 h-6"></i></button>
         <p id="fc-progress" class="text-sm text-sec font-medium">0/0</p>
@@ -1580,79 +1544,24 @@ Science       | Biology       | What is DNA?             | Deoxyribonucleic acid
       </div>
       <div class="progress-bar mb-3"><div id="fc-progress-fill" class="progress-fill" style="width:0%"></div></div>
       <div class="flex-1 flex items-center justify-center">
-       <!-- Challenge source ABOVE card -->
-<div id="challenge-source"
-     class="challenge-source hidden">
-</div>
-
-<div class="flex flex-col items-center w-full">
-
-    <!-- Challenge source -->
-    <div id="challenge-source"
-         class="challenge-source hidden">
-    </div>
-
-    <!-- Flashcard -->
-    <div id="fc-card"
-         class="flip-card cursor-pointer"
-         onclick="fcFlip()">
-
-        <div class="flip-inner">
-
-            <div class="flip-front">
-                <p id="fc-front-text"
-                   class="text-xl font-bold text-center leading-relaxed">
-                </p>
-            </div>
-
-            <div class="flip-back">
-                <p id="fc-back-text"
-                   class="text-xl font-semibold text-center leading-relaxed">
-                </p>
-            </div>
-
+        <div id="fc-card" class="flip-card cursor-pointer" onclick="fcFlip()">
+          <div class="flip-inner"><div class="flip-front"><p id="fc-front-text" class="text-xl font-bold text-center leading-relaxed"></p></div><div class="flip-back"><p id="fc-back-text" class="text-xl font-semibold text-center leading-relaxed"></p></div></div>
         </div>
-
+      </div>
+      <div class="swipe-hint mt-1">👆 Tap to flip · Rate below</div>
+      <div id="fc-buttons" class="hidden grid grid-cols-4 gap-2 mt-2">
+        <button onclick="fcRate(0)" class="py-3 rounded-2xl text-white font-semibold text-sm" style="background:#ef4444">Again</button>
+        <button onclick="fcRate(1)" class="py-3 rounded-2xl text-white font-semibold text-sm" style="background:#f59e0b">Hard</button>
+        <button onclick="fcRate(2)" class="py-3 rounded-2xl text-white font-semibold text-sm" style="background:#3b82f6">Good</button>
+        <button onclick="fcRate(3)" class="py-3 rounded-2xl text-white font-semibold text-sm" style="background:#10b981">Easy</button>
+      </div>
+      <div id="fc-done" class="hidden flex-1 flex-col items-center justify-center text-center">
+        <i data-lucide="check-circle" class="w-16 h-16 accent-text mb-3"></i>
+        <p class="text-xl font-bold">All done! 🎉</p>
+        <button onclick="exitStudy()" class="back-btn mt-4 accent-bg text-white px-6 py-2.5 rounded-2xl font-bold">Back</button>
+      </div>
     </div>
 
-</div>
-
-<div class="swipe-hint mt-2">
-👆 Tap to flip · Rate below
-</div>
-
-<div id="fc-buttons"
-class="hidden grid grid-cols-4 gap-2 mt-2">
-
-<button onclick="fcRate(0)"
-class="py-3 rounded-2xl text-white font-semibold text-sm"
-style="background:#ef4444">
-Again
-</button>
-
-<button onclick="fcRate(1)"
-class="py-3 rounded-2xl text-white font-semibold text-sm"
-style="background:#f59e0b">
-Hard
-</button>
-
-<button onclick="fcRate(2)"
-class="py-3 rounded-2xl text-white font-semibold text-sm"
-style="background:#3b82f6">
-Good
-</button>
-
-<button onclick="fcRate(3)"
-class="py-3 rounded-2xl text-white font-semibold text-sm"
-style="background:#10b981">
-Easy
-</button>
-
-</div>
-
-<div id="fc-done"
-class="hidden flex-1 flex-col items-center justify-center text-center">
-</div>
     <!-- ===== LEARN MODE ===== -->
     <div id="view-learn" class="view" style="padding:0.75rem 1rem 0.5rem;">
       <div class="flex items-center justify-between mb-2">
@@ -4900,274 +4809,186 @@ function startCustomChallenge() {
     
 function fcShowCard() {
 
-    const card =
-    document.getElementById('fc-card');
+    const card = document.getElementById('fc-card');
+    const done = document.getElementById('fc-done');
+    const btns = document.getElementById('fc-buttons');
+    const hint = document.querySelector('.swipe-hint');
 
-    const done =
-    document.getElementById('fc-done');
-
-    const btns =
-    document.getElementById('fc-buttons');
-
-    const hint =
-    document.querySelector('.swipe-hint');
-
-    // ===============================
-    // SESSION FINISHED
-    // ===============================
-
+    // ===== Session Finished =====
     if (
         !studyQueue ||
-        studyQueue.length===0 ||
-        studyIdx>=studyQueue.length
-    ){
+        studyQueue.length === 0 ||
+        studyIdx >= studyQueue.length
+    ) {
 
-        if(card) card.style.display='none';
+        if (card) card.style.display = 'none';
 
-        if(btns){
+        if (btns) {
             btns.classList.add('hidden');
-            btns.style.display='none';
+            btns.style.display = 'none';
         }
 
-        if(hint){
-            hint.style.display='none';
+        if (hint) {
+            hint.style.display = 'none';
         }
 
-        if(done){
+        if (done) {
 
             const total =
-            sessionStats.again +
-            sessionStats.hard +
-            sessionStats.good +
-            sessionStats.easy;
+                sessionStats.again +
+                sessionStats.hard +
+                sessionStats.good +
+                sessionStats.easy;
 
-            done.innerHTML=`
-
+            done.innerHTML = `
             <div class="session-summary">
 
-            <i data-lucide="check-circle"
-            class="w-16 h-16 accent-text mb-3"></i>
+                <h2>🎉 All Done!</h2>
 
-            <h2>
-            All done! 🎉
-            </h2>
+                <p class="summary-sub">
+                    Session completed
+                </p>
 
-            <div class="summary-sub">
-            Session review
-            </div>
+                <div class="summary-grid">
 
-            <div class="summary-grid">
+                    <div class="summary-box">
+                        <span>${sessionStats.again}</span>
+                        <small>Again</small>
+                    </div>
 
-            <div class="summary-box">
-            <span>${sessionStats.again}</span>
-            <small>Again</small>
-            </div>
+                    <div class="summary-box">
+                        <span>${sessionStats.hard}</span>
+                        <small>Hard</small>
+                    </div>
 
-            <div class="summary-box">
-            <span>${sessionStats.hard}</span>
-            <small>Hard</small>
-            </div>
+                    <div class="summary-box">
+                        <span>${sessionStats.good}</span>
+                        <small>Good</small>
+                    </div>
 
-            <div class="summary-box">
-            <span>${sessionStats.good}</span>
-            <small>Good</small>
-            </div>
+                    <div class="summary-box">
+                        <span>${sessionStats.easy}</span>
+                        <small>Easy</small>
+                    </div>
 
-            <div class="summary-box">
-            <span>${sessionStats.easy}</span>
-            <small>Easy</small>
-            </div>
+                </div>
 
-            </div>
-
-            <div class="summary-total">
-            Total: ${total} reviews
-            </div>
-
-            <button
-            onclick="exitStudy()"
-            class="back-btn mt-4 accent-bg text-white px-6 py-2.5 rounded-2xl font-bold">
-
-            Back Home
-
-            </button>
+                <p class="summary-total">
+                    ${total} cards reviewed
+                </p>
 
             </div>
             `;
 
-            done.classList.remove(
-                'hidden'
-            );
-
-            done.style.display='flex';
+            done.classList.remove('hidden');
+            done.style.display = 'flex';
         }
 
-        const progress=
-        document.getElementById(
-            'fc-progress'
-        );
+        const progress =
+            document.getElementById('fc-progress');
 
-        if(progress){
-            progress.textContent=
-            `${studyQueue.length}/${studyQueue.length}`;
+        if (progress) {
+            progress.textContent =
+                `${studyQueue.length}/${studyQueue.length}`;
         }
 
-        const progressFill=
-        document.getElementById(
-            'fc-progress-fill'
-        );
+        const progressFill =
+            document.getElementById('fc-progress-fill');
 
-        if(progressFill){
-            progressFill.style.width='100%';
+        if (progressFill) {
+            progressFill.style.width = '100%';
         }
 
-        challengeMode=false;
-        challengeCards=[];
+        challengeMode = false;
+        challengeCards = [];
 
-        if(
-            typeof lucide!=='undefined'
-            &&
+        if (
+            typeof lucide !== 'undefined' &&
             lucide.createIcons
-        ){
+        ) {
             lucide.createIcons();
         }
 
         return;
     }
 
-    // ===============================
-    // SHOW CARD
-    // ===============================
+    // ===== Normal Card View =====
 
-    if(card){
-        card.style.display='';
-        card.classList.remove(
-            'flipped'
-        );
+    if (card) {
+        card.style.display = '';
+        card.classList.remove('flipped');
     }
 
-    if(done){
-        done.classList.add(
-            'hidden'
-        );
-        done.style.display='none';
+    if (done) {
+        done.classList.add('hidden');
+        done.style.display = 'none';
     }
 
-    if(btns){
-        btns.classList.add(
-            'hidden'
-        );
-        btns.style.display='none';
+    if (btns) {
+        btns.classList.add('hidden');
+        btns.style.display = 'none';
     }
 
-    if(hint){
-        hint.style.display='';
+    if (hint) {
+        hint.style.display = '';
     }
 
-    const c=studyQueue[studyIdx];
+    const c = studyQueue[studyIdx];
 
-    if(!c){
+    if (!c) {
         studyIdx++;
         fcShowCard();
         return;
     }
 
-    const frontText=
-    document.getElementById(
-        'fc-front-text'
-    );
-
-    const backText=
-    document.getElementById(
-        'fc-back-text'
-    );
-
-    const sourceFront=
-    document.getElementById(
-        'challenge-source'
-    );
-
-    const sourceBack=
-    document.getElementById(
-        'challenge-source-back'
-    );
-
-    // Challenge label
-    if(challengeMode){
-
-        const text=
-        `📚 ${
-            c.subtopic ||
-            c.topic ||
-            c.deck_name ||
-            'General'
-        }`;
-
-        sourceFront?.classList.remove(
-            'hidden'
+    const frontText =
+        document.getElementById(
+            'fc-front-text'
         );
 
-        sourceBack?.classList.remove(
-            'hidden'
+    const backText =
+        document.getElementById(
+            'fc-back-text'
         );
 
-        sourceFront.textContent=text;
-        sourceBack.textContent=text;
+    if (frontText) {
+        frontText.textContent =
+            c.card_front || 'Empty';
+    }
 
-    }else{
+    if (backText) {
+        backText.textContent =
+            c.card_back || 'Empty';
+    }
 
-        sourceFront?.classList.add(
-            'hidden'
+    fcFlipped = false;
+
+    const progress =
+        document.getElementById(
+            'fc-progress'
         );
 
-        sourceBack?.classList.add(
-            'hidden'
+    if (progress) {
+        progress.textContent =
+            `${studyIdx + 1}/${studyQueue.length}`;
+    }
+
+    const progressFill =
+        document.getElementById(
+            'fc-progress-fill'
         );
+
+    if (progressFill) {
+        progressFill.style.width =
+            `${(studyIdx / studyQueue.length) * 100}%`;
     }
 
-    if(frontText){
-        frontText.textContent=
-        c.card_front || 'Empty';
-    }
-
-    if(backText){
-        backText.textContent=
-        c.card_back || 'Empty';
-    }
-
-    fcFlipped=false;
-
-    const progress=
-    document.getElementById(
-        'fc-progress'
-    );
-
-    if(progress){
-        progress.textContent=
-        `${studyIdx+1}/${studyQueue.length}`;
-    }
-
-    const progressFill=
-    document.getElementById(
-        'fc-progress-fill'
-    );
-
-    if(progressFill){
-        progressFill.style.width=
-        `${
-            (studyIdx/studyQueue.length)
-            *100
-        }%`;
-    }
-
-    if(
-        typeof lucide!=='undefined'
-        &&
+    if (
+        typeof lucide !== 'undefined' &&
         lucide.createIcons
-    ){
+    ) {
         lucide.createIcons();
     }
-
 }
    
     function fcFlip() {
