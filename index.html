@@ -115,6 +115,31 @@
       will-change: opacity, transform;
     }
 
+    .challenge-card{
+    background:var(--card-bg);
+    border:1px solid var(--border-color);
+    border-radius:16px;
+    padding:16px;
+    margin-top:16px;
+}
+
+.challenge-card h3{
+    margin-bottom:8px;
+}
+
+.challenge-card p{
+    color:var(--text-secondary);
+    margin-bottom:12px;
+}
+
+.challenge-buttons{
+    display:flex;
+    gap:10px;
+}
+
+.challenge-buttons button{
+    flex:1;
+}
     .view.active {
       display: flex !important;
       opacity: 1;
@@ -1183,7 +1208,33 @@ Refreshing...
         <div class="stat-card"><div class="icon" style="color:#059669;"><i data-lucide="target" class="w-5 h-5 mx-auto"></i></div><div class="number" style="color:#059669;" id="stat-accuracy">0%</div><div class="label">Accuracy</div></div>
         <div class="stat-card"><div class="icon" style="color:#2563eb;"><i data-lucide="trophy" class="w-5 h-5 mx-auto"></i></div><div class="number" style="color:#2563eb;" id="stat-mastered">0</div><div class="label">Mastered</div></div>
       </div>
-    
+
+      <div class="challenge-card">
+
+    <h3>🎲 Feeling confident?</h3>
+
+    <p>
+        Shuffle random cards from all decks and
+        test yourself.
+    </p>
+
+    <div class="challenge-buttons">
+
+        <button onclick="startRandomChallenge(50)">
+            50 Cards
+        </button>
+
+        <button onclick="startRandomChallenge(100)">
+            100 Cards
+        </button>
+
+        <button onclick="showCustomChallenge()">
+            Custom
+        </button>
+
+    </div>
+
+</div>
 
       <div class="home-quick-actions">
         <button onclick="continueStudying()" class="primary" id="home-review-btn">📖 Continue Studying</button>
@@ -4550,6 +4601,11 @@ function fcRate(q) {
     exitStudy();
     return;
   }
+  if(currentChallengeCards.length>0){
+
+    nextChallengeCard();
+
+}
 
   const c = studyQueue[studyIdx];
   const updated = applySRS(c, q);
@@ -5680,6 +5736,134 @@ async function deleteSelectedDecks() {
   }
 }
 
+
+
+
+    // =====================================
+// RANDOM CHALLENGE
+// =====================================
+
+let currentChallengeCards = [];
+let challengeIndex = 0;
+
+function shuffleArray(array){
+
+    const arr=[...array];
+
+    for(
+        let i=arr.length-1;
+        i>0;
+        i--
+    ){
+
+        const j=Math.floor(
+            Math.random()*(i+1)
+        );
+
+        [arr[i],arr[j]]=
+        [arr[j],arr[i]];
+    }
+
+    return arr;
+}
+
+
+function showCustomChallenge(){
+
+    const totalCards =
+        getRealCards().length;
+
+    let count=prompt(
+        `How many random cards?\n(Max ${totalCards})`
+    );
+
+    count=parseInt(count);
+
+    if(
+        isNaN(count) ||
+        count<=0
+    ){
+        return;
+    }
+
+    startRandomChallenge(count);
+}
+
+
+function startRandomChallenge(count){
+
+    const cards=
+        getRealCards();
+
+    if(cards.length===0){
+
+        alert(
+            "No cards available."
+        );
+
+        return;
+    }
+
+    // Prevent requesting more cards than exist
+    count=Math.min(
+        count,
+        cards.length
+    );
+
+    const shuffled=
+        shuffleArray(cards);
+
+    currentChallengeCards=
+        shuffled.slice(
+            0,
+            count
+        );
+
+    challengeIndex=0;
+
+    alert(
+        `🎲 Starting challenge with ${count} cards`
+    );
+
+    startChallengeStudy();
+}
+
+    // ============================================================
+    // CHALLENGESTUDY
+    // ============================================================
+
+function startChallengeStudy(){
+
+    if(
+        challengeIndex >=
+        currentChallengeCards.length
+    ){
+
+        alert(
+            "🎉 Challenge completed!"
+        );
+
+        return;
+    }
+
+    currentCard =
+        currentChallengeCards[
+            challengeIndex
+        ];
+
+    openFlashcard(
+        currentCard
+    );
+}
+
+
+// Call this after rating card
+function nextChallengeCard(){
+
+    challengeIndex++;
+
+    startChallengeStudy();
+}
     // ============================================================
     //  DOWNLOAD SAMPLE EXCEL
     // ============================================================
