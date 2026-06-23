@@ -5289,7 +5289,48 @@ function renderDecks() {
     // ============================================================
     //  ADMIN FUNCTIONS - SHOW ADMIN IMPORT
     // ============================================================
- function handleExcelImport(event) {
+
+    function generateNextCardId(cards){
+
+let maxNum=0;
+
+cards.forEach(card=>{
+
+if(card.id){
+
+const match=
+card.id.match(
+/CARD(\d+)/
+);
+
+if(match){
+
+const num=
+parseInt(
+match[1]
+);
+
+if(num>maxNum){
+
+maxNum=num;
+
+}
+
+}
+
+}
+
+});
+
+return "CARD"+
+String(maxNum+1)
+.padStart(
+4,
+"0");
+
+}
+    
+    function handleExcelImport(event) {
   if (!isAdmin) {
     alert('Only admins can import decks.');
     return;
@@ -5359,11 +5400,15 @@ function renderDecks() {
         }
 
         decksToShare[deckKey].cards.push({
-          card_front: front,
-          card_back: back,
-          card_tags: tags,
-          card_background: background   // ← simpan properti background
-        });
+        card_id:
+        row['ID'] ||
+        generateNextCardId(allCards),
+        card_front: front,
+        card_back: back,
+        card_tags: tags,
+        card_background: background
+      
+      });
 
         importedCount++;
       });
@@ -5387,11 +5432,18 @@ function renderDecks() {
           const docRef = existingDocs.docs[0].ref;
           await docRef.update({
             cards: deck.cards.map(c => ({
-              card_front: c.card_front,
-              card_back: c.card_back,
-              card_tags: c.card_tags || '',
-              card_background: c.card_background || '',
-            })),
+            card_id:
+            c.card_id,
+            card_front:
+            c.card_front,
+            card_back:
+            c.card_back,
+            card_tags:
+            c.card_tags || '',
+            card_background:
+            c.card_background || ''
+          
+          })),
             isPremium: isPremium,
             topic: deck.topic,
             subtopic: deck.subtopic,
