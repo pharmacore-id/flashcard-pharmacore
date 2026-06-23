@@ -5429,26 +5429,41 @@ String(maxNum+1)
           if (success) savedCount++;
         } else {
           // Deck sudah ada – update isinya (tanpa mengubah deck_id)
-          const docRef = existingDocs.docs[0].ref;
-          await docRef.update({
-            cards: deck.cards.map(c => ({
-            card_id:
-            c.card_id,
-            card_front:
-            c.card_front,
-            card_back:
-            c.card_back,
-            card_tags:
-            c.card_tags || '',
-            card_background:
-            c.card_background || ''
-          
-          })),
-            isPremium: isPremium,
-            topic: deck.topic,
-            subtopic: deck.subtopic,
-            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-          });
+         const docRef =existingDocs.docs[0].ref;
+        // get existing cards from firestore
+        const oldCards =
+        existingDocs.docs[0]
+        .data()
+        .cards || [];
+        // make lookup map
+        const oldMap =
+        new Map(oldCards.map(
+        c => [c.card_id,
+        c
+        ]));
+        // update existing card if ID exists
+        // add new card if ID doesn't exist
+        deck.cards.forEach(card=>{
+        oldMap.set(
+        card.card_id,
+        card);
+        });
+        
+        // final merged cards
+        const updatedCards =
+        Array.from(oldMap.values());
+        await docRef.update({
+        cards:
+        updatedCards,
+        isPremium:
+        isPremium,
+        topic:
+        deck.topic,
+        subtopic:
+        deck.subtopic,
+        updatedAt:
+        firebase.firestore.FieldValue.serverTimestamp()
+        });
           savedCount++;
           console.log('✅ Deck updated:', deckName);
         }
