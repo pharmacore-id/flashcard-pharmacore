@@ -3219,11 +3219,20 @@ async function saveSharedDeck(deckData, isPremium = false) {
       subtopic: deckData.subtopic || '',
       isPremium: isPremium,
       cards: deckData.cards.map(c => ({
-        card_id: c.card_id,        // ← TAMBAHKAN BARIS INI
+        card_id: c.card_id,
         card_front: c.card_front,
         card_back: c.card_back,
         card_tags: c.card_tags || '',
         card_background: c.card_background || '',
+        // ===== PROGRESS SRS =====
+        ease_factor: c.ease_factor ?? 2.5,
+        interval: c.interval ?? 0,
+        repetitions: c.repetitions ?? 0,
+        next_review: c.next_review || '',
+        last_review: c.last_review || '',
+        total_reviews: c.total_reviews ?? 0,
+        correct_count: c.correct_count ?? 0,
+        review_history: c.review_history || []
       })),
       createdAt: firebase.firestore.FieldValue.serverTimestamp(),
       createdBy: currentUser
@@ -3234,12 +3243,10 @@ async function saveSharedDeck(deckData, isPremium = false) {
     return false;
   }
 }
-
 async function loadSharedDecks() {
   try {
     const snapshot = await db.collection('sharedDecks').get();
     const sharedCards = [];
-    const isPremiumUser = isPremiumActive();
 
     snapshot.forEach(doc => {
       const deck = doc.data();
@@ -3248,7 +3255,7 @@ async function loadSharedDecks() {
         deck.cards.forEach(c => {
           sharedCards.push({
             __id: 'shared_' + doc.id + '_' + (c.card_id || Math.random().toString(36).slice(2, 6)),
-            card_id: c.card_id || null,  // ← TAMBAHKAN BARIS INI
+            card_id: c.card_id || null,
             deck_id: 'shared_' + doc.id,
             deck_name: deck.deckName || 'Shared Deck',
             topic: deck.topic || 'General',
@@ -3258,13 +3265,14 @@ async function loadSharedDecks() {
             card_back: c.card_back,
             card_tags: c.card_tags || '',
             card_background: c.card_background || '',
-            ease_factor: c.ease_factor || 2.5,
-            interval: c.interval || 0,
-            repetitions: c.repetitions || 0,
+            // ===== PROGRESS SRS =====
+            ease_factor: c.ease_factor ?? 2.5,
+            interval: c.interval ?? 0,
+            repetitions: c.repetitions ?? 0,
             next_review: c.next_review || '',
             last_review: c.last_review || '',
-            total_reviews: c.total_reviews || 0,
-            correct_count: c.correct_count || 0,
+            total_reviews: c.total_reviews ?? 0,
+            correct_count: c.correct_count ?? 0,
             review_history: c.review_history || [],
             isShared: true
           });
@@ -3277,7 +3285,40 @@ async function loadSharedDecks() {
     return [];
   }
 }
-    
+
+    async function updateSharedDeck(deckId, deckData, isPremium = false) {
+  if (!isAdmin) return false;
+  try {
+    const docRef = db.collection('sharedDecks').doc(deckId);
+    await docRef.update({
+      deckName: deckData.deckName,
+      topic: deckData.topic || 'General',
+      subtopic: deckData.subtopic || '',
+      isPremium: isPremium,
+      cards: deckData.cards.map(c => ({
+        card_id: c.card_id,
+        card_front: c.card_front,
+        card_back: c.card_back,
+        card_tags: c.card_tags || '',
+        card_background: c.card_background || '',
+        // ===== PROGRESS SRS =====
+        ease_factor: c.ease_factor ?? 2.5,
+        interval: c.interval ?? 0,
+        repetitions: c.repetitions ?? 0,
+        next_review: c.next_review || '',
+        last_review: c.last_review || '',
+        total_reviews: c.total_reviews ?? 0,
+        correct_count: c.correct_count ?? 0,
+        review_history: c.review_history || []
+      })),
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+    return true;
+  } catch (error) {
+    console.error('❌ Gagal update shared deck:', error);
+    return false;
+  }
+}
     // ============================================================
     //  FIREBASE AUTH STATE LISTENER
     // ============================================================
