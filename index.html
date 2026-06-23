@@ -3310,7 +3310,7 @@ async function loadSharedDecks() {
   total_reviews: c.total_reviews ?? 0,
   correct_count: c.correct_count ?? 0,
   review_history: c.review_history || []
-}))
+})),
       updatedAt: firebase.firestore.FieldValue.serverTimestamp()
     });
     return true;
