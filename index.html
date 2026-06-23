@@ -1768,12 +1768,12 @@ Refreshing...
         <div class="surface rounded-2xl p-4 border border-theme shadow-card mt-4">
           <h3 class="font-bold mb-2">📝 Sample Excel Format</h3>
           <div class="sample-excel-box rounded-xl p-3" style="background:var(--bg);border:1px solid var(--border);">
-            <pre class="text-xs font-mono overflow-x-auto" style="color:var(--text);">Topic          | Subtopic      | Front                    | Back           | Tags
-─────────────|───────────────|──────────────────────────|────────────────|────────
-Pharmacy      | Basics        | What is a drug?          | A substance that alters body function | pharmacology
-Pharmacy      | Dosage        | What is 1 gram in mg?    | 1000 mg        | calculations
-Science       | Biology       | What is DNA?             | Deoxyribonucleic acid | genetics</pre>
-          </div>
+  <pre class="text-xs font-mono overflow-x-auto" style="color:var(--text);">ID | Topic          | Subtopic      | Front                    | Back           | Tags
+────|────────────────|───────────────|──────────────────────────|────────────────|─────────────
+1   | Pharmacy      | Basics        | What is a drug?          | A substance that alters body function | pharmacology
+2   | Pharmacy      | Dosage        | What is 1 gram in mg?    | 1000 mg        | calculations
+3   | Science       | Biology       | What is DNA?             | Deoxyribonucleic acid | genetics</pre>
+</div>
           <button onclick="downloadSampleExcel()" class="mt-3 text-sm accent-bg text-white px-4 py-2 rounded-xl font-medium">Download Sample</button>
         </div>
       </div>
@@ -3205,10 +3205,12 @@ async function saveSharedDeck(deckData, isPremium = false) {
       subtopic: deckData.subtopic || '',
       isPremium: isPremium,
       cards: deckData.cards.map(c => ({
+        card_id: c.card_id,        // ← TAMBAHKAN BARIS INI
         card_front: c.card_front,
         card_back: c.card_back,
         card_tags: c.card_tags || '',
-        card_background: c.card_background || '',   // ← properti baru
+        card_background: c.card_background || '',
+        // ... sisanya tetap sama
       })),
       createdAt: firebase.firestore.FieldValue.serverTimestamp(),
       createdBy: currentUser
@@ -3224,7 +3226,6 @@ async function loadSharedDecks() {
   try {
     const snapshot = await db.collection('sharedDecks').get();
     const sharedCards = [];
-    const isPremiumUser = isPremiumActive();
 
     snapshot.forEach(doc => {
       const deck = doc.data();
@@ -3232,24 +3233,10 @@ async function loadSharedDecks() {
       if (deck.cards && deck.cards.length) {
         deck.cards.forEach(c => {
           sharedCards.push({
-            __id: 'shared_' + doc.id + '_' + Math.random().toString(36).slice(2, 6),
+            __id: 'shared_' + doc.id + '_' + (c.card_id || Math.random().toString(36).slice(2, 6)),
+            card_id: c.card_id || null,  // ← TAMBAHKAN BARIS INI
             deck_id: 'shared_' + doc.id,
-            deck_name: deck.deckName || 'Shared Deck',
-            topic: deck.topic || 'General',
-            subtopic: deck.subtopic || '',
-            isPremium: deck.isPremium || false,
-            card_front: c.card_front,
-            card_back: c.card_back,
-            card_tags: c.card_tags || '',
-            card_background: c.card_background || '',   // ← properti baru
-            ease_factor: 2.5,
-            interval: 0,
-            repetitions: 0,
-            next_review: '',
-            last_review: '',
-            total_reviews: 0,
-            correct_count: 0,
-            isShared: true
+            // ... sisanya tetap sama
           });
         });
       }
@@ -5211,7 +5198,7 @@ function renderDecks() {
     // ============================================================
     //  ADMIN FUNCTIONS - SHOW ADMIN IMPORT
     // ============================================================
- function handleExcelImport(event) {
+    async function handleExcelImport(event) {
   if (!isAdmin) {
     alert('Only admins can import decks.');
     return;
@@ -5251,28 +5238,52 @@ function renderDecks() {
       const isPremium = document.getElementById('import-premium-toggle').checked;
       console.log('📌 Import dengan status premium:', isPremium);
 
-      let importedCount = 0;
+      // ===== VALIDASI: Cek ID kosong =====
+      const missingIds = jsonData.filter(row => {
+        const id = row['ID'] || row['id'] || row['Id'];
+        return id === undefined || id === null || id === '';
+      });
+
+      if (missingIds.length > 0) {
+        showImportStatus(`❌ Error: ${missingIds.length} baris memiliki ID kosong. ID wajib diisi!`, 'error');
+        return;
+      }
+
+      let newCards = 0;
+      let updatedCards = 0;
+      let duplicateCards = 0;
       let skippedCount = 0;
-      const decksToShare = {};
+      let newDecks = 0;
+      let updatedDecks = 0;
+
+      // ===== KELOMPOKKAN PER DECK =====
+      const decksToImport = {};
 
       jsonData.forEach((row) => {
+        const id = parseInt(row['ID'] || row['id'] || row['Id']);
         const topic = row['Topic'] || row['topic'] || row['TOPIC'] || 'General';
         const subtopic = row['Subtopic'] || row['subtopic'] || row['SUBTOPIC'] || '';
         const front = row['Front'] || row['front'] || row['FRONT'] || row['Question'] || row['question'] || row['QUESTION'];
         const back = row['Back'] || row['back'] || row['BACK'] || row['Answer'] || row['answer'] || row['ANSWER'];
         const tags = row['Tags'] || row['tags'] || row['TAGS'] || '';
-        const background = row['Background'] || row['background'] || row['BACKGROUND'] || ''; // ← properti baru
+        const background = row['Background'] || row['background'] || row['BACKGROUND'] || '';
 
         if (!front || !back) {
           skippedCount++;
           return;
         }
 
+        if (isNaN(id) || id < 1) {
+          skippedCount++;
+          console.warn(`⚠️ ID tidak valid: ${id}`);
+          return;
+        }
+
         const deckName = topic + (subtopic ? ' - ' + subtopic : '');
         const deckKey = deckName;
 
-        if (!decksToShare[deckKey]) {
-          decksToShare[deckKey] = {
+        if (!decksToImport[deckKey]) {
+          decksToImport[deckKey] = {
             deckName: deckName,
             topic: topic,
             subtopic: subtopic,
@@ -5280,63 +5291,156 @@ function renderDecks() {
           };
         }
 
-        decksToShare[deckKey].cards.push({
+        decksToImport[deckKey].cards.push({
+          card_id: id,
           card_front: front,
           card_back: back,
           card_tags: tags,
-          card_background: background   // ← simpan properti background
+          card_background: background
         });
-
-        importedCount++;
       });
 
-            let savedCount = 0;
-      for (const deckKey in decksToShare) {
-        const deck = decksToShare[deckKey];
+      if (skippedCount > 0) {
+        console.warn(`⚠️ ${skippedCount} baris dilewati (data tidak lengkap atau ID tidak valid)`);
+      }
+
+      // ===== PROSES IMPORT PER DECK =====
+      for (const deckKey in decksToImport) {
+        const deck = decksToImport[deckKey];
         const deckName = deck.deckName;
 
-        // Cari apakah deck dengan nama yang sama sudah ada di Firestore
+        // Cari deck yang sudah ada di Firestore
         const existingDocs = await db.collection('sharedDecks')
           .where('deckName', '==', deckName)
           .get();
 
         if (existingDocs.empty) {
-          // Deck baru – simpan sebagai dokumen baru
-          const success = await saveSharedDeck(deck, isPremium);
-          if (success) savedCount++;
+          // ===== DECK BARU =====
+          console.log(`📁 Membuat deck baru: ${deckName}`);
+          
+          const success = await saveSharedDeck({
+            deckName: deckName,
+            topic: deck.topic,
+            subtopic: deck.subtopic,
+            cards: deck.cards
+          }, isPremium);
+          
+          if (success) {
+            newDecks++;
+            newCards += deck.cards.length;
+          }
         } else {
-          // Deck sudah ada – update isinya (tanpa mengubah deck_id)
+          // ===== DECK SUDAH ADA =====
           const docRef = existingDocs.docs[0].ref;
+          const docData = existingDocs.docs[0].data();
+          
+          let existingCards = docData.cards || [];
+          
+          const existingCardMap = new Map();
+          existingCards.forEach(c => {
+            if (c.card_id) {
+              existingCardMap.set(c.card_id, c);
+            }
+          });
+
+          let cardsToAdd = [];
+          let cardsToUpdate = [];
+
+          for (const newCard of deck.cards) {
+            const cardId = newCard.card_id;
+            const existing = existingCardMap.get(cardId);
+
+            if (existing) {
+              // ID sudah ada
+              if (existing.card_front === newCard.card_front && 
+                  existing.card_back === newCard.card_back) {
+                duplicateCards++;
+              } else {
+                // Konten berbeda → update
+                console.log(`🔄 Update kartu ID ${cardId}: "${existing.card_front}" → "${newCard.card_front}"`);
+                
+                const updatedCard = {
+                  ...existing,
+                  card_front: newCard.card_front,
+                  card_back: newCard.card_back,
+                  card_tags: newCard.card_tags || existing.card_tags || '',
+                  card_background: newCard.card_background || existing.card_background || '',
+                  updatedAt: new Date().toISOString()
+                };
+                
+                cardsToUpdate.push(updatedCard);
+                updatedCards++;
+              }
+            } else {
+              // ID baru → tambahkan
+              cardsToAdd.push({
+                ...newCard,
+                ease_factor: 2.5,
+                interval: 0,
+                repetitions: 0,
+                next_review: today(),
+                last_review: '',
+                total_reviews: 0,
+                correct_count: 0,
+                review_history: [],
+                createdAt: new Date().toISOString()
+              });
+              newCards++;
+            }
+          }
+
+          // ===== SIMPAN PERUBAHAN =====
+          let finalCards = [...existingCards];
+
+          if (cardsToUpdate.length > 0) {
+            const updateIds = new Set(cardsToUpdate.map(c => c.card_id));
+            finalCards = finalCards.map(c => {
+              if (updateIds.has(c.card_id)) {
+                return cardsToUpdate.find(u => u.card_id === c.card_id);
+              }
+              return c;
+            });
+          }
+
+          if (cardsToAdd.length > 0) {
+            finalCards = [...finalCards, ...cardsToAdd];
+          }
+
           await docRef.update({
-            cards: deck.cards.map(c => ({
-              card_front: c.card_front,
-              card_back: c.card_back,
-              card_tags: c.card_tags || '',
-              card_background: c.card_background || '',
-            })),
+            cards: finalCards,
             isPremium: isPremium,
             topic: deck.topic,
             subtopic: deck.subtopic,
             updatedAt: firebase.firestore.FieldValue.serverTimestamp()
           });
-          savedCount++;
-          console.log('✅ Deck updated:', deckName);
+
+          updatedDecks++;
+          console.log(`✅ Deck diperbarui: ${deckName} (${cardsToAdd.length} baru, ${cardsToUpdate.length} update, ${duplicateCards} duplikat)`);
         }
       }
 
+      // ===== RELOAD DATA =====
       const sharedCards = await loadSharedDecks();
       allCards = allCards.filter(c => !c.isShared);
       allCards.push(...sharedCards);
-      saveUserData(currentUser)
-  .catch(console.error);
+      await saveUserData(currentUser);
 
       renderDecks();
       updateHome();
       renderAdminDeckList();
 
-      const message =
-        `✅ Berhasil mengimpor ${importedCount} kartu ke ${savedCount} shared deck!${skippedCount > 0 ? ` (${skippedCount} baris dilewati karena data kosong)` : ''}`;
+      let message = `✅ Import selesai!\n\n`;
+      message += `📁 Deck baru: ${newDecks}\n`;
+      message += `📝 Deck diupdate: ${updatedDecks}\n`;
+      message += `🆕 Kartu baru: ${newCards}\n`;
+      message += `🔄 Kartu diupdate: ${updatedCards}\n`;
+      message += `⏭️ Kartu duplikat (di-skip): ${duplicateCards}\n`;
+      if (skippedCount > 0) {
+        message += `⚠️ Baris dilewati: ${skippedCount} (data tidak lengkap)\n`;
+      }
+
       showImportStatus(message, 'success');
+      alert(message);
 
     } catch (error) {
       console.error('❌ Import error:', error);
@@ -7277,24 +7381,30 @@ async function deleteSelectedDecks() {
     // ============================================================
     //  DOWNLOAD SAMPLE EXCEL
     // ============================================================
-    function downloadSampleExcel() {
-      const sampleData = [
-        { Topic: 'Pharmacy', Subtopic: 'Basics', Front: 'What is a drug?', Back: 'A substance that alters body function',
-          Tags: 'pharmacology' },
-        { Topic: 'Pharmacy', Subtopic: 'Dosage', Front: 'What is 1 gram in mg?', Back: '1000 mg',
-          Tags: 'calculations' },
-        { Topic: 'Science', Subtopic: 'Biology', Front: 'What is DNA?', Back: 'Deoxyribonucleic acid',
-          Tags: 'genetics' },
-        { Topic: 'Languages', Subtopic: 'Spanish', Front: 'Hello', Back: 'Hola', Tags: 'greetings' },
-        { Topic: 'History', Subtopic: 'World History', Front: 'When did WWII end?', Back: '1945', Tags: 'war' },
-      ];
-
-      const wb = XLSX.utils.book_new();
-      const ws = XLSX.utils.json_to_sheet(sampleData);
-      XLSX.utils.book_append_sheet(wb, ws, 'Flashcards');
-      XLSX.writeFile(wb, 'flashmind_sample_decks.xlsx');
-    }
-
+   function downloadSampleExcel() {
+  const sampleData = [
+    { 
+      ID: 1,  // ← TAMBAHKAN
+      Topic: 'Pharmacy', 
+      Subtopic: 'Basics', 
+      Front: 'What is a drug?', 
+      Back: 'A substance that alters body function',
+      Tags: 'pharmacology',
+      Background: ''
+    },
+    { 
+      ID: 2,  // ← TAMBAHKAN
+      Topic: 'Pharmacy', 
+      Subtopic: 'Dosage', 
+      Front: 'What is 1 gram in mg?', 
+      Back: '1000 mg',
+      Tags: 'calculations',
+      Background: ''
+    },
+    // ... dan seterusnya
+  ];
+  // ... sisanya tetap sama
+}
     // ============================================================
     //  EXPORT DATA
     // ============================================================
