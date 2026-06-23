@@ -2023,6 +2023,18 @@ Refreshing...
     <div id="view-settings" class="view">
       <h2 class="text-xl font-bold mb-4">⚙️ Settings</h2>
       <div class="view-scroll space-y-3">
+
+        <div class="surface rounded-2xl border border-theme p-4 shadow-card">
+  <div class="flex items-center justify-between">
+    <div>
+      <p class="text-sm font-medium">🔄 Refresh Data</p>
+      <p class="text-xs text-sec">Sinkronkan data terbaru dari server</p>
+    </div>
+    <button onclick="refreshUserData()" class="accent-bg text-white px-4 py-2 rounded-xl text-sm font-medium">
+      Refresh Now
+    </button>
+  </div>
+</div>
         
         <div class="surface rounded-2xl border border-theme p-4 shadow-card">
           <p class="text-sm text-sec font-medium mb-1">Account</p>
@@ -5116,15 +5128,20 @@ function renderDecks() {
     try {
       const docId = deckId.replace('shared_', '');
       await db.collection('sharedDecks').doc(docId).delete();
+      
+      // ===== HAPUS DARI allCards USER SAAT INI =====
+      allCards = allCards.filter(c => c.deck_id !== deckId);
+      await saveUserData(currentUser);
+      
     } catch (error) {
       alert('❌ Failed to delete shared deck: ' + error.message);
       return;
     }
   } else {
     if (!confirm('Delete this deck and all its cards?')) return;
+    allCards = allCards.filter(c => c.deck_id !== deckId);
   }
 
-  allCards = allCards.filter(c => c.deck_id !== deckId);
   await saveUserData(currentUser);
   renderDecks();
   updateHome();
@@ -7201,6 +7218,7 @@ async function deleteSelectedDecks() {
         console.error('Failed to delete shared deck:', error);
       }
     }
+    // ===== HAPUS DARI allCards =====
     allCards = allCards.filter(c => c.deck_id !== deckId);
   }
 
@@ -7217,6 +7235,48 @@ async function deleteSelectedDecks() {
   alert(`✅ ${selectedDeckIds.length} deck(s) deleted successfully!`);
 }
 
+    async function refreshUserData() {
+  if (!currentUser) return;
+  
+  try {
+    updateSyncStatus('syncing', 'Refreshing data...');
+    
+    // Load ulang dari Firestore
+    const cloudData = await loadFromFirebase(currentUser);
+    
+    if (cloudData && cloudData.cards) {
+      allCards = cloudData.cards;
+      userPlan = cloudData.plan || 'free';
+      localStorage.setItem(DATA_PREFIX + currentUser, JSON.stringify({
+        cards: allCards,
+        last_updated: Date.now(),
+        user_plan: userPlan
+      }));
+      
+      renderDecks();
+      updateHome();
+      renderStats();
+      
+      updateSyncStatus('', 'Data refreshed');
+      alert('✅ Data refreshed successfully!');
+    } else {
+      // Jika tidak ada data di cloud, reload shared decks
+      const sharedCards = await loadSharedDecks();
+      allCards = allCards.filter(c => !c.isShared);
+      allCards.push(...sharedCards);
+      await saveUserData(currentUser);
+      renderDecks();
+      updateHome();
+      alert('✅ Data refreshed from shared decks!');
+    }
+    
+  } catch (error) {
+    console.error('Refresh error:', error);
+    updateSyncStatus('offline', 'Refresh failed');
+    alert('❌ Failed to refresh data. Please try again.');
+  }
+}
+    
    async function renderCodeList() {
   const container = document.getElementById('code-list');
   if (!container) return;
