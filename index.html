@@ -3240,24 +3240,25 @@ function resetSessionStats(){
     const userCards = data.cards || [];
     const mergedCards = [...userCards];
     
-    sharedCards.forEach(sharedCard => {
-      const exists = mergedCards.some(c =>
-        c.__id === sharedCard.__id ||
-        (c.deck_id === sharedCard.deck_id && c.card_front === sharedCard.card_front)
-      );
-      if (!exists) {
-        mergedCards.push({ 
-          ...sharedCard, 
-          ease_factor: 2.5, 
-          interval: 0, 
-          repetitions: 0, 
-          next_review: '', 
-          last_review: '', 
-          total_reviews: 0, 
-          correct_count: 0 
+  sharedCards.forEach(sharedCard => {
+
+    const exists = mergedCards.some(
+        c => c.card_id === sharedCard.card_id
+    );
+
+    if (!exists) {
+        mergedCards.push({
+            ...sharedCard,
+            ease_factor: 2.5,
+            interval: 0,
+            repetitions: 0,
+            next_review: '',
+            last_review: '',
+            total_reviews: 0,
+            correct_count: 0
         });
-      }
-    });
+    }
+});
 
     updateSyncStatus('', 'Synced');
     
@@ -3306,24 +3307,35 @@ async function loadSharedDecks() {
   try {
     const snapshot = await db.collection('sharedDecks').get();
     const sharedCards = [];
-    const isPremiumUser = isPremiumActive();
 
     snapshot.forEach(doc => {
       const deck = doc.data();
 
       if (deck.cards && deck.cards.length) {
+
         deck.cards.forEach(c => {
+
           sharedCards.push({
-            __id: 'shared_' + doc.id + '_' + Math.random().toString(36).slice(2, 6),
+
+            __id: generateId(), // internal object id only
+
+            card_id:
+              c.card_id ||
+              generateNextCardId(sharedCards),
+
             deck_id: 'shared_' + doc.id,
             deck_name: deck.deckName || 'Shared Deck',
+
             topic: deck.topic || 'General',
             subtopic: deck.subtopic || '',
+
             isPremium: deck.isPremium || false,
+
             card_front: c.card_front,
             card_back: c.card_back,
             card_tags: c.card_tags || '',
-            card_background: c.card_background || '',   // ← properti baru
+            card_background: c.card_background || '',
+
             ease_factor: 2.5,
             interval: 0,
             repetitions: 0,
@@ -3331,14 +3343,22 @@ async function loadSharedDecks() {
             last_review: '',
             total_reviews: 0,
             correct_count: 0,
+
             isShared: true
           });
+
         });
       }
     });
+
     return sharedCards;
+
   } catch (error) {
-    console.warn('⚠️ Gagal memuat shared decks:', error);
+    console.warn(
+      '⚠️ Gagal memuat shared decks:',
+      error
+    );
+
     return [];
   }
 }
@@ -4970,50 +4990,97 @@ function renderDecks() {
       }
     }
 
-    function renderManageCards() {
-      const container = document.getElementById('manage-cards-list');
-      if (!container) return;
+   function renderManageCards() {
+  const container = document.getElementById('manage-cards-list');
+  if (!container) return;
 
-      const cards = allCards.filter(c => c.deck_id === manageDeckId && c.card_front !== '__deck_placeholder__');
+  const cards = allCards.filter(
+    c =>
+      c.deck_id === manageDeckId &&
+      c.card_front !== '__deck_placeholder__'
+  );
 
-      if (cards.length === 0) {
-        container.innerHTML = `
-          <div class="text-center py-10">
-            <p class="text-sec text-sm">No cards in this deck.</p>
-            <button onclick="showAddCardToDeck()" class="mt-3 accent-bg text-white px-4 py-2 rounded-xl text-sm font-medium">Add First Card</button>
-          </div>
-        `;
-        return;
-      }
+  if (cards.length === 0) {
+    container.innerHTML = `
+      <div class="text-center py-10">
+        <p class="text-sec text-sm">
+          No cards in this deck.
+        </p>
 
-      selectedCardIds = [];
+        <button
+          onclick="showAddCardToDeck()"
+          class="mt-3 accent-bg text-white px-4 py-2 rounded-xl text-sm font-medium">
+          Add First Card
+        </button>
 
-      container.innerHTML = cards.map((c, i) => `
-          <div class="card-item surface rounded-2xl p-3 border border-theme shadow-card mb-2 flex items-center gap-3">
-            <input type="checkbox" class="card-checkbox" data-card-id="${c.__id}" onchange="toggleCardSelection('${c.__id}', this)" />
-            <div class="flex-1 min-w-0">
-              <p class="font-medium text-sm truncate">${c.card_front || 'Empty'}</p>
-              <p class="text-xs text-sec truncate">→ ${c.card_back || 'Empty'}</p>
-              <div class="text-[10px] text-sec mt-0.5">
-                Reviews: ${c.total_reviews || 0} · Correct: ${c.correct_count || 0}
-              </div>
-            </div>
-            <div class="flex gap-1 flex-shrink-0">
-              <button onclick="showEditCard('${c.__id}')" class="text-sec p-1 hover:text-accent transition-colors" title="Edit Card">
-                <i data-lucide="pencil" class="w-4 h-4"></i>
-              </button>
-              <button onclick="deleteCard('${c.__id}')" class="text-sec p-1 hover:text-red-500 transition-colors" title="Delete Card">
-                <i data-lucide="trash-2" class="w-4 h-4"></i>
-              </button>
-            </div>
-          </div>
-        `).join('');
+      </div>
+    `;
+    return;
+  }
 
-      if (typeof lucide !== 'undefined' && lucide.createIcons) {
-        lucide.createIcons();
-      }
-    }
+  selectedCardIds = [];
 
+  container.innerHTML = cards.map((c) => `
+
+    <div class="card-item surface rounded-2xl p-3 border border-theme shadow-card mb-2 flex items-center gap-3">
+
+      <input
+        type="checkbox"
+        class="card-checkbox"
+        data-card-id="${c.card_id}"
+        onchange="toggleCardSelection('${c.card_id}', this)"
+      />
+
+      <div class="flex-1 min-w-0">
+
+        <p class="font-medium text-sm truncate">
+          ${c.card_front || 'Empty'}
+        </p>
+
+        <p class="text-xs text-sec truncate">
+          → ${c.card_back || 'Empty'}
+        </p>
+
+        <div class="text-[10px] text-sec mt-0.5">
+          Reviews: ${c.total_reviews || 0}
+          · Correct: ${c.correct_count || 0}
+        </div>
+
+      </div>
+
+      <div class="flex gap-1 flex-shrink-0">
+
+        <button
+          onclick="showEditCard('${c.card_id}')"
+          class="text-sec p-1 hover:text-accent transition-colors"
+          title="Edit Card">
+
+          <i data-lucide="pencil" class="w-4 h-4"></i>
+
+        </button>
+
+        <button
+          onclick="deleteCard('${c.card_id}')"
+          class="text-sec p-1 hover:text-red-500 transition-colors"
+          title="Delete Card">
+
+          <i data-lucide="trash-2" class="w-4 h-4"></i>
+
+        </button>
+
+      </div>
+
+    </div>
+
+  `).join('');
+
+  if (
+    typeof lucide !== 'undefined' &&
+    lucide.createIcons
+  ) {
+    lucide.createIcons();
+  }
+}
     function toggleCardSelection(cardId, checkbox) {
       if (checkbox.checked) {
         if (!selectedCardIds.includes(cardId)) {
@@ -5053,26 +5120,42 @@ function renderDecks() {
       document.getElementById('select-all-cards').checked = totalCheckboxes > 0 && checkedCheckboxes === totalCheckboxes;
     }
 
-    function deleteSelectedCards() {
-      if (selectedCardIds.length === 0) {
-        alert('No cards selected.');
-        return;
-      }
+   function deleteSelectedCards() {
 
-      if (!confirm(`Delete ${selectedCardIds.length} selected cards?`)) return;
+  if (selectedCardIds.length === 0) {
+    alert('No cards selected.');
+    return;
+  }
 
-      allCards = allCards.filter(c => !selectedCardIds.includes(c.__id));
-      saveUserData(currentUser)
-  .catch(console.error);
-      selectedCardIds = [];
-      renderManageCards();
-      renderDecks();
-      updateHome();
-      document.getElementById('select-all-cards').checked = false;
-      document.getElementById('delete-selected-cards-btn').disabled = true;
-      document.getElementById('selected-cards-count').textContent = '0 selected';
-      alert('✅ Selected cards deleted successfully!');
-    }
+  if (!confirm(`Delete ${selectedCardIds.length} selected cards?`)) return;
+
+  allCards = allCards.filter(
+    c => !selectedCardIds.includes(c.card_id)
+  );
+
+  saveUserData(currentUser)
+    .catch(console.error);
+
+  selectedCardIds = [];
+
+  renderManageCards();
+  renderDecks();
+  updateHome();
+
+  document.getElementById(
+    'select-all-cards'
+  ).checked = false;
+
+  document.getElementById(
+    'delete-selected-cards-btn'
+  ).disabled = true;
+
+  document.getElementById(
+    'selected-cards-count'
+  ).textContent = '0 selected';
+
+  alert('✅ Selected cards deleted successfully!');
+}
 
     function showAddCardToDeck() {
       if (!isAdmin || !manageDeckId) return;
@@ -5082,21 +5165,28 @@ function renderDecks() {
       document.getElementById('card-modal').classList.remove('hidden');
     }
 
-    function saveCard() {
+   function saveCard() {
+
     const front = document.getElementById('card-front-input').value.trim();
     const back = document.getElementById('card-back-input').value.trim();
 
     if (!front || !back) return;
 
     const deck = allCards.find(
-        c => c.deck_id === addingToDeckId &&
+        c =>
+        c.deck_id === addingToDeckId &&
         c.card_front === '__deck_placeholder__'
     );
 
     allCards.push({
+
         __id: generateId(),
 
-        card_id: generateNextCardId(allCards),
+        card_id: generateNextCardId(
+            allCards.filter(
+                c => c.card_front !== '__deck_placeholder__'
+            )
+        ),
 
         deck_id: addingToDeckId,
         deck_name: deck ? deck.deck_name : 'Untitled',
@@ -5112,6 +5202,7 @@ function renderDecks() {
         last_review: '',
         total_reviews: 0,
         correct_count: 0
+
     });
 
     saveUserData(currentUser)
@@ -5132,7 +5223,7 @@ function renderDecks() {
     function showEditCard(cardId) {
       if (!isAdmin) return;
       editCardId = cardId;
-      const card = allCards.find(c => c.__id === cardId);
+      const card = allCards.find(c => c.card_id === cardId);
       if (!card) return;
       document.getElementById('edit-card-front').value = card.card_front || '';
       document.getElementById('edit-card-back').value = card.card_back || '';
@@ -5149,7 +5240,7 @@ function renderDecks() {
       const back = document.getElementById('edit-card-back').value.trim();
       if (!front || !back || !editCardId) return;
 
-      const card = allCards.find(c => c.__id === editCardId);
+      const card = allCards.find(c => c.card_id === editCardId);
       if (card) {
         card.card_front = front;
         card.card_back = back;
@@ -5166,7 +5257,7 @@ function renderDecks() {
     function deleteCard(cardId) {
       if (!isAdmin) return;
       if (!confirm('Delete this card?')) return;
-      allCards = allCards.filter(c => c.__id !== cardId);
+      allCards = allCards.filter(c => c.card_id !== cardId);
       saveUserData(currentUser)
   .catch(console.error);
       renderManageCards();
@@ -5270,13 +5361,22 @@ function renderDecks() {
             if (exists) return;
 
                allCards.push({
+
     __id: generateId(),
-    card_id: generateNextCardId(allCards),
+
+    card_id: generateNextCardId(
+        allCards.filter(
+            c => c.card_front !== '__deck_placeholder__'
+        )
+    ),
+
     deck_id: manageDeckId,
     deck_name: deck ? deck.deck_name : 'Untitled',
+
     card_front: front,
     card_back: back,
     card_tags: '',
+
     ease_factor: 2.5,
     interval: 0,
     repetitions: 0,
@@ -5284,9 +5384,10 @@ function renderDecks() {
     last_review: '',
     total_reviews: 0,
     correct_count: 0
+
 });
+
 importedCount++;
-          });
 
          saveUserData(currentUser)
   .catch(console.error);
