@@ -7834,6 +7834,7 @@ alert(
     console.log('📚 Cards:', getRealCards().length, 'Decks:', getDecks().length);
     console.log('☁️ Firebase: Connected & Syncing');
     console.log('📝 Admin email: adm.pharmacore@gmail.com');
+    migrateExistingCardIds();
 
 // ======================================================
 // PULL TO REFRESH
@@ -7955,6 +7956,83 @@ updatePricingDisplay();
 }
 
 
+async function migrateExistingCardIds(){
+
+try{
+
+const snapshot=
+await db
+.collection(
+'sharedDecks'
+)
+.get();
+
+let nextId=1;
+
+for(const doc of snapshot.docs){
+
+const data=
+doc.data();
+
+const cards=
+data.cards || [];
+
+let changed=false;
+
+const updatedCards=
+cards.map(card=>{
+
+if(!card.card_id){
+
+card.card_id=
+"CARD"+
+String(nextId++)
+.padStart(
+4,
+"0"
+);
+
+changed=true;
+
+}
+
+return card;
+
+});
+
+if(changed){
+
+await doc.ref.update({
+
+cards:
+updatedCards
+
+});
+
+console.log(
+'Updated:',
+data.deckName
+);
+
+}
+
+}
+
+console.log(
+'✅ Migration complete'
+);
+
+}catch(err){
+
+console.error(
+'Migration error:',
+err
+);
+
+}
+
+}
+    
 function updatePricingDisplay(){
 
 if(!selectedPlan)return;
