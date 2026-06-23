@@ -1766,16 +1766,18 @@ Refreshing...
 </div>
 
         <div class="surface rounded-2xl p-4 border border-theme shadow-card mt-4">
-          <h3 class="font-bold mb-2">📝 Sample Excel Format</h3>
-          <div class="sample-excel-box rounded-xl p-3" style="background:var(--bg);border:1px solid var(--border);">
-  <pre class="text-xs font-mono overflow-x-auto" style="color:var(--text);">ID | Topic          | Subtopic      | Front                    | Back           | Tags
+  <h3 class="font-bold mb-2">📝 Sample Excel Format</h3>
+  <div class="sample-excel-box rounded-xl p-3" style="background:var(--bg);border:1px solid var(--border);">
+    <pre class="text-xs font-mono overflow-x-auto" style="color:var(--text);">ID | Topic          | Subtopic      | Front                    | Back           | Tags
 ────|────────────────|───────────────|──────────────────────────|────────────────|─────────────
 1   | Pharmacy      | Basics        | What is a drug?          | A substance that alters body function | pharmacology
 2   | Pharmacy      | Dosage        | What is 1 gram in mg?    | 1000 mg        | calculations
-3   | Science       | Biology       | What is DNA?             | Deoxyribonucleic acid | genetics</pre>
+3   | Science       | Biology       | What is DNA?             | Deoxyribonucleic acid | genetics
+4   | Languages     | Spanish       | Hello                    | Hola           | greetings
+5   | History       | World History | When did WWII end?       | 1945           | war</pre>
+  </div>
+  <button onclick="downloadSampleExcel()" class="mt-3 text-sm accent-bg text-white px-4 py-2 rounded-xl font-medium">Download Sample</button>
 </div>
-          <button onclick="downloadSampleExcel()" class="mt-3 text-sm accent-bg text-white px-4 py-2 rounded-xl font-medium">Download Sample</button>
-        </div>
       </div>
     </div>
 
@@ -3210,7 +3212,6 @@ async function saveSharedDeck(deckData, isPremium = false) {
         card_back: c.card_back,
         card_tags: c.card_tags || '',
         card_background: c.card_background || '',
-        // ... sisanya tetap sama
       })),
       createdAt: firebase.firestore.FieldValue.serverTimestamp(),
       createdBy: currentUser
@@ -3226,6 +3227,7 @@ async function loadSharedDecks() {
   try {
     const snapshot = await db.collection('sharedDecks').get();
     const sharedCards = [];
+    const isPremiumUser = isPremiumActive();
 
     snapshot.forEach(doc => {
       const deck = doc.data();
@@ -3236,7 +3238,23 @@ async function loadSharedDecks() {
             __id: 'shared_' + doc.id + '_' + (c.card_id || Math.random().toString(36).slice(2, 6)),
             card_id: c.card_id || null,  // ← TAMBAHKAN BARIS INI
             deck_id: 'shared_' + doc.id,
-            // ... sisanya tetap sama
+            deck_name: deck.deckName || 'Shared Deck',
+            topic: deck.topic || 'General',
+            subtopic: deck.subtopic || '',
+            isPremium: deck.isPremium || false,
+            card_front: c.card_front,
+            card_back: c.card_back,
+            card_tags: c.card_tags || '',
+            card_background: c.card_background || '',
+            ease_factor: c.ease_factor || 2.5,
+            interval: c.interval || 0,
+            repetitions: c.repetitions || 0,
+            next_review: c.next_review || '',
+            last_review: c.last_review || '',
+            total_reviews: c.total_reviews || 0,
+            correct_count: c.correct_count || 0,
+            review_history: c.review_history || [],
+            isShared: true
           });
         });
       }
@@ -5198,7 +5216,7 @@ function renderDecks() {
     // ============================================================
     //  ADMIN FUNCTIONS - SHOW ADMIN IMPORT
     // ============================================================
-    async function handleExcelImport(event) {
+async function handleExcelImport(event) {
   if (!isAdmin) {
     alert('Only admins can import decks.');
     return;
@@ -5309,7 +5327,7 @@ function renderDecks() {
         const deck = decksToImport[deckKey];
         const deckName = deck.deckName;
 
-        // Cari deck yang sudah ada di Firestore
+        // Cari deck yang sudah ada di Firestore berdasarkan nama
         const existingDocs = await db.collection('sharedDecks')
           .where('deckName', '==', deckName)
           .get();
@@ -5335,29 +5353,26 @@ function renderDecks() {
           const docData = existingDocs.docs[0].data();
           
           let existingCards = docData.cards || [];
-          
-          const existingCardMap = new Map();
-          existingCards.forEach(c => {
-            if (c.card_id) {
-              existingCardMap.set(c.card_id, c);
-            }
-          });
 
           let cardsToAdd = [];
           let cardsToUpdate = [];
 
+          // ===== CEK PER KARTU DI DECK YANG SAMA =====
           for (const newCard of deck.cards) {
             const cardId = newCard.card_id;
-            const existing = existingCardMap.get(cardId);
+            
+            // Cek di deck yang sama saja (bukan global)
+            const existing = existingCards.find(c => c.card_id === cardId);
 
             if (existing) {
-              // ID sudah ada
+              // ID sudah ada di deck ini
               if (existing.card_front === newCard.card_front && 
                   existing.card_back === newCard.card_back) {
+                // Konten sama → skip (duplikat)
                 duplicateCards++;
               } else {
                 // Konten berbeda → update
-                console.log(`🔄 Update kartu ID ${cardId}: "${existing.card_front}" → "${newCard.card_front}"`);
+                console.log(`🔄 Update kartu ID ${cardId} di deck ${deckName}: "${existing.card_front}" → "${newCard.card_front}"`);
                 
                 const updatedCard = {
                   ...existing,
@@ -5372,7 +5387,8 @@ function renderDecks() {
                 updatedCards++;
               }
             } else {
-              // ID baru → tambahkan
+              // ID baru di deck ini → tambahkan
+              console.log(`➕ Tambah kartu baru ID ${cardId} di deck ${deckName}`);
               cardsToAdd.push({
                 ...newCard,
                 ease_factor: 2.5,
@@ -7381,10 +7397,10 @@ async function deleteSelectedDecks() {
     // ============================================================
     //  DOWNLOAD SAMPLE EXCEL
     // ============================================================
-   function downloadSampleExcel() {
+ function downloadSampleExcel() {
   const sampleData = [
     { 
-      ID: 1,  // ← TAMBAHKAN
+      ID: 1,
       Topic: 'Pharmacy', 
       Subtopic: 'Basics', 
       Front: 'What is a drug?', 
@@ -7393,7 +7409,7 @@ async function deleteSelectedDecks() {
       Background: ''
     },
     { 
-      ID: 2,  // ← TAMBAHKAN
+      ID: 2,
       Topic: 'Pharmacy', 
       Subtopic: 'Dosage', 
       Front: 'What is 1 gram in mg?', 
@@ -7401,9 +7417,39 @@ async function deleteSelectedDecks() {
       Tags: 'calculations',
       Background: ''
     },
-    // ... dan seterusnya
+    { 
+      ID: 3,
+      Topic: 'Science', 
+      Subtopic: 'Biology', 
+      Front: 'What is DNA?', 
+      Back: 'Deoxyribonucleic acid',
+      Tags: 'genetics',
+      Background: ''
+    },
+    { 
+      ID: 4,
+      Topic: 'Languages', 
+      Subtopic: 'Spanish', 
+      Front: 'Hello', 
+      Back: 'Hola',
+      Tags: 'greetings',
+      Background: ''
+    },
+    { 
+      ID: 5,
+      Topic: 'History', 
+      Subtopic: 'World History', 
+      Front: 'When did WWII end?', 
+      Back: '1945',
+      Tags: 'war',
+      Background: ''
+    },
   ];
-  // ... sisanya tetap sama
+
+  const wb = XLSX.utils.book_new();
+  const ws = XLSX.utils.json_to_sheet(sampleData);
+  XLSX.utils.book_append_sheet(wb, ws, 'Flashcards');
+  XLSX.writeFile(wb, 'flashmind_sample_decks.xlsx');
 }
     // ============================================================
     //  EXPORT DATA
