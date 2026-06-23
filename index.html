@@ -3242,9 +3242,10 @@ function resetSessionStats(){
     
   sharedCards.forEach(sharedCard => {
 
-    const exists = mergedCards.some(
-        c => c.card_id === sharedCard.card_id
-    );
+    const exists = mergedCards.some(c =>
+    c.card_id === sharedCard.card_id &&
+    c.deck_id === sharedCard.deck_id
+);
 
     if (!exists) {
         mergedCards.push({
@@ -3317,8 +3318,10 @@ async function loadSharedDecks() {
 
           sharedCards.push({
 
-            __id: generateId(), // internal object id only
+            // stable internal id
+            __id: 'shared_' + doc.id + '_' + c.card_id,
 
+            // permanent card identity
             card_id:
               c.card_id ||
               generateNextCardId(sharedCards),
@@ -3354,6 +3357,7 @@ async function loadSharedDecks() {
     return sharedCards;
 
   } catch (error) {
+
     console.warn(
       '⚠️ Gagal memuat shared decks:',
       error
@@ -5407,14 +5411,19 @@ importedCount++;
     //  ADMIN FUNCTIONS - SHOW ADMIN IMPORT
     // ============================================================
 
-  function generateNextCardId(cards){
+ function generateNextCardId(cards) {
     let maxNum = 0;
-    cards.forEach(card=>{
-    const id = parseInt(card.card_id);
-    if(!isNaN(id) && id > maxNum){maxNum = id;
-    }});
+
+    cards.forEach(card => {
+        const id = parseInt(card.card_id);
+
+        if (!isNaN(id) && id > maxNum) {
+            maxNum = id;
+        }
+    });
+
     return String(maxNum + 1);
-    }
+}
   async function handleExcelImport(event) {
   if (!isAdmin) {
     alert('Only admins can import decks.');
