@@ -71,10 +71,6 @@
       justify-content: center;
     }
 
-    .faq-card:hover {
-  border-color: var(--accent);
-  transition: border-color 0.2s ease;
-}
     #app {
       display: flex;
       flex-direction: column;
@@ -1484,6 +1480,88 @@ background:linear-gradient(
 );
 
 color:white;
+}
+
+/* =========================
+   FAQ FIX
+========================= */
+
+.faq-card{
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 24px;
+    overflow: hidden;
+    margin-bottom: 14px;
+    box-shadow: var(--shadow);
+}
+
+.faq-card:hover{
+    border-color: var(--accent);
+}
+
+.faq-header{
+    width:100%;
+    background:var(--surface);
+    color:var(--text);
+
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+
+    padding:18px;
+
+    border:none;
+    cursor:pointer;
+
+    font-size:16px;
+    font-weight:700;
+
+    transition:.25s;
+}
+
+.faq-header:active{
+    background:var(--accent-light);
+}
+
+.faq-header.active{
+    background:var(--accent-light);
+    color:var(--accent);
+}
+
+.faq-content{
+
+    display:none;
+
+    padding:18px;
+
+    background:var(--surface);
+
+    border-top:1px solid var(--border);
+
+    color:var(--text);
+
+    line-height:1.6;
+}
+
+.faq-content.show{
+    display:block;
+}
+
+.dark .faq-card{
+    background:var(--surface);
+}
+
+.dark .faq-header{
+    background:var(--surface);
+    color:var(--text);
+}
+
+.dark .faq-header.active{
+    background:var(--accent-light);
+}
+
+.dark .faq-content{
+    background:var(--surface);
 }
     
   </style>
