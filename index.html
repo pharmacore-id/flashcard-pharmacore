@@ -3295,22 +3295,22 @@ async function loadSharedDecks() {
       topic: deckData.topic || 'General',
       subtopic: deckData.subtopic || '',
       isPremium: isPremium,
-      cards: deckData.cards.map(c => ({
-        card_id: c.card_id,
-        card_front: c.card_front,
-        card_back: c.card_back,
-        card_tags: c.card_tags || '',
-        card_background: c.card_background || '',
-        // ===== PROGRESS SRS =====
-        ease_factor: c.ease_factor ?? 2.5,
-        interval: c.interval ?? 0,
-        repetitions: c.repetitions ?? 0,
-        next_review: c.next_review || '',
-        last_review: c.last_review || '',
-        total_reviews: c.total_reviews ?? 0,
-        correct_count: c.correct_count ?? 0,
-        review_history: c.review_history || []
-      })),
+     cards: deckData.cards.map(c => ({
+  card_id: c.card_id,
+  card_front: c.card_front,
+  card_back: c.card_back,
+  card_tags: c.card_tags || '',
+  card_background: c.card_background || '',
+  // ===== PROGRESS SRS - PERTAHANKAN =====
+  ease_factor: c.ease_factor ?? 2.5,
+  interval: c.interval ?? 0,
+  repetitions: c.repetitions ?? 0,
+  next_review: c.next_review || '',
+  last_review: c.last_review || '',
+  total_reviews: c.total_reviews ?? 0,
+  correct_count: c.correct_count ?? 0,
+  review_history: c.review_history || []
+}))
       updatedAt: firebase.firestore.FieldValue.serverTimestamp()
     });
     return true;
@@ -5418,52 +5418,53 @@ async function handleExcelImport(event) {
           let cardsToUpdate = [];
 
           // ===== CEK PER KARTU DI DECK YANG SAMA =====
-          for (const newCard of deck.cards) {
-            const cardId = newCard.card_id;
-            
-            // Cek di deck yang sama saja (bukan global)
-            const existing = existingCards.find(c => c.card_id === cardId);
+         for (const newCard of deck.cards) {
+  const cardId = newCard.card_id;
+  
+  // Cek di deck yang sama saja (bukan global)
+  const existing = existingCards.find(c => c.card_id === cardId);
 
-            if (existing) {
-              // ID sudah ada di deck ini
-              if (existing.card_front === newCard.card_front && 
-                  existing.card_back === newCard.card_back) {
-                // Konten sama → skip (duplikat)
-                duplicateCards++;
-              } else {
-                // Konten berbeda → update
-                console.log(`🔄 Update kartu ID ${cardId} di deck ${deckName}: "${existing.card_front}" → "${newCard.card_front}"`);
-                
-                const updatedCard = {
-                  ...existing,
-                  card_front: newCard.card_front,
-                  card_back: newCard.card_back,
-                  card_tags: newCard.card_tags || existing.card_tags || '',
-                  card_background: newCard.card_background || existing.card_background || '',
-                  updatedAt: new Date().toISOString()
-                };
-                
-                cardsToUpdate.push(updatedCard);
-                updatedCards++;
-              }
-            } else {
-              // ID baru di deck ini → tambahkan
-              console.log(`➕ Tambah kartu baru ID ${cardId} di deck ${deckName}`);
-              cardsToAdd.push({
-                ...newCard,
-                ease_factor: 2.5,
-                interval: 0,
-                repetitions: 0,
-                next_review: today(),
-                last_review: '',
-                total_reviews: 0,
-                correct_count: 0,
-                review_history: [],
-                createdAt: new Date().toISOString()
-              });
-              newCards++;
-            }
-          }
+  if (existing) {
+    // ID sudah ada di deck ini
+    if (existing.card_front === newCard.card_front && 
+        existing.card_back === newCard.card_back) {
+      // Konten sama → skip (duplikat), PERTAHANKAN PROGRESS
+      duplicateCards++;
+      // Tidak perlu update, existing card sudah punya progress
+    } else {
+      // Konten berbeda → update, PERTAHANKAN PROGRESS
+      console.log(`🔄 Update kartu ID ${cardId} di deck ${deckName}: "${existing.card_front}" → "${newCard.card_front}"`);
+      
+      const updatedCard = {
+        ...existing,  // ← PERTAHANKAN semua data lama (termasuk progress)
+        card_front: newCard.card_front,
+        card_back: newCard.card_back,
+        card_tags: newCard.card_tags || existing.card_tags || '',
+        card_background: newCard.card_background || existing.card_background || '',
+        updatedAt: new Date().toISOString()
+      };
+      
+      cardsToUpdate.push(updatedCard);
+      updatedCards++;
+    }
+  } else {
+    // ID baru di deck ini → tambahkan
+    console.log(`➕ Tambah kartu baru ID ${cardId} di deck ${deckName}`);
+    cardsToAdd.push({
+      ...newCard,
+      ease_factor: 2.5,
+      interval: 0,
+      repetitions: 0,
+      next_review: today(),
+      last_review: '',
+      total_reviews: 0,
+      correct_count: 0,
+      review_history: [],
+      createdAt: new Date().toISOString()
+    });
+    newCards++;
+  }
+}
 
           // ===== SIMPAN PERUBAHAN =====
           let finalCards = [...existingCards];
