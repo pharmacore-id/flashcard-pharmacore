@@ -5407,7 +5407,9 @@ async function handleExcelImport(event) {
           }
         } else {
           // ===== DECK SUDAH ADA =====
+          // ===== DECK SUDAH ADA =====
           const docRef = existingDocs.docs[0].ref;
+          const docId = existingDocs.docs[0].id;  // ← TAMBAHKAN BARIS INI
           const docData = existingDocs.docs[0].data();
           
           let existingCards = docData.cards || [];
@@ -5480,13 +5482,12 @@ async function handleExcelImport(event) {
             finalCards = [...finalCards, ...cardsToAdd];
           }
 
-          await docRef.update({
-            cards: finalCards,
-            isPremium: isPremium,
-            topic: deck.topic,
-            subtopic: deck.subtopic,
-            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-          });
+          await updateSharedDeck(docId, {
+  deckName: deckName,
+  topic: deck.topic,
+  subtopic: deck.subtopic,
+  cards: finalCards
+}, isPremium);
 
           updatedDecks++;
           console.log(`✅ Deck diperbarui: ${deckName} (${cardsToAdd.length} baru, ${cardsToUpdate.length} update, ${duplicateCards} duplikat)`);
