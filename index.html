@@ -6460,7 +6460,7 @@ function fcRate(q){
     const updated = applySRS(c, q);
 
     const idx = allCards.findIndex(
-        x => x.__id === updated.__id
+        x => x.card_id === updated.card_id
     );
 
     if(idx !== -1){
@@ -6631,7 +6631,7 @@ function fcRate(q){
       if (studyQueue.length === 0) studyQueue = getRealCards().filter(c => c.deck_id === currentDeckId);
       if (studyQueue.length === 0) { alert('No cards.'); return }
       studyIdx = 0;
-      document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+      document.querySelectorAll('.view').forEach(v=>{v.classList.remove('active');v.style.display='none';});
       document.getElementById('view-learn').classList.add('active');
       lnShowQuestion();
     }
@@ -6681,7 +6681,7 @@ function fcRate(q){
   const c = studyQueue[studyIdx];
   const updated = applySRS(c, correct ? 2 : 0);
   
-  const idx = allCards.findIndex(x => x.__id === updated.__id);
+  const idx = allCards.findIndex(x => x.card_id === updated.card_id);
   if (idx !== -1) allCards[idx] = updated;
   else allCards.push(updated);
   
@@ -6712,7 +6712,7 @@ function fcRate(q){
   studyIdx = 0;
   tsCorrect = 0;
   tsIncorrect = 0;
-  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+ document.querySelectorAll('.view').forEach(v=>{v.classList.remove('active');v.style.display='none';});
   document.getElementById('view-test').classList.add('active');
   tsShowQuestion();
 }
@@ -6764,7 +6764,7 @@ function toggleFAQ(button) {
         choices.classList.remove('hidden');
         typeArea.classList.add('hidden');
         const options = [c.card_back];
-        const others = getRealCards().filter(x => x.__id !== c.__id && x.deck_id === currentDeckId).map(x => x.card_back)
+        const others = getRealCards().filter(x => x.card_id !== c.card_id && x.deck_id === currentDeckId).map(x => x.card_back)
           .filter(Boolean);
         while (options.length < 4 && others.length > 0) { const idx = Math.floor(Math.random() * others.length); if (!options
             .includes(others[idx])) options.push(others[idx]);
@@ -6808,7 +6808,7 @@ function toggleFAQ(button) {
       document.getElementById('ts-correct-answer').textContent = correct ? '' : 'Answer: ' + tsCurrentAnswer;
       const c = studyQueue[studyIdx];
       const updated = applySRS(c, correct ? 2 : 0);
-      const idx = allCards.findIndex(x => x.__id === updated.__id);
+      const idx = allCards.findIndex(x => x.card_id === updated.card_id);
       if (idx !== -1) allCards[idx] = updated;
       else allCards.push(updated);
       saveUserData(currentUser)
