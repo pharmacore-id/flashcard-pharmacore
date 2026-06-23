@@ -71,6 +71,10 @@
       justify-content: center;
     }
 
+    .faq-card:hover {
+  border-color: var(--accent);
+  transition: border-color 0.2s ease;
+}
     #app {
       display: flex;
       flex-direction: column;
@@ -1481,88 +1485,6 @@ background:linear-gradient(
 
 color:white;
 }
-
-/* =========================
-   FAQ FIX
-========================= */
-
-.faq-card{
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 24px;
-    overflow: hidden;
-    margin-bottom: 14px;
-    box-shadow: var(--shadow);
-}
-
-.faq-card:hover{
-    border-color: var(--accent);
-}
-
-.faq-header{
-    width:100%;
-    background:var(--surface);
-    color:var(--text);
-
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-
-    padding:18px;
-
-    border:none;
-    cursor:pointer;
-
-    font-size:16px;
-    font-weight:700;
-
-    transition:.25s;
-}
-
-.faq-header:active{
-    background:var(--accent-light);
-}
-
-.faq-header.active{
-    background:var(--accent-light);
-    color:var(--accent);
-}
-
-.faq-content{
-
-    display:none;
-
-    padding:18px;
-
-    background:var(--surface);
-
-    border-top:1px solid var(--border);
-
-    color:var(--text);
-
-    line-height:1.6;
-}
-
-.faq-content.show{
-    display:block;
-}
-
-.dark .faq-card{
-    background:var(--surface);
-}
-
-.dark .faq-header{
-    background:var(--surface);
-    color:var(--text);
-}
-
-.dark .faq-header.active{
-    background:var(--accent-light);
-}
-
-.dark .faq-content{
-    background:var(--surface);
-}
     
   </style>
 </head>
@@ -2916,10 +2838,6 @@ style="max-height:90vh;overflow-y:auto;">
 
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
-    db.settings({
-experimentalForceLongPolling:true,
-useFetchStreams:false
-});
     const auth = firebase.auth();
 
     // ============================================================
@@ -3240,26 +3158,24 @@ function resetSessionStats(){
     const userCards = data.cards || [];
     const mergedCards = [...userCards];
     
-  sharedCards.forEach(sharedCard => {
-
-    const exists = mergedCards.some(c =>
-    c.card_id === sharedCard.card_id &&
-    c.deck_id === sharedCard.deck_id
-);
-
-    if (!exists) {
-        mergedCards.push({
-            ...sharedCard,
-            ease_factor: 2.5,
-            interval: 0,
-            repetitions: 0,
-            next_review: '',
-            last_review: '',
-            total_reviews: 0,
-            correct_count: 0
+    sharedCards.forEach(sharedCard => {
+      const exists = mergedCards.some(c =>
+        c.__id === sharedCard.__id ||
+        (c.deck_id === sharedCard.deck_id && c.card_front === sharedCard.card_front)
+      );
+      if (!exists) {
+        mergedCards.push({ 
+          ...sharedCard, 
+          ease_factor: 2.5, 
+          interval: 0, 
+          repetitions: 0, 
+          next_review: '', 
+          last_review: '', 
+          total_reviews: 0, 
+          correct_count: 0 
         });
-    }
-});
+      }
+    });
 
     updateSyncStatus('', 'Synced');
     
@@ -3308,37 +3224,24 @@ async function loadSharedDecks() {
   try {
     const snapshot = await db.collection('sharedDecks').get();
     const sharedCards = [];
+    const isPremiumUser = isPremiumActive();
 
     snapshot.forEach(doc => {
       const deck = doc.data();
 
       if (deck.cards && deck.cards.length) {
-
         deck.cards.forEach(c => {
-
           sharedCards.push({
-
-            // stable internal id
-            __id: 'shared_' + doc.id + '_' + c.card_id,
-
-            // permanent card identity
-            card_id:
-              c.card_id ||
-              generateNextCardId(sharedCards),
-
+            __id: 'shared_' + doc.id + '_' + Math.random().toString(36).slice(2, 6),
             deck_id: 'shared_' + doc.id,
             deck_name: deck.deckName || 'Shared Deck',
-
             topic: deck.topic || 'General',
             subtopic: deck.subtopic || '',
-
             isPremium: deck.isPremium || false,
-
             card_front: c.card_front,
             card_back: c.card_back,
             card_tags: c.card_tags || '',
-            card_background: c.card_background || '',
-
+            card_background: c.card_background || '',   // ← properti baru
             ease_factor: 2.5,
             interval: 0,
             repetitions: 0,
@@ -3346,23 +3249,14 @@ async function loadSharedDecks() {
             last_review: '',
             total_reviews: 0,
             correct_count: 0,
-
             isShared: true
           });
-
         });
       }
     });
-
     return sharedCards;
-
   } catch (error) {
-
-    console.warn(
-      '⚠️ Gagal memuat shared decks:',
-      error
-    );
-
+    console.warn('⚠️ Gagal memuat shared decks:', error);
     return [];
   }
 }
@@ -4994,97 +4888,50 @@ function renderDecks() {
       }
     }
 
-   function renderManageCards() {
-  const container = document.getElementById('manage-cards-list');
-  if (!container) return;
+    function renderManageCards() {
+      const container = document.getElementById('manage-cards-list');
+      if (!container) return;
 
-  const cards = allCards.filter(
-    c =>
-      c.deck_id === manageDeckId &&
-      c.card_front !== '__deck_placeholder__'
-  );
+      const cards = allCards.filter(c => c.deck_id === manageDeckId && c.card_front !== '__deck_placeholder__');
 
-  if (cards.length === 0) {
-    container.innerHTML = `
-      <div class="text-center py-10">
-        <p class="text-sec text-sm">
-          No cards in this deck.
-        </p>
+      if (cards.length === 0) {
+        container.innerHTML = `
+          <div class="text-center py-10">
+            <p class="text-sec text-sm">No cards in this deck.</p>
+            <button onclick="showAddCardToDeck()" class="mt-3 accent-bg text-white px-4 py-2 rounded-xl text-sm font-medium">Add First Card</button>
+          </div>
+        `;
+        return;
+      }
 
-        <button
-          onclick="showAddCardToDeck()"
-          class="mt-3 accent-bg text-white px-4 py-2 rounded-xl text-sm font-medium">
-          Add First Card
-        </button>
+      selectedCardIds = [];
 
-      </div>
-    `;
-    return;
-  }
+      container.innerHTML = cards.map((c, i) => `
+          <div class="card-item surface rounded-2xl p-3 border border-theme shadow-card mb-2 flex items-center gap-3">
+            <input type="checkbox" class="card-checkbox" data-card-id="${c.__id}" onchange="toggleCardSelection('${c.__id}', this)" />
+            <div class="flex-1 min-w-0">
+              <p class="font-medium text-sm truncate">${c.card_front || 'Empty'}</p>
+              <p class="text-xs text-sec truncate">→ ${c.card_back || 'Empty'}</p>
+              <div class="text-[10px] text-sec mt-0.5">
+                Reviews: ${c.total_reviews || 0} · Correct: ${c.correct_count || 0}
+              </div>
+            </div>
+            <div class="flex gap-1 flex-shrink-0">
+              <button onclick="showEditCard('${c.__id}')" class="text-sec p-1 hover:text-accent transition-colors" title="Edit Card">
+                <i data-lucide="pencil" class="w-4 h-4"></i>
+              </button>
+              <button onclick="deleteCard('${c.__id}')" class="text-sec p-1 hover:text-red-500 transition-colors" title="Delete Card">
+                <i data-lucide="trash-2" class="w-4 h-4"></i>
+              </button>
+            </div>
+          </div>
+        `).join('');
 
-  selectedCardIds = [];
+      if (typeof lucide !== 'undefined' && lucide.createIcons) {
+        lucide.createIcons();
+      }
+    }
 
-  container.innerHTML = cards.map((c) => `
-
-    <div class="card-item surface rounded-2xl p-3 border border-theme shadow-card mb-2 flex items-center gap-3">
-
-      <input
-        type="checkbox"
-        class="card-checkbox"
-        data-card-id="${c.card_id}"
-        onchange="toggleCardSelection('${c.card_id}', this)"
-      />
-
-      <div class="flex-1 min-w-0">
-
-        <p class="font-medium text-sm truncate">
-          ${c.card_front || 'Empty'}
-        </p>
-
-        <p class="text-xs text-sec truncate">
-          → ${c.card_back || 'Empty'}
-        </p>
-
-        <div class="text-[10px] text-sec mt-0.5">
-          Reviews: ${c.total_reviews || 0}
-          · Correct: ${c.correct_count || 0}
-        </div>
-
-      </div>
-
-      <div class="flex gap-1 flex-shrink-0">
-
-        <button
-          onclick="showEditCard('${c.card_id}')"
-          class="text-sec p-1 hover:text-accent transition-colors"
-          title="Edit Card">
-
-          <i data-lucide="pencil" class="w-4 h-4"></i>
-
-        </button>
-
-        <button
-          onclick="deleteCard('${c.card_id}')"
-          class="text-sec p-1 hover:text-red-500 transition-colors"
-          title="Delete Card">
-
-          <i data-lucide="trash-2" class="w-4 h-4"></i>
-
-        </button>
-
-      </div>
-
-    </div>
-
-  `).join('');
-
-  if (
-    typeof lucide !== 'undefined' &&
-    lucide.createIcons
-  ) {
-    lucide.createIcons();
-  }
-}
     function toggleCardSelection(cardId, checkbox) {
       if (checkbox.checked) {
         if (!selectedCardIds.includes(cardId)) {
@@ -5124,42 +4971,26 @@ function renderDecks() {
       document.getElementById('select-all-cards').checked = totalCheckboxes > 0 && checkedCheckboxes === totalCheckboxes;
     }
 
-   function deleteSelectedCards() {
+    function deleteSelectedCards() {
+      if (selectedCardIds.length === 0) {
+        alert('No cards selected.');
+        return;
+      }
 
-  if (selectedCardIds.length === 0) {
-    alert('No cards selected.');
-    return;
-  }
+      if (!confirm(`Delete ${selectedCardIds.length} selected cards?`)) return;
 
-  if (!confirm(`Delete ${selectedCardIds.length} selected cards?`)) return;
-
-  allCards = allCards.filter(
-    c => !selectedCardIds.includes(c.card_id)
-  );
-
-  saveUserData(currentUser)
-    .catch(console.error);
-
-  selectedCardIds = [];
-
-  renderManageCards();
-  renderDecks();
-  updateHome();
-
-  document.getElementById(
-    'select-all-cards'
-  ).checked = false;
-
-  document.getElementById(
-    'delete-selected-cards-btn'
-  ).disabled = true;
-
-  document.getElementById(
-    'selected-cards-count'
-  ).textContent = '0 selected';
-
-  alert('✅ Selected cards deleted successfully!');
-}
+      allCards = allCards.filter(c => !selectedCardIds.includes(c.__id));
+      saveUserData(currentUser)
+  .catch(console.error);
+      selectedCardIds = [];
+      renderManageCards();
+      renderDecks();
+      updateHome();
+      document.getElementById('select-all-cards').checked = false;
+      document.getElementById('delete-selected-cards-btn').disabled = true;
+      document.getElementById('selected-cards-count').textContent = '0 selected';
+      alert('✅ Selected cards deleted successfully!');
+    }
 
     function showAddCardToDeck() {
       if (!isAdmin || !manageDeckId) return;
@@ -5169,36 +5000,19 @@ function renderDecks() {
       document.getElementById('card-modal').classList.remove('hidden');
     }
 
-   function saveCard() {
+    function saveCard() {
+      const front = document.getElementById('card-front-input').value.trim();
+      const back = document.getElementById('card-back-input').value.trim();
+      if (!front || !back) return;
 
-    const front = document.getElementById('card-front-input').value.trim();
-    const back = document.getElementById('card-back-input').value.trim();
-
-    if (!front || !back) return;
-
-    const deck = allCards.find(
-        c =>
-        c.deck_id === addingToDeckId &&
-        c.card_front === '__deck_placeholder__'
-    );
-
-    allCards.push({
-
+      const deck = allCards.find(c => c.deck_id === addingToDeckId && c.card_front === '__deck_placeholder__');
+      allCards.push({
         __id: generateId(),
-
-        card_id: generateNextCardId(
-            allCards.filter(
-                c => c.card_front !== '__deck_placeholder__'
-            )
-        ),
-
         deck_id: addingToDeckId,
         deck_name: deck ? deck.deck_name : 'Untitled',
-
         card_front: front,
         card_back: back,
         card_tags: '',
-
         ease_factor: 2.5,
         interval: 0,
         repetitions: 0,
@@ -5206,17 +5020,15 @@ function renderDecks() {
         last_review: '',
         total_reviews: 0,
         correct_count: 0
+      });
+      saveUserData(currentUser)
+  .catch(console.error);
+      closeCardModal();
+      renderManageCards();
+      renderDecks();
+      updateHome();
+    }
 
-    });
-
-    saveUserData(currentUser)
-        .catch(console.error);
-
-    closeCardModal();
-    renderManageCards();
-    renderDecks();
-    updateHome();
-}
     function closeCardModal() {
       document.getElementById('card-modal').classList.add('hidden');
     }
@@ -5227,7 +5039,7 @@ function renderDecks() {
     function showEditCard(cardId) {
       if (!isAdmin) return;
       editCardId = cardId;
-      const card = allCards.find(c => c.card_id === cardId);
+      const card = allCards.find(c => c.__id === cardId);
       if (!card) return;
       document.getElementById('edit-card-front').value = card.card_front || '';
       document.getElementById('edit-card-back').value = card.card_back || '';
@@ -5244,7 +5056,7 @@ function renderDecks() {
       const back = document.getElementById('edit-card-back').value.trim();
       if (!front || !back || !editCardId) return;
 
-      const card = allCards.find(c => c.card_id === editCardId);
+      const card = allCards.find(c => c.__id === editCardId);
       if (card) {
         card.card_front = front;
         card.card_back = back;
@@ -5261,7 +5073,7 @@ function renderDecks() {
     function deleteCard(cardId) {
       if (!isAdmin) return;
       if (!confirm('Delete this card?')) return;
-      allCards = allCards.filter(c => c.card_id !== cardId);
+      allCards = allCards.filter(c => c.__id !== cardId);
       saveUserData(currentUser)
   .catch(console.error);
       renderManageCards();
@@ -5364,34 +5176,23 @@ function renderDecks() {
 
             if (exists) return;
 
-               allCards.push({
-
-    __id: generateId(),
-
-    card_id: generateNextCardId(
-        allCards.filter(
-            c => c.card_front !== '__deck_placeholder__'
-        )
-    ),
-
-    deck_id: manageDeckId,
-    deck_name: deck ? deck.deck_name : 'Untitled',
-
-    card_front: front,
-    card_back: back,
-    card_tags: '',
-
-    ease_factor: 2.5,
-    interval: 0,
-    repetitions: 0,
-    next_review: today(),
-    last_review: '',
-    total_reviews: 0,
-    correct_count: 0
-
-});
-
-importedCount++;
+            allCards.push({
+              __id: generateId(),
+              deck_id: manageDeckId,
+              deck_name: deck ? deck.deck_name : 'Untitled',
+              card_front: front,
+              card_back: back,
+              card_tags: '',
+              ease_factor: 2.5,
+              interval: 0,
+              repetitions: 0,
+              next_review: today(),
+              last_review: '',
+              total_reviews: 0,
+              correct_count: 0
+            });
+            importedCount++;
+          });
 
          saveUserData(currentUser)
   .catch(console.error);
@@ -5410,291 +5211,143 @@ importedCount++;
     // ============================================================
     //  ADMIN FUNCTIONS - SHOW ADMIN IMPORT
     // ============================================================
-
- function generateNextCardId(cards) {
-    let maxNum = 0;
-
-    cards.forEach(card => {
-        const id = parseInt(card.card_id);
-
-        if (!isNaN(id) && id > maxNum) {
-            maxNum = id;
-        }
-    });
-
-    return String(maxNum + 1);
-}
-  async function handleExcelImport(event) {
+ function handleExcelImport(event) {
   if (!isAdmin) {
     alert('Only admins can import decks.');
     return;
   }
+
   const file = event.target.files[0];
   if (!file) {
     alert('No file selected.');
     return;
   }
+
   if (typeof XLSX === 'undefined') {
-    alert('❌ Excel library not loaded.');
+    alert('❌ Excel library not loaded. Please refresh and try again.');
     return;
   }
+
   const reader = new FileReader();
+
   reader.onload = async function(e) {
     try {
       const data = new Uint8Array(e.target.result);
-      const workbook = XLSX.read(data,{
-        type:'array'
-      });
+      const workbook = XLSX.read(data, { type: 'array' });
 
-      if(
-        !workbook.SheetNames ||
-        workbook.SheetNames.length===0
-      ){
-        showImportStatus(
-          '❌ No sheet found',
-          'error'
-        );
+      if (!workbook.SheetNames || workbook.SheetNames.length === 0) {
+        showImportStatus('❌ No sheets found in Excel file.', 'error');
         return;
       }
 
-      const sheet=
-      workbook.Sheets[
-      workbook.SheetNames[0]
-      ];
+      const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+      const jsonData = XLSX.utils.sheet_to_json(firstSheet);
 
-      const jsonData=
-      XLSX.utils.sheet_to_json(sheet);
-
-      if(jsonData.length===0){
-        showImportStatus(
-          '❌ Empty excel',
-          'error'
-        );
+      if (jsonData.length === 0) {
+        showImportStatus('❌ No data found in Excel file.', 'error');
         return;
       }
 
-      const isPremium=
-      document.getElementById(
-      'import-premium-toggle'
-      ).checked;
+      const isPremium = document.getElementById('import-premium-toggle').checked;
+      console.log('📌 Import dengan status premium:', isPremium);
 
-      let importedCount=0;
-      let skippedCount=0;
+      let importedCount = 0;
+      let skippedCount = 0;
+      const decksToShare = {};
 
-      const decksToShare={};
+      jsonData.forEach((row) => {
+        const topic = row['Topic'] || row['topic'] || row['TOPIC'] || 'General';
+        const subtopic = row['Subtopic'] || row['subtopic'] || row['SUBTOPIC'] || '';
+        const front = row['Front'] || row['front'] || row['FRONT'] || row['Question'] || row['question'] || row['QUESTION'];
+        const back = row['Back'] || row['back'] || row['BACK'] || row['Answer'] || row['answer'] || row['ANSWER'];
+        const tags = row['Tags'] || row['tags'] || row['TAGS'] || '';
+        const background = row['Background'] || row['background'] || row['BACKGROUND'] || ''; // ← properti baru
 
-      jsonData.forEach(row=>{
-
-        const topic=
-        row['Topic']||
-        row['topic']||
-        'General';
-
-        const subtopic=
-        row['Subtopic']||
-        row['subtopic']||
-        '';
-
-        const front=
-        row['Front']||
-        row['front']||
-        row['Question'];
-
-        const back=
-        row['Back']||
-        row['back']||
-        row['Answer'];
-
-        const tags=
-        row['Tags']||
-        row['tags']||
-        '';
-
-        const background=
-        row['Background']||
-        row['background']||
-        '';
-
-        const cardId=
-        row['ID']||
-        generateNextCardId(allCards);
-
-        if(!front || !back){
+        if (!front || !back) {
           skippedCount++;
           return;
         }
 
-        const deckName=
-        topic+
-        (subtopic
-        ?' - '+subtopic
-        :'');
+        const deckName = topic + (subtopic ? ' - ' + subtopic : '');
+        const deckKey = deckName;
 
-        if(!decksToShare[deckName]){
-
-          decksToShare[deckName]={
-
-            deckName,
-            topic,
-            subtopic,
-            cards:[]
+        if (!decksToShare[deckKey]) {
+          decksToShare[deckKey] = {
+            deckName: deckName,
+            topic: topic,
+            subtopic: subtopic,
+            cards: []
           };
-
         }
 
-        decksToShare[
-        deckName
-        ].cards.push({
-
-          card_id:cardId,
-          card_front:front,
-          card_back:back,
-          card_tags:tags,
-          card_background:background
-
+        decksToShare[deckKey].cards.push({
+          card_front: front,
+          card_back: back,
+          card_tags: tags,
+          card_background: background   // ← simpan properti background
         });
 
         importedCount++;
-
       });
 
-      let savedCount=0;
+            let savedCount = 0;
+      for (const deckKey in decksToShare) {
+        const deck = decksToShare[deckKey];
+        const deckName = deck.deckName;
 
-      for(const deckKey in decksToShare){
+        // Cari apakah deck dengan nama yang sama sudah ada di Firestore
+        const existingDocs = await db.collection('sharedDecks')
+          .where('deckName', '==', deckName)
+          .get();
 
-        const deck=
-        decksToShare[
-        deckKey
-        ];
-
-        const existingDocs=
-        await db
-        .collection(
-        'sharedDecks'
-        )
-        .where(
-        'deckName',
-        '==',
-        deck.deckName
-        )
-        .get();
-
-        if(existingDocs.empty){
-
-          await saveSharedDeck(
-          deck,
-          isPremium
-          );
-
-          savedCount++;
-
-        }
-
-        else{
-
-          const doc=
-          existingDocs.docs[0];
-
-          const docRef=
-          doc.ref;
-
-          const importedMap=
-          new Map(
-          deck.cards.map(
-          c=>[
-          c.card_id,
-          c
-          ]
-          )
-          );
-
-          const finalCards=
-          Array.from(
-          importedMap.values()
-          );
-
+        if (existingDocs.empty) {
+          // Deck baru – simpan sebagai dokumen baru
+          const success = await saveSharedDeck(deck, isPremium);
+          if (success) savedCount++;
+        } else {
+          // Deck sudah ada – update isinya (tanpa mengubah deck_id)
+          const docRef = existingDocs.docs[0].ref;
           await docRef.update({
-
-            cards:finalCards,
-
-            isPremium:
-            isPremium,
-
-            topic:
-            deck.topic,
-
-            subtopic:
-            deck.subtopic,
-
-            updatedAt:
-            firebase.firestore
-            .FieldValue
-            .serverTimestamp()
-
+            cards: deck.cards.map(c => ({
+              card_front: c.card_front,
+              card_back: c.card_back,
+              card_tags: c.card_tags || '',
+              card_background: c.card_background || '',
+            })),
+            isPremium: isPremium,
+            topic: deck.topic,
+            subtopic: deck.subtopic,
+            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
           });
-
           savedCount++;
-
-          console.log(
-          '✅ Updated:',
-          deck.deckName
-          );
-
+          console.log('✅ Deck updated:', deckName);
         }
-
       }
 
-      const sharedCards=
-      await loadSharedDecks();
-
-      allCards=
-      allCards.filter(
-      c=>!c.isShared
-      );
-
-      allCards.push(
-      ...sharedCards
-      );
-
-      await saveUserData(
-      currentUser
-      );
+      const sharedCards = await loadSharedDecks();
+      allCards = allCards.filter(c => !c.isShared);
+      allCards.push(...sharedCards);
+      saveUserData(currentUser)
+  .catch(console.error);
 
       renderDecks();
       updateHome();
       renderAdminDeckList();
 
-      showImportStatus(
+      const message =
+        `✅ Berhasil mengimpor ${importedCount} kartu ke ${savedCount} shared deck!${skippedCount > 0 ? ` (${skippedCount} baris dilewati karena data kosong)` : ''}`;
+      showImportStatus(message, 'success');
 
-      `✅ Imported ${importedCount} cards into ${savedCount} decks${skippedCount>0 ? ` (${skippedCount} skipped)`:''}`,
-
-      'success'
-
-      );
-
+    } catch (error) {
+      console.error('❌ Import error:', error);
+      showImportStatus('❌ Error importing file: ' + error.message, 'error');
     }
-
-    catch(error){
-
-      console.error(error);
-
-      showImportStatus(
-
-      '❌ '+error.message,
-
-      'error'
-
-      );
-
-    }
-
   };
 
   reader.readAsArrayBuffer(file);
-
-  event.target.value='';
-
+  event.target.value = '';
 }
+
     function showImportStatus(message, type) {
       const statusDiv = document.getElementById('import-status');
       const statusBox = document.getElementById('import-status-box');
@@ -6460,7 +6113,7 @@ function fcRate(q){
     const updated = applySRS(c, q);
 
     const idx = allCards.findIndex(
-        x => x.card_id === updated.card_id
+        x => x.__id === updated.__id
     );
 
     if(idx !== -1){
@@ -6631,7 +6284,7 @@ function fcRate(q){
       if (studyQueue.length === 0) studyQueue = getRealCards().filter(c => c.deck_id === currentDeckId);
       if (studyQueue.length === 0) { alert('No cards.'); return }
       studyIdx = 0;
-      document.querySelectorAll('.view').forEach(v=>{v.classList.remove('active');v.style.display='none';});
+      document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
       document.getElementById('view-learn').classList.add('active');
       lnShowQuestion();
     }
@@ -6681,7 +6334,7 @@ function fcRate(q){
   const c = studyQueue[studyIdx];
   const updated = applySRS(c, correct ? 2 : 0);
   
-  const idx = allCards.findIndex(x => x.card_id === updated.card_id);
+  const idx = allCards.findIndex(x => x.__id === updated.__id);
   if (idx !== -1) allCards[idx] = updated;
   else allCards.push(updated);
   
@@ -6712,7 +6365,7 @@ function fcRate(q){
   studyIdx = 0;
   tsCorrect = 0;
   tsIncorrect = 0;
- document.querySelectorAll('.view').forEach(v=>{v.classList.remove('active');v.style.display='none';});
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
   document.getElementById('view-test').classList.add('active');
   tsShowQuestion();
 }
@@ -6764,7 +6417,7 @@ function toggleFAQ(button) {
         choices.classList.remove('hidden');
         typeArea.classList.add('hidden');
         const options = [c.card_back];
-        const others = getRealCards().filter(x => x.card_id !== c.card_id && x.deck_id === currentDeckId).map(x => x.card_back)
+        const others = getRealCards().filter(x => x.__id !== c.__id && x.deck_id === currentDeckId).map(x => x.card_back)
           .filter(Boolean);
         while (options.length < 4 && others.length > 0) { const idx = Math.floor(Math.random() * others.length); if (!options
             .includes(others[idx])) options.push(others[idx]);
@@ -6808,7 +6461,7 @@ function toggleFAQ(button) {
       document.getElementById('ts-correct-answer').textContent = correct ? '' : 'Answer: ' + tsCurrentAnswer;
       const c = studyQueue[studyIdx];
       const updated = applySRS(c, correct ? 2 : 0);
-      const idx = allCards.findIndex(x => x.card_id === updated.card_id);
+      const idx = allCards.findIndex(x => x.__id === updated.__id);
       if (idx !== -1) allCards[idx] = updated;
       else allCards.push(updated);
       saveUserData(currentUser)
@@ -8157,83 +7810,6 @@ updatePricingDisplay();
 }
 
 
-async function migrateExistingCardIds(){
-
-try{
-
-const snapshot=
-await db
-.collection(
-'sharedDecks'
-)
-.get();
-
-let nextId=1;
-
-for(const doc of snapshot.docs){
-
-const data=
-doc.data();
-
-const cards=
-data.cards || [];
-
-let changed=false;
-
-const updatedCards=
-cards.map(card=>{
-
-if(!card.card_id){
-
-card.card_id=
-"CARD"+
-String(nextId++)
-.padStart(
-4,
-"0"
-);
-
-changed=true;
-
-}
-
-return card;
-
-});
-
-if(changed){
-
-await doc.ref.update({
-
-cards:
-updatedCards
-
-});
-
-console.log(
-'Updated:',
-data.deckName
-);
-
-}
-
-}
-
-console.log(
-'✅ Migration complete'
-);
-
-}catch(err){
-
-console.error(
-'Migration error:',
-err
-);
-
-}
-
-}
-    
 function updatePricingDisplay(){
 
 if(!selectedPlan)return;
