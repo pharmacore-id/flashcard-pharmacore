@@ -2916,6 +2916,10 @@ style="max-height:90vh;overflow-y:auto;">
 
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
+    db.settings({
+experimentalForceLongPolling:true,
+useFetchStreams:false
+});
     const auth = firebase.auth();
 
     // ============================================================
@@ -7834,7 +7838,6 @@ alert(
     console.log('📚 Cards:', getRealCards().length, 'Decks:', getDecks().length);
     console.log('☁️ Firebase: Connected & Syncing');
     console.log('📝 Admin email: adm.pharmacore@gmail.com');
-    migrateExistingCardIds();
 
 // ======================================================
 // PULL TO REFRESH
