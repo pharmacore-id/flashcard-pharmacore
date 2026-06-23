@@ -5083,18 +5083,28 @@ function renderDecks() {
     }
 
     function saveCard() {
-      const front = document.getElementById('card-front-input').value.trim();
-      const back = document.getElementById('card-back-input').value.trim();
-      if (!front || !back) return;
+    const front = document.getElementById('card-front-input').value.trim();
+    const back = document.getElementById('card-back-input').value.trim();
 
-      const deck = allCards.find(c => c.deck_id === addingToDeckId && c.card_front === '__deck_placeholder__');
-      allCards.push({
+    if (!front || !back) return;
+
+    const deck = allCards.find(
+        c => c.deck_id === addingToDeckId &&
+        c.card_front === '__deck_placeholder__'
+    );
+
+    allCards.push({
         __id: generateId(),
+
+        card_id: generateNextCardId(allCards),
+
         deck_id: addingToDeckId,
         deck_name: deck ? deck.deck_name : 'Untitled',
+
         card_front: front,
         card_back: back,
         card_tags: '',
+
         ease_factor: 2.5,
         interval: 0,
         repetitions: 0,
@@ -5102,15 +5112,16 @@ function renderDecks() {
         last_review: '',
         total_reviews: 0,
         correct_count: 0
-      });
-      saveUserData(currentUser)
-  .catch(console.error);
-      closeCardModal();
-      renderManageCards();
-      renderDecks();
-      updateHome();
-    }
+    });
 
+    saveUserData(currentUser)
+        .catch(console.error);
+
+    closeCardModal();
+    renderManageCards();
+    renderDecks();
+    updateHome();
+}
     function closeCardModal() {
       document.getElementById('card-modal').classList.add('hidden');
     }
@@ -5258,22 +5269,23 @@ function renderDecks() {
 
             if (exists) return;
 
-            allCards.push({
-              __id: generateId(),
-              deck_id: manageDeckId,
-              deck_name: deck ? deck.deck_name : 'Untitled',
-              card_front: front,
-              card_back: back,
-              card_tags: '',
-              ease_factor: 2.5,
-              interval: 0,
-              repetitions: 0,
-              next_review: today(),
-              last_review: '',
-              total_reviews: 0,
-              correct_count: 0
-            });
-            importedCount++;
+               allCards.push({
+    __id: generateId(),
+    card_id: generateNextCardId(allCards),
+    deck_id: manageDeckId,
+    deck_name: deck ? deck.deck_name : 'Untitled',
+    card_front: front,
+    card_back: back,
+    card_tags: '',
+    ease_factor: 2.5,
+    interval: 0,
+    repetitions: 0,
+    next_review: today(),
+    last_review: '',
+    total_reviews: 0,
+    correct_count: 0
+});
+importedCount++;
           });
 
          saveUserData(currentUser)
@@ -5294,209 +5306,285 @@ function renderDecks() {
     //  ADMIN FUNCTIONS - SHOW ADMIN IMPORT
     // ============================================================
 
-    function generateNextCardId(cards){
-
-let maxNum=0;
-
-cards.forEach(card=>{
-
-if(card.id){
-
-const match=
-card.id.match(
-/CARD(\d+)/
-);
-
-if(match){
-
-const num=
-parseInt(
-match[1]
-);
-
-if(num>maxNum){
-
-maxNum=num;
-
-}
-
-}
-
-}
-
-});
-
-return "CARD"+
-String(maxNum+1)
-.padStart(
-4,
-"0");
-
-}
-    
-    function handleExcelImport(event) {
+  function generateNextCardId(cards){
+    let maxNum = 0;
+    cards.forEach(card=>{
+    const id = parseInt(card.card_id);
+    if(!isNaN(id) && id > maxNum){maxNum = id;
+    }});
+    return String(maxNum + 1);
+    }
+  async function handleExcelImport(event) {
   if (!isAdmin) {
     alert('Only admins can import decks.');
     return;
   }
-
   const file = event.target.files[0];
   if (!file) {
     alert('No file selected.');
     return;
   }
-
   if (typeof XLSX === 'undefined') {
-    alert('❌ Excel library not loaded. Please refresh and try again.');
+    alert('❌ Excel library not loaded.');
     return;
   }
-
   const reader = new FileReader();
-
   reader.onload = async function(e) {
     try {
       const data = new Uint8Array(e.target.result);
-      const workbook = XLSX.read(data, { type: 'array' });
+      const workbook = XLSX.read(data,{
+        type:'array'
+      });
 
-      if (!workbook.SheetNames || workbook.SheetNames.length === 0) {
-        showImportStatus('❌ No sheets found in Excel file.', 'error');
+      if(
+        !workbook.SheetNames ||
+        workbook.SheetNames.length===0
+      ){
+        showImportStatus(
+          '❌ No sheet found',
+          'error'
+        );
         return;
       }
 
-      const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
-      const jsonData = XLSX.utils.sheet_to_json(firstSheet);
+      const sheet=
+      workbook.Sheets[
+      workbook.SheetNames[0]
+      ];
 
-      if (jsonData.length === 0) {
-        showImportStatus('❌ No data found in Excel file.', 'error');
+      const jsonData=
+      XLSX.utils.sheet_to_json(sheet);
+
+      if(jsonData.length===0){
+        showImportStatus(
+          '❌ Empty excel',
+          'error'
+        );
         return;
       }
 
-      const isPremium = document.getElementById('import-premium-toggle').checked;
-      console.log('📌 Import dengan status premium:', isPremium);
+      const isPremium=
+      document.getElementById(
+      'import-premium-toggle'
+      ).checked;
 
-      let importedCount = 0;
-      let skippedCount = 0;
-      const decksToShare = {};
+      let importedCount=0;
+      let skippedCount=0;
 
-      jsonData.forEach((row) => {
-        const topic = row['Topic'] || row['topic'] || row['TOPIC'] || 'General';
-        const subtopic = row['Subtopic'] || row['subtopic'] || row['SUBTOPIC'] || '';
-        const front = row['Front'] || row['front'] || row['FRONT'] || row['Question'] || row['question'] || row['QUESTION'];
-        const back = row['Back'] || row['back'] || row['BACK'] || row['Answer'] || row['answer'] || row['ANSWER'];
-        const tags = row['Tags'] || row['tags'] || row['TAGS'] || '';
-        const background = row['Background'] || row['background'] || row['BACKGROUND'] || ''; // ← properti baru
+      const decksToShare={};
 
-        if (!front || !back) {
+      jsonData.forEach(row=>{
+
+        const topic=
+        row['Topic']||
+        row['topic']||
+        'General';
+
+        const subtopic=
+        row['Subtopic']||
+        row['subtopic']||
+        '';
+
+        const front=
+        row['Front']||
+        row['front']||
+        row['Question'];
+
+        const back=
+        row['Back']||
+        row['back']||
+        row['Answer'];
+
+        const tags=
+        row['Tags']||
+        row['tags']||
+        '';
+
+        const background=
+        row['Background']||
+        row['background']||
+        '';
+
+        const cardId=
+        row['ID']||
+        generateNextCardId(allCards);
+
+        if(!front || !back){
           skippedCount++;
           return;
         }
 
-        const deckName = topic + (subtopic ? ' - ' + subtopic : '');
-        const deckKey = deckName;
+        const deckName=
+        topic+
+        (subtopic
+        ?' - '+subtopic
+        :'');
 
-        if (!decksToShare[deckKey]) {
-          decksToShare[deckKey] = {
-            deckName: deckName,
-            topic: topic,
-            subtopic: subtopic,
-            cards: []
+        if(!decksToShare[deckName]){
+
+          decksToShare[deckName]={
+
+            deckName,
+            topic,
+            subtopic,
+            cards:[]
           };
+
         }
 
-        decksToShare[deckKey].cards.push({
-        card_id:
-        row['ID'] ||
-        generateNextCardId(allCards),
-        card_front: front,
-        card_back: back,
-        card_tags: tags,
-        card_background: background
-      
-      });
+        decksToShare[
+        deckName
+        ].cards.push({
+
+          card_id:cardId,
+          card_front:front,
+          card_back:back,
+          card_tags:tags,
+          card_background:background
+
+        });
 
         importedCount++;
+
       });
 
-            let savedCount = 0;
-      for (const deckKey in decksToShare) {
-        const deck = decksToShare[deckKey];
-        const deckName = deck.deckName;
+      let savedCount=0;
 
-        // Cari apakah deck dengan nama yang sama sudah ada di Firestore
-        const existingDocs = await db.collection('sharedDecks')
-          .where('deckName', '==', deckName)
-          .get();
+      for(const deckKey in decksToShare){
 
-        if (existingDocs.empty) {
-          // Deck baru – simpan sebagai dokumen baru
-          const success = await saveSharedDeck(deck, isPremium);
-          if (success) savedCount++;
-        } else {
-          // Deck sudah ada – update isinya (tanpa mengubah deck_id)
-         const docRef =existingDocs.docs[0].ref;
-        // get existing cards from firestore
-        const oldCards =
-        existingDocs.docs[0]
-        .data()
-        .cards || [];
-        // make lookup map
-        const oldMap =
-        new Map(oldCards.map(
-        c => [c.card_id,
-        c
-        ]));
-        // update existing card if ID exists
-        // add new card if ID doesn't exist
-        deck.cards.forEach(card=>{
-        oldMap.set(
-        card.card_id,
-        card);
-        });
-        
-        // final merged cards
-        const updatedCards =
-        Array.from(oldMap.values());
-        await docRef.update({
-        cards:
-        updatedCards,
-        isPremium:
-        isPremium,
-        topic:
-        deck.topic,
-        subtopic:
-        deck.subtopic,
-        updatedAt:
-        firebase.firestore.FieldValue.serverTimestamp()
-        });
+        const deck=
+        decksToShare[
+        deckKey
+        ];
+
+        const existingDocs=
+        await db
+        .collection(
+        'sharedDecks'
+        )
+        .where(
+        'deckName',
+        '==',
+        deck.deckName
+        )
+        .get();
+
+        if(existingDocs.empty){
+
+          await saveSharedDeck(
+          deck,
+          isPremium
+          );
+
           savedCount++;
-          console.log('✅ Deck updated:', deckName);
+
         }
+
+        else{
+
+          const doc=
+          existingDocs.docs[0];
+
+          const docRef=
+          doc.ref;
+
+          const importedMap=
+          new Map(
+          deck.cards.map(
+          c=>[
+          c.card_id,
+          c
+          ]
+          )
+          );
+
+          const finalCards=
+          Array.from(
+          importedMap.values()
+          );
+
+          await docRef.update({
+
+            cards:finalCards,
+
+            isPremium:
+            isPremium,
+
+            topic:
+            deck.topic,
+
+            subtopic:
+            deck.subtopic,
+
+            updatedAt:
+            firebase.firestore
+            .FieldValue
+            .serverTimestamp()
+
+          });
+
+          savedCount++;
+
+          console.log(
+          '✅ Updated:',
+          deck.deckName
+          );
+
+        }
+
       }
 
-      const sharedCards = await loadSharedDecks();
-      allCards = allCards.filter(c => !c.isShared);
-      allCards.push(...sharedCards);
-      saveUserData(currentUser)
-  .catch(console.error);
+      const sharedCards=
+      await loadSharedDecks();
+
+      allCards=
+      allCards.filter(
+      c=>!c.isShared
+      );
+
+      allCards.push(
+      ...sharedCards
+      );
+
+      await saveUserData(
+      currentUser
+      );
 
       renderDecks();
       updateHome();
       renderAdminDeckList();
 
-      const message =
-        `✅ Berhasil mengimpor ${importedCount} kartu ke ${savedCount} shared deck!${skippedCount > 0 ? ` (${skippedCount} baris dilewati karena data kosong)` : ''}`;
-      showImportStatus(message, 'success');
+      showImportStatus(
 
-    } catch (error) {
-      console.error('❌ Import error:', error);
-      showImportStatus('❌ Error importing file: ' + error.message, 'error');
+      `✅ Imported ${importedCount} cards into ${savedCount} decks${skippedCount>0 ? ` (${skippedCount} skipped)`:''}`,
+
+      'success'
+
+      );
+
     }
+
+    catch(error){
+
+      console.error(error);
+
+      showImportStatus(
+
+      '❌ '+error.message,
+
+      'error'
+
+      );
+
+    }
+
   };
 
   reader.readAsArrayBuffer(file);
-  event.target.value = '';
-}
 
+  event.target.value='';
+
+}
     function showImportStatus(message, type) {
       const statusDiv = document.getElementById('import-status');
       const statusBox = document.getElementById('import-status-box');
