@@ -5406,7 +5406,7 @@ async function handleExcelImport(event) {
             newCards += deck.cards.length;
           }
         } else {
-          // ===== DECK SUDAH ADA =====
+  
           // ===== DECK SUDAH ADA =====
           const docRef = existingDocs.docs[0].ref;
           const docId = existingDocs.docs[0].id;  // ← TAMBAHKAN BARIS INI
@@ -5418,37 +5418,35 @@ async function handleExcelImport(event) {
           let cardsToUpdate = [];
 
           // ===== CEK PER KARTU DI DECK YANG SAMA =====
-         for (const newCard of deck.cards) {
+  for (const newCard of deck.cards) {
   const cardId = newCard.card_id;
-  
-  // Cek di deck yang sama saja (bukan global)
   const existing = existingCards.find(c => c.card_id === cardId);
 
   if (existing) {
-    // ID sudah ada di deck ini
+    // ID sudah ada → pertahankan progress
+    const updatedCard = {
+      ...existing,
+      card_front: newCard.card_front,
+      card_back: newCard.card_back,
+      card_tags: newCard.card_tags || existing.card_tags || '',
+      card_background: newCard.card_background || existing.card_background || '',
+      updatedAt: new Date().toISOString()
+    };
+    
     if (existing.card_front === newCard.card_front && 
         existing.card_back === newCard.card_back) {
-      // Konten sama → skip (duplikat), PERTAHANKAN PROGRESS
+      // Konten sama → skip
       duplicateCards++;
-      // Tidak perlu update, existing card sudah punya progress
     } else {
-      // Konten berbeda → update, PERTAHANKAN PROGRESS
-      console.log(`🔄 Update kartu ID ${cardId} di deck ${deckName}: "${existing.card_front}" → "${newCard.card_front}"`);
-      
-      const updatedCard = {
-        ...existing,  // ← PERTAHANKAN semua data lama (termasuk progress)
-        card_front: newCard.card_front,
-        card_back: newCard.card_back,
-        card_tags: newCard.card_tags || existing.card_tags || '',
-        card_background: newCard.card_background || existing.card_background || '',
-        updatedAt: new Date().toISOString()
-      };
-      
-      cardsToUpdate.push(updatedCard);
+      // Konten berbeda → update
+      console.log(`🔄 Update kartu ID ${cardId} di deck ${deckName}`);
       updatedCards++;
     }
+    
+    cardsToUpdate.push(updatedCard);
+    
   } else {
-    // ID baru di deck ini → tambahkan
+    // ID baru → tambahkan
     console.log(`➕ Tambah kartu baru ID ${cardId} di deck ${deckName}`);
     cardsToAdd.push({
       ...newCard,
