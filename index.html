@@ -5552,7 +5552,7 @@ async function handleExcelImport(event) {
 
   const reader = new FileReader();
 
-  reader.onload = async function(e) {
+  reader.onload = async function (e) {
     try {
       const data = new Uint8Array(e.target.result);
       const workbook = XLSX.read(data, { type: 'array' });
@@ -5571,18 +5571,6 @@ async function handleExcelImport(event) {
       }
 
       const isPremium = document.getElementById('import-premium-toggle').checked;
-      console.log('📌 Import dengan status premium:', isPremium);
-
-      // ===== VALIDASI: Cek ID kosong =====
-      const missingIds = jsonData.filter(row => {
-        const id = row['ID'] || row['id'] || row['Id'];
-        return id === undefined || id === null || id === '';
-      });
-
-      if (missingIds.length > 0) {
-        showImportStatus(`❌ Error: ${missingIds.length} baris memiliki ID kosong. ID wajib diisi!`, 'error');
-        return;
-      }
 
       let newCards = 0;
       let updatedCards = 0;
@@ -5591,42 +5579,35 @@ async function handleExcelImport(event) {
       let newDecks = 0;
       let updatedDecks = 0;
 
-      // ===== KELOMPOKKAN PER DECK =====
+      // ===== GROUP DECK =====
       const decksToImport = {};
 
       jsonData.forEach((row) => {
         const id = parseInt(row['ID'] || row['id'] || row['Id']);
         const topic = row['Topic'] || row['topic'] || row['TOPIC'] || 'General';
-        const subtopic = row['Subtopic'] || row['subtopic'] || row['SUBTOPIC'] || '';
-        const front = row['Front'] || row['front'] || row['FRONT'] || row['Question'] || row['question'] || row['QUESTION'];
-        const back = row['Back'] || row['back'] || row['BACK'] || row['Answer'] || row['answer'] || row['ANSWER'];
-        const tags = row['Tags'] || row['tags'] || row['TAGS'] || '';
-        const background = row['Background'] || row['background'] || row['BACKGROUND'] || '';
+        const subtopic = row['Subtopic'] || row['subtopic'] || '';
+        const front = row['Front'] || row['front'] || row['Question'] || row['question'];
+        const back = row['Back'] || row['back'] || row['Answer'] || row['answer'];
+        const tags = row['Tags'] || row['tags'] || '';
+        const background = row['Background'] || row['background'] || '';
 
-        if (!front || !back) {
+        if (!front || !back || isNaN(id) || id < 1) {
           skippedCount++;
-          return;
-        }
-
-        if (isNaN(id) || id < 1) {
-          skippedCount++;
-          console.warn(`⚠️ ID tidak valid: ${id}`);
           return;
         }
 
         const deckName = topic + (subtopic ? ' - ' + subtopic : '');
-        const deckKey = deckName;
 
-        if (!decksToImport[deckKey]) {
-          decksToImport[deckKey] = {
-            deckName: deckName,
-            topic: topic,
-            subtopic: subtopic,
+        if (!decksToImport[deckName]) {
+          decksToImport[deckName] = {
+            deckName,
+            topic,
+            subtopic,
             cards: []
           };
         }
 
-        decksToImport[deckKey].cards.push({
+        decksToImport[deckName].cards.push({
           card_id: id,
           card_front: front,
           card_back: back,
@@ -5635,119 +5616,99 @@ async function handleExcelImport(event) {
         });
       });
 
-      if (skippedCount > 0) {
-        console.warn(`⚠️ ${skippedCount} baris dilewati (data tidak lengkap atau ID tidak valid)`);
-      }
-
-      // ===== PROSES IMPORT PER DECK =====
+      // ===== PROCESS EACH DECK =====
       for (const deckKey in decksToImport) {
         const deck = decksToImport[deckKey];
-        const deckName = deck.deckName;
 
-        // Cari deck yang sudah ada di Firestore berdasarkan nama
         const existingDocs = await db.collection('sharedDecks')
-          .where('deckName', '==', deckName)
+          .where('deckName', '==', deck.deckName)
           .get();
 
         if (existingDocs.empty) {
-          // ===== DECK BARU =====
-          console.log(`📁 Membuat deck baru: ${deckName}`);
-          
+          // ===== NEW DECK =====
           const success = await saveSharedDeck({
-            deckName: deckName,
+            deckName: deck.deckName,
             topic: deck.topic,
             subtopic: deck.subtopic,
             cards: deck.cards
           }, isPremium);
-          
+
           if (success) {
             newDecks++;
             newCards += deck.cards.length;
           }
-        } else {
-  
-          // ===== DECK SUDAH ADA =====
-          const docRef = existingDocs.docs[0].ref;
-          const docId = existingDocs.docs[0].id;  // ← TAMBAHKAN BARIS INI
-          const docData = existingDocs.docs[0].data();
-          
-          let existingCards = docData.cards || [];
 
+        } else {
+
+          const docRef = existingDocs.docs[0].ref;
+          const docId = existingDocs.docs[0].id;
+          const docData = existingDocs.docs[0].data();
+
+          let existingCards = docData.cards || [];
           let cardsToAdd = [];
           let cardsToUpdate = [];
 
-          // ===== CEK PER KARTU DI DECK YANG SAMA =====
-  for (const newCard of deck.cards) {
-  const cardId = newCard.card_id;
-  const existing = existingCards.find(c => c.card_id === cardId);
+          // ===== LOOP CARDS (FIXED SCOPE) =====
+          for (const newCard of deck.cards) {
 
- if (existing) {
+            const cardId = newCard.card_id;
+            const existing = existingCards.find(c => c.card_id === cardId);
 
-  // ===== NORMALISASI TEKS =====
-  const normalizeText = (text) => {
-    return String(text || '')
-      .replace(/\u00A0/g, ' ')
-      .replace(/\r\n/g, '\n')
-      .replace(/\r/g, '\n')
-      .replace(/\s+/g, ' ')
-      .trim();
-  };
+            if (existing) {
 
-  const oldFront = normalizeText(existing.card_front);
-  const oldBack = normalizeText(existing.card_back);
+              const normalizeText = (text) => {
+                return String(text || '')
+                  .replace(/\u00A0/g, ' ')
+                  .replace(/\r\n/g, '\n')
+                  .replace(/\r/g, '\n')
+                  .replace(/\s+/g, ' ')
+                  .trim();
+              };
 
-  const newFront = normalizeText(newCard.card_front);
-  const newBack = normalizeText(newCard.card_back);
+              const oldFront = normalizeText(existing.card_front);
+              const oldBack = normalizeText(existing.card_back);
+              const newFront = normalizeText(newCard.card_front);
+              const newBack = normalizeText(newCard.card_back);
 
-  // ===== BENAR-BENAR SAMA =====
-  if (oldFront === newFront && oldBack === newBack) {
-    duplicateCards++;
-    continue;
-  }
+              if (oldFront === newFront && oldBack === newBack) {
+                duplicateCards++;
+                continue;
+              }
 
-  // ===== DEBUG LOG =====
-  console.log(`🔄 Update kartu ID ${cardId} di deck ${deckName}`);
-  console.log('OLD FRONT:', JSON.stringify(existing.card_front));
-  console.log('NEW FRONT:', JSON.stringify(newCard.card_front));
-  console.log('OLD BACK :', JSON.stringify(existing.card_back));
-  console.log('NEW BACK :', JSON.stringify(newCard.card_back));
+              updatedCards++;
 
-  updatedCards++;
+              const updatedCard = {
+                ...existing,
+                card_front: newCard.card_front,
+                card_back: newCard.card_back,
+                card_tags: newCard.card_tags ?? existing.card_tags ?? '',
+                card_background: newCard.card_background ?? existing.card_background ?? '',
+                updatedAt: new Date().toISOString()
+              };
 
-  // ===== UPDATE KARTU =====
-  const updatedCard = {
-    ...existing,
-    card_front: newCard.card_front,
-    card_back: newCard.card_back,
-    card_tags: newCard.card_tags || existing.card_tags || '',
-    card_background: newCard.card_background || existing.card_background || '',
-    updatedAt: new Date().toISOString()
-  };
-    cardsToUpdate.push(updatedCard);
-} else {
-  // ID baru → tambahkan (HANYA KONTEN)
-  console.log(`➕ Tambah kartu baru ID ${cardId} di deck ${deckName}`);
-  cardsToAdd.push({
-    card_id: newCard.card_id,
-    card_front: newCard.card_front,
-    card_back: newCard.card_back,
-    card_tags: newCard.card_tags || '',
-    card_background: newCard.card_background || ''
-  });
-  newCards++;
-}
+              cardsToUpdate.push(updatedCard);
 
-          // ===== SIMPAN PERUBAHAN =====
+            } else {
+              cardsToAdd.push({
+                card_id: newCard.card_id,
+                card_front: newCard.card_front,
+                card_back: newCard.card_back,
+                card_tags: newCard.card_tags ?? '',
+                card_background: newCard.card_background ?? ''
+              });
+
+              newCards++;
+            }
+          } // ✅ LOOP CLOSED PROPERLY
+
+          // ===== MERGE =====
           let finalCards = [...existingCards];
 
           if (cardsToUpdate.length > 0) {
-            const updateIds = new Set(cardsToUpdate.map(c => c.card_id));
-            finalCards = finalCards.map(c => {
-              if (updateIds.has(c.card_id)) {
-                return cardsToUpdate.find(u => u.card_id === c.card_id);
-              }
-              return c;
-            });
+            const updateMap = new Map(cardsToUpdate.map(c => [c.card_id, c]));
+            finalCards = finalCards.map(c =>
+              updateMap.has(c.card_id) ? updateMap.get(c.card_id) : c
+            );
           }
 
           if (cardsToAdd.length > 0) {
@@ -5755,83 +5716,72 @@ async function handleExcelImport(event) {
           }
 
           await updateSharedDeck(docId, {
-  deckName: deckName,
-  topic: deck.topic,
-  subtopic: deck.subtopic,
-  cards: finalCards
-}, isPremium);
+            deckName: deck.deckName,
+            topic: deck.topic,
+            subtopic: deck.subtopic,
+            cards: finalCards
+          }, isPremium);
 
           updatedDecks++;
-          console.log(`✅ Deck diperbarui: ${deckName} (${cardsToAdd.length} baru, ${cardsToUpdate.length} update, ${duplicateCards} duplikat)`);
         }
       }
 
-      // ===== RELOAD DATA =====
-      // ===== SIMPAN PROGRESS LAMA =====
-const progressMap = new Map();
-allCards.forEach(card => {
-  if (card.isShared) {
-    const key = card.__id || card.card_id;
-    progressMap.set(key, {
-      ease_factor: card.ease_factor,
-      interval: card.interval,
-      repetitions: card.repetitions,
-      total_reviews: card.total_reviews,
-      correct_count: card.correct_count,
-      next_review: card.next_review,
-      last_review: card.last_review,
-      review_history: card.review_history || []
-    });
-  }
-});
+      // ===== RESTORE PROGRESS =====
+      const progressMap = new Map();
 
-// ===== RELOAD SHARED DECKS =====
-const sharedCards = await loadSharedDecks();
+      allCards.forEach(card => {
+        if (card.isShared) {
+          const key = card.__id || card.card_id;
+          progressMap.set(key, {
+            ease_factor: card.ease_factor,
+            interval: card.interval,
+            repetitions: card.repetitions,
+            total_reviews: card.total_reviews,
+            correct_count: card.correct_count,
+            next_review: card.next_review,
+            last_review: card.last_review,
+            review_history: card.review_history || []
+          });
+        }
+      });
 
-// ===== MERGE PROGRESS =====
-const mergedSharedCards = sharedCards.map(card => {
-  const key = card.__id || card.card_id;
-  const progress = progressMap.get(key);
-  return progress
-    ? { ...card, ...progress }
-    : card;
-});
+      const sharedCards = await loadSharedDecks();
 
-// ===== PERTAHANKAN CUSTOM CARDS =====
-const customCards = allCards.filter(c => !c.isShared);
+      const mergedSharedCards = sharedCards.map(card => {
+        const key = card.__id || card.card_id;
+        const progress = progressMap.get(key);
+        return progress ? { ...card, ...progress } : card;
+      });
 
-// ===== GABUNGKAN =====
-allCards = [...customCards, ...mergedSharedCards];
+      const customCards = allCards.filter(c => !c.isShared);
 
-try {
-  // ===== SAVE =====
-  await saveUserData(currentUser);
+      allCards = [...customCards, ...mergedSharedCards];
 
-  renderDecks();
-  updateHome();
-  renderAdminDeckList();
+      // ===== SAVE FINAL =====
+      await saveUserData(currentUser);
 
-  let message = `✅ Import selesai!\n\n`;
-  message += `📁 Deck baru: ${newDecks}\n`;
-  message += `📝 Deck diupdate: ${updatedDecks}\n`;
-  message += `🆕 Kartu baru: ${newCards}\n`;
-  message += `🔄 Kartu diupdate: ${updatedCards}\n`;
-  message += `⏭️ Kartu duplikat (di-skip): ${duplicateCards}\n`;
+      renderDecks();
+      updateHome();
+      renderAdminDeckList();
 
-  if (skippedCount > 0) {
-    message += `⚠️ Baris dilewati: ${skippedCount} (data tidak lengkap)\n`;
-  }
+      let message = `✅ Import selesai!\n\n`;
+      message += `📁 Deck baru: ${newDecks}\n`;
+      message += `📝 Deck diupdate: ${updatedDecks}\n`;
+      message += `🆕 Kartu baru: ${newCards}\n`;
+      message += `🔄 Kartu diupdate: ${updatedCards}\n`;
+      message += `⏭️ Kartu duplikat: ${duplicateCards}\n`;
 
-  showImportStatus(message, 'success');
-  alert(message);
+      if (skippedCount > 0) {
+        message += `⚠️ Dilewati: ${skippedCount}\n`;
+      }
 
-} catch (error) {
-  console.error('❌ Import error:', error);
-  showImportStatus(
-    '❌ Error importing file: ' + error.message,
-    'error'
-  );
-}
+      showImportStatus(message, 'success');
+      alert(message);
+
+    } catch (error) {
+      console.error('❌ Import error:', error);
+      showImportStatus('❌ Error importing file: ' + error.message, 'error');
+    }
   };
 
   reader.readAsArrayBuffer(file);
