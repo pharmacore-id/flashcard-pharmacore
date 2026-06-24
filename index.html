@@ -5681,28 +5681,51 @@ async function handleExcelImport(event) {
   const cardId = newCard.card_id;
   const existing = existingCards.find(c => c.card_id === cardId);
 
-  if (existing) {
-    // ID sudah ada → pertahankan progress
-    const updatedCard = {
-      ...existing,
-      card_front: newCard.card_front,
-      card_back: newCard.card_back,
-      card_tags: newCard.card_tags || existing.card_tags || '',
-      card_background: newCard.card_background || existing.card_background || '',
-      updatedAt: new Date().toISOString()
-    };
-    
-    if (existing.card_front === newCard.card_front && 
-        existing.card_back === newCard.card_back) {
-      // Konten sama → skip
-      duplicateCards++;
-    } else {
-      // Konten berbeda → update
-      console.log(`🔄 Update kartu ID ${cardId} di deck ${deckName}`);
-      updatedCards++;
-    }
-    
-    cardsToUpdate.push(updatedCard);
+ if (existing) {
+
+  // ===== NORMALISASI TEKS =====
+  const normalizeText = (text) => {
+    return String(text || '')
+      .replace(/\u00A0/g, ' ')
+      .replace(/\r\n/g, '\n')
+      .replace(/\r/g, '\n')
+      .replace(/\s+/g, ' ')
+      .trim();
+  };
+
+  const oldFront = normalizeText(existing.card_front);
+  const oldBack = normalizeText(existing.card_back);
+
+  const newFront = normalizeText(newCard.card_front);
+  const newBack = normalizeText(newCard.card_back);
+
+  // ===== BENAR-BENAR SAMA =====
+  if (oldFront === newFront && oldBack === newBack) {
+    duplicateCards++;
+    continue;
+  }
+
+  // ===== DEBUG LOG =====
+  console.log(`🔄 Update kartu ID ${cardId} di deck ${deckName}`);
+  console.log('OLD FRONT:', JSON.stringify(existing.card_front));
+  console.log('NEW FRONT:', JSON.stringify(newCard.card_front));
+  console.log('OLD BACK :', JSON.stringify(existing.card_back));
+  console.log('NEW BACK :', JSON.stringify(newCard.card_back));
+
+  updatedCards++;
+
+  // ===== UPDATE KARTU =====
+  const updatedCard = {
+    ...existing,
+    card_front: newCard.card_front,
+    card_back: newCard.card_back,
+    card_tags: newCard.card_tags || existing.card_tags || '',
+    card_background: newCard.card_background || existing.card_background || '',
+    updatedAt: new Date().toISOString()
+  };
+
+  cardsToUpdate.push(updatedCard);
+}
     
   } else {
     // ID baru → tambahkan
