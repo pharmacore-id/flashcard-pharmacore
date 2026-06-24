@@ -3199,7 +3199,7 @@ function resetSessionStats(){
       }
     }
 
- async function loadFromFirebase(email) {
+async function loadFromFirebase(email) {
   if (!email || !navigator.onLine) return null;
   
   try {
@@ -3215,38 +3215,50 @@ function resetSessionStats(){
       localStorage.setItem(NICKNAME_KEY + email, data.nickname);
     }
 
-    // Get shared decks
+    // ===== LOAD SHARED DECKS (konten kartu) =====
     const sharedCards = await loadSharedDecks();
     
-    // Merge with shared decks
-    const userCards = data.cards || [];
-    const mergedCards = [...userCards];
-    
-    sharedCards.forEach(sharedCard => {
-      const exists = mergedCards.some(c =>
-        c.__id === sharedCard.__id ||
-        (c.deck_id === sharedCard.deck_id && c.card_front === sharedCard.card_front)
-      );
-      if (!exists) {
-        mergedCards.push({ 
-          ...sharedCard, 
-          ease_factor: 2.5, 
-          interval: 0, 
-          repetitions: 0, 
-          next_review: '', 
-          last_review: '', 
-          total_reviews: 0, 
-          correct_count: 0 
-        });
-      }
+    // ===== PROGRESS ONLY dari user =====
+    const progressCards = data.cards || [];
+    const progressMap = new Map(
+      progressCards.map(c => [c.__id || c.card_id, c])
+    );
+
+    // ===== MERGE: shared cards + progress =====
+    const mergedCards = sharedCards.map(card => {
+      const key = card.__id || card.card_id;
+      const progress = progressMap.get(key) || {};
+      return {
+        ...card,
+        ease_factor: progress.ease_factor ?? 2.5,
+        interval: progress.interval ?? 0,
+        repetitions: progress.repetitions ?? 0,
+        total_reviews: progress.total_reviews ?? 0,
+        correct_count: progress.correct_count ?? 0,
+        next_review: progress.next_review || '',
+        last_review: progress.last_review || '',
+        review_history: progress.review_history || []
+      };
     });
+
+    // ===== TAMBAHKAN KARTU CUSTOM (progress tanpa shared deck) =====
+    const sharedKeys = new Set(sharedCards.map(c => c.__id || c.card_id));
+    const extraCards = progressCards.filter(c => {
+      const key = c.__id || c.card_id;
+      return !sharedKeys.has(key);
+    });
+    extraCards.forEach(c => mergedCards.push(c));
 
     updateSyncStatus('', 'Synced');
     
+    const plan = data.plan || 'free';
+    const schemaVersion = data.schema_version || 1;
+
     return {
       cards: mergedCards,
-      plan: data.plan || 'free',
-      last_updated: data.last_updated || data.updatedAt?.toMillis?.() || Date.now()
+      plan: plan,
+      last_updated: data.last_updated || data.updatedAt?.toMillis?.() || Date.now(),
+      schema_version: schemaVersion
     };
 
   } catch (err) {
@@ -3432,6 +3444,24 @@ async function loadSharedDecks() {
       return Math.ceil(diff / (1000 * 60 * 60 * 24));
     }
 
+    // ============================================================
+    //  BUILD PROGRESS DATA (Hanya progress SRS, tanpa konten kartu)
+    // ============================================================
+    
+    function buildProgressData() {
+      return allCards.map(c => ({
+        __id: c.__id || c.card_id,
+        ease_factor: c.ease_factor ?? 2.5,
+        interval: c.interval ?? 0,
+        repetitions: c.repetitions ?? 0,
+        total_reviews: c.total_reviews ?? 0,
+        correct_count: c.correct_count ?? 0,
+        next_review: c.next_review || '',
+        last_review: c.last_review || '',
+        review_history: c.review_history || []
+      }));
+    }
+    
     function generateId() { return 'id_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6) }
 
     function getUsers() { try { return JSON.parse(localStorage.getItem(USERS_KEY)) || {} } catch { return {} } }
@@ -3903,7 +3933,7 @@ async function loadSharedDecks() {
 async function loadUserData(email) {
   if (!email) return;
 
-  // 1. Load local data first
+  // 1. Load local data
   let localData = null;
   try {
     const raw = localStorage.getItem(DATA_PREFIX + email);
@@ -3925,40 +3955,80 @@ async function loadUserData(email) {
   // 3. Decide which data to use based on timestamps
   let useCloudData = false;
   
-  if (cloudData && cloudData.cards) {
-    if (localData && localData.last_updated) {
+  if (cloudData && cloudData.cards && cloudData.cards.length > 0) {
+    if (localData && localData.cards && localData.cards.length > 0) {
       // Both exist — use the newer one
-      useCloudData = cloudData.last_updated > localData.last_updated;
+      const cloudTime = cloudData.last_updated || 0;
+      const localTime = localData.last_updated || 0;
+      useCloudData = cloudTime > localTime;
     } else {
       // Only cloud exists
       useCloudData = true;
     }
+  } else if (localData && localData.cards && localData.cards.length > 0) {
+    // Only local exists
+    useCloudData = false;
+  } else {
+    // No data at all — use sample decks
+    allCards = getSampleDecks();
+    userPlan = 'free';
+    console.log('⚠️ No saved data found, using sample decks');
+    isAdmin = ADMIN_EMAILS.includes(email);
+    localStorage.setItem('flashmind_plan_' + email, userPlan);
+    return;
   }
 
   // 4. Apply the chosen data
-  if (useCloudData) {
+  if (useCloudData && cloudData) {
     allCards = cloudData.cards;
     userPlan = cloudData.plan || 'free';
     
-    // Sync localStorage with cloud
+    // ===== SYNC LOCAL STORAGE DENGAN CLOUD =====
+    const progressData = buildProgressData();
     const synced = {
-      cards: allCards,
+      cards: progressData,
+      schema_version: 2,
       last_updated: cloudData.last_updated || Date.now(),
       user_plan: userPlan,
       is_admin: isAdmin
     };
     localStorage.setItem(DATA_PREFIX + email, JSON.stringify(synced));
     
-    console.log('✅ Loaded from cloud:', allCards.length, 'cards | Last updated:', new Date(cloudData.last_updated).toLocaleString());
+    console.log('✅ Loaded from cloud:', allCards.length, 'cards');
     
-  } else if (localData && localData.cards) {
-    allCards = localData.cards;
-    userPlan = localData.user_plan || localStorage.getItem('flashmind_plan_' + email) || 'free';
+  } else if (!useCloudData && localData) {
+    // ===== LOAD DARI LOCAL =====
+    // Cek schema version
+    const schemaVersion = localData.schema_version || 1;
     
-    console.log('✅ Loaded from localStorage:', allCards.length, 'cards | Last updated:', new Date(localData.last_updated).toLocaleString());
+    if (schemaVersion === 2) {
+      // Format baru: progress-only
+      const progressCards = localData.cards || [];
+      const sharedCards = await loadSharedDecks();
+      
+      const progressMap = new Map(
+        progressCards.map(c => [c.__id || c.card_id, c])
+      );
+      
+      allCards = sharedCards.map(card => {
+        const key = card.__id || card.card_id;
+        const progress = progressMap.get(key) || {};
+        return {
+          ...card,
+          ...progress
+        };
+      });
+      
+      userPlan = localData.user_plan || 'free';
+    } else {
+      // Format lama: full cards
+      allCards = localData.cards || [];
+      userPlan = localData.user_plan || 'free';
+    }
+    
+    console.log('✅ Loaded from localStorage:', allCards.length, 'cards');
     
   } else {
-    // No data at all — use sample decks
     allCards = getSampleDecks();
     userPlan = 'free';
     console.log('⚠️ No saved data found, using sample decks');
@@ -3966,10 +4036,9 @@ async function loadUserData(email) {
 
   // 5. Always set these
   isAdmin = ADMIN_EMAILS.includes(email);
-  
-  // Save plan to localStorage
   localStorage.setItem('flashmind_plan_' + email, userPlan);
 }
+    
   async function handleSignup(e) {
   e.preventDefault();
   const un = document.getElementById('signup-username').value.trim();
@@ -4039,52 +4108,59 @@ let lastSavedTimestamp = 0;
 
 async function saveUserData(email) {
   if (!email) return;
-
-  const now = Date.now();
   
-  // 1. Always save to localStorage first (instant)
+  // ===== GUARD: CEK DATA KOSONG =====
+  if (!allCards || allCards.length === 0) {
+    console.warn('⚠️ saveUserData skipped: allCards is empty');
+    return;
+  }
+  
+  // ===== GUARD: PASTIKAN ADA REAL CARDS =====
+  const realCards = allCards.filter(c => 
+    c.card_front && 
+    c.card_front !== '__deck_placeholder__' && 
+    c.card_front.trim() !== ''
+  );
+  if (realCards.length === 0) {
+    console.warn('⚠️ saveUserData skipped: no real cards found');
+    return;
+  }
+
+  // ===== BUILD PROGRESS DATA =====
+  const progressData = buildProgressData();
+
+  // ===== SAVE KE LOCAL STORAGE =====
   const localData = {
-    cards: allCards,
-    last_updated: now,
+    cards: progressData,
+    schema_version: 2,
+    last_updated: Date.now(),
     user_plan: userPlan,
     is_admin: isAdmin
   };
   localStorage.setItem(DATA_PREFIX + email, JSON.stringify(localData));
-  lastSavedTimestamp = now;
+  lastSavedTimestamp = Date.now();
 
-  // 2. Debounce: only save to Firestore max once per 2 seconds
+  // ===== SAVE KE FIRESTORE =====
   if (saveTimeout) clearTimeout(saveTimeout);
   
   saveTimeout = setTimeout(async () => {
     let retries = 3;
     let saved = false;
+    
+    // ===== AMBIL SNAPSHOT =====
+    const snapshot = JSON.parse(JSON.stringify(progressData));
+    const planSnapshot = userPlan;
 
     while (retries > 0 && !saved) {
       try {
-        const firestoreData = {
-          cards: allCards,
-          last_updated: now,
-          plan: userPlan
-        };
-
-        const firestoreData = {
-  cards: allCards,
-  plan: userPlan,
-  last_updated: Date.now()
-};
-
-const json = JSON.stringify(firestoreData);
-const bytes = new Blob([json]).size;
-
-console.log('========================');
-console.log('Cards:', allCards.length);
-console.log('Size (bytes):', bytes);
-console.log('Size (KB):', (bytes / 1024).toFixed(2));
-console.log('Size (MB):', (bytes / 1024 / 1024).toFixed(3));
-console.log('========================');
-        await db.collection('users').doc(email).set(firestoreData, { merge: true });
+        await db.collection('users').doc(email).set({
+          cards: snapshot,
+          plan: planSnapshot,
+          schema_version: 2,
+          last_updated: Date.now()
+        }, { merge: true });
         saved = true;
-        console.log('✅ Progress saved to cloud');
+        console.log('✅ Progress saved to cloud (', snapshot.length, 'cards)');
       } catch (err) {
         retries--;
         console.warn(`⚠️ Save failed (${3 - retries}/3 retries):`, err.message);
@@ -4100,6 +4176,34 @@ console.log('========================');
   }, 2000);
 }
 
+    // ============================================================
+//  FLUSH SAVE - Paksa Save ke Firestore (Dengan Snapshot)
+// ============================================================
+
+async function flushSaveNow(email) {
+  if (!email) return;
+  if (!allCards || allCards.length === 0) {
+    console.warn('⚠️ flushSaveNow skipped: allCards is empty');
+    return;
+  }
+  
+  // ===== AMBIL SNAPSHOT =====
+  const progressData = buildProgressData();
+  const planSnapshot = userPlan;
+  
+  try {
+    await db.collection('users').doc(email).set({
+      cards: progressData,
+      plan: planSnapshot,
+      schema_version: 2,
+      last_updated: Date.now()
+    }, { merge: true });
+    console.log('✅ Flush save complete (', progressData.length, 'cards)');
+  } catch (e) {
+    console.warn('⚠️ Flush save failed:', e.message);
+  }
+}
+    
     function savePlan(email, plan, expiry) {
   localStorage.setItem('flashmind_plan_' + email, plan);
   if (expiry) localStorage.setItem('flashmind_expiry_' + email, expiry);
@@ -4108,23 +4212,35 @@ console.log('========================');
 }
 
     async function handleLogout() {
-      if (confirm('Logout?')) {
-        try {
-          await firebase.auth().signOut();
-        } catch (e) {
-          console.warn('Firebase signout error:', e);
-        }
-        clearSession();
-        currentUser = null;
-        allCards = [];
-        isAdmin = false;
-        document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
-        document.getElementById('view-login').classList.add('active');
-        document.getElementById('login-email').value = '';
-        document.getElementById('login-password').value = '';
-        document.getElementById('bottomNav').style.display = 'none';
-      }
+  if (!confirm('Logout?')) return;
+  
+  // ===== PAKSA SAVE SEBELUM LOGOUT =====
+  if (currentUser) {
+    if (saveTimeout) {
+      clearTimeout(saveTimeout);
+      saveTimeout = null;
     }
+    await flushSaveNow(currentUser);
+  }
+  
+  try {
+    await firebase.auth().signOut();
+  } catch (e) {
+    console.warn('Firebase signout error:', e);
+  }
+  
+  clearSession();
+  localStorage.removeItem('flashmind_session_token');
+  localStorage.removeItem('flashmind_token_expiry');
+  currentUser = null;
+  allCards = [];
+  isAdmin = false;
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.getElementById('view-login').classList.add('active');
+  document.getElementById('login-email').value = '';
+  document.getElementById('login-password').value = '';
+  document.getElementById('bottomNav').style.display = 'none';
+}
 
     function getPlanExpiry(email) {
       return localStorage.getItem('flashmind_expiry_' + email) || null;
@@ -8198,11 +8314,21 @@ else{
 
 payBtn.disabled=false;
 
-payBtn.style.opacity="1";
+payBtn.style.opacity="1";}}
 
-}
+    // ============================================================
+//  FLUSH ON TAB HIDDEN (Bonus)
+// ============================================================
 
-}
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden && currentUser) {
+    if (saveTimeout) {
+      clearTimeout(saveTimeout);
+      saveTimeout = null;
+    }
+    flushSaveNow(currentUser);
+  }
+});
     
   </script>
 </body>
