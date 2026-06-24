@@ -1434,6 +1434,11 @@ border-radius:999px;
 background:white;
 }
 
+.dark .daily-price {
+  background: #1f2937 !important; /* Latar belakang abu-abu gelap */
+  color: #f3f4f6 !important;      /* Teks putih terang */
+}
+
 .payment-box{
 
 margin-top:24px;
@@ -1522,33 +1527,36 @@ color:white;
   color: var(--text-secondary) !important;
 }
 
-    /* ============================================================
-   FIX: Book Access Code Text Color (Mobile Light/Dark)
+  /* ============================================================
+   FIX: Book Buyer Card - Background & Text Colors
    ============================================================ */
 
-/* Light mode */
-#book-buyer-card .access-code-info {
-  color: #1a1a2e !important;
+/* LIGHT MODE (Umum) */
+#book-buyer-card div.bg-gray-100,
+#book-buyer-card div.bg-gray-50 {
   background-color: #f3f4f6 !important;
+  color: #1a1a2e !important;
   border-color: #e5e7eb !important;
 }
 
-/* Dark mode */
-.dark #book-buyer-card .access-code-info {
+#book-buyer-card b,
+#book-buyer-card i {
+  color: #1a1a2e !important;
+}
+
+/* DARK MODE */
+.dark #book-buyer-card div.bg-gray-100,
+.dark #book-buyer-card div.bg-gray-50,
+.dark #book-buyer-card div.bg-gray-800 {
+  background-color: #1f2937 !important; /* Abu gelap yang pas */
   color: #e5e5e5 !important;
-  background-color: #1f2937 !important;
   border-color: #374151 !important;
 }
 
-/* Bold text di dalamnya */
-#book-buyer-card .access-code-info b {
-  color: inherit !important;
+.dark #book-buyer-card b,
+.dark #book-buyer-card i {
+  color: #e5e5e5 !important;
 }
-
-#book-buyer-card .access-code-info i {
-  color: inherit !important;
-}
-
     /* ============================================================
    LOGOUT LOADING OVERLAY
    ============================================================ */
