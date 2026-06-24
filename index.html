@@ -3509,19 +3509,21 @@ async function loadSharedDecks() {
     //  BUILD PROGRESS DATA (Hanya progress SRS, tanpa konten kartu)
     // ============================================================
     
-    function buildProgressData() {
-      return allCards.map(c => ({
-        __id: c.__id || c.card_id,
-        ease_factor: c.ease_factor ?? 2.5,
-        interval: c.interval ?? 0,
-        repetitions: c.repetitions ?? 0,
-        total_reviews: c.total_reviews ?? 0,
-        correct_count: c.correct_count ?? 0,
-        next_review: c.next_review || '',
-        last_review: c.last_review || '',
-        review_history: c.review_history || []
-      }));
-    }
+   function buildProgressData() {
+  return allCards
+    .filter(c => c.__id)
+    .map(c => ({
+      __id: c.__id,
+      ease_factor: c.ease_factor ?? 2.5,
+      interval: c.interval ?? 0,
+      repetitions: c.repetitions ?? 0,
+      total_reviews: c.total_reviews ?? 0,
+      correct_count: c.correct_count ?? 0,
+      next_review: c.next_review || '',
+      last_review: c.last_review || '',
+      review_history: c.review_history || []
+    }));
+}
     
     function generateId() { return 'id_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6) }
 
