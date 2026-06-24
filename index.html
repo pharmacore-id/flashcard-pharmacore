@@ -4066,7 +4066,22 @@ async function saveUserData(email) {
           last_updated: now,
           plan: userPlan
         };
-        
+
+        const firestoreData = {
+  cards: allCards,
+  plan: userPlan,
+  last_updated: Date.now()
+};
+
+const json = JSON.stringify(firestoreData);
+const bytes = new Blob([json]).size;
+
+console.log('========================');
+console.log('Cards:', allCards.length);
+console.log('Size (bytes):', bytes);
+console.log('Size (KB):', (bytes / 1024).toFixed(2));
+console.log('Size (MB):', (bytes / 1024 / 1024).toFixed(3));
+console.log('========================');
         await db.collection('users').doc(email).set(firestoreData, { merge: true });
         saved = true;
         console.log('✅ Progress saved to cloud');
