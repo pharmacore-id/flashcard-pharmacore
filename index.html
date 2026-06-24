@@ -4324,12 +4324,13 @@ async function flushSaveNow(email) {
       return localStorage.getItem('flashmind_expiry_' + email) || null;
     }
 
-    function isPremiumActive() {
-      if (userPlan !== 'premium') return false;
-      const expiry = getPlanExpiry(currentUser);
-      if (!expiry) return false;
-      return new Date(expiry) > new Date();
-    }
+   function isPremiumActive() {
+  if (isAdmin) return true;
+  if (userPlan !== 'premium') return false;
+  const expiry = getPlanExpiry(currentUser);
+  if (!expiry) return true; 
+  return new Date(expiry) > new Date();
+}
 
 function enterApp() {
 
