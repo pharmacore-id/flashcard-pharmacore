@@ -3346,16 +3346,8 @@ async function saveSharedDeck(deckData, isPremium = false) {
         card_front: c.card_front,
         card_back: c.card_back,
         card_tags: c.card_tags || '',
-        card_background: c.card_background || '',
-        // ===== PROGRESS SRS =====
-        ease_factor: c.ease_factor ?? 2.5,
-        interval: c.interval ?? 0,
-        repetitions: c.repetitions ?? 0,
-        next_review: c.next_review || '',
-        last_review: c.last_review || '',
-        total_reviews: c.total_reviews ?? 0,
-        correct_count: c.correct_count ?? 0,
-        review_history: c.review_history || []
+        card_background: c.card_background || ''
+        // ===== TIDAK ADA PROGRESS DI SINI! =====
       })),
       createdAt: firebase.firestore.FieldValue.serverTimestamp(),
       createdBy: currentUser
@@ -3377,7 +3369,7 @@ async function loadSharedDecks() {
       if (deck.cards && deck.cards.length) {
         deck.cards.forEach(c => {
           sharedCards.push({
-            __id: 'shared_' + doc.id + '_' + (c.card_id || Math.random().toString(36).slice(2, 6)),
+            __id: 'shared_' + doc.id + '_' + c.card_id,
             card_id: c.card_id || null,
             deck_id: 'shared_' + doc.id,
             deck_name: deck.deckName || 'Shared Deck',
@@ -3389,14 +3381,14 @@ async function loadSharedDecks() {
             card_tags: c.card_tags || '',
             card_background: c.card_background || '',
             // ===== PROGRESS SRS =====
-            ease_factor: c.ease_factor ?? 2.5,
-            interval: c.interval ?? 0,
-            repetitions: c.repetitions ?? 0,
-            next_review: c.next_review || '',
-            last_review: c.last_review || '',
-            total_reviews: c.total_reviews ?? 0,
-            correct_count: c.correct_count ?? 0,
-            review_history: c.review_history || [],
+           ease_factor: 2.5,
+            interval: 0,
+            repetitions: 0,
+            next_review: '',
+            last_review: '',
+            total_reviews: 0,
+            correct_count: 0,
+            review_history: [],
             isShared: true
           });
         });
@@ -3409,7 +3401,7 @@ async function loadSharedDecks() {
   }
 }
 
-    async function updateSharedDeck(deckId, deckData, isPremium = false) {
+   async function updateSharedDeck(deckId, deckData, isPremium = false) {
   if (!isAdmin) return false;
   try {
     const docRef = db.collection('sharedDecks').doc(deckId);
@@ -3418,22 +3410,14 @@ async function loadSharedDecks() {
       topic: deckData.topic || 'General',
       subtopic: deckData.subtopic || '',
       isPremium: isPremium,
-     cards: deckData.cards.map(c => ({
-  card_id: c.card_id,
-  card_front: c.card_front,
-  card_back: c.card_back,
-  card_tags: c.card_tags || '',
-  card_background: c.card_background || '',
-  // ===== PROGRESS SRS - PERTAHANKAN =====
-  ease_factor: c.ease_factor ?? 2.5,
-  interval: c.interval ?? 0,
-  repetitions: c.repetitions ?? 0,
-  next_review: c.next_review || '',
-  last_review: c.last_review || '',
-  total_reviews: c.total_reviews ?? 0,
-  correct_count: c.correct_count ?? 0,
-  review_history: c.review_history || []
-})),
+      cards: deckData.cards.map(c => ({
+        card_id: c.card_id,
+        card_front: c.card_front,
+        card_back: c.card_back,
+        card_tags: c.card_tags || '',
+        card_background: c.card_background || ''
+        // ===== TIDAK ADA PROGRESS DI SINI! =====
+      })),
       updatedAt: firebase.firestore.FieldValue.serverTimestamp()
     });
     return true;
@@ -5769,10 +5753,44 @@ async function handleExcelImport(event) {
       }
 
       // ===== RELOAD DATA =====
-      const sharedCards = await loadSharedDecks();
-      allCards = allCards.filter(c => !c.isShared);
-      allCards.push(...sharedCards);
-      await saveUserData(currentUser);
+      // ===== SIMPAN PROGRESS LAMA =====
+const progressMap = new Map();
+allCards.forEach(card => {
+  if (card.isShared) {
+    const key = card.__id || card.card_id;
+    progressMap.set(key, {
+      ease_factor: card.ease_factor,
+      interval: card.interval,
+      repetitions: card.repetitions,
+      total_reviews: card.total_reviews,
+      correct_count: card.correct_count,
+      next_review: card.next_review,
+      last_review: card.last_review,
+      review_history: card.review_history || []
+    });
+  }
+});
+
+// ===== RELOAD SHARED DECKS =====
+const sharedCards = await loadSharedDecks();
+
+// ===== MERGE PROGRESS =====
+const mergedSharedCards = sharedCards.map(card => {
+  const key = card.__id || card.card_id;
+  const progress = progressMap.get(key);
+  return progress
+    ? { ...card, ...progress }
+    : card;
+});
+
+// ===== PERTAHANKAN CUSTOM CARDS =====
+const customCards = allCards.filter(c => !c.isShared);
+
+// ===== GABUNGKAN =====
+allCards = [...customCards, ...mergedSharedCards];
+
+// ===== SAVE =====
+await saveUserData(currentUser);
 
       renderDecks();
       updateHome();
