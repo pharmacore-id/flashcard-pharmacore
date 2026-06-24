@@ -4020,19 +4020,15 @@ async function loadUserData(email) {
   
   if (cloudData && cloudData.cards && cloudData.cards.length > 0) {
     if (localData && localData.cards && localData.cards.length > 0) {
-      // Both exist — use the newer one
       const cloudTime = cloudData.last_updated || 0;
       const localTime = localData.last_updated || 0;
       useCloudData = cloudTime > localTime;
     } else {
-      // Only cloud exists
       useCloudData = true;
     }
   } else if (localData && localData.cards && localData.cards.length > 0) {
-    // Only local exists
     useCloudData = false;
   } else {
-    // No data at all — use sample decks
     allCards = getSampleDecks();
     userPlan = 'free';
     console.log('⚠️ No saved data found, using sample decks');
@@ -4046,10 +4042,9 @@ async function loadUserData(email) {
     allCards = cloudData.cards;
     userPlan = cloudData.plan || 'free';
     
-    // ===== SYNC LOCAL STORAGE DENGAN CLOUD =====
-    const progressData = buildProgressData();
+    // ===== SYNC LOCAL STORAGE DENGAN CLOUD (FULL BACKUP) =====
     const synced = {
-      cards: progressData,
+      cards: allCards,  // ← FULL BACKUP
       schema_version: 2,
       last_updated: cloudData.last_updated || Date.now(),
       user_plan: userPlan,
@@ -4061,7 +4056,6 @@ async function loadUserData(email) {
     
   } else if (!useCloudData && localData) {
     // ===== LOAD DARI LOCAL =====
-    // Cek schema version
     const schemaVersion = localData.schema_version || 1;
     
     if (schemaVersion === 2) {
@@ -4172,13 +4166,12 @@ let lastSavedTimestamp = 0;
 async function saveUserData(email) {
   if (!email) return;
   
-  // ===== GUARD: CEK DATA KOSONG =====
+  // ===== GUARD =====
   if (!allCards || allCards.length === 0) {
     console.warn('⚠️ saveUserData skipped: allCards is empty');
     return;
   }
   
-  // ===== GUARD: PASTIKAN ADA REAL CARDS =====
   const realCards = allCards.filter(c => 
     c.card_front && 
     c.card_front !== '__deck_placeholder__' && 
@@ -4189,12 +4182,9 @@ async function saveUserData(email) {
     return;
   }
 
-  // ===== BUILD PROGRESS DATA =====
-  const progressData = buildProgressData();
-
-  // ===== SAVE KE LOCAL STORAGE =====
+  // ===== SAVE KE LOCAL STORAGE (FULL BACKUP) =====
   const localData = {
-    cards: progressData,
+    cards: allCards,  // ← FULL BACKUP
     schema_version: 2,
     last_updated: Date.now(),
     user_plan: userPlan,
@@ -4210,8 +4200,8 @@ async function saveUserData(email) {
     let retries = 3;
     let saved = false;
     
-    // ===== AMBIL SNAPSHOT =====
-    const snapshot = JSON.parse(JSON.stringify(progressData));
+    // ===== BUILD PROGRESS DATA DI DALAM TIMEOUT =====
+    const snapshot = buildProgressData();  // ← Dipanggil saat timeout jalan
     const planSnapshot = userPlan;
 
     while (retries > 0 && !saved) {
