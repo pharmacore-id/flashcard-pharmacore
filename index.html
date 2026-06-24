@@ -3818,29 +3818,6 @@ async function loadSharedDecks() {
       return Object.values(map);
     }
 
-    // ============================================================
-// REORDER TOPICS & SUBTOPICS (Di halaman Decks)
-// ============================================================
-
-let isTopicReorderMode = false;
-
-function toggleTopicReorder() {
-  isTopicReorderMode = !isTopicReorderMode;
-  
-  const btn = document.getElementById('reorder-topics-btn');
-  const controls = document.getElementById('reorder-controls');
-  
-  if (isTopicReorderMode) {
-    btn.textContent = '✅ Selesai';
-    controls.classList.remove('hidden');
-  } else {
-    btn.textContent = '🔄 Reorder';
-    controls.classList.add('hidden');
-  }
-  
-  renderDecks(); // Render ulang dengan mode reorder
-}
-
 async function saveTopicOrder() {
   // Ambil urutan baru dari DOM (Topik & Subtopic)
   const topicContainers = document.querySelectorAll('#deck-list .topic-card');
