@@ -5803,30 +5803,35 @@ const customCards = allCards.filter(c => !c.isShared);
 // ===== GABUNGKAN =====
 allCards = [...customCards, ...mergedSharedCards];
 
-// ===== SAVE =====
-await saveUserData(currentUser);
+try {
+  // ===== SAVE =====
+  await saveUserData(currentUser);
 
-      renderDecks();
-      updateHome();
-      renderAdminDeckList();
+  renderDecks();
+  updateHome();
+  renderAdminDeckList();
 
-      let message = `✅ Import selesai!\n\n`;
-      message += `📁 Deck baru: ${newDecks}\n`;
-      message += `📝 Deck diupdate: ${updatedDecks}\n`;
-      message += `🆕 Kartu baru: ${newCards}\n`;
-      message += `🔄 Kartu diupdate: ${updatedCards}\n`;
-      message += `⏭️ Kartu duplikat (di-skip): ${duplicateCards}\n`;
-      if (skippedCount > 0) {
-        message += `⚠️ Baris dilewati: ${skippedCount} (data tidak lengkap)\n`;
-      }
+  let message = `✅ Import selesai!\n\n`;
+  message += `📁 Deck baru: ${newDecks}\n`;
+  message += `📝 Deck diupdate: ${updatedDecks}\n`;
+  message += `🆕 Kartu baru: ${newCards}\n`;
+  message += `🔄 Kartu diupdate: ${updatedCards}\n`;
+  message += `⏭️ Kartu duplikat (di-skip): ${duplicateCards}\n`;
 
-      showImportStatus(message, 'success');
-      alert(message);
+  if (skippedCount > 0) {
+    message += `⚠️ Baris dilewati: ${skippedCount} (data tidak lengkap)\n`;
+  }
 
-    } catch (error) {
-      console.error('❌ Import error:', error);
-      showImportStatus('❌ Error importing file: ' + error.message, 'error');
-    }
+  showImportStatus(message, 'success');
+  alert(message);
+
+} catch (error) {
+  console.error('❌ Import error:', error);
+  showImportStatus(
+    '❌ Error importing file: ' + error.message,
+    'error'
+  );
+}
   };
 
   reader.readAsArrayBuffer(file);
