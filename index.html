@@ -1611,40 +1611,8 @@ color:white;
 }
     
     @keyframes spin {
-    to {transform: rotate(360deg); 
-    }}
-    .pull-spinner {
-    /* ... properti lainnya ... */
-    will-change: transform; /* Memberi tahu browser agar mengoptimalkan animasi */
-}
-
-    /* ============================================================
-   ADMIN REORDER DRAG & DROP
-   ============================================================ */
-.reorder-handle {
-  cursor: grab;
-  touch-action: none;
-  color: var(--text-secondary);
-}
-.reorder-handle:active {
-  cursor: grabbing;
-}
-.reorder-mode .deck-item-admin {
-  cursor: grab;
-  touch-action: none;
-  border: 1px dashed var(--accent);
-  transition: transform 0.1s ease, background 0.1s ease;
-}
-.reorder-mode .deck-item-admin.dragging {
-  opacity: 0.5;
-  transform: scale(0.98);
-}
-.reorder-mode .deck-item-admin.drag-over {
-  border: 2px solid var(--accent);
-  background: var(--accent-light);
-  transform: scale(1.02);
-}
-    
+        to { transform: rotate(360deg); }
+    }
 </style>
 </head>
 <body>
@@ -1938,17 +1906,10 @@ color:white;
           <div id="code-list" class="max-h-40 overflow-y-auto text-xs space-y-1"></div>
         </div>
 
-      <div class="surface rounded-2xl p-4 border border-theme shadow-card mt-4">
-      <div class="flex items-center justify-between mb-3">
-        <h3 class="font-bold text-base">📋 Current Decks</h3>
-        <button id="toggle-reorder-btn" onclick="toggleReorderMode()" class="accent-bg text-white px-3 py-1.5 rounded-xl text-xs font-medium">
-          🔄 Reorder Decks
-        </button>
-      </div>
-
-      <!-- LIST DECK -->
-      <div id="admin-deck-list" class="space-y-2"></div>
-    </div>
+        <div class="surface rounded-2xl p-4 border border-theme shadow-card mt-4">
+          <h3 class="font-bold mb-2">📋 Current Decks</h3>
+          <div id="admin-deck-list" class="space-y-2"></div>
+        </div>
 
         <div class="surface rounded-2xl p-4 border border-theme shadow-card mt-4">
   <h3 class="font-bold mb-2">📩 User Requests</h3>
@@ -7521,173 +7482,9 @@ async function deleteRequest(requestId) {
   selectedTopicIds = [];
   renderRequestList();
 
-let isReorderMode = false;
-let draggedDeckId = null;
-
-function toggleReorderMode() {
-  isReorderMode = !isReorderMode;
-  document.getElementById('toggle-reorder-btn').textContent = isReorderMode ? '✅ Done Reordering' : '🔄 Reorder Decks';
-  renderAdminDeckList();
-}
-
-async function saveDeckOrder() {
-  const deckItems = document.querySelectorAll('.deck-item-admin');
-  const newOrder = [];
-  
-  deckItems.forEach((el, index) => {
-    const deckId = el.dataset.deckId;
-    newOrder.push({ deckId, order: index });
-  });
-
-  // Save to Firebase (or localStorage if you prefer)
-  try {
-    await db.collection('adminSettings').doc('deckOrder').set({
-      order: newOrder,
-      updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-    });
-    console.log('✅ Deck order saved!');
-    
-    // Reload decks with new order
-    renderDecks();
-    renderAdminDeckList();
-  } catch (error) {
-    console.error('❌ Failed to save deck order:', error);
-    alert('Failed to save order. Please try again.');
-  }
-}
-
-// ============================================================
-// DRAG & DROP HANDLERS
-// ============================================================
-
-let touchDragData = null;
-
-function handleDragStart(e) {
-  const item = e.target.closest('.deck-item-admin');
-  if (!item) return;
-  draggedDeckId = item.dataset.deckId;
-  item.classList.add('dragging');
-  e.dataTransfer.effectAllowed = 'move';
-  e.dataTransfer.setData('text/plain', draggedDeckId);
-}
-
-function handleDragEnd(e) {
-  const item = e.target.closest('.deck-item-admin');
-  if (item) item.classList.remove('dragging');
-  document.querySelectorAll('.deck-item-admin').forEach(el => el.classList.remove('drag-over'));
-}
-
-function handleDragOver(e) {
-  e.preventDefault();
-  e.dataTransfer.dropEffect = 'move';
-}
-
-function handleDragEnter(e) {
-  e.preventDefault();
-  const item = e.target.closest('.deck-item-admin');
-  if (item && item.dataset.deckId !== draggedDeckId) {
-    item.classList.add('drag-over');
-  }
-}
-
-function handleDragLeave(e) {
-  const item = e.target.closest('.deck-item-admin');
-  if (item) item.classList.remove('drag-over');
-}
-
-function handleDrop(e) {
-  e.preventDefault();
-  const target = e.target.closest('.deck-item-admin');
-  if (!target || target.dataset.deckId === draggedDeckId) return;
-  
-  target.classList.remove('drag-over');
-  
-  const parent = target.parentElement;
-  const items = Array.from(parent.children);
-  const draggedIndex = items.findIndex(el => el.dataset.deckId === draggedDeckId);
-  const targetIndex = items.findIndex(el => el.dataset.deckId === target.dataset.deckId);
-  
-  if (draggedIndex > -1 && targetIndex > -1) {
-    const draggedItem = items[draggedIndex];
-    parent.removeChild(draggedItem);
-    parent.insertBefore(draggedItem, targetIndex < draggedIndex ? target : target.nextSibling);
-  }
-}
-
-// Touch events for mobile
-function handleTouchStart(e) {
-  const item = e.target.closest('.deck-item-admin');
-  if (!item) return;
-  touchDragData = {
-    item: item,
-    startY: e.touches[0].clientY,
-    startX: e.touches[0].clientX,
-    deckId: item.dataset.deckId,
-    isDragging: false
-  };
-}
-
-function handleTouchMove(e) {
-  if (!touchDragData) return;
-  const touch = e.touches[0];
-  const deltaY = touch.clientY - touchDragData.startY;
-  const deltaX = touch.clientX - touchDragData.startX;
-  
-  // Require at least 20px movement to start dragging
-  if (!touchDragData.isDragging && (Math.abs(deltaY) > 20 || Math.abs(deltaX) > 20)) {
-    touchDragData.isDragging = true;
-  }
-  
-  if (touchDragData.isDragging) {
-    e.preventDefault();
-    touchDragData.item.style.opacity = '0.8';
-    touchDragData.item.style.transform = `translate(${deltaX}px, ${deltaY}px) scale(1.02)`;
-    
-    // Find element under touch
-    const elements = document.elementsFromPoint(touch.clientX, touch.clientY);
-    const target = elements.find(el => el.classList.contains('deck-item-admin') && el !== touchDragData.item);
-    
-    document.querySelectorAll('.deck-item-admin').forEach(el => el.classList.remove('drag-over'));
-    if (target) target.classList.add('drag-over');
-  }
-}
-
-function handleTouchEnd(e) {
-  if (!touchDragData) return;
-  
-  touchDragData.item.style.opacity = '1';
-  touchDragData.item.style.transform = 'none';
-  
-  // Check if dropped on another deck
-  const touch = e.changedTouches[0];
-  const elements = document.elementsFromPoint(touch.clientX, touch.clientY);
-  const target = elements.find(el => el.classList.contains('deck-item-admin') && el !== touchDragData.item);
-  
-  document.querySelectorAll('.deck-item-admin').forEach(el => el.classList.remove('drag-over'));
-  
-  if (target && touchDragData.isDragging) {
-    const parent = target.parentElement;
-    const items = Array.from(parent.children);
-    const draggedIndex = items.findIndex(el => el.dataset.deckId === touchDragData.deckId);
-    const targetIndex = items.findIndex(el => el.dataset.deckId === target.dataset.deckId);
-    
-    if (draggedIndex > -1 && targetIndex > -1) {
-      const draggedItem = items[draggedIndex];
-      parent.removeChild(draggedItem);
-      parent.insertBefore(draggedItem, targetIndex < draggedIndex ? target : target.nextSibling);
-    }
-  }
-  
-  touchDragData = null;
-}
-    
 function renderAdminDeckList() {
   const container = document.getElementById('admin-deck-list');
   if (!container) return;
-  // Add this inside your enterApp() or right after renderAdminDeckList is called
-if (isAdmin) {
-  loadDeckOrder(getDecks(), document.getElementById('admin-deck-list'));
-}
 
   const decks = getDecks();
   if (decks.length === 0) {
@@ -7695,35 +7492,30 @@ if (isAdmin) {
     return;
   }
 
-  // Load saved order from Firebase
-  let orderedDecks = [...decks];
-  
-  if (isReorderMode) {
-    // In reorder mode, show all decks
-    container.innerHTML = `
-      <div class="flex items-center justify-between mb-3">
-        <p class="text-xs text-sec">Drag the ☰ handle to reorder decks</p>
-        <button onclick="saveDeckOrder()" class="bg-green-500 text-white px-3 py-1.5 rounded-xl text-xs font-medium">
-          💾 Save Order
-        </button>
-      </div>
-    `;
-    
-    // Render draggable items
-    orderedDecks.forEach((d, index) => {
-      const isDeckPremium = d.cards.some(c => c.isPremium);
-      const premiumBadge = isDeckPremium ? '⭐ PREMIUM' : 'Free';
-      const premiumColor = isDeckPremium ? 'text-yellow-500' : 'text-sec';
+  selectedDeckIds = [];
 
-      const div = document.createElement('div');
-      div.className = 'deck-item-admin flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded-xl mb-2 reorder-mode';
-      div.dataset.deckId = d.id;
-      div.draggable = true;
-      div.setAttribute('touch-action', 'none');
-      
-      div.innerHTML = `
+  let html = `
+    <div class="flex items-center gap-3 mb-3">
+      <input type="checkbox" id="select-all-decks" onchange="toggleAllDecks()" />
+      <label for="select-all-decks" class="text-xs font-medium">Select All</label>
+      <button onclick="deleteSelectedDecks()" id="delete-selected-decks-btn" 
+              class="bg-red-500 text-white text-xs px-3 py-1 rounded-lg hover:bg-red-600 transition-colors" disabled>
+        Delete Selected
+      </button>
+      <span class="text-xs text-sec ml-auto" id="selected-decks-count">0 selected</span>
+    </div>
+  `;
+
+  decks.forEach(d => {
+    const isDeckPremium = d.cards.some(c => c.isPremium);
+    const premiumBadge = isDeckPremium ? '⭐ PREMIUM' : 'Free';
+    const premiumColor = isDeckPremium ? 'text-yellow-500' : 'text-sec';
+
+    html += `
+      <div class="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded-xl mb-2">
         <div class="flex items-center gap-3 flex-1 min-w-0">
-          <span class="reorder-handle text-xl">☰</span>
+          <input type="checkbox" class="deck-checkbox" data-deck-id="${d.id}" 
+                 onchange="toggleDeckSelection('${d.id}', this)" />
           <div class="flex-1 min-w-0">
             <span class="text-sm font-medium truncate block">${d.name} (${d.cards.length} cards)</span>
             <span class="text-xs ${premiumColor} font-medium">${premiumBadge}</span>
@@ -7737,105 +7529,13 @@ if (isAdmin) {
           </button>
           <button onclick="deleteDeck('${d.id}')" class="text-red-500 hover:text-red-700 text-xs">🗑️</button>
         </div>
-      `;
-      
-      // Drag events
-      div.addEventListener('dragstart', handleDragStart);
-      div.addEventListener('dragend', handleDragEnd);
-      div.addEventListener('dragover', handleDragOver);
-      div.addEventListener('dragenter', handleDragEnter);
-      div.addEventListener('dragleave', handleDragLeave);
-      div.addEventListener('drop', handleDrop);
-      
-      // Touch events for mobile
-      div.addEventListener('touchstart', handleTouchStart, { passive: true });
-      div.addEventListener('touchmove', handleTouchMove, { passive: false });
-      div.addEventListener('touchend', handleTouchEnd, { passive: true });
-      
-      container.appendChild(div);
-    });
-
-    // Setup drag ghost
-    document.addEventListener('dragstart', function(e) {
-      const ghost = e.target.closest('.deck-item-admin');
-      if (ghost) {
-        ghost.classList.add('dragging');
-        e.dataTransfer.effectAllowed = 'move';
-        e.dataTransfer.setData('text/plain', ghost.dataset.deckId);
-      }
-    });
-    
-  } else {
-    // Normal view (non-reorder)
-    container.innerHTML = `
-      <div class="flex items-center gap-3 mb-3">
-        <input type="checkbox" id="select-all-decks" onchange="toggleAllDecks()" />
-        <label for="select-all-decks" class="text-xs font-medium">Select All</label>
-        <button onclick="deleteSelectedDecks()" id="delete-selected-decks-btn" 
-                class="bg-red-500 text-white text-xs px-3 py-1 rounded-lg hover:bg-red-600 transition-colors" disabled>
-          Delete Selected
-        </button>
-        <span class="text-xs text-sec ml-auto" id="selected-decks-count">0 selected</span>
       </div>
     `;
+  });
 
-    // Load the custom order from Firebase, or use default order
-    loadDeckOrder(orderedDecks, container);
-  }
+  container.innerHTML = html;
 }
 
-// Load order from Firebase
-async function loadDeckOrder(decks, container) {
-  try {
-    const orderDoc = await db.collection('adminSettings').doc('deckOrder').get();
-    let orderedDecks = [...decks];
-    
-    if (orderDoc.exists) {
-      const orderData = orderDoc.data().order || [];
-      const orderMap = {};
-      orderData.forEach(item => { orderMap[item.deckId] = item.order; });
-      
-      orderedDecks.sort((a, b) => {
-        const orderA = orderMap[a.id] !== undefined ? orderMap[a.id] : 999;
-        const orderB = orderMap[b.id] !== undefined ? orderMap[b.id] : 999;
-        return orderA - orderB;
-      });
-    }
-    
-    orderedDecks.forEach(d => {
-      const isDeckPremium = d.cards.some(c => c.isPremium);
-      const premiumBadge = isDeckPremium ? '⭐ PREMIUM' : 'Free';
-      const premiumColor = isDeckPremium ? 'text-yellow-500' : 'text-sec';
-
-      container.innerHTML += `
-        <div class="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded-xl mb-2">
-          <div class="flex items-center gap-3 flex-1 min-w-0">
-            <input type="checkbox" class="deck-checkbox" data-deck-id="${d.id}" 
-                   onchange="toggleDeckSelection('${d.id}', this)" />
-            <div class="flex-1 min-w-0">
-              <span class="text-sm font-medium truncate block">${d.name} (${d.cards.length} cards)</span>
-              <span class="text-xs ${premiumColor} font-medium">${premiumBadge}</span>
-            </div>
-          </div>
-          <div class="flex gap-2 flex-shrink-0">
-            <button onclick="toggleDeckPremium('${d.id}')" 
-                    class="px-2 py-1 rounded-lg text-xs font-bold text-white transition-colors
-                           ${isDeckPremium ? 'bg-gray-400 hover:bg-gray-500' : 'bg-yellow-500 hover:bg-yellow-600'}">
-              ${isDeckPremium ? 'Set Free' : 'Set Premium'}
-            </button>
-            <button onclick="deleteDeck('${d.id}')" class="text-red-500 hover:text-red-700 text-xs">🗑️</button>
-          </div>
-        </div>
-      `;
-    });
-  } catch (error) {
-    console.error('Failed to load deck order:', error);
-    // Fallback to default order
-    decks.forEach(d => {
-      // ... same rendering as above
-    });
-  }
-}
 function toggleDeckSelection(deckId, checkbox) {
   if (checkbox.checked) {
     if (!selectedDeckIds.includes(deckId)) selectedDeckIds.push(deckId);
