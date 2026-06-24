@@ -1609,10 +1609,46 @@ color:white;
   opacity: 0.5;
   cursor: not-allowed;
 }
-    
     @keyframes spin {
         to { transform: rotate(360deg); }
     }
+
+    /* ============================================================
+   REORDER TOPIC - DRAG & DROP STYLES
+   ============================================================ */
+.reorder-mode {
+  cursor: grab;
+  touch-action: none;
+  border: 1px dashed var(--accent) !important;
+  transition: transform 0.1s ease, opacity 0.1s ease;
+}
+.reorder-mode:active {
+  cursor: grabbing;
+}
+.reorder-mode.dragging {
+  opacity: 0.5;
+  transform: scale(0.98);
+}
+.reorder-mode.drag-over {
+  border: 2px solid var(--accent) !important;
+  background: var(--accent-light) !important;
+  transform: scale(1.02);
+}
+
+    /* Reorder mode untuk Deck Item (Subtopic) */
+.reorder-mode.deck-item {
+  cursor: grab !important;
+  touch-action: none !important;
+}
+.reorder-mode.deck-item.dragging {
+  opacity: 0.5 !important;
+  transform: scale(0.98) !important;
+}
+.reorder-mode.deck-item.drag-over {
+  border: 2px solid var(--accent) !important;
+  background: var(--accent-light) !important;
+}
+    
 </style>
 </head>
 <body>
@@ -1853,36 +1889,29 @@ color:white;
 
     <!-- ===== DECKS ===== -->
     
-       <!-- ===== DECKS ===== -->
-    <div id="view-decks" class="view">
-      
-      <!-- HEADER (Judul + Tombol Admin/Reorder) -->
-      <div class="flex items-center justify-between mb-4">
-        <h2 class="text-xl font-bold">Your Decks</h2>
-        <div class="flex gap-2">
-          
-          <!-- TOMBOL REORDER (Hanya untuk Admin) -->
-          <button id="reorder-topics-btn" onclick="toggleTopicReorder()" class="hidden accent-bg text-white px-3 py-1.5 rounded-xl text-xs font-medium">
-            🔄 Reorder
-          </button>
+    <div class="flex items-center justify-between mb-4">
+  <h2 class="text-xl font-bold">Your Decks</h2>
+  <div class="flex gap-2">
+    <!-- TAMBAHKAN INI: Tombol Reorder (hanya muncul untuk Admin via JS) -->
+    <button id="reorder-topics-btn" onclick="toggleTopicReorder()" class="hidden accent-bg text-white px-3 py-1.5 rounded-xl text-xs font-medium">
+      🔄 Reorder
+    </button>
 
-          <button id="admin-import-btn" onclick="showAdminImport()" class="hidden accent-bg text-white w-10 h-10 rounded-full flex items-center justify-center shadow-md"><i data-lucide="upload" class="w-5 h-5"></i></button>
-          <button id="user-request-btn" onclick="showContactAdmin()" class="hidden accent-bg text-white w-10 h-10 rounded-full flex items-center justify-center shadow-md"><i data-lucide="plus" class="w-5 h-5"></i></button>
-        </div>
-      </div>
+    <button id="admin-import-btn" onclick="showAdminImport()" class="hidden accent-bg text-white w-10 h-10 rounded-full flex items-center justify-center shadow-md"><i data-lucide="upload" class="w-5 h-5"></i></button>
+    <button id="user-request-btn" onclick="showContactAdmin()" class="hidden accent-bg text-white w-10 h-10 rounded-full flex items-center justify-center shadow-md"><i data-lucide="plus" class="w-5 h-5"></i></button>
+  </div>
+</div>
 
-      <!-- KONTROL REORDER (Muncul saat tombol Reorder ditekan) -->
-      <div id="reorder-controls" class="hidden flex items-center justify-between mb-3 bg-green-50 dark:bg-green-900/20 p-2 rounded-xl border border-green-200 dark:border-green-800">
-        <span class="text-sm text-green-700 dark:text-green-300 font-medium">☰ Drag untuk mengatur urutan topik</span>
-        <button onclick="saveTopicOrder()" class="bg-green-500 text-white px-4 py-1.5 rounded-xl text-sm font-medium hover:bg-green-600 transition-colors">💾 Simpan</button>
-      </div>
-
-      <!-- SCROLLABLE DECK LIST -->
+<!-- TAMBAHKAN INI: Bar kontrol reorder (muncul saat tombol ditekan) -->
+<div id="reorder-controls" class="hidden flex items-center justify-between mb-3 bg-green-50 dark:bg-green-900/20 p-2 rounded-xl border border-green-200 dark:border-green-800">
+  <span class="text-sm text-green-700 dark:text-green-300 font-medium">☰ Drag untuk mengatur urutan topik</span>
+  <button onclick="saveTopicOrder()" class="bg-green-500 text-white px-4 py-1.5 rounded-xl text-sm font-medium hover:bg-green-600 transition-colors">💾 Simpan</button>
+</div>
+    
       <div class="view-scroll" id="deck-list-container">
         <div id="deck-list"></div>
         <p id="no-decks" class="text-sec text-center py-12 hidden">No decks available. Enter your book's access code to unlock the full library! 📚</p>
       </div>
-
     </div>
 
     <!-- ===== ADMIN IMPORT VIEW ===== -->
@@ -3818,45 +3847,6 @@ async function loadSharedDecks() {
       return Object.values(map);
     }
 
-async function saveTopicOrder() {
-  // Ambil urutan baru dari DOM (Topik & Subtopic)
-  const topicContainers = document.querySelectorAll('#deck-list .topic-card');
-  const newOrder = [];
-  
-  topicContainers.forEach((el, index) => {
-    const topic = el.dataset.topic;
-    newOrder.push({ 
-      topic: topic, 
-      order: index,
-      subtopics: [] 
-    });
-    
-    // Jika ada subtopic di dalamnya (Level 2)
-    const subtopicEls = el.querySelectorAll('.subtopic-item');
-    subtopicEls.forEach((subEl, subIndex) => {
-      newOrder[index].subtopics.push({
-        subtopic: subEl.dataset.subtopic,
-        order: subIndex
-      });
-    });
-  });
-
-  try {
-    await db.collection('adminSettings').doc('topicOrder').set({
-      topics: newOrder,
-      updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-    });
-    
-    alert('✅ Urutan topik & subtopic berhasil disimpan!');
-    toggleTopicReorder(); // Keluar dari mode reorder
-    renderDecks();
-    
-  } catch (error) {
-    console.error('❌ Gagal menyimpan urutan:', error);
-    alert('Gagal menyimpan urutan. Coba lagi.');
-  }
-}
-
     function isCurrentDeckPremium() {
   if (!currentDeckId) return false;
   return allCards.some(c => c.deck_id === currentDeckId && c.isPremium);
@@ -4948,7 +4938,7 @@ function renderDecks() {
 
   const sortedTopics = Object.keys(topicMap).sort();
 
-  // Tampilkan tombol reorder hanya untuk Admin
+  // Tampilkan tombol reorder topik hanya untuk Admin
   const reorderBtn = document.getElementById('reorder-topics-btn');
   if (reorderBtn) {
     reorderBtn.classList.toggle('hidden', !isAdmin);
@@ -4962,12 +4952,12 @@ function renderDecks() {
   if (no) no.classList.add('hidden');
 
   // ============================================================
-  // MODE REORDER TOPIC (HANYA UNTUK ADMIN)
+  // MODE REORDER LEVEL 1 (TOPIC) - HANYA UNTUK ADMIN
   // ============================================================
   if (isTopicReorderMode && isAdmin) {
     container.innerHTML = '';
     
-    // Ambil urutan dari database
+    // Ambil urutan topik dari LocalStorage
     let orderedTopics = [...sortedTopics];
     try {
       const orderStr = localStorage.getItem('flashmind_topic_order_' + currentUser);
@@ -4981,14 +4971,14 @@ function renderDecks() {
           return orderA - orderB;
         });
       }
-    } catch (e) { console.warn('Gagal load order:', e); }
+    } catch (e) { console.warn('Gagal load topic order:', e); }
 
     // Render Topik dengan Drag Handle
     orderedTopics.forEach(topic => {
       const subtopics = topicMap[topic];
       const totalCards = subtopics.reduce((sum, d) => sum + d.cards.length, 0);
 
-      // Gunakan gaya yang sama persis dengan kode asli Anda
+      // Gaya background (sama persis seperti kode asli)
       let bgStyle = '';
       let iconHtml = '';
       for (const d of subtopics) {
@@ -5021,7 +5011,6 @@ function renderDecks() {
             <h3 class="font-bold text-lg uppercase text-white" style="white-space: normal; word-break: break-word;">${topic}</h3>
             <p class="text-sm text-white/80 mt-2">${subtopics.length} subtopics · ${totalCards} cards</p>
           </div>
-          <button onclick="deleteTopic('${topic.replace(/'/g, "\\'")}')" class="text-white/60 hover:text-red-300 p-1 text-xl transition-colors">🗑️</button>
         </div>
       `;
 
@@ -5041,23 +5030,67 @@ function renderDecks() {
   }
 
   // ============================================================
-  // MODE NORMAL (USER / ADMIN TIDAK SEDANG REORDER)
+  // MODE NORMAL (USER / ADMIN TIDAK SEDANG REORDER TOPIC)
   // ============================================================
 
   // ===== LEVEL 2: SUBTOPICS =====
   if (currentTopic) {
     const subtopics = topicMap[currentTopic] || [];
+    
+    // Cek apakah admin sedang dalam mode reorder subtopic
+    const isSubtopicReorder = typeof isSubtopicReorderMode !== 'undefined' && isSubtopicReorderMode && isAdmin;
+    const subtopicReorderBtn = document.getElementById('reorder-subtopic-btn');
+    const subtopicControls = document.getElementById('reorder-subtopic-controls');
+    
+    // Tampilkan tombol reorder subtopic hanya untuk Admin
+    if (subtopicReorderBtn) {
+      subtopicReorderBtn.classList.toggle('hidden', !isAdmin);
+    }
+
     let html = `
     <div class="mb-4">
       <button onclick="currentTopic=null;renderDecks()" class="flex items-center gap-2 text-sec hover:text-accent">
         <i data-lucide="arrow-left" class="w-5 h-5"></i>
         <span class="font-medium">Back to Topics</span>
       </button>
-      <h2 class="text-xl font-bold mt-2">${currentTopic}</h2>
+      
+      <div class="flex items-center justify-between mt-2">
+        <h2 class="text-xl font-bold">${currentTopic}</h2>
+        <button id="reorder-subtopic-btn" onclick="toggleSubtopicReorder()" class="hidden accent-bg text-white px-3 py-1.5 rounded-xl text-xs font-medium">
+          🔄 Reorder Subtopic
+        </button>
+      </div>
+
+      <div id="reorder-subtopic-controls" class="hidden flex items-center justify-between mt-3 mb-3 bg-green-50 dark:bg-green-900/20 p-2 rounded-xl border border-green-200 dark:border-green-800">
+        <span class="text-sm text-green-700 dark:text-green-300 font-medium">☰ Drag untuk mengatur urutan subtopic</span>
+        <button onclick="saveSubtopicOrder()" class="bg-green-500 text-white px-4 py-1.5 rounded-xl text-sm font-medium hover:bg-green-600 transition-colors">💾 Simpan</button>
+      </div>
     </div>
     `;
 
-    subtopics.forEach((d, i) => {
+    // ===== AMBIL URUTAN SUBTOPIC YANG TERSIMPAN (jika tidak dalam mode reorder) =====
+    let orderedSubtopics = [...subtopics];
+    if (!isSubtopicReorder) {
+      const storageKey = 'flashmind_subtopic_order_' + currentUser + '_' + currentTopic;
+      const savedOrderStr = localStorage.getItem(storageKey);
+      if (savedOrderStr) {
+        try {
+          const savedOrder = JSON.parse(savedOrderStr);
+          const orderMap = {};
+          savedOrder.forEach((name, idx) => { orderMap[name] = idx; });
+          orderedSubtopics.sort((a, b) => {
+            const nameA = a.subtopic || a.name || '';
+            const nameB = b.subtopic || b.name || '';
+            const orderA = orderMap[nameA] !== undefined ? orderMap[nameA] : 999;
+            const orderB = orderMap[nameB] !== undefined ? orderMap[nameB] : 999;
+            return orderA - orderB;
+          });
+        } catch (e) { console.warn('Gagal load subtopic order:', e); }
+      }
+    }
+
+    // ===== TAMPILKAN SUBTOPIC =====
+    orderedSubtopics.forEach((d, i) => {
       const due = d.cards.filter(c => !c.next_review || c.next_review <= today()).length;
       const mastered = d.cards.filter(c => (c.interval || 0) >= 21).length;
       const pct = d.cards.length > 0 ? Math.round(mastered / d.cards.length * 100) : 0;
@@ -5080,11 +5113,27 @@ function renderDecks() {
 
       const isPremiumDeck = d.cards.some(c => c.isPremium);
 
+      // Jika mode reorder subtopic aktif, tambahkan atribut drag & drop
+      let reorderAttrs = '';
+      let reorderHandle = '';
+      let clickHandler = `onclick="openDeck('${d.id}')"`;
+
+      if (isSubtopicReorder && isAdmin) {
+        reorderAttrs = `draggable="true" class="deck-item rounded-2xl p-4 shadow-card mb-3 cursor-grab active:cursor-grabbing flex items-center relative text-white reorder-mode"`;
+        reorderHandle = `<span class="text-2xl text-white/60 mr-3 cursor-grab select-none">☰</span>`;
+        clickHandler = ''; // Hapus onclick agar tidak bentrok dengan drag
+      } else {
+        reorderAttrs = `class="deck-item rounded-2xl p-4 shadow-card mb-3 cursor-pointer flex items-center relative text-white"`;
+      }
+
       html += `
-      <div class="deck-item rounded-2xl p-4 shadow-card mb-3 cursor-pointer flex items-center relative text-white"
+      <div ${reorderAttrs}
            style="${bgStyle} height:120px;"
-           onclick="openDeck('${d.id}')">
+           data-subtopic="${(d.subtopic || d.name || '').replace(/'/g, "\\'")}"
+           data-deck-id="${d.id}"
+           ${clickHandler}>
         <div class="flex-1" style="max-width:66.666%;">
+          ${reorderHandle}
           ${iconHtml ? `<div class="mb-1">${iconHtml}</div>` : ''}
           <h3 class="font-bold uppercase text-white" style="font-size:16px; line-height:1.2; word-break:break-word;">
             ${d.subtopic || d.name}
@@ -5102,13 +5151,44 @@ function renderDecks() {
     });
 
     container.innerHTML = html;
+
+    // ===== ATTACH DRAG EVENTS UNTUK SUBTOPIC (jika mode reorder aktif) =====
+    if (isSubtopicReorder && isAdmin) {
+      const items = container.querySelectorAll('.deck-item');
+      items.forEach(el => {
+        el.addEventListener('dragstart', handleSubtopicDragStart);
+        el.addEventListener('dragend', handleSubtopicDragEnd);
+        el.addEventListener('dragover', handleSubtopicDragOver);
+        el.addEventListener('dragenter', handleSubtopicDragEnter);
+        el.addEventListener('dragleave', handleSubtopicDragLeave);
+        el.addEventListener('drop', handleSubtopicDrop);
+      });
+    }
+
     if (typeof lucide !== 'undefined' && lucide.createIcons) lucide.createIcons();
     return;
   }
 
   // ===== LEVEL 1: TOPICS (MODE NORMAL) =====
   let html = '';
-  sortedTopics.forEach((topic) => {
+  
+  // Load urutan topik dari LocalStorage
+  let orderedTopics = [...sortedTopics];
+  try {
+    const orderStr = localStorage.getItem('flashmind_topic_order_' + currentUser);
+    if (orderStr) {
+      const savedOrder = JSON.parse(orderStr);
+      const orderMap = {};
+      savedOrder.forEach((item, idx) => { orderMap[item] = idx; });
+      orderedTopics.sort((a, b) => {
+        const orderA = orderMap[a] !== undefined ? orderMap[a] : 999;
+        const orderB = orderMap[b] !== undefined ? orderMap[b] : 999;
+        return orderA - orderB;
+      });
+    }
+  } catch (e) { console.warn('Gagal load topic order:', e); }
+
+  orderedTopics.forEach((topic) => {
     const subtopics = topicMap[topic];
     const totalCards = subtopics.reduce((sum, d) => sum + d.cards.length, 0);
 
@@ -5148,7 +5228,7 @@ function renderDecks() {
   if (typeof lucide !== 'undefined' && lucide.createIcons) lucide.createIcons();
 }
 
-// ============================================================
+    // ============================================================
 // REORDER TOPIC - DRAG & DROP HANDLERS
 // ============================================================
 
@@ -5182,6 +5262,91 @@ function saveTopicOrder() {
   toggleTopicReorder();
   renderDecks();
 }
+
+    // ============================================================
+// REORDER SUBTOPIC - DRAG & DROP HANDLERS
+// ============================================================
+
+let isSubtopicReorderMode = false;
+let draggedSubtopic = null;
+
+function toggleSubtopicReorder() {
+  isSubtopicReorderMode = !isSubtopicReorderMode;
+  const btn = document.getElementById('reorder-subtopic-btn');
+  const controls = document.getElementById('reorder-subtopic-controls');
+  
+  if (isSubtopicReorderMode) {
+    btn.textContent = '✅ Selesai';
+    controls.classList.remove('hidden');
+  } else {
+    btn.textContent = '🔄 Reorder Subtopic';
+    controls.classList.add('hidden');
+  }
+  renderDecks(); // Render ulang dengan mode reorder subtopic
+}
+
+function saveSubtopicOrder() {
+  // Ambil semua deck-item (subtopic) di dalam currentTopic
+  const items = document.querySelectorAll('#deck-list .deck-item');
+  const newOrder = [];
+  
+  items.forEach((el, index) => {
+    // Ambil subtopic name dari elemen
+    const subtopicName = el.querySelector('h3')?.textContent || 'Unknown';
+    newOrder.push(subtopicName);
+  });
+  
+  // Simpan ke LocalStorage dengan kunci spesifik per Topik
+  const storageKey = 'flashmind_subtopic_order_' + currentUser + '_' + currentTopic;
+  localStorage.setItem(storageKey, JSON.stringify(newOrder));
+  
+  alert('✅ Urutan subtopic berhasil disimpan!');
+  toggleSubtopicReorder();
+  renderDecks();
+}
+
+// Drag Handlers untuk Subtopic
+function handleSubtopicDragStart(e) {
+  draggedSubtopic = e.target.closest('.deck-item');
+  if (draggedSubtopic) draggedSubtopic.classList.add('dragging');
+  e.dataTransfer.effectAllowed = 'move';
+  e.dataTransfer.setData('text/plain', draggedSubtopic?.querySelector('h3')?.textContent || '');
+}
+
+function handleSubtopicDragEnd(e) {
+  const el = e.target.closest('.deck-item');
+  if (el) el.classList.remove('dragging');
+  document.querySelectorAll('.deck-item').forEach(el => el.classList.remove('drag-over'));
+}
+
+function handleSubtopicDragOver(e) { e.preventDefault(); e.dataTransfer.dropEffect = 'move'; }
+function handleSubtopicDragEnter(e) { e.preventDefault(); const el = e.target.closest('.deck-item'); if (el) el.classList.add('drag-over'); }
+function handleSubtopicDragLeave(e) { const el = e.target.closest('.deck-item'); if (el) el.classList.remove('drag-over'); }
+
+function handleSubtopicDrop(e) {
+  e.preventDefault();
+  const target = e.target.closest('.deck-item');
+  if (!target) return;
+  
+  const targetSubtopic = target.querySelector('h3')?.textContent || '';
+  const draggedSubtopicName = draggedSubtopic?.querySelector('h3')?.textContent || '';
+  
+  if (targetSubtopic === draggedSubtopicName) return;
+  
+  target.classList.remove('drag-over');
+  
+  const parent = target.parentElement;
+  const items = Array.from(parent.children);
+  const draggedIndex = items.findIndex(el => el.querySelector('h3')?.textContent === draggedSubtopicName);
+  const targetIndex = items.findIndex(el => el.querySelector('h3')?.textContent === targetSubtopic);
+  
+  if (draggedIndex > -1 && targetIndex > -1) {
+    const draggedItem = items[draggedIndex];
+    parent.removeChild(draggedItem);
+    parent.insertBefore(draggedItem, targetIndex < draggedIndex ? target : target.nextSibling);
+  }
+}
+    
 
 // Drag Handlers
 function handleTopicDragStart(e) {
@@ -5226,7 +5391,6 @@ function deleteTopic(topic) {
   saveUserData(currentUser).catch(console.error);
   renderDecks();
 }
-    
     // ============================================================
     //  ADMIN FUNCTIONS - RENAME DECK
     // ============================================================
@@ -5572,300 +5736,67 @@ function importExcelToDeck(event) {
 
   const reader = new FileReader();
 
-    reader.onload = async function(e) {
+  reader.onload = function(e) {
     try {
       const data = new Uint8Array(e.target.result);
       const workbook = XLSX.read(data, { type: 'array' });
-
-      if (!workbook.SheetNames || workbook.SheetNames.length === 0) {
-        showImportStatus('❌ No sheets found in Excel file.', 'error');
-        return;
-      }
-
-      const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
-      const jsonData = XLSX.utils.sheet_to_json(firstSheet);
+      const jsonData = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]]);
 
       if (jsonData.length === 0) {
-        showImportStatus('❌ No data found in Excel file.', 'error');
+        alert('No data found in Excel file.');
         return;
       }
 
-      // ============================================================
-      // BAGIAN PENTING: TAMBAHKAN NOMOR URUT (ORDER INDEX)
-      // ============================================================
-      const isPremium = document.getElementById('import-premium-toggle').checked;
-      
-      // Tambahkan properti 'order' berdasarkan posisi baris di Excel
-      const dataWithOrder = jsonData.map((row, index) => {
-        return {
-          ...row,
-          order: index // Simpan urutan asli dari Excel (0, 1, 2, ...)
-        };
-      });
+      let importedCount = 0;
+      const deck = allCards.find(c => c.deck_id === manageDeckId && c.card_front === '__deck_placeholder__');
 
-      console.log('📌 Import dengan urutan Excel:', dataWithOrder.map(r => r.order));
+      jsonData.forEach(row => {
+        const front = row['Front'] || row['front'] || row['QUESTION'] || row['question'];
+        const back = row['Back'] || row['back'] || row['ANSWER'] || row['answer'];
 
-      const missingIds = dataWithOrder.filter(row => {
-        const id = row['ID'] || row['id'] || row['Id'];
-        return id === undefined || id === null || id === '';
-      });
+        if (!front || !back) return;
 
-      if (missingIds.length > 0) {
-        showImportStatus(`❌ Error: ${missingIds.length} baris memiliki ID kosong. ID wajib diisi!`, 'error');
-        return;
-      }
+        const exists = allCards.some(c =>
+          c.deck_id === manageDeckId &&
+          c.card_front === front &&
+          c.card_back === back
+        );
 
-      let newCards = 0;
-      let updatedCards = 0;
-      let duplicateCards = 0;
-      let skippedCount = 0;
-      let newDecks = 0;
-      let updatedDecks = 0;
+        if (exists) return;
 
-      const decksToImport = {};
-
-      // ============================================================
-      // GUNAKAN dataWithOrder (yang sudah ada order-nya)
-      // ============================================================
-      dataWithOrder.forEach((row) => {
-        const id = parseInt(row['ID'] || row['id'] || row['Id']);
-        const topic = row['Topic'] || row['topic'] || row['TOPIC'] || 'General';
-        const subtopic = row['Subtopic'] || row['subtopic'] || row['SUBTOPIC'] || '';
-        const front = row['Front'] || row['front'] || row['FRONT'] || row['Question'] || row['question'] || row['QUESTION'];
-        const back = row['Back'] || row['back'] || row['BACK'] || row['Answer'] || row['answer'] || row['ANSWER'];
-        const tags = row['Tags'] || row['tags'] || row['TAGS'] || '';
-        const background = row['Background'] || row['background'] || row['BACKGROUND'] || '';
-        const order = row.order; // Ambil nomor urut dari Excel
-
-        if (!front || !back) {
-          skippedCount++;
-          return;
-        }
-
-        if (isNaN(id) || id < 1) {
-          skippedCount++;
-          console.warn(`⚠️ ID tidak valid: ${id}`);
-          return;
-        }
-
-        const deckName = topic + (subtopic ? ' - ' + subtopic : '');
-        const deckKey = deckName;
-
-        if (!decksToImport[deckKey]) {
-          decksToImport[deckKey] = {
-            deckName: deckName,
-            topic: topic,
-            subtopic: subtopic,
-            order: order, // SIMPAN ORDER DARI EXCEL
-            cards: []
-          };
-        }
-
-        decksToImport[deckKey].cards.push({
-          card_id: id,
+        allCards.push({
+          __id: generateId(),
+          deck_id: manageDeckId,
+          deck_name: deck ? deck.deck_name : 'Untitled',
           card_front: front,
           card_back: back,
-          card_tags: tags,
-          card_background: background,
-          order: order // Simpan order juga per kartu (opsional)
+          card_tags: '',
+          ease_factor: 2.5,
+          interval: 0,
+          repetitions: 0,
+          next_review: today(),
+          last_review: '',
+          total_reviews: 0,
+          correct_count: 0
         });
+
+        importedCount++;
       });
 
-      if (skippedCount > 0) {
-        console.warn(`⚠️ ${skippedCount} baris dilewati (data tidak lengkap atau ID tidak valid)`);
-      }
+      saveUserData(currentUser)
+        .catch(console.error);
 
-      // ============================================================
-      // URUTKAN DECK BERDASARKAN ORDER DARI EXCEL
-      // ============================================================
-      const sortedDeckKeys = Object.keys(decksToImport).sort((a, b) => {
-        return decksToImport[a].order - decksToImport[b].order;
-      });
-
-      for (const deckKey of sortedDeckKeys) {
-        const deck = decksToImport[deckKey];
-        const deckName = deck.deckName;
-
-        const existingDocs = await db.collection('sharedDecks')
-          .where('deckName', '==', deckName)
-          .get();
-
-        if (existingDocs.empty) {
-          console.log(`📁 Membuat deck baru: ${deckName}`);
-
-          const success = await saveSharedDeck({
-            deckName: deckName,
-            topic: deck.topic,
-            subtopic: deck.subtopic,
-            cards: deck.cards
-          }, isPremium);
-
-          if (success) {
-            newDecks++;
-            newCards += deck.cards.length;
-          }
-
-        } else {
-          const docRef = existingDocs.docs[0].ref;
-          const docId = existingDocs.docs[0].id;
-          const docData = existingDocs.docs[0].data();
-
-          let existingCards = docData.cards || [];
-
-          let cardsToAdd = [];
-          let cardsToUpdate = [];
-
-          for (const newCard of deck.cards) {
-            const cardId = newCard.card_id;
-            const existing = existingCards.find(c => c.card_id === cardId);
-
-            if (existing) {
-              const normalizeText = (text) => {
-                return String(text || '')
-                  .replace(/\u00A0/g, ' ')
-                  .replace(/\r\n/g, '\n')
-                  .replace(/\r/g, '\n')
-                  .replace(/\s+/g, ' ')
-                  .trim();
-              };
-
-              const oldFront = normalizeText(existing.card_front);
-              const oldBack = normalizeText(existing.card_back);
-              const newFront = normalizeText(newCard.card_front);
-              const newBack = normalizeText(newCard.card_back);
-
-              if (oldFront === newFront && oldBack === newBack) {
-                duplicateCards++;
-                continue;
-              }
-
-              console.log(`🔄 Update kartu ID ${cardId} di deck ${deckName}`);
-              updatedCards++;
-
-              const updatedCard = {
-                ...existing,
-                card_front: newCard.card_front,
-                card_back: newCard.card_back,
-                card_tags: newCard.card_tags || existing.card_tags || '',
-                card_background: newCard.card_background || existing.card_background || '',
-                updatedAt: new Date().toISOString()
-              };
-
-              cardsToUpdate.push(updatedCard);
-
-            } else {
-              console.log(`➕ Tambah kartu baru ID ${cardId} di deck ${deckName}`);
-              cardsToAdd.push({
-                card_id: newCard.card_id,
-                card_front: newCard.card_front,
-                card_back: newCard.card_back,
-                card_tags: newCard.card_tags || '',
-                card_background: newCard.card_background || ''
-              });
-              newCards++;
-            }
-          }
-
-          let finalCards = [...existingCards];
-
-          if (cardsToUpdate.length > 0) {
-            const updateIds = new Set(cardsToUpdate.map(c => c.card_id));
-            finalCards = finalCards.map(c => {
-              if (updateIds.has(c.card_id)) {
-                return cardsToUpdate.find(u => u.card_id === c.card_id) || c;
-              }
-              return c;
-            });
-          }
-
-          if (cardsToAdd.length > 0) {
-            finalCards = [...finalCards, ...cardsToAdd];
-          }
-
-          await updateSharedDeck(docId, {
-            deckName: deckName,
-            topic: deck.topic,
-            subtopic: deck.subtopic,
-            cards: finalCards
-          }, isPremium);
-
-          updatedDecks++;
-          console.log(`✅ Deck diperbarui: ${deckName}`);
-        }
-      }
-
-      // ============================================================
-      // SAAT LOAD ULANG, URUTKAN BERDASARKAN `order` DARI EXCEL
-      // ============================================================
-      const progressMap = new Map();
-      allCards.forEach(card => {
-        if (card.isShared) {
-          const key = card.__id || card.card_id;
-          progressMap.set(key, {
-            ease_factor: card.ease_factor,
-            interval: card.interval,
-            repetitions: card.repetitions,
-            total_reviews: card.total_reviews,
-            correct_count: card.correct_count,
-            next_review: card.next_review,
-            last_review: card.last_review,
-            review_history: card.review_history || []
-          });
-        }
-      });
-
-      const sharedCards = await loadSharedDecks();
-
-      // Tambahkan properti order dari Excel ke sharedCards
-      const mergedSharedCards = sharedCards.map(card => {
-        const key = card.__id || card.card_id;
-        const progress = progressMap.get(key);
-        
-        // Cari order dari decksToImport berdasarkan deck_name dan card_id
-        let order = 999; // Default jika tidak ketemu
-        for (const deckKey in decksToImport) {
-          const deck = decksToImport[deckKey];
-          const foundCard = deck.cards.find(c => c.card_id === card.card_id);
-          if (foundCard) {
-            order = foundCard.order;
-            break;
-          }
-        }
-
-        return progress ? { ...card, ...progress, order: order } : { ...card, order: order };
-      });
-
-      // Urutkan kartu berdasarkan order dari Excel
-      mergedSharedCards.sort((a, b) => (a.order || 999) - (b.order || 999));
-
-      const customCards = allCards.filter(c => !c.isShared);
-      allCards = [...customCards, ...mergedSharedCards];
-
-      await saveUserData(currentUser);
-
+      renderManageCards();
       renderDecks();
-      updateHome();
-      renderAdminDeckList();
 
-      let message = `✅ Import selesai!\n\n`;
-      message += `📁 Deck baru: ${newDecks}\n`;
-      message += `📝 Deck diupdate: ${updatedDecks}\n`;
-      message += `🆕 Kartu baru: ${newCards}\n`;
-      message += `🔄 Kartu diupdate: ${updatedCards}\n`;
-      message += `⏭️ Kartu duplikat (di-skip): ${duplicateCards}\n`;
-
-      if (skippedCount > 0) {
-        message += `⚠️ Baris dilewati: ${skippedCount} (data tidak lengkap)\n`;
-      }
-
-      showImportStatus(message, 'success');
-      alert(message);
+      alert(`✅ Imported ${importedCount} new cards to this deck!`);
 
     } catch (error) {
-      console.error('❌ Import error:', error);
-      showImportStatus('❌ Error importing file: ' + error.message, 'error');
+      alert('❌ Error importing file: ' + error.message);
+      console.error(error);
     }
   };
+
   reader.readAsArrayBuffer(file);
   event.target.value = '';
 }
