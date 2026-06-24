@@ -5723,25 +5723,18 @@ async function handleExcelImport(event) {
     card_background: newCard.card_background || existing.card_background || '',
     updatedAt: new Date().toISOString()
   };
-
-  cardsToUpdate.push(updatedCard);
-     else {
-    // ID baru → tambahkan
-    console.log(`➕ Tambah kartu baru ID ${cardId} di deck ${deckName}`);
-    cardsToAdd.push({
-      ...newCard,
-      ease_factor: 2.5,
-      interval: 0,
-      repetitions: 0,
-      next_review: today(),
-      last_review: '',
-      total_reviews: 0,
-      correct_count: 0,
-      review_history: [],
-      createdAt: new Date().toISOString()
-    });
-    newCards++;
-  }
+    cardsToUpdate.push(updatedCard);
+} else {
+  // ID baru → tambahkan (HANYA KONTEN)
+  console.log(`➕ Tambah kartu baru ID ${cardId} di deck ${deckName}`);
+  cardsToAdd.push({
+    card_id: newCard.card_id,
+    card_front: newCard.card_front,
+    card_back: newCard.card_back,
+    card_tags: newCard.card_tags || '',
+    card_background: newCard.card_background || ''
+  });
+  newCards++;
 }
 
           // ===== SIMPAN PERUBAHAN =====
