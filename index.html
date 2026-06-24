@@ -1485,6 +1485,42 @@ background:linear-gradient(
 
 color:white;
 }
+    /* ============================================================
+   FAQ BUTTON - FIX MOBILE LIGHT/DARK MODE
+   ============================================================ */
+
+.faq-card button {
+  background: var(--surface) !important;
+  border-radius: 1rem !important;
+  transition: background 0.15s ease !important;
+}
+
+.faq-card button:hover,
+.faq-card button:focus {
+  background: var(--bg) !important;
+}
+
+.faq-card button:active {
+  background: var(--border) !important;
+}
+
+.dark .faq-card button:hover,
+.dark .faq-card button:focus {
+  background: var(--surface) !important;
+}
+
+.dark .faq-card button:active {
+  background: var(--border) !important;
+}
+
+/* Pastikan teks tetap terbaca */
+.faq-card button span {
+  color: var(--text) !important;
+}
+
+.faq-card button i {
+  color: var(--text-secondary) !important;
+}
     
   </style>
 </head>
