@@ -4212,34 +4212,65 @@ async function flushSaveNow(email) {
 }
 
     async function handleLogout() {
-  if (!confirm('Logout?')) return;
-  
-  // ===== PAKSA SAVE SEBELUM LOGOUT =====
-  if (currentUser) {
-    if (saveTimeout) {
-      clearTimeout(saveTimeout);
-      saveTimeout = null;
-    }
-    await flushSaveNow(currentUser);
-  }
+  console.log('🚪 Logout started...');
   
   try {
+    // ===== PAKSA SAVE =====
+    if (currentUser) {
+      console.log('💾 Flushing save...');
+      if (saveTimeout) {
+        clearTimeout(saveTimeout);
+        saveTimeout = null;
+      }
+      await flushSaveNow(currentUser);
+      console.log('✅ Flush done');
+    }
+    
+    // ===== FIREBASE LOGOUT =====
+    console.log('🔥 Signing out from Firebase...');
     await firebase.auth().signOut();
-  } catch (e) {
-    console.warn('Firebase signout error:', e);
+    console.log('✅ Firebase signOut success');
+    
+    // ===== CLEANUP =====
+    console.log('🧹 Cleaning up...');
+    clearSession();
+    localStorage.removeItem('flashmind_session_token');
+    localStorage.removeItem('flashmind_token_expiry');
+    currentUser = null;
+    allCards = [];
+    isAdmin = false;
+    
+    // ===== UI =====
+    console.log('🎨 Updating UI...');
+    document.querySelectorAll('.view').forEach(function(v) {
+      v.classList.remove('active');
+      v.style.display = 'none';
+    });
+    
+    var loginView = document.getElementById('view-login');
+    if (loginView) {
+      loginView.classList.add('active');
+      loginView.style.display = 'flex';
+    }
+    
+    var emailInput = document.getElementById('login-email');
+    var passInput = document.getElementById('login-password');
+    if (emailInput) emailInput.value = '';
+    if (passInput) passInput.value = '';
+    
+    var bottomNav = document.getElementById('bottomNav');
+    if (bottomNav) bottomNav.style.display = 'none';
+    
+    console.log('✅ Logout complete!');
+    
+  } catch (error) {
+    console.error('❌ Logout error:', error);
+    
+    // ===== FALLBACK: Force reload =====
+    console.log('🔄 Force reloading...');
+    localStorage.clear();
+    location.reload();
   }
-  
-  clearSession();
-  localStorage.removeItem('flashmind_session_token');
-  localStorage.removeItem('flashmind_token_expiry');
-  currentUser = null;
-  allCards = [];
-  isAdmin = false;
-  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
-  document.getElementById('view-login').classList.add('active');
-  document.getElementById('login-email').value = '';
-  document.getElementById('login-password').value = '';
-  document.getElementById('bottomNav').style.display = 'none';
 }
 
     function getPlanExpiry(email) {
