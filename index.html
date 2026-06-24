@@ -1548,6 +1548,54 @@ color:white;
 #book-buyer-card .access-code-info i {
   color: inherit !important;
 }
+
+    /* ============================================================
+   LOGOUT LOADING OVERLAY
+   ============================================================ */
+
+.logout-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 99999;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.logout-overlay.active {
+  display: flex;
+}
+
+.logout-overlay .spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid rgba(255, 255, 255, 0.3);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.logout-overlay p {
+  color: #fff;
+  font-size: 16px;
+  font-weight: 500;
+  margin: 0;
+}
+
+.logout-overlay .sub {
+  font-size: 13px;
+  opacity: 0.7;
+}
     
   </style>
 </head>
@@ -1572,6 +1620,14 @@ z-index:9999;
 Refreshing...
 </div>
 
+
+<!-- ===== LOGOUT LOADING OVERLAY ===== -->
+<div id="logout-overlay" class="logout-overlay">
+  <div class="spinner"></div>
+  <p>Saving your progress...</p>
+  <p class="sub">Please wait</p>
+</div>
+    
     <!-- ===== AUTH: LOGIN ===== -->
     <div id="view-login" class="view active" style="padding:1rem;justify-content:center;z-index:200;bottom:0;">
       <div class="auth-card">
@@ -4211,11 +4267,21 @@ async function flushSaveNow(email) {
   // HAPUS: saveToFirebase(email, allCards, plan);
 }
 
-    async function handleLogout() {
-  console.log('🚪 Logout started...');
+   async function handleLogout() {
+  // ===== TAMPILKAN LOADING =====
+  var overlay = document.getElementById('logout-overlay');
+  if (overlay) overlay.classList.add('active');
+  
+  // ===== DISABLE TOMBOL =====
+  var logoutBtn = document.querySelector('.bg-red-500');
+  if (logoutBtn) {
+    logoutBtn.disabled = true;
+    logoutBtn.textContent = 'Logging out...';
+  }
   
   try {
-    // ===== PAKSA SAVE =====
+    console.log('🚪 Logout started...');
+    
     if (currentUser) {
       console.log('💾 Flushing save...');
       if (saveTimeout) {
@@ -4226,12 +4292,10 @@ async function flushSaveNow(email) {
       console.log('✅ Flush done');
     }
     
-    // ===== FIREBASE LOGOUT =====
     console.log('🔥 Signing out from Firebase...');
     await firebase.auth().signOut();
     console.log('✅ Firebase signOut success');
     
-    // ===== CLEANUP =====
     console.log('🧹 Cleaning up...');
     clearSession();
     localStorage.removeItem('flashmind_session_token');
@@ -4240,7 +4304,6 @@ async function flushSaveNow(email) {
     allCards = [];
     isAdmin = false;
     
-    // ===== UI =====
     console.log('🎨 Updating UI...');
     document.querySelectorAll('.view').forEach(function(v) {
       v.classList.remove('active');
@@ -4265,11 +4328,14 @@ async function flushSaveNow(email) {
     
   } catch (error) {
     console.error('❌ Logout error:', error);
-    
-    // ===== FALLBACK: Force reload =====
-    console.log('🔄 Force reloading...');
-    localStorage.clear();
-    location.reload();
+    alert('Logout error: ' + error.message);
+  } finally {
+    // ===== HILANGKAN LOADING =====
+    if (overlay) overlay.classList.remove('active');
+    if (logoutBtn) {
+      logoutBtn.disabled = false;
+      logoutBtn.textContent = 'Logout';
+    }
   }
 }
 
