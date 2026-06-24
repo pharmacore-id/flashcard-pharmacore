@@ -8398,14 +8398,15 @@ alert(
 let touchStartY = 0;
 let touchEndY = 0;
 let isRefreshing = false;
-const PULL_THRESHOLD = 100; // Jarak tarik dalam pixel
+const PULL_THRESHOLD = 180; // Jarak tarik dalam pixel
 
 const pullIndicator = document.getElementById('pull-indicator');
 const pullText = document.getElementById('pull-text');
 const pullSpinner = pullIndicator.querySelector('.pull-spinner');
 
 document.addEventListener("touchstart", e => {
-    if (window.scrollY === 0) {
+    // ONLY allow pull to refresh if we are already at the VERY TOP
+    if (window.scrollY === 0 && !isRefreshing) {
         touchStartY = e.touches[0].clientY;
         pullIndicator.style.opacity = "0";
         pullIndicator.style.top = "-80px";
@@ -8421,7 +8422,7 @@ document.addEventListener("touchmove", e => {
 
     if (pullDistance > 0) {
         // Ikuti jari pengguna (maks 150px)
-        const moveY = Math.min(pullDistance, 150);
+        const moveY = Math.min(pullDistance, 220);
         pullIndicator.style.opacity = Math.min(pullDistance / PULL_THRESHOLD, 1);
         pullIndicator.style.top = (moveY - 80) + "px";
         
