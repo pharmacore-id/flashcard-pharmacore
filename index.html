@@ -1596,6 +1596,11 @@ color:white;
   font-size: 13px;
   opacity: 0.7;
 }
+
+    #refresh-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
     
   </style>
 </head>
@@ -2149,9 +2154,9 @@ Refreshing...
       <p class="text-sm font-medium">🔄 Refresh Data</p>
       <p class="text-xs text-sec">Sinkronkan data terbaru dari server</p>
     </div>
-    <button onclick="refreshUserData()" class="accent-bg text-white px-4 py-2 rounded-xl text-sm font-medium">
-      Refresh Now
-    </button>
+    <button id="refresh-btn" onclick="refreshUserData()" class="accent-bg text-white px-4 py-2 rounded-xl text-sm font-medium">
+  Refresh Now
+</button>
   </div>
 </div>
         
@@ -7554,8 +7559,14 @@ async function deleteSelectedDecks() {
   alert(`✅ ${selectedDeckIds.length} deck(s) deleted successfully!`);
 }
 
-    async function refreshUserData() {
-  if (!currentUser) return;
+  async function refreshUserData() {
+  var btn = document.getElementById('refresh-btn');
+  if (!btn) return;
+  
+  // ===== DISABLE TOMBOL =====
+  btn.disabled = true;
+  btn.textContent = 'Refreshing...';
+  btn.classList.add('opacity-50', 'cursor-not-allowed');
   
   try {
     updateSyncStatus('syncing', 'Refreshing data...');
@@ -7566,10 +7577,15 @@ async function deleteSelectedDecks() {
     if (cloudData && cloudData.cards) {
       allCards = cloudData.cards;
       userPlan = cloudData.plan || 'free';
+      
+      // ===== SYNC LOCAL STORAGE =====
+      var progressData = buildProgressData();
       localStorage.setItem(DATA_PREFIX + currentUser, JSON.stringify({
-        cards: allCards,
+        cards: progressData,
+        schema_version: 2,
         last_updated: Date.now(),
-        user_plan: userPlan
+        user_plan: userPlan,
+        is_admin: isAdmin
       }));
       
       renderDecks();
@@ -7580,10 +7596,19 @@ async function deleteSelectedDecks() {
       alert('✅ Data refreshed successfully!');
     } else {
       // Jika tidak ada data di cloud, reload shared decks
-      const sharedCards = await loadSharedDecks();
-      allCards = allCards.filter(c => !c.isShared);
-      allCards.push(...sharedCards);
-      await saveUserData(currentUser);
+      var sharedCards = await loadSharedDecks();
+      allCards = allCards.filter(function(c) { return !c.isShared; });
+      allCards.push.apply(allCards, sharedCards);
+      
+      var progressData2 = buildProgressData();
+      localStorage.setItem(DATA_PREFIX + currentUser, JSON.stringify({
+        cards: progressData2,
+        schema_version: 2,
+        last_updated: Date.now(),
+        user_plan: userPlan,
+        is_admin: isAdmin
+      }));
+      
       renderDecks();
       updateHome();
       alert('✅ Data refreshed from shared decks!');
@@ -7593,6 +7618,11 @@ async function deleteSelectedDecks() {
     console.error('Refresh error:', error);
     updateSyncStatus('offline', 'Refresh failed');
     alert('❌ Failed to refresh data. Please try again.');
+  } finally {
+    // ===== ENABLE KEMBALI =====
+    btn.disabled = false;
+    btn.textContent = 'Refresh Now';
+    btn.classList.remove('opacity-50', 'cursor-not-allowed');
   }
 }
     
