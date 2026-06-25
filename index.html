@@ -8730,13 +8730,21 @@ document.addEventListener('visibilitychange', () => {
 }
 
     async function moveTopicDown(topic){
+
   console.log("MOVE DOWN CLICKED:", topic);
+
+  console.log("BEFORE", [...deckOrderConfig.topics]);
+
   const idx =
     deckOrderConfig.topics.indexOf(topic);
+
+  console.log("IDX", idx);
+
   if(
     idx === -1 ||
     idx >= deckOrderConfig.topics.length-1
   ) return;
+
   [
     deckOrderConfig.topics[idx+1],
     deckOrderConfig.topics[idx]
@@ -8744,7 +8752,11 @@ document.addEventListener('visibilitychange', () => {
     deckOrderConfig.topics[idx],
     deckOrderConfig.topics[idx+1]
   ];
+
+  console.log("AFTER", [...deckOrderConfig.topics]);
+
   await saveUserData(currentUser.email);
+
   renderDecks();
 }
 
