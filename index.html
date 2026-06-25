@@ -4135,7 +4135,8 @@ async function loadUserData(email) {
     console.log('⚠️ No saved data found, using sample decks');
   }
 
-  // 5. Always set these
+ // 5. Always set these
+  initializeDeckOrder();
   isAdmin = ADMIN_EMAILS.includes(email);
   localStorage.setItem('flashmind_plan_' + email, userPlan);
 }
