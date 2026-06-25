@@ -3328,10 +3328,12 @@ async function loadFromFirebase(email) {
     extraCards.forEach(c => mergedCards.push(c));
 
     updateSyncStatus('', 'Synced');
+
+    console.log('FIREBASE DECK ORDER', data.deckOrderConfig);
     
     const plan = data.plan || 'free';
     const schemaVersion = data.schema_version || 1;
-
+    
     return {
       cards: mergedCards,
       plan: plan,
