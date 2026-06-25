@@ -3272,34 +3272,6 @@ function resetSessionStats(){
     // ============================================================
     //  FIREBASE SYNC
     // ============================================================
-    async function saveToFirebase(email, cards, plan) {
-      if (!email || !navigator.onLine) return;
-      try {
-        isSyncing = true;
-        updateSyncStatus('syncing', 'Syncing...');
-        await db.collection('users').doc(email).set({
-          cards: snapshot,
-          deckOrderConfig: deckOrderConfig,
-          plan: planSnapshot,
-          schema_version: 2,
-          last_updated: Date.now()
-        }, { merge: true });
-        cards: snapshot,
-        deckOrderConfig: deckOrderConfig,
-        plan: planSnapshot,
-        schema_version: 2,
-        last_updated: Date.now()
-      }, { merge: true });
-        updateSyncStatus('', 'Synced');
-        console.log('✅ Data synced to Firebase');
-      } catch (err) {
-        console.warn('⚠️ Firebase sync failed:', err.message);
-        updateSyncStatus('offline', 'Offline');
-      } finally {
-        isSyncing = false;
-      }
-    }
-
 async function loadFromFirebase(email) {
   if (!email || !navigator.onLine) return null;
   
@@ -4002,29 +3974,15 @@ async function loadSharedDecks() {
       const email = document.getElementById('login-email').value.trim();
       const pw = document.getElementById('login-password').value;
       const err = document.getElementById('login-error');
-
       err.textContent = '';
-
       try {
         const userCredential = await firebase.auth().signInWithEmailAndPassword(email, pw);
         const user = userCredential.user;
-
         currentUser = email;
         saveSession(email);
-
-        const cloudData = await loadFromFirebase(email);
-        if (cloudData && cloudData.cards) {
-          allCards = cloudData.cards;
-          userPlan = cloudData.plan || 'free';
-          localStorage.setItem(DATA_PREFIX + email, JSON.stringify(allCards));
-          localStorage.setItem('flashmind_plan_' + email, userPlan);
-        } else {
-          loadUserData(email);
-        }
-        
+        await loadUserData(email);
         isAdmin = ADMIN_EMAILS.includes(email);
         enterApp();
-
       } catch (error) {
         console.error('Login error:', error);
         if (error.code === 'auth/user-not-found') {
@@ -4037,11 +3995,8 @@ async function loadSharedDecks() {
           err.textContent = 'Too many failed attempts. Please try again later.';
         } else if (error.code === 'auth/invalid-credential') {
           err.textContent = 'Invalid credentials. Please check your email and password.';
-        } else {
-          err.textContent = 'Login failed: ' + error.message;
-        }
-      }
-    }
+        } else {err.textContent = 'Login failed: ' + error.message;
+        }}}
 
 async function loadUserData(email) {
   if (!email) return;
@@ -4316,9 +4271,7 @@ async function flushSaveNow(email) {
     function savePlan(email, plan, expiry) {
   localStorage.setItem('flashmind_plan_' + email, plan);
   if (expiry) localStorage.setItem('flashmind_expiry_' + email, expiry);
-  userPlan = plan;
-  // HAPUS: saveToFirebase(email, allCards, plan);
-}
+  userPlan = plan;}
 
    async function handleLogout() {
   // ===== TAMPILKAN LOADING =====
