@@ -4176,72 +4176,91 @@ let lastSavedTimestamp = 0;
 
 async function saveUserData(email) {
   if (!email) return;
-  
+
   // ===== GUARD =====
   if (!allCards || allCards.length === 0) {
     console.warn('⚠️ saveUserData skipped: allCards is empty');
     return;
   }
-  
-  const realCards = allCards.filter(c => 
-    c.card_front && 
-    c.card_front !== '__deck_placeholder__' && 
-    c.card_front.trim() !== ''
+
+  // ===== SAVE LOCAL =====
+  const now = Date.now();
+
+  const localData = {
+    cards: buildProgressData(), // progress only
+    deckOrderConfig: deckOrderConfig,
+    schema_version: 2,
+    last_updated: now,
+    user_plan: userPlan,
+    is_admin: isAdmin
+  };
+
+  localStorage.setItem(
+    DATA_PREFIX + email,
+    JSON.stringify(localData)
   );
-  if (realCards.length === 0) {
-    console.warn('⚠️ saveUserData skipped: no real cards found');
-    return;
+
+  lastSavedTimestamp = now;
+
+  // ===== DEBOUNCE FIREBASE =====
+  if (saveTimeout) {
+    clearTimeout(saveTimeout);
   }
 
-  // ===== SAVE KE LOCAL STORAGE (FULL BACKUP) =====
-   const localData = {
-      cards: allCards,
-      deckOrderConfig: deckOrderConfig,
-      schema_version: 2,
-      last_updated: Date.now(),
-      user_plan: userPlan,
-      is_admin: isAdmin
-    };
-  localStorage.setItem(DATA_PREFIX + email, JSON.stringify(localData));
-  lastSavedTimestamp = Date.now();
-
-  // ===== SAVE KE FIRESTORE =====
-  if (saveTimeout) clearTimeout(saveTimeout);
-  
   saveTimeout = setTimeout(async () => {
+
+    const snapshot = buildProgressData();
+    const planSnapshot = userPlan;
+    const deckOrderSnapshot = deckOrderConfig;
+
     let retries = 3;
     let saved = false;
-    
-    // ===== BUILD PROGRESS DATA DI DALAM TIMEOUT =====
-    const snapshot = buildProgressData();  // ← Dipanggil saat timeout jalan
-    const planSnapshot = userPlan;
 
     while (retries > 0 && !saved) {
+
       try {
+
+        const saveTime = Date.now();
+
         await db.collection('users').doc(email).set({
           cards: snapshot,
           plan: planSnapshot,
+          deckOrderConfig: deckOrderSnapshot,
           schema_version: 2,
-          last_updated: Date.now()
+          last_updated: saveTime
         }, { merge: true });
+
+        lastSavedTimestamp = saveTime;
         saved = true;
-console.log('☁️ FIREBASE SAVE',
-  {
-    cards: snapshot.length,
-    firstCard: snapshot[0],
-    timestamp: Date.now()});
+
+        console.log('☁️ FIREBASE SAVE', {
+          cards: snapshot.length,
+          timestamp: saveTime
+        });
+
       } catch (err) {
+
         retries--;
-        console.warn(`⚠️ Save failed (${3 - retries}/3 retries):`, err.message);
+
+        console.warn(
+          `⚠️ Save failed (${3 - retries}/3)`,
+          err.message
+        );
+
         if (retries > 0) {
-          await new Promise(r => setTimeout(r, 2000 * (4 - retries)));
+          await new Promise(r =>
+            setTimeout(r, 2000)
+          );
         }
       }
     }
-    
+
     if (!saved) {
-      console.error('❌ Save failed after 3 retries. Will retry on next save.');
+      console.error(
+        '❌ Save failed after 3 retries'
+      );
     }
+
   }, 2000);
 }
 
