@@ -3477,28 +3477,18 @@ async function loadSharedDecks() {
    firebase.auth().onAuthStateChanged(async user => {
 
     if (!user) {
-        return;
-    }
-
+        return;}
     try {
-
-        currentUser = user.email;
-
+      currentUser = user.email;
         isAdmin =
             ADMIN_EMAILS.includes(user.email);
-
         await loadUserData(user.email);
-
         enterApp();
-
     } catch(err) {
         console.error(
             "Initialization failed:",
             err
-        );
-    }
-
-});
+        );}});
 
     // ============================================================
     //  HELPERS
@@ -3988,8 +3978,6 @@ async function loadSharedDecks() {
         currentUser = email;
         saveSession(email);
         await loadUserData(email);
-        isAdmin = ADMIN_EMAILS.includes(email);
-        enterApp();
       } catch (error) {
         console.error('Login error:', error);
         if (error.code === 'auth/user-not-found') {
@@ -4034,6 +4022,14 @@ async function loadUserData(email) {
     if (localData && localData.cards && localData.cards.length > 0) {
       const cloudTime = cloudData.last_updated || 0;
       const localTime = localData.last_updated || 0;
+      console.log(
+  'TIMESTAMP CHECK',
+  {
+    cloudTime,
+    localTime,
+    diff: cloudTime - localTime
+  }
+);
       useCloudData = cloudTime > localTime;
     } else {
       useCloudData = true;
@@ -8486,10 +8482,6 @@ alert(
     console.log('📚 Cards:', getRealCards().length, 'Decks:', getDecks().length);
     console.log('☁️ Firebase: Connected & Syncing');
     console.log('📝 Admin email: adm.pharmacore@gmail.com');
-
-// ======================================================
-// PULL TO REFRESH
-// ======================================================
 
 // ======================================================
 // PULL TO REFRESH - Gaya Atsumaru
