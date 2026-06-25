@@ -3278,6 +3278,12 @@ function resetSessionStats(){
         isSyncing = true;
         updateSyncStatus('syncing', 'Syncing...');
         await db.collection('users').doc(email).set({
+          cards: snapshot,
+          deckOrderConfig: deckOrderConfig,
+          plan: planSnapshot,
+          schema_version: 2,
+          last_updated: Date.now()
+        }, { merge: true });
         cards: snapshot,
         deckOrderConfig: deckOrderConfig,
         plan: planSnapshot,
@@ -4125,6 +4131,9 @@ async function loadUserData(email) {
       // Format lama: full cards
       allCards = localData.cards || [];
       userPlan = localData.user_plan || 'free';
+      if (localData.deckOrderConfig) {
+  deckOrderConfig = localData.deckOrderConfig;
+}
     }
     
     console.log('✅ Loaded from localStorage:', allCards.length, 'cards');
@@ -4228,13 +4237,14 @@ async function saveUserData(email) {
   }
 
   // ===== SAVE KE LOCAL STORAGE (FULL BACKUP) =====
-  const localData = {
-    cards: allCards,  // ← FULL BACKUP
-    schema_version: 2,
-    last_updated: Date.now(),
-    user_plan: userPlan,
-    is_admin: isAdmin
-  };
+   const localData = {
+      cards: allCards,
+      deckOrderConfig: deckOrderConfig,
+      schema_version: 2,
+      last_updated: Date.now(),
+      user_plan: userPlan,
+      is_admin: isAdmin
+    };
   localStorage.setItem(DATA_PREFIX + email, JSON.stringify(localData));
   lastSavedTimestamp = Date.now();
 
@@ -4292,6 +4302,7 @@ async function flushSaveNow(email) {
   try {
     await db.collection('users').doc(email).set({
       cards: progressData,
+      deckOrderConfig: deckOrderConfig,
       plan: planSnapshot,
       schema_version: 2,
       last_updated: Date.now()
