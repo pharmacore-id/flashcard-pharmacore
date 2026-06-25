@@ -4229,7 +4229,11 @@ async function saveUserData(email) {
           last_updated: Date.now()
         }, { merge: true });
         saved = true;
-        console.log('✅ Progress saved to cloud (', snapshot.length, 'cards)');
+console.log('☁️ FIREBASE SAVE',
+  {
+    cards: snapshot.length,
+    firstCard: snapshot[0],
+    timestamp: Date.now()});
       } catch (err) {
         retries--;
         console.warn(`⚠️ Save failed (${3 - retries}/3 retries):`, err.message);
