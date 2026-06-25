@@ -8730,6 +8730,7 @@ document.addEventListener('visibilitychange', () => {
 }
 
     async function moveTopicDown(topic){
+  console.log("MOVE DOWN CLICKED:", topic);
   const idx =
     deckOrderConfig.topics.indexOf(topic);
   if(
