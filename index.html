@@ -3349,6 +3349,7 @@ async function loadFromFirebase(email) {
 }
 
     function initializeDeckOrder(){
+      console.log('INITIALIZE BEFORE',JSON.stringify(deckOrderConfig));
   const decks = getDecks();
   const topics =
     [...new Set(
@@ -3367,6 +3368,10 @@ async function loadFromFirebase(email) {
         [...subs];
     }
   });
+      console.log(
+  'INITIALIZE AFTER',
+  JSON.stringify(deckOrderConfig)
+);
 }
 // ============================================================
 //  SHARED DECKS - SAVE & LOAD
