@@ -4064,10 +4064,9 @@ async function loadUserData(email) {
     const schemaVersion = localData.schema_version || 1;
     
     if (schemaVersion === 2) {
-      // Format baru: progress-only
+      console.log('LOCAL CARD SAMPLE',localData.cards?.[0]);
       const progressCards = localData.cards || [];
       const sharedCards = await loadSharedDecks();
-      
       const progressMap = new Map(
         progressCards.map(c => [c.__id || c.card_id, c])
       );
