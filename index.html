@@ -3474,21 +3474,17 @@ async function loadSharedDecks() {
     // ============================================================
     //  FIREBASE AUTH STATE LISTENER
     // ============================================================
-   firebase.auth().onAuthStateChanged(async user => {
-
-    if (!user) {
-        return;}
-    try {
-      currentUser = user.email;
-        isAdmin =
-            ADMIN_EMAILS.includes(user.email);
+  firebase.auth().onAuthStateChanged(async (user) => {
+      if (!user) return;
+      try {
+        currentUser = user.email;
+        isAdmin = ADMIN_EMAILS.includes(user.email);
         await loadUserData(user.email);
         enterApp();
-    } catch(err) {
-        console.error(
-            "Initialization failed:",
-            err
-        );}});
+      } catch (err) {
+        console.error("Initialization failed:", err);
+      }
+    });
 
     // ============================================================
     //  HELPERS
@@ -3958,31 +3954,35 @@ async function loadSharedDecks() {
     }
 
     async function handleLogin(e) {
-      e.preventDefault();
-      const email = document.getElementById('login-email').value.trim();
-      const pw = document.getElementById('login-password').value;
-      const err = document.getElementById('login-error');
-      err.textContent = '';
-      try {
-        const userCredential = await firebase.auth().signInWithEmailAndPassword(email, pw);
-        const user = userCredential.user;
-        currentUser = email;
-        saveSession(email);
-        await loadUserData(email);
-      } catch (error) {
-        console.error('Login error:', error);
-        if (error.code === 'auth/user-not-found') {
-          err.textContent = 'No account found. Please sign up first.';
-        } else if (error.code === 'auth/wrong-password') {
-          err.textContent = 'Incorrect password.';
-        } else if (error.code === 'auth/invalid-email') {
-          err.textContent = 'Invalid email address.';
-        } else if (error.code === 'auth/too-many-requests') {
-          err.textContent = 'Too many failed attempts. Please try again later.';
-        } else if (error.code === 'auth/invalid-credential') {
-          err.textContent = 'Invalid credentials. Please check your email and password.';
-        } else {err.textContent = 'Login failed: ' + error.message;
-        }}}
+  e.preventDefault();
+
+  const email = document.getElementById('login-email').value.trim();
+  const pw = document.getElementById('login-password').value;
+  const err = document.getElementById('login-error');
+
+  err.textContent = '';
+
+  try {
+    await firebase.auth().signInWithEmailAndPassword(email, pw);
+    currentUser = email;
+    saveSession(email);
+  } catch (error) {
+    console.error('Login error:', error);
+    if (error.code === 'auth/user-not-found') {
+      err.textContent = 'No account found. Please sign up first.';
+    } else if (error.code === 'auth/wrong-password') {
+      err.textContent = 'Incorrect password.';
+    } else if (error.code === 'auth/invalid-email') {
+      err.textContent = 'Invalid email address.';
+    } else if (error.code === 'auth/too-many-requests') {
+      err.textContent = 'Too many failed attempts. Please try again later.';
+    } else if (error.code === 'auth/invalid-credential') {
+      err.textContent = 'Invalid credentials. Please check your email and password.';
+    } else {
+      err.textContent = 'Login failed: ' + error.message;
+    }
+  }
+}
 
 async function loadUserData(email) {
   if (!email) return;
@@ -4451,53 +4451,24 @@ function enterApp() {
     }
 
     // Hide user request button for admins
-    if (userRequestBtn) {
-        userRequestBtn.classList.toggle(
-            'hidden',
-            isAdmin
-        );
-    }
+    if (userRequestBtn) {userRequestBtn.classList.toggle('hidden',isAdmin);}
+    if (proBadge) {proBadge.classList.toggle('hidden',isAdmin);}
+    if (typeof lucide !== 'undefined' &&lucide.createIcons) {
+        lucide.createIcons();}}
 
-    // Hide Pro badge for admins
-    if (proBadge) {
-        proBadge.classList.toggle(
-            'hidden',
-            isAdmin
-        );
-    }
-
-    // Refresh icons
-    if (
-        typeof lucide !== 'undefined' &&
-        lucide.createIcons
-    ) {
-        lucide.createIcons();
-    }
-}
-
-   async function checkSession() {
+  async function checkSession() {
     const s = getSession();
-
     if (!s?.email) return false;
-
     const users = getUsers();
-
     if (!users[s.email]) {
         return false;
     }
-
     currentUser = s.email;
-
     isAdmin =
         users[s.email].isAdmin ||
         ADMIN_EMAILS.includes(s.email);
-
-    await loadUserData(s.email);
-
-    enterApp();
-
     return true;
-}
+    }
 
     // ============================================================
     //  PLAN UI
@@ -8427,58 +8398,72 @@ alert(
     });
 
     // ============================================================
-    //  INIT
-    // ============================================================
-    if (localStorage.getItem('flashmind_theme') === 'dark') document.documentElement.classList.add('dark');
+// INIT
+// ============================================================
+(async function init() {
 
-    const logged = checkSession();
+  if (localStorage.getItem('flashmind_theme') === 'dark') {
+    document.documentElement.classList.add('dark');
+  }
 
-    if (!logged) {
-      document.getElementById('view-login').classList.add('active');
-      document.getElementById('view-login').style.display = 'flex';
-    } else {
-      enterApp();
-    }
+  const logged = await checkSession();
 
-    document.getElementById('bottomNav').addEventListener('click', function(e) {
-      const btn = e.target.closest('.nav-item');
-      if (!btn) return;
-      navClickHandler.call(btn, e);
+  if (logged) {
+    await loadUserData(currentUser);
+    enterApp();
+  } else {
+    document.getElementById('view-login').classList.add('active');
+    document.getElementById('view-login').style.display = 'flex';
+  }
+
+  document.getElementById('bottomNav').addEventListener('click', function(e) {
+    const btn = e.target.closest('.nav-item');
+    if (!btn) return;
+    navClickHandler.call(btn, e);
+  });
+
+  const uploadZone = document.getElementById('upload-zone');
+  if (uploadZone) {
+    uploadZone.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      uploadZone.classList.add('dragover');
     });
 
-    const uploadZone = document.getElementById('upload-zone');
-    if (uploadZone) {
-      uploadZone.addEventListener('dragover', (e) => {
-        e.preventDefault();
-        uploadZone.classList.add('dragover');
-      });
-      uploadZone.addEventListener('dragleave', () => {
-        uploadZone.classList.remove('dragover');
-      });
-      uploadZone.addEventListener('drop', (e) => {
-        e.preventDefault();
-        uploadZone.classList.remove('dragover');
-        const file = e.dataTransfer.files[0];
-        if (file && (file.name.endsWith('.xlsx') || file.name.endsWith('.xls'))) {
-          const event = { target: { files: [file] } };
-          handleExcelImport(event);
-        } else {
-          alert('Please upload an Excel file (.xlsx or .xls)');
-        }
-      });
-    }
+    uploadZone.addEventListener('dragleave', () => {
+      uploadZone.classList.remove('dragover');
+    });
 
-    if (typeof lucide !== 'undefined' && lucide.createIcons) {
-      lucide.createIcons();
-    }
+    uploadZone.addEventListener('drop', (e) => {
+      e.preventDefault();
+      uploadZone.classList.remove('dragover');
 
-    console.log('🚀 FlashMind · Pharmacy Study App (Optimized & Error-Free)');
-    console.log('📊 Plan:', userPlan);
-    console.log('👑 Admin:', isAdmin);
-    console.log('📚 Cards:', getRealCards().length, 'Decks:', getDecks().length);
-    console.log('☁️ Firebase: Connected & Syncing');
-    console.log('📝 Admin email: adm.pharmacore@gmail.com');
+      const file = e.dataTransfer.files[0];
 
+      if (file && (file.name.endsWith('.xlsx') || file.name.endsWith('.xls'))) {
+        handleExcelImport({
+          target: {
+            files: [file]
+          }
+        });
+      } else {
+        alert('Please upload an Excel file (.xlsx or .xls)');
+      }
+    });
+  }
+
+  if (typeof lucide !== 'undefined' && lucide.createIcons) {
+    lucide.createIcons();
+  }
+
+  console.log('🚀 FlashMind · Pharmacy Study App (Optimized & Error-Free)');
+  console.log('📊 Plan:', userPlan);
+  console.log('👑 Admin:', isAdmin);
+  console.log('📚 Cards:', getRealCards().length, 'Decks:', getDecks().length);
+  console.log('☁️ Firebase: Connected & Syncing');
+  console.log('📝 Admin email: adm.pharmacore@gmail.com');
+
+})();
+    
 // ======================================================
 // PULL TO REFRESH - Gaya Atsumaru
 // ======================================================
