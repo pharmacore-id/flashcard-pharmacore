@@ -3984,10 +3984,10 @@ async function loadSharedDecks() {
   }
 }
 
+// ✅ KEEP THIS COMPLETE VERSION
 async function loadUserData(email) {
   if (!email) return;
 
-  // 1. Load local data
   let localData = null;
   try {
     const raw = localStorage.getItem(DATA_PREFIX + email);
@@ -3998,7 +3998,6 @@ async function loadUserData(email) {
     console.warn('⚠️ Failed to parse local data');
   }
 
-  // 2. Try cloud load
   let cloudData = null;
   try {
     cloudData = await loadFromFirebase(email);
@@ -4006,7 +4005,6 @@ async function loadUserData(email) {
     console.warn('⚠️ Cloud load failed:', err.message);
   }
 
-  // 3. Decide which data to use based on timestamps
   let useCloudData = false;
   
   if (cloudData && cloudData.cards && cloudData.cards.length > 0) {
@@ -4014,15 +4012,10 @@ async function loadUserData(email) {
       const cloudTime = cloudData.last_updated || 0;
       const localTime = localData.last_updated || 0;
       console.log("TIMESTAMP CHECK", {
-  cloudTime,
-  localTime,
-  diff: cloudTime - localTime,
-  cloudLastUpdated: cloudData.last_updated,
-  localLastUpdated: localData.last_updated,
-  cloudCards: cloudData.cards.length,
-  localCards: localData.cards.length,
-  useCloudWillBe: cloudTime > localTime
-});
+        cloudTime, localTime, diff: cloudTime - localTime,
+        cloudCards: cloudData.cards.length,
+        localCards: localData.cards.length
+      });
       useCloudData = cloudTime > localTime;
     } else {
       useCloudData = true;
@@ -4038,14 +4031,12 @@ async function loadUserData(email) {
     return;
   }
 
-  // 4. Apply the chosen data
   if (useCloudData && cloudData) {
     allCards = cloudData.cards;
     userPlan = cloudData.plan || 'free';
     
-    // ===== SYNC LOCAL STORAGE DENGAN CLOUD (FULL BACKUP) =====
     const synced = {
-      cards: allCards,  // ← FULL BACKUP
+      cards: allCards,
       schema_version: 2,
       last_updated: cloudData.last_updated || Date.now(),
       user_plan: userPlan,
@@ -4056,11 +4047,9 @@ async function loadUserData(email) {
     console.log('✅ Loaded from cloud:', allCards.length, 'cards');
     
   } else if (!useCloudData && localData) {
-    // ===== LOAD DARI LOCAL =====
     const schemaVersion = localData.schema_version || 1;
     
     if (schemaVersion === 2) {
-      console.log('LOCAL CARD SAMPLE',localData.cards?.[0]);
       const progressCards = localData.cards || [];
       const sharedCards = await loadSharedDecks();
       const progressMap = new Map(
@@ -4070,20 +4059,16 @@ async function loadUserData(email) {
       allCards = sharedCards.map(card => {
         const key = card.__id || card.card_id;
         const progress = progressMap.get(key) || {};
-        return {
-          ...card,
-          ...progress
-        };
+        return { ...card, ...progress };
       });
       
       userPlan = localData.user_plan || 'free';
     } else {
-      // Format lama: full cards
       allCards = localData.cards || [];
       userPlan = localData.user_plan || 'free';
       if (localData.deckOrderConfig) {
-  deckOrderConfig = localData.deckOrderConfig;
-}
+        deckOrderConfig = localData.deckOrderConfig;
+      }
     }
     
     console.log('✅ Loaded from localStorage:', allCards.length, 'cards');
@@ -4094,7 +4079,6 @@ async function loadUserData(email) {
     console.log('⚠️ No saved data found, using sample decks');
   }
 
- // 5. Always set these
   initializeDeckOrder();
   isAdmin = ADMIN_EMAILS.includes(email);
   localStorage.setItem('flashmind_plan_' + email, userPlan);
