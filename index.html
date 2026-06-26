@@ -4022,14 +4022,16 @@ async function loadUserData(email) {
     if (localData && localData.cards && localData.cards.length > 0) {
       const cloudTime = cloudData.last_updated || 0;
       const localTime = localData.last_updated || 0;
-      console.log(
-  'TIMESTAMP CHECK',
-  {
-    cloudTime,
-    localTime,
-    diff: cloudTime - localTime
-  }
-);
+      console.log("TIMESTAMP CHECK", {
+  cloudTime,
+  localTime,
+  diff: cloudTime - localTime,
+  cloudLastUpdated: cloudData.last_updated,
+  localLastUpdated: localData.last_updated,
+  cloudCards: cloudData.cards.length,
+  localCards: localData.cards.length,
+  useCloudWillBe: cloudTime > localTime
+});
       useCloudData = cloudTime > localTime;
     } else {
       useCloudData = true;
