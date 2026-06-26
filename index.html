@@ -4223,7 +4223,12 @@ async function saveUserData(email) {
       try {
 
         const saveTime = Date.now();
-
+        const reviewed = snapshot.filter(c => c.total_reviews > 0);
+        console.log("SNAPSHOT CHECK", {
+            totalCards: snapshot.length,
+            reviewedCards: reviewed.length,
+            sample: reviewed[0]
+        });
         await db.collection('users').doc(email).set({
           cards: snapshot,
           plan: planSnapshot,
