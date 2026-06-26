@@ -3027,8 +3027,6 @@ tsCurrentAnswer='';
 
 let selectedPlan='regular';
 let selectedDuration=3;
-let lastSyncTime = 0;
-const SYNC_COOLDOWN = 10000;
 
 let deckOrderConfig = {
   topics: [],
@@ -3049,7 +3047,7 @@ let resetCode='';
 let resetEmail='';
 let selectedCardIds=[];
 let selectedDeckIds=[];
-let eventBuffer = new Map();
+
 let sessionStats={
 again:0,
 hard:0,
@@ -4169,13 +4167,6 @@ async function loadUserData(email) {
 let saveTimeout = null;
 let lastSavedTimestamp = 0;
 
-let saveTimeout = null;
-let isSavingToFirebase = false;
-let lastSavedTimestamp = 0;
-
-// ============================================================
-// SAVE USER DATA (FINAL STABLE VERSION)
-// ============================================================
 async function saveUserData(email) {
   if (!email) return;
 
@@ -4185,13 +4176,11 @@ async function saveUserData(email) {
     return;
   }
 
-  // ===== SAVE LOCAL (FAST) =====
+  // ===== SAVE LOCAL =====
   const now = Date.now();
 
-  const snapshot = buildProgressData();
-
   const localData = {
-    cards: snapshot,
+    cards: buildProgressData(), // progress only
     deckOrderConfig: deckOrderConfig,
     schema_version: 2,
     last_updated: now,
@@ -4213,32 +4202,28 @@ async function saveUserData(email) {
 
   saveTimeout = setTimeout(async () => {
 
-    // ===== GLOBAL LOCK (ANTI PARALLEL WRITE) =====
-    if (isSavingToFirebase) {
-      console.log('⏳ Firebase save skipped (already running)');
-      return;
-    }
-
-    isSavingToFirebase = true;
+    const snapshot = buildProgressData();
+    const planSnapshot = userPlan;
+    const deckOrderSnapshot = deckOrderConfig;
 
     let retries = 3;
     let saved = false;
 
     while (retries > 0 && !saved) {
+
       try {
 
         const saveTime = Date.now();
         const reviewed = snapshot.filter(c => c.total_reviews > 0);
-
         console.log("SNAPSHOT CHECK", {
-          totalCards: snapshot.length,
-          reviewedCards: reviewed.length
+            totalCards: snapshot.length,
+            reviewedCards: reviewed.length,
+            sample: reviewed[0]
         });
-
         await db.collection('users').doc(email).set({
           cards: snapshot,
-          plan: userPlan,
-          deckOrderConfig: deckOrderConfig,
+          plan: planSnapshot,
+          deckOrderConfig: deckOrderSnapshot,
           schema_version: 2,
           last_updated: saveTime
         }, { merge: true });
@@ -4246,34 +4231,37 @@ async function saveUserData(email) {
         lastSavedTimestamp = saveTime;
         saved = true;
 
-        console.log('☁️ FIREBASE SAVE SUCCESS', {
+        console.log('☁️ FIREBASE SAVE', {
           cards: snapshot.length,
           timestamp: saveTime
         });
 
       } catch (err) {
+
         retries--;
 
         console.warn(
-          `⚠️ Save failed (${3 - retries}/3):`,
+          `⚠️ Save failed (${3 - retries}/3)`,
           err.message
         );
 
         if (retries > 0) {
-          await new Promise(r => setTimeout(r, 2000));
+          await new Promise(r =>
+            setTimeout(r, 2000)
+          );
         }
       }
     }
 
     if (!saved) {
-      console.error('❌ Save failed after 3 retries');
+      console.error(
+        '❌ Save failed after 3 retries'
+      );
     }
-
-    // ===== RELEASE LOCK =====
-    isSavingToFirebase = false;
 
   }, 2000);
 }
+
     // ============================================================
 //  FLUSH SAVE - Paksa Save ke Firestore (Dengan Snapshot)
 // ============================================================
@@ -5537,10 +5525,6 @@ moveTopicDown('${topic}');
       // ===== HAPUS DARI allCards USER SAAT INI =====
       allCards = allCards.filter(c => c.deck_id !== deckId);
       await saveUserData(currentUser);
-pushEvent("GRADE_CARD", {
-    cardId: card.id,
-    value: "good"
-});
       
     } catch (error) {
       alert('❌ Failed to delete shared deck: ' + error.message);
@@ -5552,10 +5536,6 @@ pushEvent("GRADE_CARD", {
   }
 
   await saveUserData(currentUser);
-pushEvent("GRADE_CARD", {
-    cardId: card.id,
-    value: "good"
-});
   renderDecks();
   updateHome();
   
@@ -5911,10 +5891,6 @@ async function handleExcelImport(event) {
       allCards = [...customCards, ...mergedSharedCards];
 
       await saveUserData(currentUser);
-pushEvent("GRADE_CARD", {
-    cardId: card.id,
-    value: "good"
-});
 
       renderDecks();
       updateHome();
@@ -7533,10 +7509,6 @@ async function deleteRequest(requestId) {
     });
 
     await saveUserData(currentUser);
-pushEvent("GRADE_CARD", {
-    cardId: card.id,
-    value: "good"
-});
     renderDecks();
     updateHome();
     renderAdminDeckList();
@@ -7685,10 +7657,6 @@ async function deleteSelectedDecks() {
   }
 
   await saveUserData(currentUser);
-pushEvent("GRADE_CARD", {
-    cardId: card.id,
-    value: "good"
-});
   selectedDeckIds = [];
   renderDecks();
   updateHome();
@@ -8704,9 +8672,7 @@ document.addEventListener('visibilitychange', () => {
     deckOrderConfig.topics[idx-1]
   ];
 
-  await saveUserData(currentUser); pushEvent("GRADE_CARD", {
-    cardId: card.id,
-    value: "good"});
+  await saveUserData(currentUser.email);
 
   renderDecks();
 }
@@ -8737,11 +8703,7 @@ document.addEventListener('visibilitychange', () => {
 
   console.log("AFTER", [...deckOrderConfig.topics]);
 
-  await saveUserData(currentUser);
-pushEvent("GRADE_CARD", {
-    cardId: card.id,
-    value: "good"
-});
+  await saveUserData(currentUser.email);
 
   renderDecks();
 }
@@ -8764,11 +8726,7 @@ pushEvent("GRADE_CARD", {
     order[idx-1]
   ];
 
-  await saveUserData(currentUser);
-pushEvent("GRADE_CARD", {
-    cardId: card.id,
-    value: "good"
-});
+  await saveUserData(currentUser.email);
 
   renderDecks();
 }
@@ -8793,55 +8751,10 @@ pushEvent("GRADE_CARD", {
     order[idx],
     order[idx+1]
   ];
-  await saveUserData(currentUser);
-pushEvent("GRADE_CARD", {
-    cardId: card.id,
-    value: "good"
-});
+  await saveUserData(currentUser.email);
+  renderDecks();
 }
-
-    function generateEventKey(type, payload) {
-    switch (type) {
-        case "GRADE_CARD":
-            return `GRADE_CARD_${payload.cardId}`;
-
-        case "UPDATE_CARD":
-            return `UPDATE_CARD_${payload.cardId}`;
-
-        case "MOVE_TOPIC":
-            return `MOVE_TOPIC_${payload.topicId}`;
-
-        default:
-            return `${type}_${JSON.stringify(payload)}`;
-    }
-}
-
-    function pushEvent(type, payload) {
-    const key = generateEventKey(type, payload);
-
-    const event = {
-        id: crypto.randomUUID(),
-        type,
-        payload,
-        timestamp: Date.now()
-    };
-
-    // compression layer
-    eventBuffer.set(key, event);
-
-    hasUnsavedChanges = true;
-    lastActivity = Date.now();
-}
-
-    function flushEventBuffer() {
-    const events = Array.from(eventBuffer.values());
-
-    if (events.length === 0) return [];
-
-    eventBuffer.clear();
-    return events;
-}
-
+    
   </script>
 </body>
 </html>
