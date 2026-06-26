@@ -3047,7 +3047,7 @@ let resetCode='';
 let resetEmail='';
 let selectedCardIds=[];
 let selectedDeckIds=[];
-
+let eventBuffer = new Map();
 let sessionStats={
 again:0,
 hard:0,
@@ -5525,6 +5525,10 @@ moveTopicDown('${topic}');
       // ===== HAPUS DARI allCards USER SAAT INI =====
       allCards = allCards.filter(c => c.deck_id !== deckId);
       await saveUserData(currentUser);
+pushEvent("GRADE_CARD", {
+    cardId: card.id,
+    value: "good"
+});
       
     } catch (error) {
       alert('❌ Failed to delete shared deck: ' + error.message);
@@ -5536,6 +5540,10 @@ moveTopicDown('${topic}');
   }
 
   await saveUserData(currentUser);
+pushEvent("GRADE_CARD", {
+    cardId: card.id,
+    value: "good"
+});
   renderDecks();
   updateHome();
   
@@ -5891,6 +5899,10 @@ async function handleExcelImport(event) {
       allCards = [...customCards, ...mergedSharedCards];
 
       await saveUserData(currentUser);
+pushEvent("GRADE_CARD", {
+    cardId: card.id,
+    value: "good"
+});
 
       renderDecks();
       updateHome();
@@ -7509,6 +7521,10 @@ async function deleteRequest(requestId) {
     });
 
     await saveUserData(currentUser);
+pushEvent("GRADE_CARD", {
+    cardId: card.id,
+    value: "good"
+});
     renderDecks();
     updateHome();
     renderAdminDeckList();
@@ -7657,6 +7673,10 @@ async function deleteSelectedDecks() {
   }
 
   await saveUserData(currentUser);
+pushEvent("GRADE_CARD", {
+    cardId: card.id,
+    value: "good"
+});
   selectedDeckIds = [];
   renderDecks();
   updateHome();
@@ -8672,7 +8692,9 @@ document.addEventListener('visibilitychange', () => {
     deckOrderConfig.topics[idx-1]
   ];
 
-  await saveUserData(currentUser.email);
+  await saveUserData(currentUser); pushEvent("GRADE_CARD", {
+    cardId: card.id,
+    value: "good"});
 
   renderDecks();
 }
@@ -8703,7 +8725,11 @@ document.addEventListener('visibilitychange', () => {
 
   console.log("AFTER", [...deckOrderConfig.topics]);
 
-  await saveUserData(currentUser.email);
+  await saveUserData(currentUser);
+pushEvent("GRADE_CARD", {
+    cardId: card.id,
+    value: "good"
+});
 
   renderDecks();
 }
@@ -8726,7 +8752,11 @@ document.addEventListener('visibilitychange', () => {
     order[idx-1]
   ];
 
-  await saveUserData(currentUser.email);
+  await saveUserData(currentUser);
+pushEvent("GRADE_CARD", {
+    cardId: card.id,
+    value: "good"
+});
 
   renderDecks();
 }
@@ -8751,10 +8781,55 @@ document.addEventListener('visibilitychange', () => {
     order[idx],
     order[idx+1]
   ];
-  await saveUserData(currentUser.email);
-  renderDecks();
+  await saveUserData(currentUser);
+pushEvent("GRADE_CARD", {
+    cardId: card.id,
+    value: "good"
+});
 }
-    
+
+    function generateEventKey(type, payload) {
+    switch (type) {
+        case "GRADE_CARD":
+            return `GRADE_CARD_${payload.cardId}`;
+
+        case "UPDATE_CARD":
+            return `UPDATE_CARD_${payload.cardId}`;
+
+        case "MOVE_TOPIC":
+            return `MOVE_TOPIC_${payload.topicId}`;
+
+        default:
+            return `${type}_${JSON.stringify(payload)}`;
+    }
+}
+
+    function pushEvent(type, payload) {
+    const key = generateEventKey(type, payload);
+
+    const event = {
+        id: crypto.randomUUID(),
+        type,
+        payload,
+        timestamp: Date.now()
+    };
+
+    // compression layer
+    eventBuffer.set(key, event);
+
+    hasUnsavedChanges = true;
+    lastActivity = Date.now();
+}
+
+    function flushEventBuffer() {
+    const events = Array.from(eventBuffer.values());
+
+    if (events.length === 0) return [];
+
+    eventBuffer.clear();
+    return events;
+}
+
   </script>
 </body>
 </html>
