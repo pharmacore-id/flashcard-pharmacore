@@ -3027,6 +3027,8 @@ tsCurrentAnswer='';
 
 let selectedPlan='regular';
 let selectedDuration=3;
+let lastSyncTime = 0;
+const SYNC_COOLDOWN = 10000;
 
 let deckOrderConfig = {
   topics: [],
@@ -4167,6 +4169,13 @@ async function loadUserData(email) {
 let saveTimeout = null;
 let lastSavedTimestamp = 0;
 
+let saveTimeout = null;
+let isSavingToFirebase = false;
+let lastSavedTimestamp = 0;
+
+// ============================================================
+// SAVE USER DATA (FINAL STABLE VERSION)
+// ============================================================
 async function saveUserData(email) {
   if (!email) return;
 
@@ -4176,11 +4185,13 @@ async function saveUserData(email) {
     return;
   }
 
-  // ===== SAVE LOCAL =====
+  // ===== SAVE LOCAL (FAST) =====
   const now = Date.now();
 
+  const snapshot = buildProgressData();
+
   const localData = {
-    cards: buildProgressData(), // progress only
+    cards: snapshot,
     deckOrderConfig: deckOrderConfig,
     schema_version: 2,
     last_updated: now,
@@ -4202,28 +4213,32 @@ async function saveUserData(email) {
 
   saveTimeout = setTimeout(async () => {
 
-    const snapshot = buildProgressData();
-    const planSnapshot = userPlan;
-    const deckOrderSnapshot = deckOrderConfig;
+    // ===== GLOBAL LOCK (ANTI PARALLEL WRITE) =====
+    if (isSavingToFirebase) {
+      console.log('⏳ Firebase save skipped (already running)');
+      return;
+    }
+
+    isSavingToFirebase = true;
 
     let retries = 3;
     let saved = false;
 
     while (retries > 0 && !saved) {
-
       try {
 
         const saveTime = Date.now();
         const reviewed = snapshot.filter(c => c.total_reviews > 0);
+
         console.log("SNAPSHOT CHECK", {
-            totalCards: snapshot.length,
-            reviewedCards: reviewed.length,
-            sample: reviewed[0]
+          totalCards: snapshot.length,
+          reviewedCards: reviewed.length
         });
+
         await db.collection('users').doc(email).set({
           cards: snapshot,
-          plan: planSnapshot,
-          deckOrderConfig: deckOrderSnapshot,
+          plan: userPlan,
+          deckOrderConfig: deckOrderConfig,
           schema_version: 2,
           last_updated: saveTime
         }, { merge: true });
@@ -4231,37 +4246,34 @@ async function saveUserData(email) {
         lastSavedTimestamp = saveTime;
         saved = true;
 
-        console.log('☁️ FIREBASE SAVE', {
+        console.log('☁️ FIREBASE SAVE SUCCESS', {
           cards: snapshot.length,
           timestamp: saveTime
         });
 
       } catch (err) {
-
         retries--;
 
         console.warn(
-          `⚠️ Save failed (${3 - retries}/3)`,
+          `⚠️ Save failed (${3 - retries}/3):`,
           err.message
         );
 
         if (retries > 0) {
-          await new Promise(r =>
-            setTimeout(r, 2000)
-          );
+          await new Promise(r => setTimeout(r, 2000));
         }
       }
     }
 
     if (!saved) {
-      console.error(
-        '❌ Save failed after 3 retries'
-      );
+      console.error('❌ Save failed after 3 retries');
     }
+
+    // ===== RELEASE LOCK =====
+    isSavingToFirebase = false;
 
   }, 2000);
 }
-
     // ============================================================
 //  FLUSH SAVE - Paksa Save ke Firestore (Dengan Snapshot)
 // ============================================================
