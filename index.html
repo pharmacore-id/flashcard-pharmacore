@@ -7,6 +7,7 @@
   <script src="https://cdn.tailwindcss.com/3.4.17"></script>
   <script src="https://cdn.jsdelivr.net/npm/lucide@0.263.0/dist/umd/lucide.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.2.0/crypto-js.min.js"></script>
   
   <!-- Firebase SDK -->
   <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
@@ -1769,6 +1770,92 @@ color:white;
       </div>
     </div>
 
+    <!-- ===== QRIS PAYMENT MODAL ===== -->
+<div id="qris-modal" class="hidden fixed inset-0 z-[9999] flex items-end sm:items-center justify-center" 
+     style="background:rgba(0,0,0,0.5);" 
+     onclick="if(event.target===this) closeQrisModal()">
+  
+  <div class="surface rounded-t-3xl sm:rounded-3xl w-full max-w-md p-6" 
+       onclick="event.stopPropagation()" 
+       style="max-height:90vh;overflow-y:auto;">
+    
+    <div class="flex justify-between items-center mb-4">
+      <h3 class="font-bold text-xl">💳 QRIS Payment</h3>
+      <button onclick="closeQrisModal()" class="text-sec">
+        <i data-lucide="x" class="w-6 h-6"></i>
+      </button>
+    </div>
+    
+    <div class="qris-container">
+      <!-- Status -->
+      <div class="text-center mb-4">
+        <span id="qris-status-badge" class="status-badge pending">⏳ Waiting for payment</span>
+      </div>
+      
+      <p class="qris-title" id="qris-amount-display">Rp 68.000</p>
+      <p class="qris-sub" id="qris-plan-display">Regular · 3 Months</p>
+      
+      <!-- QRIS Image -->
+      <div id="qris-image-container">
+        <div id="qris-placeholder" class="qris-image-placeholder">
+          📱
+          <p style="font-size:12px;margin-top:8px;color:var(--text-secondary);">
+            Scan with QRIS app
+          </p>
+        </div>
+        <!-- QRIS Image akan muncul di sini dari API -->
+        <img id="qris-image" class="qris-image hidden" alt="QRIS Code" />
+      </div>
+      
+      <!-- Timer / Countdown -->
+      <div class="text-center text-sm text-sec mt-2" id="qris-timer">
+        ⏱️ Expires in: <span id="qris-countdown">05:00</span>
+      </div>
+      
+      <!-- Instructions -->
+      <div class="mt-4 p-3 bg-gray-50 dark:bg-gray-800 rounded-xl text-xs text-sec">
+        <p class="font-semibold text-xs">📌 Cara Bayar:</p>
+        <ol class="list-decimal ml-4 mt-1 space-y-1">
+          <li>Buka aplikasi QRIS (GoPay, DANA, OVO, ShopeePay, BCA, Mandiri)</li>
+          <li>Scan QR Code di atas</li>
+          <li>Konfirmasi pembayaran</li>
+          <li>Premium akan aktif otomatis</li>
+        </ol>
+      </div>
+      
+      <!-- Payment Status Detail -->
+      <div id="qris-payment-detail" class="mt-3 hidden">
+        <div class="flex justify-between text-xs border-t border-theme pt-2">
+          <span class="text-sec">Transaction ID:</span>
+          <span id="qris-transaction-id" class="font-mono text-xs">-</span>
+        </div>
+        <div class="flex justify-between text-xs border-t border-theme pt-1">
+          <span class="text-sec">Status:</span>
+          <span id="qris-transaction-status" class="font-semibold">-</span>
+        </div>
+      </div>
+      
+      <!-- Action Buttons -->
+      <div class="flex gap-3 mt-4">
+        <button onclick="checkQrisStatus()" 
+                id="qris-check-btn"
+                class="flex-1 py-3 rounded-2xl border border-theme font-medium text-sm"
+                style="color:var(--text-secondary)">
+          🔄 Check Status
+        </button>
+        <button onclick="closeQrisModal()" 
+                class="flex-1 py-3 rounded-2xl accent-bg text-white font-medium text-sm">
+          Close
+        </button>
+      </div>
+      
+      <p class="text-center text-xs text-sec mt-3">
+        🔒 Pembayaran aman melalui DOKU
+      </p>
+    </div>
+  </div>
+</div>
+
     <!-- ===== HOME ===== -->
     <div id="view-home" class="view">
       <div class="flex items-center justify-between mb-3">
@@ -2941,14 +3028,9 @@ style="max-height:90vh;overflow-y:auto;">
 
         </p>
 
-        <button
-        id="pay-now-btn"
-        onclick="processPayment()"
-        class="pay-btn">
-
-            Pay Rp68,000
-
-        </button>
+        <button id="pay-now-btn" onclick="processPayment()" class="pay-btn">
+  Pay Rp68,000 via QRIS
+</button>
 
     </div>
 
@@ -8303,122 +8385,343 @@ updatePricingDisplay();
       evt.currentTarget.classList.add('selected');
     }
 
-async function processPayment(){
+// ============================================================
+//  PROCESS PAYMENT - QRIS VERSION
+// ============================================================
 
-if(!selectedPlan || !selectedDuration){
-alert("Please select a plan");
-return;
+let currentQrisOrderId = null;
+let qrisCheckInterval = null;
+
+async function processPayment() {
+  if (!selectedPlan || !selectedDuration) {
+    alert('Please select a plan first.');
+    return;
+  }
+  
+  if (isPremiumActive()) {
+    alert('You already have Premium access!');
+    return;
+  }
+  
+  // Book Buyer harus validasi code dulu
+  if (selectedPlan === 'book' && !hasValidCode) {
+    alert('Please validate your access code first.');
+    return;
+  }
+  
+  const price = PRICING[selectedPlan][selectedDuration];
+  const planLabel = selectedPlan === 'book' ? 'Book Buyer' : 'Regular';
+  
+  const btn = document.getElementById('pay-now-btn');
+  btn.disabled = true;
+  btn.textContent = 'Creating payment...';
+  
+  try {
+    // ===== 1. Create QRIS Payment =====
+    const result = await createQrisPayment(price, planLabel, selectedDuration);
+    
+    if (!result.success) {
+      alert('❌ Failed to create payment: ' + (result.message || 'Unknown error'));
+      btn.disabled = false;
+      updatePricingDisplay();
+      return;
+    }
+    
+    currentQrisOrderId = result.orderId;
+    
+    // ===== 2. Show QRIS Modal =====
+    closeUpgradeModal();
+    showQrisModal(result);
+    
+    // ===== 3. Start checking payment status =====
+    startQrisPolling(result.orderId);
+    
+  } catch (error) {
+    console.error('Payment error:', error);
+    alert('❌ Payment error: ' + error.message);
+  } finally {
+    btn.disabled = false;
+    updatePricingDisplay();
+  }
 }
 
-if(isPremiumActive()){
-alert("You already have Premium access!");
-return;
+// ============================================================
+//  SHOW QRIS MODAL
+// ============================================================
+
+function showQrisModal(result) {
+  const modal = document.getElementById('qris-modal');
+  modal.classList.remove('hidden');
+  
+  // Set amount display
+  document.getElementById('qris-amount-display').textContent = 
+    'Rp ' + result.amount.toLocaleString();
+  
+  // Set plan display
+  const planLabel = selectedPlan === 'book' ? 'Book Buyer' : 'Regular';
+  document.getElementById('qris-plan-display').textContent = 
+    planLabel + ' · ' + selectedDuration + ' Months';
+  
+  // Set transaction ID
+  document.getElementById('qris-transaction-id').textContent = result.transactionId;
+  document.getElementById('qris-transaction-status').textContent = 'PENDING';
+  document.getElementById('qris-payment-detail').classList.remove('hidden');
+  
+  // ===== Set QRIS Image =====
+  const imageEl = document.getElementById('qris-image');
+  const placeholderEl = document.getElementById('qris-placeholder');
+  
+  if (result.qrisImage) {
+    imageEl.src = result.qrisImage;
+    imageEl.classList.remove('hidden');
+    placeholderEl.classList.add('hidden');
+  } else if (result.qrisCode) {
+    // Jika API mengembalikan kode QRIS (bukan gambar), kita bisa gunakan library QR
+    // Atau tampilkan sebagai text
+    imageEl.classList.add('hidden');
+    placeholderEl.classList.remove('hidden');
+    placeholderEl.innerHTML = `
+      <div style="font-size:12px;text-align:center;">
+        <p style="font-size:2rem;">📱</p>
+        <p style="margin-top:4px;font-weight:600;">Scan QRIS Code</p>
+        <p style="font-size:10px;color:var(--text-secondary);word-break:break-all;max-width:180px;margin:4px auto;">
+          ${result.qrisCode}
+        </p>
+        <p style="font-size:9px;color:var(--text-secondary);margin-top:4px;">
+          Copy kode di atas ke aplikasi QRIS
+        </p>
+      </div>
+    `;
+  } else {
+    // Fallback: tampilkan placeholder
+    imageEl.classList.add('hidden');
+    placeholderEl.classList.remove('hidden');
+    placeholderEl.innerHTML = `
+      <div style="font-size:12px;text-align:center;">
+        <p style="font-size:3rem;">💳</p>
+        <p style="font-weight:600;">QRIS</p>
+        <p style="font-size:10px;color:var(--text-secondary);">
+          Scan dengan aplikasi QRIS
+        </p>
+      </div>
+    `;
+  }
+  
+  // Reset status badge
+  const badge = document.getElementById('qris-status-badge');
+  badge.textContent = '⏳ Waiting for payment';
+  badge.className = 'status-badge pending';
+  
+  // Reset timer
+  let seconds = 300; // 5 minutes
+  const timerEl = document.getElementById('qris-countdown');
+  
+  if (qrisCheckInterval) {
+    clearInterval(qrisCheckInterval);
+    qrisCheckInterval = null;
+  }
+  
+  // Timer countdown
+  const timerInterval = setInterval(() => {
+    seconds--;
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    timerEl.textContent = `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+    
+    if (seconds <= 0) {
+      clearInterval(timerInterval);
+      timerEl.textContent = 'Expired';
+      const badge = document.getElementById('qris-status-badge');
+      badge.textContent = '⏰ Payment expired';
+      badge.className = 'status-badge failed';
+    }
+  }, 1000);
+  
+  // Store timer reference
+  modal.dataset.timerInterval = timerInterval;
+  
+  if (typeof lucide !== 'undefined' && lucide.createIcons) {
+    lucide.createIcons();
+  }
 }
 
-const price=
-PRICING[selectedPlan][selectedDuration];
+// ============================================================
+//  START QRIS POLLING
+// ============================================================
 
-const btn=
-document.getElementById(
-'pay-now-btn'
-);
-
-btn.disabled=true;
-btn.textContent=
-"Processing...";
-
-setTimeout(async()=>{
-
-const confirmed=
-confirm(
-`Simulate successful payment?\n\nPlan: ${selectedDuration} month(s)\nPrice: Rp${price.toLocaleString()}`
-);
-
-if(!confirmed){
-
-btn.disabled=false;
-updatePricingDisplay();
-
-return;
-
+function startQrisPolling(orderId) {
+  if (qrisCheckInterval) {
+    clearInterval(qrisCheckInterval);
+  }
+  
+  let attempts = 0;
+  const maxAttempts = 20; // 20 * 15 detik = 5 menit
+  
+  qrisCheckInterval = setInterval(async () => {
+    attempts++;
+    
+    const status = await checkQrisStatus(orderId);
+    
+    if (status.isPaid) {
+      // ===== PAYMENT SUCCESS =====
+      clearInterval(qrisCheckInterval);
+      qrisCheckInterval = null;
+      
+      // Update UI
+      const badge = document.getElementById('qris-status-badge');
+      badge.textContent = '✅ Payment Successful!';
+      badge.className = 'status-badge success';
+      
+      document.getElementById('qris-transaction-status').textContent = 'PAID';
+      
+      // ===== ACTIVATE PREMIUM =====
+      await activatePremiumAfterPayment();
+      
+      // Show success message
+      alert('🎉 Payment successful! Premium is now active.');
+      
+      // Close modal after 3 seconds
+      setTimeout(() => {
+        closeQrisModal();
+      }, 3000);
+      
+    } else if (status.isFailed) {
+      // ===== PAYMENT FAILED =====
+      clearInterval(qrisCheckInterval);
+      qrisCheckInterval = null;
+      
+      const badge = document.getElementById('qris-status-badge');
+      badge.textContent = '❌ Payment ' + (status.status || 'Failed');
+      badge.className = 'status-badge failed';
+      
+      document.getElementById('qris-transaction-status').textContent = status.status || 'FAILED';
+      
+    } else if (attempts >= maxAttempts) {
+      // ===== TIMEOUT =====
+      clearInterval(qrisCheckInterval);
+      qrisCheckInterval = null;
+      
+      const badge = document.getElementById('qris-status-badge');
+      badge.textContent = '⏰ Payment timeout';
+      badge.className = 'status-badge failed';
+    }
+    
+    // Update status text
+    if (status.status) {
+      document.getElementById('qris-transaction-status').textContent = status.status;
+    }
+    
+  }, 15000); // Check every 15 seconds
 }
 
-const expiry=
-addMonths(
-new Date(),
-selectedDuration
-).toISOString();
+// ============================================================
+//  CHECK QRIS STATUS (Manual)
+// ============================================================
 
-savePlan(
-currentUser,
-'premium',
-expiry
-);
-
-
-if(
-selectedPlan==="book"
-&& hasValidCode
-){
-
-const code=
-document
-.getElementById(
-'upgrade-code-input'
-)
-.value
-.trim()
-.toUpperCase();
-
-try{
-
-await db
-.collection(
-'accessCodes'
-)
-.doc(code)
-.update({
-
-used:true,
-
-usedBy:currentUser,
-
-usedAt:
-firebase
-.firestore
-.FieldValue
-.serverTimestamp()
-
-});
-
-}catch(error){
-
-console.error(error);
-
+async function checkQrisStatusManual() {
+  if (!currentQrisOrderId) {
+    alert('No active payment.');
+    return;
+  }
+  
+  const btn = document.getElementById('qris-check-btn');
+  btn.disabled = true;
+  btn.textContent = 'Checking...';
+  
+  try {
+    const status = await checkQrisStatus(currentQrisOrderId);
+    
+    if (status.isPaid) {
+      document.getElementById('qris-status-badge').textContent = '✅ Payment Successful!';
+      document.getElementById('qris-status-badge').className = 'status-badge success';
+      document.getElementById('qris-transaction-status').textContent = 'PAID';
+      
+      if (qrisCheckInterval) {
+        clearInterval(qrisCheckInterval);
+        qrisCheckInterval = null;
+      }
+      
+      await activatePremiumAfterPayment();
+      alert('🎉 Payment confirmed! Premium is now active.');
+      
+      setTimeout(() => closeQrisModal(), 2000);
+    } else {
+      const msg = status.isPending ? '⏳ Still waiting for payment...' : '❌ Payment ' + (status.status || 'failed');
+      document.getElementById('qris-status-badge').textContent = msg;
+      document.getElementById('qris-status-badge').className = 'status-badge ' + (status.isPending ? 'pending' : 'failed');
+      document.getElementById('qris-transaction-status').textContent = status.status || 'UNKNOWN';
+    }
+  } catch (error) {
+    alert('❌ Status check failed: ' + error.message);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '🔄 Check Status';
+  }
 }
 
+// ============================================================
+//  ACTIVATE PREMIUM AFTER PAYMENT
+// ============================================================
+
+async function activatePremiumAfterPayment() {
+  const expiry = addMonths(new Date(), selectedDuration).toISOString();
+  
+  savePlan(currentUser, 'premium', expiry);
+  userPlan = 'premium';
+  
+  // Jika Book Buyer, tandai kode sebagai used
+  if (selectedPlan === 'book' && hasValidCode) {
+    const code = document.getElementById('upgrade-code-input').value.trim().toUpperCase();
+    try {
+      await db.collection('accessCodes').doc(code).update({
+        used: true,
+        usedBy: currentUser,
+        usedAt: firebase.firestore.FieldValue.serverTimestamp()
+      });
+    } catch (error) {
+      console.error('Failed to mark code as used:', error);
+    }
+  }
+  
+  updatePlanUI();
+  updateHome();
+  renderDecks();
 }
 
-userPlan='premium';
+// ============================================================
+//  CLOSE QRIS MODAL
+// ============================================================
 
-updatePlanUI();
-
-updateHome();
-
-renderDecks();
-
-closeUpgradeModal();
-
-btn.disabled=false;
-
-updatePricingDisplay();
-
-alert(
-`🎉 Premium activated for ${selectedDuration} month(s)!`
-);
-
-},1000);
-
+function closeQrisModal() {
+  const modal = document.getElementById('qris-modal');
+  modal.classList.add('hidden');
+  
+  // Clear timer interval
+  if (modal.dataset.timerInterval) {
+    clearInterval(modal.dataset.timerInterval);
+    modal.dataset.timerInterval = null;
+  }
+  
+  // Clear polling interval
+  if (qrisCheckInterval) {
+    clearInterval(qrisCheckInterval);
+    qrisCheckInterval = null;
+  }
+  
+  // Reset QRIS image
+  document.getElementById('qris-image').classList.add('hidden');
+  document.getElementById('qris-image').src = '';
+  
+  const placeholder = document.getElementById('qris-placeholder');
+  placeholder.classList.remove('hidden');
+  placeholder.innerHTML = `
+    📱
+    <p style="font-size:12px;margin-top:8px;color:var(--text-secondary);">
+      Scan with QRIS app
+    </p>
+  `;
+  
+  currentQrisOrderId = null;
 }
     // ============================================================
     //  KEYBOARD SHORTCUTS
@@ -8793,6 +9096,183 @@ document.addEventListener('visibilitychange', () => {
   ];
   await saveUserData(currentUser.email);
   renderDecks();
+}
+
+    // ============================================================
+//  DOKU API CONFIGURATION
+// ============================================================
+
+const DOKU_CONFIG = {
+  // ===== GANTI DENGAN CREDENTIAL ANDA =====
+  clientId: 'BRN-1234-5678-9012',  // Dapatkan dari dashboard DOKU
+  secretKey: 'sk_test_abc123...',   // Dapatkan dari dashboard DOKU
+  
+  // Environment: 'sandbox' atau 'production'
+  environment: 'sandbox',
+  
+  // Base URL
+  get baseUrl() {
+    return this.environment === 'production' 
+      ? 'https://api.doku.com' 
+      : 'https://api-sandbox.doku.com';
+  }
+};
+
+// ============================================================
+//  DOKU API HELPER FUNCTIONS
+// ============================================================
+
+function generateDokuSignature(method, path, body, timestamp) {
+  // Signature format: HMAC-SHA256
+  // String to sign: ClientId|RequestURI|AccessToken|Timestamp|Body
+  const accessToken = ''; // Untuk QRIS biasanya empty
+  
+  const stringToSign = `${DOKU_CONFIG.clientId}|${path}|${accessToken}|${timestamp}|${body || ''}`;
+  
+  // Menggunakan CryptoJS (akan kita tambahkan di HTML)
+  const signature = CryptoJS.HmacSHA256(stringToSign, DOKU_CONFIG.secretKey).toString(CryptoJS.enc.Hex);
+  return signature;
+}
+
+function getDokuHeaders(method, path, body) {
+  const timestamp = Math.floor(Date.now() / 1000).toString();
+  const signature = generateDokuSignature(method, path, body, timestamp);
+  
+  return {
+    'Content-Type': 'application/json',
+    'Client-ID': DOKU_CONFIG.clientId,
+    'Signature': signature,
+    'Timestamp': timestamp,
+    'Request-Id': 'req_' + Date.now() + '_' + Math.random().toString(36).substring(2, 8)
+  };
+}
+
+// ============================================================
+//  CREATE QRIS PAYMENT
+// ============================================================
+
+async function createQrisPayment(amount, plan, duration) {
+  const path = '/qris/v1/payment';
+  const method = 'POST';
+  
+  const orderId = 'FM_' + Date.now() + '_' + Math.random().toString(36).substring(2, 6).toUpperCase();
+  
+  const body = {
+    order: {
+      order_id: orderId,
+      amount: amount,
+      currency: 'IDR'
+    },
+    customer: {
+      email: currentUser || 'customer@example.com',
+      name: getNickname() || 'Customer'
+    },
+    payment: {
+      qris: {
+        expiration: {
+          duration: 5,
+          unit: 'MINUTE'
+        }
+      }
+    },
+    metadata: {
+      plan: plan,
+      duration: duration,
+      user: currentUser
+    }
+  };
+  
+  const bodyString = JSON.stringify(body);
+  const headers = getDokuHeaders(method, path, bodyString);
+  
+  try {
+    const response = await fetch(DOKU_CONFIG.baseUrl + path, {
+      method: method,
+      headers: headers,
+      body: bodyString
+    });
+    
+    const data = await response.json();
+    
+    if (data.response_code === '200' || data.response_code === '0000') {
+      return {
+        success: true,
+        transactionId: data.transaction_id || data.order_id || orderId,
+        qrisCode: data.qris_code || data.qr_code,
+        qrisUrl: data.qris_url || data.qr_url,
+        qrisImage: data.qris_image || data.qr_image || null,
+        orderId: orderId,
+        amount: amount,
+        raw: data
+      };
+    } else {
+      return {
+        success: false,
+        message: data.response_message || data.message || 'Payment creation failed',
+        raw: data
+      };
+    }
+  } catch (error) {
+    console.error('QRIS Payment Error:', error);
+    return {
+      success: false,
+      message: error.message || 'Network error',
+      error: error
+    };
+  }
+}
+
+// ============================================================
+//  CHECK QRIS PAYMENT STATUS
+// ============================================================
+
+async function checkQrisStatus(orderId) {
+  const path = `/qris/v1/payment/${orderId}`;
+  const method = 'GET';
+  
+  const headers = getDokuHeaders(method, path, '');
+  
+  try {
+    const response = await fetch(DOKU_CONFIG.baseUrl + path, {
+      method: method,
+      headers: headers
+    });
+    
+    const data = await response.json();
+    
+    // Response status codes
+    if (data.response_code === '200' || data.response_code === '0000') {
+      const status = data.transaction_status || data.status || 'PENDING';
+      
+      return {
+        success: true,
+        status: status,
+        isPaid: status === 'PAID' || status === 'SUCCESS' || status === 'SETTLEMENT',
+        isPending: status === 'PENDING' || status === 'WAITING',
+        isFailed: status === 'FAILED' || status === 'CANCELED' || status === 'EXPIRED',
+        raw: data
+      };
+    } else {
+      return {
+        success: false,
+        message: data.response_message || data.message || 'Status check failed',
+        isPaid: false,
+        isPending: false,
+        isFailed: true,
+        raw: data
+      };
+    }
+  } catch (error) {
+    console.error('Status Check Error:', error);
+    return {
+      success: false,
+      message: error.message || 'Network error',
+      isPaid: false,
+      isPending: false,
+      isFailed: true,
+      error: error
+    };
+  }
 }
     
   </script>
