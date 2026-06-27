@@ -4506,6 +4506,7 @@ async function flushSaveNow(email) {
 }
 
 function enterApp() {
+    // ===== VALIDASI =====
     if (!currentUser) {
         console.warn('⚠️ No user, showing login');
         document.getElementById('view-login').classList.add('active');
@@ -4524,7 +4525,6 @@ function enterApp() {
         console.warn('⚠️ No cards, showing login');
         alert('⚠️ Your account has no flashcards data.\n\nPlease contact admin: adm.pharmacore@gmail.com');
         
-        // Logout
         firebase.auth().signOut();
         clearSession();
         currentUser = null;
@@ -4542,6 +4542,7 @@ function enterApp() {
         return;
     }
 
+    // ===== KODE ASLI =====
     // Show bottom navigation
     document.getElementById('bottomNav').style.display = 'flex';
 
@@ -4572,65 +4573,41 @@ function enterApp() {
     // Render content
     renderDecks();
     updateHome();
-}
 
     // ==========================
     // Admin / Premium UI
     // ==========================
 
-    const adminBadge =
-        document.getElementById('admin-badge');
-
-    const adminImportBtn =
-        document.getElementById('admin-import-btn');
-
-    const userRequestBtn =
-        document.getElementById('user-request-btn');
-
-    const proBadge =
-        document.getElementById('pro-badge');
+    const adminBadge = document.getElementById('admin-badge');
+    const adminImportBtn = document.getElementById('admin-import-btn');
+    const userRequestBtn = document.getElementById('user-request-btn');
+    const proBadge = document.getElementById('pro-badge');
 
     // Show admin badge for admins only
     if (adminBadge) {
-        adminBadge.classList.toggle(
-            'hidden',
-            !isAdmin
-        );
+        adminBadge.classList.toggle('hidden', !isAdmin);
     }
 
     // Show admin import button for admins only
     if (adminImportBtn) {
-        adminImportBtn.classList.toggle(
-            'hidden',
-            !isAdmin
-        );
+        adminImportBtn.classList.toggle('hidden', !isAdmin);
     }
 
     // Hide user request button for admins
     if (userRequestBtn) {
-        userRequestBtn.classList.toggle(
-            'hidden',
-            isAdmin
-        );
+        userRequestBtn.classList.toggle('hidden', isAdmin);
     }
 
     // Hide Pro badge for admins
     if (proBadge) {
-        proBadge.classList.toggle(
-            'hidden',
-            isAdmin
-        );
+        proBadge.classList.toggle('hidden', isAdmin);
     }
 
     // Refresh icons
-    if (
-        typeof lucide !== 'undefined' &&
-        lucide.createIcons
-    ) {
+    if (typeof lucide !== 'undefined' && lucide.createIcons) {
         lucide.createIcons();
     }
-}
-
+}  // ← TUTUP FUNGSI DI SINI!
   async function checkSession() {
     const s = getSession();
 
