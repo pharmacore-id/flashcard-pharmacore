@@ -4669,6 +4669,9 @@ function showLoginPage() {
     
   async function checkSession() {
     const s = getSession();
+    console.log("===== CHECK SESSION =====");
+console.log("SESSION:", s);
+console.log("Firebase user:", firebase.auth().currentUser);
 
     if (!s?.email) return false;
 
