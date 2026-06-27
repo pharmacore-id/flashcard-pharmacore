@@ -4078,12 +4078,15 @@ async function loadSharedDecks() {
 async function loadUserData(email) {
   if (!email) return;
 
+  console.log('🔍 Loading user data for:', email);
+
   // 1. Load local data
   let localData = null;
   try {
     const raw = localStorage.getItem(DATA_PREFIX + email);
     if (raw) {
       localData = JSON.parse(raw);
+      console.log('💾 Local data found:', localData.cards?.length || 0, 'cards');
     }
   } catch (e) {
     console.warn('⚠️ Failed to parse local data');
@@ -4093,6 +4096,10 @@ async function loadUserData(email) {
   let cloudData = null;
   try {
     cloudData = await loadFromFirebase(email);
+    console.log('☁️ Cloud data:', cloudData ? 'found' : 'not found');
+    if (cloudData) {
+      console.log('📊 Cloud cards:', cloudData.cards?.length || 0);
+    }
   } catch (err) {
     console.warn('⚠️ Cloud load failed:', err.message);
   }
@@ -4105,15 +4112,15 @@ async function loadUserData(email) {
       const cloudTime = cloudData.last_updated || 0;
       const localTime = localData.last_updated || 0;
       console.log("TIMESTAMP CHECK", {
-  cloudTime,
-  localTime,
-  diff: cloudTime - localTime,
-  cloudLastUpdated: cloudData.last_updated,
-  localLastUpdated: localData.last_updated,
-  cloudCards: cloudData.cards.length,
-  localCards: localData.cards.length,
-  useCloudWillBe: cloudTime > localTime
-});
+        cloudTime,
+        localTime,
+        diff: cloudTime - localTime,
+        cloudLastUpdated: cloudData.last_updated,
+        localLastUpdated: localData.last_updated,
+        cloudCards: cloudData.cards.length,
+        localCards: localData.cards.length,
+        useCloudWillBe: cloudTime > localTime
+      });
       useCloudData = cloudTime > localTime;
     } else {
       useCloudData = true;
@@ -4121,22 +4128,41 @@ async function loadUserData(email) {
   } else if (localData && localData.cards && localData.cards.length > 0) {
     useCloudData = false;
   } else {
-    allCards = getSampleDecks();
+    // ===== TIDAK ADA DATA SAMA SEKALI =====
+    console.warn('⚠️ No data found for user:', email);
+    
+    // ===== FIX: Jangan pakai sample decks! =====
+    // Biarkan allCards kosong, user akan di-logout
+    allCards = [];
     userPlan = 'free';
-    console.log('⚠️ No saved data found, using sample decks');
     isAdmin = ADMIN_EMAILS.includes(email);
+    
+    // Simpan user plan
     localStorage.setItem('flashmind_plan_' + email, userPlan);
-    return;
+    
+    // ===== TAMPILKAN PESAN KE USER =====
+    alert('📚 No flashcards found for this account.\n\nPlease contact admin to get access to decks.');
+    
+    // ===== LOGOUT USER =====
+    await firebase.auth().signOut();
+    clearSession();
+    
+    // Redirect ke login
+    document.getElementById('view-login').classList.add('active');
+    document.getElementById('view-login').style.display = 'flex';
+    document.getElementById('bottomNav').style.display = 'none';
+    
+    return; // STOP di sini, jangan lanjut
   }
 
   // 4. Apply the chosen data
   if (useCloudData && cloudData) {
-    allCards = cloudData.cards;
+    allCards = cloudData.cards || [];
     userPlan = cloudData.plan || 'free';
     
-    // ===== SYNC LOCAL STORAGE DENGAN CLOUD (FULL BACKUP) =====
+    // ===== SYNC LOCAL STORAGE DENGAN CLOUD =====
     const synced = {
-      cards: allCards,  // ← FULL BACKUP
+      cards: allCards,
       schema_version: 2,
       last_updated: cloudData.last_updated || Date.now(),
       user_plan: userPlan,
@@ -4151,7 +4177,7 @@ async function loadUserData(email) {
     const schemaVersion = localData.schema_version || 1;
     
     if (schemaVersion === 2) {
-      console.log('LOCAL CARD SAMPLE',localData.cards?.[0]);
+      console.log('LOCAL CARD SAMPLE', localData.cards?.[0]);
       const progressCards = localData.cards || [];
       const sharedCards = await loadSharedDecks();
       const progressMap = new Map(
@@ -4173,22 +4199,36 @@ async function loadUserData(email) {
       allCards = localData.cards || [];
       userPlan = localData.user_plan || 'free';
       if (localData.deckOrderConfig) {
-  deckOrderConfig = localData.deckOrderConfig;
-}
+        deckOrderConfig = localData.deckOrderConfig;
+      }
     }
     
     console.log('✅ Loaded from localStorage:', allCards.length, 'cards');
     
   } else {
-    allCards = getSampleDecks();
+    // ===== FALLBACK TERAKHIR - TAPI JANGAN PAKAI SAMPLE =====
+    console.warn('⚠️ No valid data source, setting empty cards');
+    allCards = [];
     userPlan = 'free';
-    console.log('⚠️ No saved data found, using sample decks');
   }
 
- // 5. Always set these
+  // 5. Always set these
   initializeDeckOrder();
   isAdmin = ADMIN_EMAILS.includes(email);
   localStorage.setItem('flashmind_plan_' + email, userPlan);
+  
+  // ===== VALIDASI: Jika allCards masih kosong, logout =====
+  if (!allCards || allCards.length === 0) {
+    console.warn('⚠️ All cards is empty after loading!');
+    alert('⚠️ Your account has no flashcards.\n\nPlease contact admin: adm.pharmacore@gmail.com');
+    
+    await firebase.auth().signOut();
+    clearSession();
+    document.getElementById('view-login').classList.add('active');
+    document.getElementById('view-login').style.display = 'flex';
+    document.getElementById('bottomNav').style.display = 'none';
+    return;
+  }
 }
     
   async function handleSignup(e) {
@@ -4561,7 +4601,7 @@ function enterApp() {
     }
 }
 
-   async function checkSession() {
+  async function checkSession() {
     const s = getSession();
 
     if (!s?.email) return false;
@@ -4569,6 +4609,8 @@ function enterApp() {
     const users = getUsers();
 
     if (!users[s.email]) {
+        console.warn('⚠️ User not found in local storage:', s.email);
+        clearSession();
         return false;
     }
 
@@ -4578,11 +4620,50 @@ function enterApp() {
         users[s.email].isAdmin ||
         ADMIN_EMAILS.includes(s.email);
 
-    await loadUserData(s.email);
-
-    enterApp();
-
-    return true;
+    try {
+        // ===== LOAD DATA DENGAN TRY-CATCH =====
+        await loadUserData(s.email);
+        
+        // ===== CEK APAKAH DATA BERHASIL DIMUAT =====
+        if (!allCards || allCards.length === 0) {
+            console.warn('⚠️ No cards loaded for user:', s.email);
+            
+            // Coba reload dari Firebase lagi
+            const cloudData = await loadFromFirebase(s.email);
+            if (cloudData && cloudData.cards && cloudData.cards.length > 0) {
+                allCards = cloudData.cards;
+                userPlan = cloudData.plan || 'free';
+                console.log('✅ Reloaded from Firebase:', allCards.length, 'cards');
+            } else {
+                // Jika tetap kosong, beri tahu user
+                alert('Your data could not be loaded. Please try again later.');
+                await firebase.auth().signOut();
+                clearSession();
+                return false;
+            }
+        }
+        
+        enterApp();
+        return true;
+        
+    } catch (error) {
+        console.error('❌ Failed to load user data:', error);
+        
+        // Jika error karena quota exceeded
+        if (error.message && error.message.includes('quota')) {
+            alert('⚠️ Server is busy. Please try again later.');
+        } else {
+            alert('❌ Failed to load your data. Please login again.');
+        }
+        
+        // Logout dan redirect ke login
+        await firebase.auth().signOut();
+        clearSession();
+        document.getElementById('view-login').classList.add('active');
+        document.getElementById('view-login').style.display = 'flex';
+        document.getElementById('bottomNav').style.display = 'none';
+        return false;
+    }
 }
 
     // ============================================================
