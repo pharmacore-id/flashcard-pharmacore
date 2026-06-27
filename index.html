@@ -597,10 +597,7 @@
     }
     .streak-dot.active { background: var(--accent); color: #fff; }
     .streak-dot.today {
-      border: 2px solid var(--accent);
-      background: var(--accent-light);
-      color: var(--accent);
-    }
+    border: 2px solid var(--accent);}
     .streak-dot.inactive { background: var(--border); color: var(--text-secondary); }
     .streak-dot.future {
       background: transparent;
@@ -3908,22 +3905,17 @@ async function loadSharedDecks() {
       return s;
     }
 
-    function getStreakDays() {
-      const reviews = [...new Set(getRealCards().map(c => c.last_review ? formatLocalDate(new Date(c.last_review)) : null).filter(Boolean))];
-      const days = [];
-      const d = new Date();
-      for (let i = 6; i >= 0; i--) {
-        const ds = formatLocalDate(d);
+   function getStreakDays() {
+    const streak = getStreak();
+    const days = [];
+    for (let i = 0; i < 7; i++) {
         days.push({
-          date: ds,
-          active: reviews.includes(ds),
-          isToday: i === 0,
-          isFuture: false
-        });
-        d.setDate(d.getDate() - 1);
-      }
-      return days;
-    }
+            active: i < streak,
+            isToday: i === 0,
+            isFuture: false
+        });}
+    return days;
+}
 
     // ============================================================
     //  SRS
@@ -4999,13 +4991,14 @@ const days = getStreakDays();
 const dayLabels = ['1', '2', '3', '4', '5', '6', '7'];
 const calendar = document.getElementById('streak-calendar');
 if (calendar) {
-  calendar.innerHTML = days.map((d, i) => {
+ calendar.innerHTML = days.map((d, i) => {
     let cls = 'streak-dot';
-    if (d.isToday) cls += ' today';
-    else if (d.active) cls += ' active';
-    else cls += ' inactive';
-    return `<div class="${cls}" title="${d.date}">${dayLabels[i]}</div>`;
-  }).join('');
+    if (d.active) {cls += ' active';
+    } else {cls += ' inactive';}
+    if (d.isToday) {
+        cls += ' today';}
+    return `<div class="${cls}">${dayLabels[i]}</div>`;
+}).join('');
 }
 
       const lastReview = real.filter(c => c.last_review).sort((a, b) =>
