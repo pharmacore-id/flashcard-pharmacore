@@ -4495,7 +4495,11 @@ async function flushSaveNow(email) {
 }
 
 function enterApp() {
-    // ===== VALIDASI =====
+    console.log('🚀 Entering App');
+    console.log('👤 User:', currentUser);
+    console.log('📚 Cards:', allCards?.length || 0);
+    
+    // ===== VALIDASI USER =====
     if (!currentUser) {
         console.warn('⚠️ No user, showing login');
         document.getElementById('view-login').classList.add('active');
@@ -4510,28 +4514,73 @@ function enterApp() {
         return;
     }
     
+    // ===== JIKA DATA KOSONG, COBA LOAD ULANG =====
     if (!allCards || allCards.length === 0) {
-        console.warn('⚠️ No cards, showing login');
-        alert('⚠️ Your account has no flashcards data.\n\nPlease contact admin: adm.pharmacore@gmail.com');
+        console.warn('⚠️ No cards yet, trying to load...');
         
-        firebase.auth().signOut();
-        clearSession();
-        currentUser = null;
-        allCards = [];
+        // Tampilkan loading state
+        const homeView = document.getElementById('view-home');
+        if (homeView) {
+            homeView.innerHTML = `
+                <div class="flex items-center justify-center h-32">
+                    <div class="text-center">
+                        <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-500 mx-auto"></div>
+                        <p class="text-sm text-sec mt-2">Loading your data...</p>
+                    </div>
+                </div>
+            `;
+        }
         
-        document.getElementById('view-login').classList.add('active');
-        document.getElementById('view-login').style.display = 'flex';
-        document.getElementById('bottomNav').style.display = 'none';
-        document.querySelectorAll('.view').forEach(v => {
-            if (v.id !== 'view-login') {
-                v.classList.remove('active');
-                v.style.display = 'none';
+        // Coba load data
+        loadUserData(currentUser).then(() => {
+            if (allCards && allCards.length > 0) {
+                console.log('✅ Data loaded:', allCards.length, 'cards');
+                continueEnterApp();
+            } else {
+                console.warn('⚠️ Still no data after loading');
+                // Jangan logout dulu, coba sekali lagi
+                setTimeout(() => {
+                    loadUserData(currentUser).then(() => {
+                        if (allCards && allCards.length > 0) {
+                            continueEnterApp();
+                        } else {
+                            // Benar-benar tidak ada data
+                            alert('⚠️ Your account has no flashcards data.\n\nPlease contact admin: adm.pharmacore@gmail.com');
+                            firebase.auth().signOut();
+                            clearSession();
+                            currentUser = null;
+                            allCards = [];
+                            showLoginPage();
+                        }
+                    });
+                }, 1000);
             }
+        }).catch(err => {
+            console.error('❌ Load failed:', err);
+            // Jangan logout, coba lagi nanti
+            setTimeout(() => {
+                loadUserData(currentUser).then(() => {
+                    if (allCards && allCards.length > 0) {
+                        continueEnterApp();
+                    }
+                });
+            }, 2000);
         });
+        
         return;
     }
+    
+    // ===== DATA ADA, LANJUT =====
+    continueEnterApp();
+}
 
-    // ===== KODE ASLI =====
+// ============================================================
+//  CONTINUE ENTER APP
+// ============================================================
+
+function continueEnterApp() {
+    console.log('✅ Continuing to app with', allCards.length, 'cards');
+    
     // Show bottom navigation
     document.getElementById('bottomNav').style.display = 'flex';
 
@@ -4562,41 +4611,62 @@ function enterApp() {
     // Render content
     renderDecks();
     updateHome();
-
-    // ==========================
+    
     // Admin / Premium UI
-    // ==========================
-
     const adminBadge = document.getElementById('admin-badge');
     const adminImportBtn = document.getElementById('admin-import-btn');
     const userRequestBtn = document.getElementById('user-request-btn');
     const proBadge = document.getElementById('pro-badge');
 
-    // Show admin badge for admins only
     if (adminBadge) {
         adminBadge.classList.toggle('hidden', !isAdmin);
     }
-
-    // Show admin import button for admins only
     if (adminImportBtn) {
         adminImportBtn.classList.toggle('hidden', !isAdmin);
     }
-
-    // Hide user request button for admins
     if (userRequestBtn) {
         userRequestBtn.classList.toggle('hidden', isAdmin);
     }
-
-    // Hide Pro badge for admins
     if (proBadge) {
-        proBadge.classList.toggle('hidden', isAdmin);
+        const isPremium = isPremiumActive();
+        if (isPremium && !isAdmin) {
+            proBadge.classList.remove('hidden');
+            proBadge.textContent = '⭐ PRO';
+        } else {
+            proBadge.classList.add('hidden');
+        }
     }
 
     // Refresh icons
     if (typeof lucide !== 'undefined' && lucide.createIcons) {
         lucide.createIcons();
     }
-}  // ← TUTUP FUNGSI DI SINI!
+}
+
+// ============================================================
+//  SHOW LOGIN PAGE
+// ============================================================
+
+function showLoginPage() {
+    console.log('🔐 Showing login page');
+    
+    document.querySelectorAll('.view').forEach(v => {
+        v.classList.remove('active');
+        v.style.display = 'none';
+    });
+    
+    const loginView = document.getElementById('view-login');
+    if (loginView) {
+        loginView.classList.add('active');
+        loginView.style.display = 'flex';
+    }
+    
+    document.getElementById('bottomNav').style.display = 'none';
+    currentUser = null;
+    allCards = [];
+    clearSession();
+}
+    
   async function checkSession() {
     const s = getSession();
 
@@ -8814,57 +8884,103 @@ function closeQrisModal() {
 
     // ============================================================
     //  INIT
-    // ============================================================
-    if (localStorage.getItem('flashmind_theme') === 'dark') document.documentElement.classList.add('dark');
+   // ============================================================
+//  INIT - FIX REFRESH KEMBALI KE LOGIN
+// ============================================================
 
-    const logged = checkSession();
+// Theme
+if (localStorage.getItem('flashmind_theme') === 'dark') {
+    document.documentElement.classList.add('dark');
+}
 
-    if (!logged) {
-      document.getElementById('view-login').classList.add('active');
-      document.getElementById('view-login').style.display = 'flex';
-    } else {
-      enterApp();
+// ===== INITIALIZATION =====
+(async function init() {
+    console.log('🚀 Initializing app...');
+    
+    // Cek session (PAKAI AWAIT!)
+    const logged = await checkSession();
+    
+    console.log('📊 Login status:', logged);
+    console.log('👤 User:', currentUser);
+    console.log('📚 Cards:', allCards?.length || 0);
+    
+    if (!logged || !currentUser) {
+        console.log('🔴 Not logged in, showing login page');
+        document.getElementById('view-login').classList.add('active');
+        document.getElementById('view-login').style.display = 'flex';
+        document.getElementById('bottomNav').style.display = 'none';
+        document.querySelectorAll('.view').forEach(v => {
+            if (v.id !== 'view-login') {
+                v.classList.remove('active');
+                v.style.display = 'none';
+            }
+        });
+        return;
     }
+    
+    // ===== CEK DATA =====
+    if (!allCards || allCards.length === 0) {
+        console.warn('⚠️ Logged in but no data, trying to reload...');
+        
+        try {
+            const cloudData = await loadFromFirebase(currentUser);
+            if (cloudData && cloudData.cards && cloudData.cards.length > 0) {
+                allCards = cloudData.cards;
+                userPlan = cloudData.plan || 'free';
+                console.log('✅ Reloaded from Firebase:', allCards.length, 'cards');
+            }
+        } catch (err) {
+            console.error('❌ Reload failed:', err);
+        }
+    }
+    
+    // ===== ENTER APP =====
+    enterApp();
+    
+})();
 
-    document.getElementById('bottomNav').addEventListener('click', function(e) {
-      const btn = e.target.closest('.nav-item');
-      if (!btn) return;
-      navClickHandler.call(btn, e);
-    });
+// ============================================================
+//  EVENT LISTENERS
+// ============================================================
 
-    const uploadZone = document.getElementById('upload-zone');
-    if (uploadZone) {
-      uploadZone.addEventListener('dragover', (e) => {
+document.getElementById('bottomNav').addEventListener('click', function(e) {
+    const btn = e.target.closest('.nav-item');
+    if (!btn) return;
+    navClickHandler.call(btn, e);
+});
+
+const uploadZone = document.getElementById('upload-zone');
+if (uploadZone) {
+    uploadZone.addEventListener('dragover', (e) => {
         e.preventDefault();
         uploadZone.classList.add('dragover');
-      });
-      uploadZone.addEventListener('dragleave', () => {
+    });
+    uploadZone.addEventListener('dragleave', () => {
         uploadZone.classList.remove('dragover');
-      });
-      uploadZone.addEventListener('drop', (e) => {
+    });
+    uploadZone.addEventListener('drop', (e) => {
         e.preventDefault();
         uploadZone.classList.remove('dragover');
         const file = e.dataTransfer.files[0];
         if (file && (file.name.endsWith('.xlsx') || file.name.endsWith('.xls'))) {
-          const event = { target: { files: [file] } };
-          handleExcelImport(event);
+            const event = { target: { files: [file] } };
+            handleExcelImport(event);
         } else {
-          alert('Please upload an Excel file (.xlsx or .xls)');
+            alert('Please upload an Excel file (.xlsx or .xls)');
         }
-      });
-    }
+    });
+}
 
-    if (typeof lucide !== 'undefined' && lucide.createIcons) {
-      lucide.createIcons();
-    }
+if (typeof lucide !== 'undefined' && lucide.createIcons) {
+    lucide.createIcons();
+}
 
-    console.log('🚀 FlashMind · Pharmacy Study App (Optimized & Error-Free)');
-    console.log('📊 Plan:', userPlan);
-    console.log('👑 Admin:', isAdmin);
-    console.log('📚 Cards:', getRealCards().length, 'Decks:', getDecks().length);
-    console.log('☁️ Firebase: Connected & Syncing');
-    console.log('📝 Admin email: adm.pharmacore@gmail.com');
-
+console.log('🚀 FlashMind · Pharmacy Study App (Optimized & Error-Free)');
+console.log('📊 Plan:', userPlan);
+console.log('👑 Admin:', isAdmin);
+console.log('📚 Cards:', getRealCards().length, 'Decks:', getDecks().length);
+console.log('☁️ Firebase: Connected & Syncing');
+console.log('📝 Admin email: adm.pharmacore@gmail.com');
 // ======================================================
 // PULL TO REFRESH - Gaya Atsumaru
 // ======================================================
