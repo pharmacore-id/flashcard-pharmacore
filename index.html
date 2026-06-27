@@ -1221,22 +1221,19 @@
 }
 
 .premium-badge{
-    position:absolute;
-
-    top:10px;
-    right:10px;
-
-    padding:6px 10px;
-
-    background:#f59e0b;
-    color:white;
-
+    display:inline-flex;
+    align-items:center;
+    background:linear-gradient(
+        135deg,
+        var(--premium-gold),
+        var(--premium-purple)
+    );
+    color:#fff;
+    padding:0.15rem 0.75rem;
     border-radius:999px;
-
-    font-size:11px;
+    font-size:10px;
     font-weight:700;
-
-    z-index:5;
+    text-transform:uppercase;
 }
 
 .plan-option{
