@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>FlashMind · Pharmacy Study</title>
+  <title>Pharmadeck · Pharmacy Study</title>
   <script src="https://cdn.tailwindcss.com/3.4.17"></script>
   <script src="https://cdn.jsdelivr.net/npm/lucide@0.263.0/dist/umd/lucide.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
@@ -1661,7 +1661,7 @@ color:white;
     <div id="view-login" class="view active" style="padding:1rem;justify-content:center;z-index:200;bottom:0;">
       <div class="auth-card">
         <div class="text-center mb-6">
-          <h1 class="text-3xl font-extrabold tracking-tight">FlashMind</h1>
+          <h1 class="text-3xl font-extrabold tracking-tight">Pharmadeck</h1>
           <p class="text-sec text-sm mt-1">Pharmacy Study Companion</p>
           <div id="sync-status" class="sync-status justify-center mt-1">
             <span class="dot" id="sync-dot"></span>
@@ -1694,7 +1694,7 @@ color:white;
     <div id="view-signup" class="view" style="padding:1rem;justify-content:center;z-index:200;bottom:0;">
       <div class="auth-card">
         <div class="text-center mb-6">
-          <h1 class="text-3xl font-extrabold tracking-tight">FlashMind</h1>
+          <h1 class="text-3xl font-extrabold tracking-tight">Pharmadeck</h1>
           <p class="text-sec text-sm mt-1">Create your account</p>
           <div id="sync-status-signup" class="sync-status justify-center mt-1">
             <span class="dot" id="sync-dot-signup"></span>
@@ -1855,7 +1855,7 @@ color:white;
       <div class="flex items-center justify-between mb-3">
         <div>
           <div class="flex items-center gap-2">
-            <h1 class="text-2xl font-extrabold">FlashMind</h1>
+            <h1 class="text-2xl font-extrabold">Pharmadeck</h1>
             <span id="plan-badge" class="free-badge">FREE</span>
             <span id="admin-badge" class="admin-badge hidden">ADMIN</span>
           </div>
@@ -2411,11 +2411,11 @@ Back to Settings
       <!-- Item 1 -->
       <div class="faq-card surface rounded-2xl border border-theme shadow-card overflow-hidden">
         <button onclick="toggleFAQ(this)" class="w-full text-left p-4 flex justify-between items-center hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
-          <span class="font-semibold text-sm pr-4">Apa itu FlashMind?</span>
+          <span class="font-semibold text-sm pr-4">Apa itu Pharmadeck?</span>
           <i data-lucide="chevron-down" class="w-5 h-5 text-sec transition-transform duration-200 flex-shrink-0"></i>
         </button>
         <div class="faq-answer hidden px-4 pb-4 text-sm text-sec leading-relaxed">
-          FlashMind adalah aplikasi flashcard untuk mahasiswa farmasi. Menggunakan <b>Spaced Repetition System (SRS)</b> agar kamu bisa menghafal materi dengan lebih efektif dan efisien.
+          Pharmadeck adalah aplikasi flashcard untuk mahasiswa farmasi. Menggunakan <b>Spaced Repetition System (SRS)</b> agar kamu bisa menghafal materi dengan lebih efektif dan efisien.
         </div>
       </div>
 
@@ -3078,13 +3078,13 @@ style="max-height:90vh;overflow-y:auto;">
  // ============================================================
  // AUTH & DATA LAYER
  // ============================================================
-const USERS_KEY='flashmind_users';
-const SESSION_KEY='flashmind_session';
-const DATA_PREFIX='flashmind_data_';
-const CODES_KEY='flashmind_codes';
-const GOAL_KEY='flashmind_goal';
-const STUDY_TIME_KEY='flashmind_study_time';
-const NICKNAME_KEY='flashmind_nickname_';
+const USERS_KEY='Pharmadeck_users';
+const SESSION_KEY='Pharmadeck_session';
+const DATA_PREFIX='Pharmadeck_data_';
+const CODES_KEY='Pharmadeck_codes';
+const GOAL_KEY='Pharmadeck_goal';
+const STUDY_TIME_KEY='Pharmadeck_study_time';
+const NICKNAME_KEY='Pharmadeck_nickname_';
 
 let currentUser=null;
 let allCards=[];
@@ -3646,7 +3646,7 @@ async function loadSharedDecks() {
     //  DAILY GOAL
     // ============================================================
     function getDailyGoal() {
-      const key = 'flashmind_goal_' + (currentUser || 'default');
+      const key = 'Pharmadeck_goal_' + (currentUser || 'default');
       const saved = localStorage.getItem(key);
       if (saved) {
         const val = parseInt(saved);
@@ -3663,7 +3663,7 @@ async function loadSharedDecks() {
         alert('Please enter a number between 1 and 500.');
         return;
       }
-      const key = 'flashmind_goal_' + (currentUser || 'default');
+      const key = 'Pharmadeck_goal_' + (currentUser || 'default');
       localStorage.setItem(key, val);
       loadDailyGoal();
       updateHome();
@@ -4094,7 +4094,7 @@ async function loadUserData(email) {
         allCards = [];
         userPlan = 'free';
         isAdmin = ADMIN_EMAILS.includes(email);
-        localStorage.setItem('flashmind_plan_' + email, userPlan);
+        localStorage.setItem('Pharmadeck_plan_' + email, userPlan);
 
         alert('📚 No flashcards found for this account.\n\nPlease contact admin to get access to decks.');
 
@@ -4170,7 +4170,7 @@ async function loadUserData(email) {
     initializeDeckOrder();
 
     isAdmin = ADMIN_EMAILS.includes(email);
-    localStorage.setItem('flashmind_plan_' + email, userPlan);
+    localStorage.setItem('Pharmadeck_plan_' + email, userPlan);
 
     // ===== VALIDASI: Jika allCards masih kosong, logout =====
     if (!allCards || allCards.length === 0) {
@@ -4376,8 +4376,8 @@ async function flushSaveNow(email) {
 }
     
     function savePlan(email, plan, expiry) {
-  localStorage.setItem('flashmind_plan_' + email, plan);
-  if (expiry) localStorage.setItem('flashmind_expiry_' + email, expiry);
+  localStorage.setItem('Pharmadeck_plan_' + email, plan);
+  if (expiry) localStorage.setItem('Pharmadeck_expiry_' + email, expiry);
   userPlan = plan;}
 
    async function handleLogout() {
@@ -4411,8 +4411,8 @@ async function flushSaveNow(email) {
     
     console.log('🧹 Cleaning up...');
     clearSession();
-    localStorage.removeItem('flashmind_session_token');
-    localStorage.removeItem('flashmind_token_expiry');
+    localStorage.removeItem('Pharmadeck_session_token');
+    localStorage.removeItem('Pharmadeck_token_expiry');
     currentUser = null;
     allCards = [];
     isAdmin = false;
@@ -4453,7 +4453,7 @@ async function flushSaveNow(email) {
 }
 
     function getPlanExpiry(email) {
-      return localStorage.getItem('flashmind_expiry_' + email) || null;
+      return localStorage.getItem('Pharmadeck_expiry_' + email) || null;
     }
 
    function isPremiumActive() {
@@ -8390,7 +8390,7 @@ function initializeDeckOrder() {
     const wb = XLSX.utils.book_new();
     const ws = XLSX.utils.json_to_sheet(data);
     XLSX.utils.book_append_sheet(wb, ws, 'Access Codes');
-    XLSX.writeFile(wb, 'flashmind_access_codes.xlsx');
+    XLSX.writeFile(wb, 'Pharmadeck_access_codes.xlsx');
   } catch (error) {
     console.error('Export error:', error);
     alert('❌ Failed to export codes.');
@@ -8452,7 +8452,7 @@ function initializeDeckOrder() {
   const wb = XLSX.utils.book_new();
   const ws = XLSX.utils.json_to_sheet(sampleData);
   XLSX.utils.book_append_sheet(wb, ws, 'Flashcards');
-  XLSX.writeFile(wb, 'flashmind_sample_decks.xlsx');
+  XLSX.writeFile(wb, 'Pharmadeck_sample_decks.xlsx');
 }
     // ============================================================
     //  EXPORT DATA
@@ -8462,7 +8462,7 @@ function initializeDeckOrder() {
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = 'flashmind-export-' + today() + '.json';
+      a.download = 'Pharmadeck-export-' + today() + '.json';
       a.click();
       URL.revokeObjectURL(url);
     }
@@ -8472,7 +8472,7 @@ function initializeDeckOrder() {
     // ============================================================
     function toggleTheme() {
       document.documentElement.classList.toggle('dark');
-      localStorage.setItem('flashmind_theme', document.documentElement.classList.contains('dark') ? 'dark' : 'light');
+      localStorage.setItem('Pharmadeck_theme', document.documentElement.classList.contains('dark') ? 'dark' : 'light');
       updateThemeToggle();
     }
 
@@ -9024,7 +9024,7 @@ function closeQrisModal() {
 // ============================================================
 
 // Theme
-if (localStorage.getItem('flashmind_theme') === 'dark') {
+if (localStorage.getItem('Pharmadeck_theme') === 'dark') {
     document.documentElement.classList.add('dark');
 }
 
@@ -9110,7 +9110,7 @@ if (typeof lucide !== 'undefined' && lucide.createIcons) {
     lucide.createIcons();
 }
 
-console.log('🚀 FlashMind · Pharmacy Study App (Optimized & Error-Free)');
+console.log('🚀 Pharmadeck · Pharmacy Study App (Optimized & Error-Free)');
 console.log('📊 Plan:', userPlan);
 console.log('👑 Admin:', isAdmin);
 console.log('📚 Cards:', getRealCards().length, 'Decks:', getDecks().length);
