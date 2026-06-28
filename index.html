@@ -3359,11 +3359,6 @@ async function loadFromFirebase(email) {
     if (!userDoc.exists) return null;
 
     const data = userDoc.data();
-    deckOrderConfig =
-  data.deckOrderConfig || {
-    topics: [],
-    subtopics: {}
-  };
     
     if (data.nickname) {
       localStorage.setItem(NICKNAME_KEY + email, data.nickname);
@@ -3395,26 +3390,24 @@ async function loadFromFirebase(email) {
       };
     });
 
-    // ===== TAMBAHKAN KARTU CUSTOM (progress tanpa shared deck) =====
+     // ===== TAMBAHKAN KARTU CUSTOM (progress tanpa shared deck) =====
     const sharedKeys = new Set(sharedCards.map(c => c.__id || c.card_id));
     const extraCards = progressCards.filter(c => {
-      const key = c.__id || c.card_id;
-      return !sharedKeys.has(key);
+        const key = c.__id || c.card_id;
+        return !sharedKeys.has(key);
     });
     extraCards.forEach(c => mergedCards.push(c));
-
     updateSyncStatus('', 'Synced');
+    console.log('✅ User data loaded from Firebase:', mergedCards.length, 'cards');
 
-    console.log('FIREBASE DECK ORDER', data.deckOrderConfig);
-    
     const plan = data.plan || 'free';
     const schemaVersion = data.schema_version || 1;
-    
+
     return {
-      cards: mergedCards,
-      plan: plan,
-      last_updated: data.last_updated || data.updatedAt?.toMillis?.() || Date.now(),
-      schema_version: schemaVersion
+        cards: mergedCards,
+        plan: plan,
+        last_updated: data.last_updated || data.updatedAt?.toMillis?.() || Date.now(),
+        schema_version: schemaVersion
     };
 
   } catch (err) {
@@ -4157,13 +4150,6 @@ async function loadUserData(email) {
             // ===== FORMAT LAMA: full cards =====
             allCards = localData.cards || [];
             userPlan = localData.user_plan || 'free';
-
-            // ============================================================
-            //  ✅ HAPUS INI: deckOrderConfig SUDAH DI-GLOBAL
-            // ============================================================
-            // if (localData.deckOrderConfig) {
-            //     deckOrderConfig = localData.deckOrderConfig;
-            // }
         }
 
         console.log('✅ Loaded from localStorage:', allCards.length, 'cards');
@@ -4289,7 +4275,6 @@ async function saveUserData(email) {
 
   const localData = {
     cards: buildProgressData(), // progress only
-    deckOrderConfig: deckOrderConfig,
     schema_version: 2,
     last_updated: now,
     user_plan: userPlan,
@@ -4312,7 +4297,6 @@ async function saveUserData(email) {
 
     const snapshot = buildProgressData();
     const planSnapshot = userPlan;
-    const deckOrderSnapshot = deckOrderConfig;
 
     let retries = 3;
     let saved = false;
@@ -4326,7 +4310,6 @@ async function saveUserData(email) {
         await db.collection('users').doc(email).set({
           cards: snapshot,
           plan: planSnapshot,
-          deckOrderConfig: deckOrderSnapshot,
           schema_version: 2,
           last_updated: saveTime
         }, { merge: true });
@@ -4383,7 +4366,6 @@ async function flushSaveNow(email) {
   try {
     await db.collection('users').doc(email).set({
       cards: progressData,
-      deckOrderConfig: deckOrderConfig,
       plan: planSnapshot,
       schema_version: 2,
       last_updated: Date.now()
@@ -8181,7 +8163,6 @@ async function saveGlobalDeckOrder() {
 function initializeDeckOrder() {
     console.log('🔄 Initializing deck order...');
     
-    // Guard: pastikan object ada
     if (!deckOrderConfig) deckOrderConfig = {};
     if (!deckOrderConfig.topics) deckOrderConfig.topics = [];
     if (!deckOrderConfig.subtopics) deckOrderConfig.subtopics = {};
@@ -8189,16 +8170,13 @@ function initializeDeckOrder() {
     const decks = getDecks();
     const topics = [...new Set(decks.map(d => d.topic))];
     let changed = false;
-    
-    // Hapus topic yang sudah tidak ada
+  
     const filteredTopics = deckOrderConfig.topics.filter(t => topics.includes(t));
     if (filteredTopics.length !== deckOrderConfig.topics.length) {
         deckOrderConfig.topics = filteredTopics;
         changed = true;
         console.log('🗑️ Removed deleted topics');
     }
-    
-    // Tambahkan topic baru
     topics.forEach(topic => {
         if (!deckOrderConfig.topics.includes(topic)) {
             deckOrderConfig.topics.push(topic);
@@ -8207,7 +8185,6 @@ function initializeDeckOrder() {
         }
     });
     
-    // Subtopics
     topics.forEach(topic => {
         const subs = decks
             .filter(d => d.topic === topic)
