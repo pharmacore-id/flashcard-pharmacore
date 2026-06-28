@@ -1620,8 +1620,9 @@ color:white;
     top: -80px;
     left: 50%;
     transform: translateX(-50%);
-    background: rgba(255, 255, 255, 0.9);
+    background: var(--surface);
     backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
     color: var(--text);
     padding: 12px 20px;
     border-radius: 50px;
@@ -1648,7 +1649,6 @@ color:white;
     "></div>
     <span id="pull-text">Tarik untuk refresh</span>
 </div>
-
 
 <!-- ===== LOGOUT LOADING OVERLAY ===== -->
 <div id="logout-overlay" class="logout-overlay">
