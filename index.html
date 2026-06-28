@@ -3424,31 +3424,6 @@ async function loadFromFirebase(email) {
   }
 }
 
-    function initializeDeckOrder(){
-      console.log('INITIALIZE BEFORE',JSON.stringify(deckOrderConfig));
-  const decks = getDecks();
-  const topics =
-    [...new Set(
-      decks.map(d => d.topic)
-    )];
-  if(
-    !deckOrderConfig.topics ||
-    deckOrderConfig.topics.length === 0
-  ){deckOrderConfig.topics = [...topics];}
-  topics.forEach(topic => {
-    const subs =decks
-        .filter(d => d.topic === topic)
-        .map(d => d.subtopic);
-    if(!deckOrderConfig.subtopics[topic]){
-      deckOrderConfig.subtopics[topic] =
-        [...subs];
-    }
-  });
-      console.log(
-  'INITIALIZE AFTER',
-  JSON.stringify(deckOrderConfig)
-);
-}
 // ============================================================
 //  SHARED DECKS - SAVE & LOAD
 // ============================================================
@@ -4064,159 +4039,173 @@ async function loadSharedDecks() {
         } else {err.textContent = 'Login failed: ' + error.message;
         }}}
 
+// ============================================================
+//  LOAD USER DATA - UPDATED WITH GLOBAL DECK ORDER
+// ============================================================
+
 async function loadUserData(email) {
-  if (!email) return;
+    if (!email) return;
 
-  console.log('🔍 Loading user data for:', email);
+    console.log('🔍 Loading user data for:', email);
 
-  // 1. Load local data
-  let localData = null;
-  try {
-    const raw = localStorage.getItem(DATA_PREFIX + email);
-    if (raw) {
-      localData = JSON.parse(raw);
-      console.log('💾 Local data found:', localData.cards?.length || 0, 'cards');
+    // 1. Load local data
+    let localData = null;
+    try {
+        const raw = localStorage.getItem(DATA_PREFIX + email);
+        if (raw) {
+            localData = JSON.parse(raw);
+            console.log('💾 Local data found:', localData.cards?.length || 0, 'cards');
+        }
+    } catch (e) {
+        console.warn('⚠️ Failed to parse local data');
     }
-  } catch (e) {
-    console.warn('⚠️ Failed to parse local data');
-  }
 
-  // 2. Try cloud load
-  let cloudData = null;
-  try {
-    cloudData = await loadFromFirebase(email);
-    console.log('☁️ Cloud data:', cloudData ? 'found' : 'not found');
-    if (cloudData) {
-      console.log('📊 Cloud cards:', cloudData.cards?.length || 0);
+    // 2. Try cloud load
+    let cloudData = null;
+    try {
+        cloudData = await loadFromFirebase(email);
+        console.log('☁️ Cloud data:', cloudData ? 'found' : 'not found');
+        if (cloudData) {
+            console.log('📊 Cloud cards:', cloudData.cards?.length || 0);
+        }
+    } catch (err) {
+        console.warn('⚠️ Cloud load failed:', err.message);
     }
-  } catch (err) {
-    console.warn('⚠️ Cloud load failed:', err.message);
-  }
 
-  // 3. Decide which data to use based on timestamps
-  let useCloudData = false;
-  
-  if (cloudData && cloudData.cards && cloudData.cards.length > 0) {
-    if (localData && localData.cards && localData.cards.length > 0) {
-      const cloudTime = cloudData.last_updated || 0;
-      const localTime = localData.last_updated || 0;
-      console.log("TIMESTAMP CHECK", {
-        cloudTime,
-        localTime,
-        diff: cloudTime - localTime,
-        cloudLastUpdated: cloudData.last_updated,
-        localLastUpdated: localData.last_updated,
-        cloudCards: cloudData.cards.length,
-        localCards: localData.cards.length,
-        useCloudWillBe: cloudTime > localTime
-      });
-      useCloudData = cloudTime > localTime;
+    // 3. Decide which data to use based on timestamps
+    let useCloudData = false;
+
+    if (cloudData && cloudData.cards && cloudData.cards.length > 0) {
+        if (localData && localData.cards && localData.cards.length > 0) {
+            const cloudTime = cloudData.last_updated || 0;
+            const localTime = localData.last_updated || 0;
+            console.log("TIMESTAMP CHECK", {
+                cloudTime,
+                localTime,
+                diff: cloudTime - localTime,
+                cloudLastUpdated: cloudData.last_updated,
+                localLastUpdated: localData.last_updated,
+                cloudCards: cloudData.cards.length,
+                localCards: localData.cards.length,
+                useCloudWillBe: cloudTime > localTime
+            });
+            useCloudData = cloudTime > localTime;
+        } else {
+            useCloudData = true;
+        }
+    } else if (localData && localData.cards && localData.cards.length > 0) {
+        useCloudData = false;
     } else {
-      useCloudData = true;
-    }
-  } else if (localData && localData.cards && localData.cards.length > 0) {
-    useCloudData = false;
-  } else {
-    // ===== TIDAK ADA DATA SAMA SEKALI =====
-    console.warn('⚠️ No data found for user:', email);
-    
-    // Biarkan allCards kosong, user akan di-logout
-    allCards = [];
-    userPlan = 'free';
-    isAdmin = ADMIN_EMAILS.includes(email);
-    
-    // Simpan user plan
-    localStorage.setItem('flashmind_plan_' + email, userPlan);
-    
-    // ===== TAMPILKAN PESAN KE USER =====
-    alert('📚 No flashcards found for this account.\n\nPlease contact admin to get access to decks.');
-    
-    // ===== LOGOUT USER =====
-    await firebase.auth().signOut();
-    clearSession();
-    
-    // Redirect ke login
-    document.getElementById('view-login').classList.add('active');
-    document.getElementById('view-login').style.display = 'flex';
-    document.getElementById('bottomNav').style.display = 'none';
-    
-    return; // STOP di sini, jangan lanjut
-  }
+        // ===== TIDAK ADA DATA SAMA SEKALI =====
+        console.warn('⚠️ No data found for user:', email);
 
-  // 4. Apply the chosen data
-  if (useCloudData && cloudData) {
-    allCards = cloudData.cards || [];
-    userPlan = cloudData.plan || 'free';
-    
-    // ===== SYNC LOCAL STORAGE DENGAN CLOUD =====
-    const synced = {
-      cards: allCards,
-      schema_version: 2,
-      last_updated: cloudData.last_updated || Date.now(),
-      user_plan: userPlan,
-      is_admin: isAdmin
-    };
-    localStorage.setItem(DATA_PREFIX + email, JSON.stringify(synced));
-    
-    console.log('✅ Loaded from cloud:', allCards.length, 'cards');
-    
-  } else if (!useCloudData && localData) {
-    // ===== LOAD DARI LOCAL =====
-    const schemaVersion = localData.schema_version || 1;
-    
-    if (schemaVersion === 2) {
-      console.log('LOCAL CARD SAMPLE', localData.cards?.[0]);
-      const progressCards = localData.cards || [];
-      const sharedCards = await loadSharedDecks();
-      const progressMap = new Map(
-        progressCards.map(c => [c.__id || c.card_id, c])
-      );
-      
-      allCards = sharedCards.map(card => {
-        const key = card.__id || card.card_id;
-        const progress = progressMap.get(key) || {};
-        return {
-          ...card,
-          ...progress
+        allCards = [];
+        userPlan = 'free';
+        isAdmin = ADMIN_EMAILS.includes(email);
+        localStorage.setItem('flashmind_plan_' + email, userPlan);
+
+        alert('📚 No flashcards found for this account.\n\nPlease contact admin to get access to decks.');
+
+        await firebase.auth().signOut();
+        clearSession();
+
+        document.getElementById('view-login').classList.add('active');
+        document.getElementById('view-login').style.display = 'flex';
+        document.getElementById('bottomNav').style.display = 'none';
+
+        return;
+    }
+
+    // 4. Apply the chosen data
+    if (useCloudData && cloudData) {
+        allCards = cloudData.cards || [];
+        userPlan = cloudData.plan || 'free';
+
+        const synced = {
+            cards: allCards,
+            schema_version: 2,
+            last_updated: cloudData.last_updated || Date.now(),
+            user_plan: userPlan,
+            is_admin: isAdmin
         };
-      });
-      
-      userPlan = localData.user_plan || 'free';
-    } else {
-      // Format lama: full cards
-      allCards = localData.cards || [];
-      userPlan = localData.user_plan || 'free';
-      if (localData.deckOrderConfig) {
-        deckOrderConfig = localData.deckOrderConfig;
-      }
-    }
-    
-    console.log('✅ Loaded from localStorage:', allCards.length, 'cards');
-    
-  } else {
-    // ===== FALLBACK TERAKHIR - TAPI JANGAN PAKAI SAMPLE =====
-    console.warn('⚠️ No valid data source, setting empty cards');
-    allCards = [];
-    userPlan = 'free';
-  }
+        localStorage.setItem(DATA_PREFIX + email, JSON.stringify(synced));
 
-  // 5. Always set these
-  initializeDeckOrder();
-  isAdmin = ADMIN_EMAILS.includes(email);
-  localStorage.setItem('flashmind_plan_' + email, userPlan);
-  
-  // ===== VALIDASI: Jika allCards masih kosong, logout =====
-  if (!allCards || allCards.length === 0) {
-    console.warn('⚠️ All cards is empty after loading!');
-    alert('⚠️ Your account has no flashcards.\n\nPlease contact admin: adm.pharmacore@gmail.com');
-    
-    await firebase.auth().signOut();
-    clearSession();
-    document.getElementById('view-login').classList.add('active');
-    document.getElementById('view-login').style.display = 'flex';
-    document.getElementById('bottomNav').style.display = 'none';
-    return;
-  }
+        console.log('✅ Loaded from cloud:', allCards.length, 'cards');
+
+    } else if (!useCloudData && localData) {
+        const schemaVersion = localData.schema_version || 1;
+
+        if (schemaVersion === 2) {
+            console.log('LOCAL CARD SAMPLE', localData.cards?.[0]);
+            const progressCards = localData.cards || [];
+            const sharedCards = await loadSharedDecks();
+            const progressMap = new Map(
+                progressCards.map(c => [c.__id || c.card_id, c])
+            );
+
+            allCards = sharedCards.map(card => {
+                const key = card.__id || card.card_id;
+                const progress = progressMap.get(key) || {};
+                return {
+                    ...card,
+                    ...progress
+                };
+            });
+
+            userPlan = localData.user_plan || 'free';
+        } else {
+            // ===== FORMAT LAMA: full cards =====
+            allCards = localData.cards || [];
+            userPlan = localData.user_plan || 'free';
+
+            // ============================================================
+            //  ✅ HAPUS INI: deckOrderConfig SUDAH DI-GLOBAL
+            // ============================================================
+            // if (localData.deckOrderConfig) {
+            //     deckOrderConfig = localData.deckOrderConfig;
+            // }
+        }
+
+        console.log('✅ Loaded from localStorage:', allCards.length, 'cards');
+
+    } else {
+        console.warn('⚠️ No valid data source, setting empty cards');
+        allCards = [];
+        userPlan = 'free';
+    }
+
+    // ============================================================
+    //  5. LOAD GLOBAL DECK ORDER & INITIALIZE
+    // ============================================================
+
+    // ===== LOAD DARI FIRESTORE (GLOBAL) =====
+    await loadGlobalDeckOrder();
+
+    // ===== BARU INITIALIZE =====
+    initializeDeckOrder();
+
+    isAdmin = ADMIN_EMAILS.includes(email);
+    localStorage.setItem('flashmind_plan_' + email, userPlan);
+
+    // ===== VALIDASI: Jika allCards masih kosong, logout =====
+    if (!allCards || allCards.length === 0) {
+        console.warn('⚠️ All cards is empty after loading!');
+        alert('⚠️ Your account has no flashcards.\n\nPlease contact admin: adm.pharmacore@gmail.com');
+
+        await firebase.auth().signOut();
+        clearSession();
+        document.getElementById('view-login').classList.add('active');
+        document.getElementById('view-login').style.display = 'flex';
+        document.getElementById('bottomNav').style.display = 'none';
+        return;
+    }
+
+    console.log('✅ Load user data complete:', {
+        cards: allCards.length,
+        plan: userPlan,
+        isAdmin: isAdmin,
+        deckOrder: deckOrderConfig
+    });
 }
     
   async function handleSignup(e) {
@@ -4494,29 +4483,43 @@ async function flushSaveNow(email) {
   return new Date(expiry) > new Date();
 }
 
+// ============================================================
+//  ENTER APP - DENGAN GLOBAL DECK ORDER
+// ============================================================
+// ============================================================
+//  FLAG UNTUK MENCEGAH INFINITE LOOP
+// ============================================================
+
+let isLoadingData = false;
+
+// ============================================================
+//  ENTER APP - LENGKAP
+// ============================================================
+
 function enterApp() {
     console.log('🚀 Entering App');
     console.log('👤 User:', currentUser);
     console.log('📚 Cards:', allCards?.length || 0);
+    console.log('📋 Deck Order:', deckOrderConfig);
     
     // ===== VALIDASI USER =====
     if (!currentUser) {
         console.warn('⚠️ No user, showing login');
-        document.getElementById('view-login').classList.add('active');
-        document.getElementById('view-login').style.display = 'flex';
-        document.getElementById('bottomNav').style.display = 'none';
-        document.querySelectorAll('.view').forEach(v => {
-            if (v.id !== 'view-login') {
-                v.classList.remove('active');
-                v.style.display = 'none';
-            }
-        });
+        showLoginPage();
         return;
     }
     
     // ===== JIKA DATA KOSONG, COBA LOAD ULANG =====
     if (!allCards || allCards.length === 0) {
         console.warn('⚠️ No cards yet, trying to load...');
+        
+        // Cegah infinite loop
+        if (isLoadingData) {
+            console.warn('⚠️ Already loading data, skipping...');
+            return;
+        }
+        
+        isLoadingData = true;
         
         // Tampilkan loading state
         const homeView = document.getElementById('view-home');
@@ -4532,40 +4535,54 @@ function enterApp() {
         }
         
         // Coba load data
-        loadUserData(currentUser).then(() => {
-            if (allCards && allCards.length > 0) {
-                console.log('✅ Data loaded:', allCards.length, 'cards');
-                continueEnterApp();
-            } else {
-                console.warn('⚠️ Still no data after loading');
-                // Jangan logout dulu, coba sekali lagi
-                setTimeout(() => {
-                    loadUserData(currentUser).then(() => {
+        loadUserData(currentUser)
+            .then(async () => {
+                isLoadingData = false;
+                
+                if (allCards && allCards.length > 0) {
+                    console.log('✅ Data loaded:', allCards.length, 'cards');
+                    
+                    // ===== LOAD GLOBAL DECK ORDER =====
+                    await loadGlobalDeckOrder();
+                    
+                    continueEnterApp();
+                } else {
+                    console.warn('⚠️ Still no data after loading');
+                    
+                    // Coba sekali lagi dengan delay
+                    setTimeout(async () => {
+                        await loadUserData(currentUser);
+                        
                         if (allCards && allCards.length > 0) {
+                            await loadGlobalDeckOrder();
                             continueEnterApp();
                         } else {
                             // Benar-benar tidak ada data
                             alert('⚠️ Your account has no flashcards data.\n\nPlease contact admin: adm.pharmacore@gmail.com');
-                            firebase.auth().signOut();
+                            await firebase.auth().signOut();
                             clearSession();
                             currentUser = null;
                             allCards = [];
                             showLoginPage();
                         }
-                    });
-                }, 1000);
-            }
-        }).catch(err => {
-            console.error('❌ Load failed:', err);
-            // Jangan logout, coba lagi nanti
-            setTimeout(() => {
-                loadUserData(currentUser).then(() => {
+                    }, 1000);
+                }
+            })
+            .catch(async (err) => {
+                console.error('❌ Load failed:', err);
+                isLoadingData = false;
+                
+                // Coba lagi nanti
+                setTimeout(async () => {
+                    await loadUserData(currentUser);
                     if (allCards && allCards.length > 0) {
+                        await loadGlobalDeckOrder();
                         continueEnterApp();
+                    } else {
+                        showLoginPage();
                     }
-                });
-            }, 2000);
-        });
+                }, 2000);
+            });
         
         return;
     }
@@ -4575,11 +4592,19 @@ function enterApp() {
 }
 
 // ============================================================
-//  CONTINUE ENTER APP
+//  CONTINUE ENTER APP - HANYA 1 VERSI
 // ============================================================
 
-function continueEnterApp() {
+async function continueEnterApp() {
     console.log('✅ Continuing to app with', allCards.length, 'cards');
+    console.log('📋 Deck Order:', deckOrderConfig);
+    
+    // ===== VALIDASI DECK ORDER =====
+    if (!deckOrderConfig || !deckOrderConfig.topics) {
+        console.warn('⚠️ Deck order not loaded, initializing...');
+        await loadGlobalDeckOrder();
+        initializeDeckOrder();
+    }
     
     // Show bottom navigation
     document.getElementById('bottomNav').style.display = 'flex';
@@ -4644,34 +4669,56 @@ function continueEnterApp() {
 }
 
 // ============================================================
-//  SHOW LOGIN PAGE
+//  SHOW LOGIN PAGE - HANYA 1 VERSI
 // ============================================================
 
 function showLoginPage() {
     console.log('🔐 Showing login page');
     
+    // Hide all views
     document.querySelectorAll('.view').forEach(v => {
         v.classList.remove('active');
         v.style.display = 'none';
     });
     
+    // Show login
     const loginView = document.getElementById('view-login');
     if (loginView) {
         loginView.classList.add('active');
         loginView.style.display = 'flex';
     }
     
-    document.getElementById('bottomNav').style.display = 'none';
+    // Hide nav
+    const bottomNav = document.getElementById('bottomNav');
+    if (bottomNav) {
+        bottomNav.style.display = 'none';
+    }
+    
+    // Reset global
     currentUser = null;
     allCards = [];
-    clearSession();
-}
+    userPlan = 'free';
+    isAdmin = false;
+    isLoadingData = false;
     
-  async function checkSession() {
+    // Clear session
+    clearSession();
+    
+    // Refresh icons
+    if (typeof lucide !== 'undefined' && lucide.createIcons) {
+        lucide.createIcons();
+    }
+}
+
+// ============================================================
+//  CHECK SESSION
+// ============================================================
+
+async function checkSession() {
     const s = getSession();
     console.log("===== CHECK SESSION =====");
-console.log("SESSION:", s);
-console.log("Firebase user:", firebase.auth().currentUser);
+    console.log("SESSION:", s);
+    console.log("Firebase user:", firebase.auth().currentUser);
 
     if (!s?.email) return false;
 
@@ -4685,13 +4732,11 @@ console.log("Firebase user:", firebase.auth().currentUser);
 
     currentUser = s.email;
 
-    isAdmin =
-        users[s.email].isAdmin ||
-        ADMIN_EMAILS.includes(s.email);
+    isAdmin = users[s.email].isAdmin || ADMIN_EMAILS.includes(s.email);
 
     try {
-        // ===== LOAD DATA DENGAN TRY-CATCH =====
         await loadUserData(s.email);
+        await loadGlobalDeckOrder();
         
         // ===== CEK APAKAH DATA BERHASIL DIMUAT =====
         if (!allCards || allCards.length === 0) {
@@ -4728,9 +4773,7 @@ console.log("Firebase user:", firebase.auth().currentUser);
         // Logout dan redirect ke login
         await firebase.auth().signOut();
         clearSession();
-        document.getElementById('view-login').classList.add('active');
-        document.getElementById('view-login').style.display = 'flex';
-        document.getElementById('bottomNav').style.display = 'none';
+        showLoginPage();
         return false;
     }
 }
@@ -8088,6 +8131,119 @@ async function refreshUserData() {
     );
   }
 }
+
+// ============================================================
+//  GLOBAL DECK ORDER - FUNGSI LENGKAP
+// ============================================================
+
+// ===== LOAD GLOBAL =====
+async function loadGlobalDeckOrder() {
+    try {
+        const doc = await db.collection("config").doc("global").get();
+        if (doc.exists && doc.data().deckOrderConfig) {
+            deckOrderConfig = doc.data().deckOrderConfig;
+            console.log("✅ Loaded global deck order from Firestore");
+            return true;
+        } else {
+            console.log("ℹ️ No global deck order found, using default");
+            // Initialize with empty object
+            deckOrderConfig = { topics: [], subtopics: {} };
+            return false;
+        }
+    } catch (err) {
+        console.error("❌ Failed to load global deck order:", err);
+        deckOrderConfig = { topics: [], subtopics: {} };
+        return false;
+    }
+}
+
+// ===== SAVE GLOBAL =====
+async function saveGlobalDeckOrder() {
+    // Hanya admin yang bisa save
+    if (!isAdmin) {
+        console.warn("⛔ Only admins can save deck order.");
+        return;
+    }
+    
+    try {
+        await db.collection("config").doc("global").set({
+            deckOrderConfig: deckOrderConfig,
+            last_updated: Date.now(),
+            updated_by: currentUser
+        }, { merge: true });
+        console.log("✅ Global deck order saved");
+    } catch (err) {
+        console.error("❌ Failed to save global deck order:", err);
+    }
+}
+
+// ===== INITIALIZE DECK ORDER (SAFE VERSION) =====
+function initializeDeckOrder() {
+    console.log('🔄 Initializing deck order...');
+    
+    // Guard: pastikan object ada
+    if (!deckOrderConfig) deckOrderConfig = {};
+    if (!deckOrderConfig.topics) deckOrderConfig.topics = [];
+    if (!deckOrderConfig.subtopics) deckOrderConfig.subtopics = {};
+    
+    const decks = getDecks();
+    const topics = [...new Set(decks.map(d => d.topic))];
+    let changed = false;
+    
+    // Hapus topic yang sudah tidak ada
+    const filteredTopics = deckOrderConfig.topics.filter(t => topics.includes(t));
+    if (filteredTopics.length !== deckOrderConfig.topics.length) {
+        deckOrderConfig.topics = filteredTopics;
+        changed = true;
+        console.log('🗑️ Removed deleted topics');
+    }
+    
+    // Tambahkan topic baru
+    topics.forEach(topic => {
+        if (!deckOrderConfig.topics.includes(topic)) {
+            deckOrderConfig.topics.push(topic);
+            changed = true;
+            console.log(`➕ Added new topic: ${topic}`);
+        }
+    });
+    
+    // Subtopics
+    topics.forEach(topic => {
+        const subs = decks
+            .filter(d => d.topic === topic)
+            .map(d => d.subtopic);
+        
+        if (!deckOrderConfig.subtopics[topic]) {
+            deckOrderConfig.subtopics[topic] = [];
+        }
+        
+        // Hapus subtopic yang sudah tidak ada
+        const filteredSubs = deckOrderConfig.subtopics[topic].filter(s => subs.includes(s));
+        if (filteredSubs.length !== deckOrderConfig.subtopics[topic].length) {
+            deckOrderConfig.subtopics[topic] = filteredSubs;
+            changed = true;
+            console.log(`🗑️ Removed deleted subtopics from: ${topic}`);
+        }
+        
+        // Tambahkan subtopic baru
+        subs.forEach(sub => {
+            if (!deckOrderConfig.subtopics[topic].includes(sub)) {
+                deckOrderConfig.subtopics[topic].push(sub);
+                changed = true;
+                console.log(`➕ Added new subtopic: ${sub} (${topic})`);
+            }
+        });
+    });
+    
+    // Auto-save jika ada perubahan dan user adalah admin
+    if (changed && isAdmin) {
+        console.log('💾 Auto-saving global deck order...');
+        saveGlobalDeckOrder();
+    }
+    
+    console.log('✅ Deck order initialized:', deckOrderConfig);
+}
+    
    async function renderCodeList() {
   const container = document.getElementById('code-list');
   if (!container) return;
@@ -9177,102 +9333,56 @@ document.addEventListener('visibilitychange', () => {
   }
 });
 
-    async function moveTopicUp(topic){
+// ===== FUNGSI REORDER TOPIC =====
+async function moveTopicUp(topic) {
+    const idx = deckOrderConfig.topics.indexOf(topic);
+    if (idx <= 0) return;
 
-  const idx =
-    deckOrderConfig.topics.indexOf(topic);
+    // Swap
+    [deckOrderConfig.topics[idx - 1], deckOrderConfig.topics[idx]] =
+    [deckOrderConfig.topics[idx], deckOrderConfig.topics[idx - 1]];
 
-  if(idx <= 0) return;
+    // ===== SIMPAN KE GLOBAL =====
+    await saveGlobalDeckOrder();
 
-  [
-    deckOrderConfig.topics[idx-1],
-    deckOrderConfig.topics[idx]
-  ] = [
-    deckOrderConfig.topics[idx],
-    deckOrderConfig.topics[idx-1]
-  ];
-
-  await saveUserData(currentUser.email);
-
-  renderDecks();
+    renderDecks();
 }
 
-    async function moveTopicDown(topic){
+async function moveTopicDown(topic) {
+    const idx = deckOrderConfig.topics.indexOf(topic);
+    if (idx === -1 || idx >= deckOrderConfig.topics.length - 1) return;
 
-  console.log("MOVE DOWN CLICKED:", topic);
+    // Swap
+    [deckOrderConfig.topics[idx + 1], deckOrderConfig.topics[idx]] =
+    [deckOrderConfig.topics[idx], deckOrderConfig.topics[idx + 1]];
 
-  console.log("BEFORE", [...deckOrderConfig.topics]);
+    // ===== SIMPAN KE GLOBAL =====
+    await saveGlobalDeckOrder();
 
-  const idx =
-    deckOrderConfig.topics.indexOf(topic);
-
-  console.log("IDX", idx);
-
-  if(
-    idx === -1 ||
-    idx >= deckOrderConfig.topics.length-1
-  ) return;
-
-  [
-    deckOrderConfig.topics[idx+1],
-    deckOrderConfig.topics[idx]
-  ] = [
-    deckOrderConfig.topics[idx],
-    deckOrderConfig.topics[idx+1]
-  ];
-
-  console.log("AFTER", [...deckOrderConfig.topics]);
-
-  await saveUserData(currentUser.email);
-
-  renderDecks();
+    renderDecks();
 }
 
-    async function moveSubtopicUp(topic, subtopic){
+// ===== FUNGSI REORDER SUBTOPIC =====
+async function moveSubtopicUp(topic, subtopic) {
+    const order = deckOrderConfig.subtopics[topic];
+    const idx = order.indexOf(subtopic);
+    if (idx <= 0) return;
 
-  const order =
-    deckOrderConfig.subtopics[topic];
+    [order[idx - 1], order[idx]] = [order[idx], order[idx - 1]];
 
-  const idx =
-    order.indexOf(subtopic);
-
-  if(idx <= 0) return;
-
-  [
-    order[idx-1],
-    order[idx]
-  ] = [
-    order[idx],
-    order[idx-1]
-  ];
-
-  await saveUserData(currentUser.email);
-
-  renderDecks();
+    await saveGlobalDeckOrder();
+    renderDecks();
 }
 
-    async function moveSubtopicDown(topic, subtopic){
+async function moveSubtopicDown(topic, subtopic) {
+    const order = deckOrderConfig.subtopics[topic];
+    const idx = order.indexOf(subtopic);
+    if (idx === -1 || idx >= order.length - 1) return;
 
-  const order =
-    deckOrderConfig.subtopics[topic];
+    [order[idx + 1], order[idx]] = [order[idx], order[idx + 1]];
 
-  const idx =
-    order.indexOf(subtopic);
-
-  if(
-    idx === -1 ||
-    idx >= order.length-1
-  ) return;
-
-  [
-    order[idx+1],
-    order[idx]
-  ] = [
-    order[idx],
-    order[idx+1]
-  ];
-  await saveUserData(currentUser.email);
-  renderDecks();
+    await saveGlobalDeckOrder();
+    renderDecks();
 }
 
     // ============================================================
