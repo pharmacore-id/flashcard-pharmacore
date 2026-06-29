@@ -3133,7 +3133,6 @@ function getDB() {
 // ============================================================
 //  SAVE
 // ============================================================
-
 async function saveToIndexedDB(email, data) {
     if (!email) {
         console.warn('⚠️ saveToIndexedDB: No email provided');
@@ -3141,29 +3140,30 @@ async function saveToIndexedDB(email, data) {
     }
     
     try {
-        let savedRecord = null;
+        const db = await getDB();
+        const tx = db.transaction(STORE_NAME, 'readwrite');
+        const store = tx.objectStore(STORE_NAME);
         
-        await withStore('readwrite', (store) => {
-            // ===== METADATA OTOMATIS =====
-            const record = {
-                email: email,
-                schema_version: 2,
-                syncStatus: 'pending',  // pending | synced | error
-                ...data,                // Data dari user (bisa override)
-                updatedAt: Date.now()   // ← TIMESTAMP SELALU DARI WRAPPER
+        const record = {
+            email: email,
+            schema_version: data.schemaVersion || 2,
+            syncStatus: 'pending',
+            ...data,
+            updatedAt: Date.now()
+        };
+        
+        store.put(record);
+        
+        return new Promise((resolve, reject) => {
+            tx.oncomplete = () => {
+                log(`✅ IndexedDB saved: ${email}`);
+                resolve(record);
             };
-            
-            // ===== CEK ERROR PADA REQUEST =====
-            const request = store.put(record);
-            request.onerror = () => {
-                console.error('❌ Put request error:', request.error);
+            tx.onerror = () => {
+                console.error('❌ IndexedDB save error:', tx.error);
+                reject(tx.error);
             };
-            
-            savedRecord = record;
         });
-        
-        log(`✅ IndexedDB saved: ${email}`);
-        return savedRecord;
         
     } catch (error) {
         console.error('❌ saveToIndexedDB error:', error);
