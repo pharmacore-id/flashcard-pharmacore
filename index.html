@@ -3137,38 +3137,39 @@ function getDB() {
 async function saveToIndexedDB(email, data) {
     if (!email) {
         console.warn('⚠️ saveToIndexedDB: No email provided');
-        return;
+        return null;
     }
     
     try {
-        const db = await getDB();
-        const tx = db.transaction(STORE_NAME, 'readwrite');
-        const store = tx.objectStore(STORE_NAME);
+        let savedRecord = null;
         
-        const record = {
-            email: email,
-            ...data
-        };
-        
-        store.put(record);
-        
-        return new Promise((resolve, reject) => {
-            tx.oncomplete = () => {
-                log(`✅ IndexedDB saved: ${email}`);
-                resolve(record);
+        await withStore('readwrite', (store) => {
+            // ===== METADATA OTOMATIS =====
+            const record = {
+                email: email,
+                schema_version: 2,
+                syncStatus: 'pending',  // pending | synced | error
+                ...data,                // Data dari user (bisa override)
+                updatedAt: Date.now()   // ← TIMESTAMP SELALU DARI WRAPPER
             };
-            tx.onerror = () => {
-                console.error('❌ IndexedDB save error:', tx.error);
-                reject(tx.error);
+            
+            // ===== CEK ERROR PADA REQUEST =====
+            const request = store.put(record);
+            request.onerror = () => {
+                console.error('❌ Put request error:', request.error);
             };
+            
+            savedRecord = record;
         });
+        
+        log(`✅ IndexedDB saved: ${email}`);
+        return savedRecord;
         
     } catch (error) {
         console.error('❌ saveToIndexedDB error:', error);
         throw error;
     }
 }
-
 // ============================================================
 //  LOAD
 // ============================================================
@@ -3246,6 +3247,36 @@ async function deleteFromIndexedDB(email) {
         
     } catch (error) {
         console.error('❌ deleteFromIndexedDB error:', error);
+    }
+}
+
+async function getPendingRecords() {
+    if (!DEBUG) {
+        console.warn('⚠️ getPendingRecords only available in debug mode');
+        return [];
+    }
+    
+    try {
+        let results = [];
+        
+        await withStore('readonly', (store) => {
+            const request = store.getAll();
+            request.onsuccess = () => {
+                results = request.result || [];
+            };
+            request.onerror = () => {
+                console.error('❌ Get pending request error:', request.error);
+            };
+        });
+        
+        // ===== FILTER YANG PENDING =====
+        const pending = results.filter(r => r.syncStatus === 'pending');
+        log(`📤 Pending records: ${pending.length}`);
+        return pending;
+        
+    } catch (error) {
+        console.error('❌ getPendingRecords error:', error);
+        return [];
     }
 }
 
@@ -3431,22 +3462,34 @@ function resetSessionStats(){
     // ============================================================
     //  SYNC STATUS
     // ============================================================
-    function updateSyncStatus(status, message) {
-      const dotIds = ['sync-dot', 'sync-dot-home', 'sync-dot-signup'];
-      const textIds = ['sync-text', 'sync-text-home', 'sync-text-signup'];
-      dotIds.forEach(id => {
-        const dot = document.getElementById(id);
-        if (dot) {
-          dot.className = 'dot';
-          if (status === 'syncing') dot.classList.add('syncing');
-          else if (status === 'offline') dot.classList.add('offline');
-        }
-      });
-      textIds.forEach(id => {
-        const el = document.getElementById(id);
-        if (el) el.textContent = message;
-      });
+   async function updateSyncStatus(email, status) {
+    if (!email) {
+        console.warn('⚠️ updateSyncStatus: No email provided');
+        return;
     }
+    
+    try {
+        // ===== AMBIL DATA LAMA =====
+        const existing = await loadFromIndexedDB(email);
+        if (!existing) {
+            console.warn(`⚠️ No record found for ${email}`);
+            return;
+        }
+        
+        // ===== UPDATE SYNC STATUS =====
+        await saveToIndexedDB(email, {
+            ...existing,
+            syncStatus: status
+        });
+        
+        log(`✅ Sync status updated: ${email} -> ${status}`);
+        
+    } catch (error) {
+        console.error('❌ updateSyncStatus error:', error);
+        throw error;
+    }
+}
+
 
     // ============================================================
     //  NICKNAME FUNCTIONS
