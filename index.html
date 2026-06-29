@@ -3072,45 +3072,36 @@ style="max-height:90vh;overflow-y:auto;">
 // ============================================================
 //  PHASE 1: INDEXEDDB CORE
 //  GENERIC STORAGE - TIDAK TAHU BUSINESS LOGIC
-//  Total: ~120 baris
 // ============================================================
 
 const DB_NAME = 'FlashMindDB';
 const DB_VERSION = 1;
 const STORE_NAME = 'user_data';
 
-// ============================================================
-//  DEBUG MODE
-// ============================================================
-
 const DEBUG = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
 
-function log(...args) {
-    if (DEBUG) console.log(...args);
+function log() {
+    if (DEBUG) console.log.apply(console, arguments);
 }
-
-// ============================================================
-//  1. DATABASE SINGLETON
-// ============================================================
 
 let dbPromise = null;
 
 function getDB() {
     if (!dbPromise) {
-        dbPromise = new Promise((resolve, reject) => {
-            const request = indexedDB.open(DB_NAME, DB_VERSION);
+        dbPromise = new Promise(function(resolve, reject) {
+            var request = indexedDB.open(DB_NAME, DB_VERSION);
             
-            request.onupgradeneeded = (e) => {
-                const db = e.target.result;
+            request.onupgradeneeded = function(e) {
+                var db = e.target.result;
                 if (!db.objectStoreNames.contains(STORE_NAME)) {
                     db.createObjectStore(STORE_NAME, { keyPath: 'email' });
                     log('✅ IndexedDB store created');
                 }
             };
             
-            request.onsuccess = (e) => {
-                const db = e.target.result;
-                db.onversionchange = () => {
+            request.onsuccess = function(e) {
+                var db = e.target.result;
+                db.onversionchange = function() {
                     db.close();
                     log('🔄 Version change, closing...');
                 };
@@ -3118,22 +3109,18 @@ function getDB() {
                 resolve(db);
             };
             
-            request.onerror = (e) => {
+            request.onerror = function(e) {
                 console.error('❌ IndexedDB error:', e.target.error);
                 reject(e.target.error);
             };
             
-            request.onblocked = () => {
+            request.onblocked = function() {
                 console.warn('⚠️ IndexedDB blocked. Please close other tabs.');
             };
         });
     }
     return dbPromise;
 }
-
-// ============================================================
-//  2. SAVE - GENERIC (TIDAK TAHU ISI DATA)
-// ============================================================
 
 async function saveToIndexedDB(email, data) {
     if (!email) {
@@ -3142,23 +3129,29 @@ async function saveToIndexedDB(email, data) {
     }
     
     try {
-        const db = await getDB();
-        const tx = db.transaction(STORE_NAME, 'readwrite');
-        const store = tx.objectStore(STORE_NAME);
+        var db = await getDB();
+        var tx = db.transaction(STORE_NAME, 'readwrite');
+        var store = tx.objectStore(STORE_NAME);
         
-        const record = {
-            email: email,
-            ...data
+        var record = {
+            email: email
         };
+        
+        // Copy semua property dari data ke record
+        for (var key in data) {
+            if (data.hasOwnProperty(key)) {
+                record[key] = data[key];
+            }
+        }
         
         store.put(record);
         
-        return new Promise((resolve, reject) => {
-            tx.oncomplete = () => {
-                log(`✅ IndexedDB saved: ${email}`);
+        return new Promise(function(resolve, reject) {
+            tx.oncomplete = function() {
+                log('✅ IndexedDB saved: ' + email);
                 resolve(record);
             };
-            tx.onerror = () => {
+            tx.onerror = function() {
                 console.error('❌ IndexedDB save error:', tx.error);
                 reject(tx.error);
             };
@@ -3170,10 +3163,6 @@ async function saveToIndexedDB(email, data) {
     }
 }
 
-// ============================================================
-//  3. LOAD
-// ============================================================
-
 async function loadFromIndexedDB(email) {
     if (!email) {
         console.warn('⚠️ loadFromIndexedDB: No email provided');
@@ -3181,23 +3170,23 @@ async function loadFromIndexedDB(email) {
     }
     
     try {
-        const db = await getDB();
-        const tx = db.transaction(STORE_NAME, 'readonly');
-        const store = tx.objectStore(STORE_NAME);
+        var db = await getDB();
+        var tx = db.transaction(STORE_NAME, 'readonly');
+        var store = tx.objectStore(STORE_NAME);
         
-        return new Promise((resolve, reject) => {
-            const request = store.get(email);
-            request.onsuccess = () => {
-                const result = request.result;
+        return new Promise(function(resolve, reject) {
+            var request = store.get(email);
+            request.onsuccess = function() {
+                var result = request.result;
                 if (result) {
-                    log(`✅ IndexedDB loaded: ${email}`);
+                    log('✅ IndexedDB loaded: ' + email);
                     resolve(result);
                 } else {
-                    log(`ℹ️ No data for: ${email}`);
+                    log('ℹ️ No data for: ' + email);
                     resolve(null);
                 }
             };
-            request.onerror = () => {
+            request.onerror = function() {
                 console.error('❌ IndexedDB load error:', request.error);
                 reject(request.error);
             };
@@ -3209,18 +3198,10 @@ async function loadFromIndexedDB(email) {
     }
 }
 
-// ============================================================
-//  4. HAS (CHECK EXISTING)
-// ============================================================
-
 async function hasIndexedDB(email) {
-    const data = await loadFromIndexedDB(email);
+    var data = await loadFromIndexedDB(email);
     return data !== null;
 }
-
-// ============================================================
-//  5. DELETE
-// ============================================================
 
 async function deleteFromIndexedDB(email) {
     if (!email) {
@@ -3229,17 +3210,17 @@ async function deleteFromIndexedDB(email) {
     }
     
     try {
-        const db = await getDB();
-        const tx = db.transaction(STORE_NAME, 'readwrite');
-        const store = tx.objectStore(STORE_NAME);
+        var db = await getDB();
+        var tx = db.transaction(STORE_NAME, 'readwrite');
+        var store = tx.objectStore(STORE_NAME);
         store.delete(email);
         
-        return new Promise((resolve, reject) => {
-            tx.oncomplete = () => {
-                log(`🗑️ IndexedDB deleted: ${email}`);
+        return new Promise(function(resolve, reject) {
+            tx.oncomplete = function() {
+                log('🗑️ IndexedDB deleted: ' + email);
                 resolve();
             };
-            tx.onerror = () => {
+            tx.onerror = function() {
                 console.error('❌ IndexedDB delete error:', tx.error);
                 reject(tx.error);
             };
@@ -3250,24 +3231,20 @@ async function deleteFromIndexedDB(email) {
     }
 }
 
-// ============================================================
-//  6. GET ALL
-// ============================================================
-
 async function getAllIndexedDB() {
     try {
-        const db = await getDB();
-        const tx = db.transaction(STORE_NAME, 'readonly');
-        const store = tx.objectStore(STORE_NAME);
+        var db = await getDB();
+        var tx = db.transaction(STORE_NAME, 'readonly');
+        var store = tx.objectStore(STORE_NAME);
         
-        return new Promise((resolve, reject) => {
-            const request = store.getAll();
-            request.onsuccess = () => {
-                const results = request.result || [];
-                log(`📊 Total records: ${results.length}`);
+        return new Promise(function(resolve, reject) {
+            var request = store.getAll();
+            request.onsuccess = function() {
+                var results = request.result || [];
+                log('📊 Total records: ' + results.length);
                 resolve(results);
             };
-            request.onerror = () => {
+            request.onerror = function() {
                 console.error('❌ getAll error:', request.error);
                 reject(request.error);
             };
@@ -3279,23 +3256,19 @@ async function getAllIndexedDB() {
     }
 }
 
-// ============================================================
-//  7. CLEAR STORE
-// ============================================================
-
 async function clearStore() {
     try {
-        const db = await getDB();
-        const tx = db.transaction(STORE_NAME, 'readwrite');
-        const store = tx.objectStore(STORE_NAME);
+        var db = await getDB();
+        var tx = db.transaction(STORE_NAME, 'readwrite');
+        var store = tx.objectStore(STORE_NAME);
         store.clear();
         
-        return new Promise((resolve, reject) => {
-            tx.oncomplete = () => {
+        return new Promise(function(resolve, reject) {
+            tx.oncomplete = function() {
                 log('🗑️ IndexedDB cleared');
                 resolve();
             };
-            tx.onerror = () => {
+            tx.onerror = function() {
                 console.error('❌ clear error:', tx.error);
                 reject(tx.error);
             };
@@ -3307,21 +3280,21 @@ async function clearStore() {
 }
 
 // ============================================================
-//  8. EXPOSE FOR DEBUGGING (ONLY DEVELOPMENT)
+//  EXPOSE FOR DEBUGGING
 // ============================================================
 
 if (DEBUG) {
     window.__indexedDB = {
-        getDB,
-        saveToIndexedDB,
-        loadFromIndexedDB,
-        hasIndexedDB,
-        deleteFromIndexedDB,
-        getAllIndexedDB,
-        clearStore
+        getDB: getDB,
+        saveToIndexedDB: saveToIndexedDB,
+        loadFromIndexedDB: loadFromIndexedDB,
+        hasIndexedDB: hasIndexedDB,
+        deleteFromIndexedDB: deleteFromIndexedDB,
+        getAllIndexedDB: getAllIndexedDB,
+        clearStore: clearStore
     };
     console.log('📦 IndexedDB ready (debug mode)');
-    console.log('🔧 Available: saveToIndexedDB, loadFromIndexedDB, getAllIndexedDB, clearStore');
+    console.log('🔧 Run: await saveToIndexedDB("test", {hello:"world"})');
 }
     
     // ============================================================
