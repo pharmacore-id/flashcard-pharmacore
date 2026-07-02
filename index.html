@@ -3982,73 +3982,46 @@ function updateSyncStatus(status, text) {
     // ============================================================
     //  FIREBASE SYNC
     // ============================================================
+
 async function loadFromFirebase(email) {
-  if (!email || !navigator.onLine) return null;
-  
-  try {
-    updateSyncStatus('syncing', 'Loading...');
-
-    const userDoc = await db.collection('users').doc(email).get();
+    if (!email || !navigator.onLine) return null;
     
-    if (!userDoc.exists) return null;
+    try {
+        updateSyncStatus('syncing', 'Loading...');
 
-    const data = userDoc.data();
-    
-    if (data.nickname) {
-      localStorage.setItem(NICKNAME_KEY + email, data.nickname);
+        const userDoc = await db.collection('users').doc(email).get();
+        
+        if (!userDoc.exists) return null;
+
+        const data = userDoc.data();
+        
+        if (data.nickname) {
+            localStorage.setItem(NICKNAME_KEY + email, data.nickname);
+        }
+
+        // ============================================================
+        //  HANYA AMBIL PROGRESS DARI FIRESTORE
+        //  JANGAN MERGE DENGAN SHARED DECKS DI SINI!
+        // ============================================================
+        const progressCards = data.cards || [];
+        
+        console.log('✅ User data loaded from Firebase (progress only):', progressCards.length, 'cards');
+
+        const plan = data.plan || 'free';
+        const schemaVersion = data.schema_version || 1;
+
+        return {
+            cards: progressCards,  // ← PROGRESS ONLY!
+            plan: plan,
+            last_updated: data.last_updated || data.updatedAt?.toMillis?.() || Date.now(),
+            schema_version: schemaVersion
+        };
+
+    } catch (err) {
+        console.warn('⚠️ Firebase load failed:', err.message);
+        updateSyncStatus('offline', 'Offline');
+        return null;
     }
-
-    // ===== LOAD SHARED DECKS (konten kartu) =====
-    const sharedCards = await loadSharedDecks();
-    
-    // ===== PROGRESS ONLY dari user =====
-    const progressCards = data.cards || [];
-    const progressMap = new Map(
-      progressCards.map(c => [c.__id || c.card_id, c])
-    );
-
-    // ===== MERGE: shared cards + progress =====
-    const mergedCards = sharedCards.map(card => {
-      const key = card.__id || card.card_id;
-      const progress = progressMap.get(key) || {};
-      return {
-        ...card,
-        ease_factor: progress.ease_factor ?? 2.5,
-        interval: progress.interval ?? 0,
-        repetitions: progress.repetitions ?? 0,
-        total_reviews: progress.total_reviews ?? 0,
-        correct_count: progress.correct_count ?? 0,
-        next_review: progress.next_review || '',
-        last_review: progress.last_review || '',
-        review_history: progress.review_history || []
-      };
-    });
-
-     // ===== TAMBAHKAN KARTU CUSTOM (progress tanpa shared deck) =====
-    const sharedKeys = new Set(sharedCards.map(c => c.__id || c.card_id));
-    const extraCards = progressCards.filter(c => {
-        const key = c.__id || c.card_id;
-        return !sharedKeys.has(key);
-    });
-    extraCards.forEach(c => mergedCards.push(c));
-    updateSyncStatus('', 'Synced');
-    console.log('✅ User data loaded from Firebase:', mergedCards.length, 'cards');
-
-    const plan = data.plan || 'free';
-    const schemaVersion = data.schema_version || 1;
-
-    return {
-        cards: mergedCards,
-        plan: plan,
-        last_updated: data.last_updated || data.updatedAt?.toMillis?.() || Date.now(),
-        schema_version: schemaVersion
-    };
-
-  } catch (err) {
-    console.warn('⚠️ Firebase load failed:', err.message);
-    updateSyncStatus('offline', 'Offline');
-    return null;
-  }
 }
 
 // ============================================================
