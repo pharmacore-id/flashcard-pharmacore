@@ -3854,7 +3854,6 @@ async function loadDataInBackground() {
         dataReady = true;
         
         await migrateLocalStorageToIndexedDB(currentUser);
-        await checkContentVersion();
         
         renderDecks();
         updateHome();
