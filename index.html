@@ -4707,14 +4707,28 @@ async function loadUserData(email) {
         allCards = cloudData.cards || [];
         userPlan = cloudData.plan || 'free';
 
-        const synced = {
-            cards: allCards,
-            schema_version: 2,
-            last_updated: cloudData.last_updated || Date.now(),
-            user_plan: userPlan,
-            is_admin: isAdmin
-        };
-        localStorage.setItem(DATA_PREFIX + email, JSON.stringify(synced));
+        // ============================================================
+//  TAHAP 1: SIMPAN KE INDEXEDDB (BUKAN LOCALSTORAGE)
+// ============================================================
+await saveToIndexedDB(email, {
+    cards: cloudData.cards,
+    plan: cloudData.plan || 'free',
+    schema_version: cloudData.schema_version || CURRENT_SCHEMA_VERSION,
+    cloudUpdatedAt: cloudData.last_updated ?? null
+});
+console.log('📦 Saved to IndexedDB (migrated from Firestore)');
+
+// ===== METADATA KECIL DI LOCALSTORAGE (BUKAN CARDS!) =====
+try {
+    localStorage.setItem('Pharmadeck_metadata_' + email, JSON.stringify({
+        plan: userPlan,
+        cardsCount: allCards.length,
+        source: 'firestore',
+        lastUpdated: Date.now()
+    }));
+} catch (e) {
+    console.warn('⚠️ Metadata save failed:', e);
+}
 
         console.log('✅ Loaded from cloud:', allCards.length, 'cards');
 
