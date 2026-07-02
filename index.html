@@ -1851,36 +1851,21 @@ color:white;
 </div>
 
     <!-- ===== HOME ===== -->
-   <div id="view-home" class="view p-4">
-  <div class="flex items-start justify-between">
-    
-    <!-- Bagian Kiri: Logo & Badges -->
-    <div class="flex flex-col">
-      <!-- Baris Atas: Logo + Badges -->
-      <div class="flex items-center gap-3">
-        
-        <img src="logo-hitam.png" alt="Pharmadeck" class="logo-header h-8 w-auto object-contain">
-        
-        <!-- Badge FREE -->
-        <span id="plan-badge" class="free-badge text-[10px] font-bold px-2.5 py-0.5 rounded-full uppercase tracking-wider">FREE</span>
-        <!-- Badge ADMIN -->
-        <span id="admin-badge" class="admin-badge hidden text-[10px] font-bold px-2.5 py-0.5 rounded-full uppercase tracking-wider">ADMIN</span>
+    <div id="view-home" class="view">
+      <div class="flex items-center justify-between mb-3">
+        <div>
+          <div class="flex items-center gap-2">
+            <h1 class="text-2xl font-extrabold">Pharmadeck</h1>
+            <span id="plan-badge" class="free-badge">FREE</span>
+            <span id="admin-badge" class="admin-badge hidden">ADMIN</span>
+          </div>
+          <div id="sync-status-home" class="sync-status">
+            <span class="dot" id="sync-dot-home"></span>
+            <span id="sync-text-home">Synced</span>
+          </div>
+        </div>
+        <button onclick="toggleTheme()" class="w-10 h-10 rounded-full surface flex items-center justify-center shadow-card border border-theme"><i data-lucide="sun" class="w-5 h-5"></i></button>
       </div>
-
-      <!-- Baris Bawah: Status Synced -->
-      <div id="sync-status-home" class="sync-status flex items-center gap-1.5 mt-0.5">
-        <span class="dot" id="sync-dot-home" style="width: 6px; height: 6px; border-radius: 50%; background-color: #22c55e; display: inline-block;"></span>
-        <span id="sync-text-home" class="text-xs font-medium" style="color: var(--text-secondary);">Synced</span>
-      </div>
-    </div>
-
-    <!-- Bagian Kanan: Tombol Theme -->
-    <button onclick="toggleTheme()" class="w-9 h-9 rounded-full surface flex items-center justify-center shadow-sm border border-theme transition-colors hover:bg-gray-100 dark:hover:bg-gray-700">
-      <i data-lucide="sun" class="w-4 h-4" style="color: var(--text-primary);"></i>
-    </button>
-    
-  </div>
-</div>
 
       <div class="daily-progress hero-gradient rounded-3xl p-6 mb-3 relative overflow-hidden shadow-card" style="background:linear-gradient(135deg,#f97316,#ea580c); min-height:160px;">
         <div class="relative z-10 h-full flex flex-col justify-center">
