@@ -3489,6 +3489,45 @@ if (DEBUG) {
     console.log('📦 IndexedDB ready (debug mode)');
     console.log('🔧 Test: await saveToIndexedDB("test", {hello:"world"})');
 }
+
+    // ============================================================
+//  SPRINT B1 - COMMIT 1: TAMBAHKAN YANG BELUM ADA
+// ============================================================
+
+// ===== 1. DEFAULT_PROGRESS =====
+const DEFAULT_PROGRESS = {
+    ease_factor: 2.5,
+    interval: 0,
+    repetitions: 0,
+    total_reviews: 0,
+    correct_count: 0,
+    next_review: '',
+    last_review: '',
+    review_history: []
+};
+
+// ===== 2. mergeProgress() =====
+function mergeProgress(sharedCards, progressCards) {
+    if (!sharedCards || sharedCards.length === 0) return [];
+    
+    const progressMap = new Map();
+    if (progressCards && progressCards.length > 0) {
+        progressCards.forEach(c => {
+            const key = c.__id || c.card_id;
+            if (key) progressMap.set(key, c);
+        });
+    }
+    
+    return sharedCards.map(card => {
+        const key = card.__id || card.card_id;
+        const progress = progressMap.get(key) || {};
+        return {
+            ...card,
+            ...DEFAULT_PROGRESS,
+            ...progress
+        };
+    });
+}
     
   // ============================================================
   //  CONFIGURATION
@@ -3574,45 +3613,6 @@ function resetSessionStats(){
         good: 0,
         easy: 0
     };
-}
-
-    // ============================================================
-//  SPRINT B1 - COMMIT 1: TAMBAHKAN YANG BELUM ADA
-// ============================================================
-
-// ===== 1. DEFAULT_PROGRESS =====
-const DEFAULT_PROGRESS = {
-    ease_factor: 2.5,
-    interval: 0,
-    repetitions: 0,
-    total_reviews: 0,
-    correct_count: 0,
-    next_review: '',
-    last_review: '',
-    review_history: []
-};
-
-// ===== 2. mergeProgress() =====
-function mergeProgress(sharedCards, progressCards) {
-    if (!sharedCards || sharedCards.length === 0) return [];
-    
-    const progressMap = new Map();
-    if (progressCards && progressCards.length > 0) {
-        progressCards.forEach(c => {
-            const key = c.__id || c.card_id;
-            if (key) progressMap.set(key, c);
-        });
-    }
-    
-    return sharedCards.map(card => {
-        const key = card.__id || card.card_id;
-        const progress = progressMap.get(key) || {};
-        return {
-            ...card,
-            ...DEFAULT_PROGRESS,
-            ...progress
-        };
-    });
 }
     
     // ============================================================
