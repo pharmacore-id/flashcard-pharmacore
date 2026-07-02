@@ -4921,47 +4921,26 @@ async function saveUserData(email) {
         return;
     }
 
-    // ============================================================
-    //  BUILD PROGRESS DATA SEKALI UNTUK INDEXEDDB & LOCALSTORAGE
-    // ============================================================
     const progressData = buildProgressData();
 
-    // ============================================================
-    //  STEP 1: SAVE KE INDEXEDDB (TAMBAHAN)
-    // ============================================================
+    // ===== SAVE KE INDEXEDDB (PRIMARY) =====
+    await saveToIndexedDB(email, {
+        cards: progressData,
+        plan: userPlan,
+        schema_version: CURRENT_SCHEMA_VERSION
+    });
+
+    // ===== METADATA KECIL DI LOCALSTORAGE (BUKAN CARDS!) =====
     try {
-        await saveToIndexedDB(email, {
-            cards: progressData,
+        localStorage.setItem('Pharmadeck_metadata_' + email, JSON.stringify({
             plan: userPlan,
-            schema_version: 2
-        });
-        console.log('📦 IndexedDB OK');
-    } catch (error) {
-        console.warn('⚠️ ❌ IndexedDB failed:', error);
+            cardsCount: progressData.length,
+            lastUpdated: Date.now()
+        }));
+    } catch (e) {
+        console.warn('⚠️ Metadata save failed:', e);
     }
 
-    // ============================================================
-    //  STEP 2: SAVE KE LOCALSTORAGE (TETAP)
-    // ============================================================
-    try {
-        const now = Date.now();
-        const localData = {
-            cards: progressData,
-            schema_version: 2,
-            last_updated: now,
-            user_plan: userPlan,
-            is_admin: isAdmin
-        };
-        localStorage.setItem(DATA_PREFIX + email, JSON.stringify(localData));
-        lastSavedTimestamp = now;
-        console.log('💾 localStorage OK');
-    } catch (error) {
-        console.warn('⚠️ ❌ localStorage failed:', error);
-    }
-
-    // ============================================================
-    //  STEP 3: DEBOUNCE FIRESTORE
-    // ============================================================
     if (saveTimeout) {
         clearTimeout(saveTimeout);
     }
@@ -4985,11 +4964,14 @@ async function saveUserData(email) {
                 }, { merge: true });
 
                 saved = true;
-                console.log('☁️ Firestore OK:', snapshot.length, 'cards');
+                console.log('☁️ FIREBASE SAVE:', {
+                    cards: snapshot.length,
+                    timestamp: saveTime
+                });
 
             } catch (err) {
                 retries--;
-                console.warn(`⚠️ Firestore retry ${3 - retries}/3:`, err.message);
+                console.warn(`⚠️ Save failed (${3 - retries}/3):`, err.message);
                 if (retries > 0) {
                     await new Promise(r => setTimeout(r, 2000));
                 }
@@ -4997,7 +4979,7 @@ async function saveUserData(email) {
         }
 
         if (!saved) {
-            console.error('❌ Firestore failed after 3 retries');
+            console.error('❌ Save failed after 3 retries');
         }
 
     }, 2000);
@@ -5007,27 +4989,46 @@ async function saveUserData(email) {
 // ============================================================
 
 async function flushSaveNow(email) {
-  if (!email) return;
-  if (!allCards || allCards.length === 0) {
-    console.warn('⚠️ flushSaveNow skipped: allCards is empty');
-    return;
-  }
-  
-  // ===== AMBIL SNAPSHOT =====
-  const progressData = buildProgressData();
-  const planSnapshot = userPlan;
-  
-  try {
-    await db.collection('users').doc(email).set({
-      cards: progressData,
-      plan: planSnapshot,
-      schema_version: 2,
-      last_updated: Date.now()
-    }, { merge: true });
-    console.log('✅ Flush save complete (', progressData.length, 'cards)');
-  } catch (e) {
-    console.warn('⚠️ Flush save failed:', e.message);
-  }
+    if (!email) return;
+    if (!allCards || allCards.length === 0) {
+        console.warn('⚠️ flushSaveNow skipped: allCards is empty');
+        return;
+    }
+    
+    const progressData = buildProgressData();
+    const planSnapshot = userPlan;
+    
+    try {
+        // ===== SAVE KE FIRESTORE =====
+        await db.collection('users').doc(email).set({
+            cards: progressData,
+            plan: planSnapshot,
+            schema_version: 2,
+            last_updated: Date.now()
+        }, { merge: true });
+        console.log('☁️ Flush save to Firestore complete (', progressData.length, 'cards)');
+        
+        // ===== SAVE KE INDEXEDDB =====
+        await saveToIndexedDB(email, {
+            cards: progressData,
+            plan: userPlan,
+            schema_version: CURRENT_SCHEMA_VERSION
+        });
+        console.log('📦 Flush save to IndexedDB complete');
+        
+        // ===== METADATA KECIL (OPSIONAL) =====
+        try {
+            localStorage.setItem('Pharmadeck_metadata_' + email, JSON.stringify({
+                plan: userPlan,
+                cardsCount: progressData.length,
+                lastUpdated: Date.now(),
+                source: 'flush'
+            }));
+        } catch (e) { /* ignore */ }
+        
+    } catch (e) {
+        console.warn('⚠️ Flush save failed:', e.message);
+    }
 }
     
     function savePlan(email, plan, expiry) {
