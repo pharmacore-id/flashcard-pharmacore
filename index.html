@@ -3070,10 +3070,6 @@ style="max-height:90vh;overflow-y:auto;">
     const auth = firebase.auth();
 
 // ============================================================
-//  INDEXEDDB WRAPPER - FINAL VERSION
-// ============================================================
-
-// ============================================================
 //  KONSTANTA
 // ============================================================
 
@@ -3527,6 +3523,132 @@ function mergeProgress(sharedCards, progressCards) {
             ...progress
         };
     });
+}
+
+    // ============================================================
+//  SPRINT B1 - COMMIT 3: MIGRATION FUNCTIONS
+// ============================================================
+
+// ===== MIGRATION FLAG =====
+function getMigrationFlag(email) {
+    return localStorage.getItem('Pharmadeck_migration_' + MIGRATION_VERSION + '_' + email) === 'true';
+}
+
+function setMigrationFlag(email) {
+    localStorage.setItem('Pharmadeck_migration_' + MIGRATION_VERSION + '_' + email, 'true');
+}
+
+// ===== MIGRASI LOCALSTORAGE → INDEXEDDB =====
+async function migrateLocalStorageToIndexedDB(email) {
+    if (!email) return;
+    
+    if (getMigrationFlag(email)) {
+        console.log('✅ Migration already done for:', email);
+        return;
+    }
+
+    console.log('🔄 Starting migration for:', email);
+
+    try {
+        // ===== CEK: INDEXEDDB SUDAH ADA DATA DENGAN SCHEMA YANG CUKUP =====
+        const existing = await loadFromIndexedDB(email);
+        if (
+            existing &&
+            existing.cards &&
+            existing.cards.length > 0 &&
+            (existing.schema_version || 0) >= CURRENT_SCHEMA_VERSION
+        ) {
+            console.log('📦 IndexedDB already has data with valid schema, skipping migration.');
+            setMigrationFlag(email);
+            return;
+        }
+
+        const raw = localStorage.getItem(DATA_PREFIX + email);
+        if (!raw) {
+            console.log('ℹ️ No localStorage data found for:', email);
+            setMigrationFlag(email);
+            return;
+        }
+
+        const localData = JSON.parse(raw);
+        if (!localData.cards || localData.cards.length === 0) {
+            console.log('ℹ️ No cards in localStorage for:', email);
+            setMigrationFlag(email);
+            return;
+        }
+
+        console.log(`📦 Found ${localData.cards.length} cards in localStorage`);
+
+        await saveToIndexedDB(email, {
+            cards: localData.cards,
+            plan: localData.user_plan || 'free',
+            schema_version: localData.schema_version || CURRENT_SCHEMA_VERSION,
+            cloudUpdatedAt: localData.last_updated ?? null
+        });
+
+        // ===== VERIFIKASI =====
+        const verify = await loadFromIndexedDB(email);
+        let verified = false;
+        
+        if (verify && verify.cards) {
+            const localCards = localData.cards;
+            const cachedCards = verify.cards;
+            
+            // 1. Cek jumlah
+            if (cachedCards.length === localCards.length) {
+                // 2. Cek ID pertama, tengah, terakhir
+                const checkIndices = [
+                    0,
+                    Math.floor(localCards.length / 2),
+                    localCards.length - 1
+                ];
+                
+                let matchCount = 0;
+                for (const idx of checkIndices) {
+                    if (idx < localCards.length && idx < cachedCards.length) {
+                        const localId = localCards[idx]?.__id || localCards[idx]?.card_id;
+                        const cachedId = cachedCards[idx]?.__id || cachedCards[idx]?.card_id;
+                        if (localId && cachedId && localId === cachedId) {
+                            matchCount++;
+                        }
+                    }
+                }
+                
+                if (matchCount === checkIndices.length) {
+                    verified = true;
+                    console.log('✅ Migration verified successfully!');
+                } else {
+                    console.warn('⚠️ ID mismatch:', matchCount, '/', checkIndices.length, 'matched');
+                }
+            } else {
+                console.warn('⚠️ Count mismatch:', cachedCards.length, 'vs', localCards.length);
+            }
+        }
+
+        if (verified) {
+            setMigrationFlag(email);
+            
+            // ===== METADATA (TANPA HAPUS LOCALSTORAGE) =====
+            localStorage.setItem('Pharmadeck_metadata_' + email, JSON.stringify({
+                email: email,
+                plan: localData.user_plan || 'free',
+                schema_version: localData.schema_version || CURRENT_SCHEMA_VERSION,
+                lastUpdated: localData.last_updated || Date.now(),
+                cloudUpdatedAt: localData.last_updated ?? null,
+                cardsCount: localData.cards.length,
+                isAdmin: isAdmin,
+                nickname: getNickname(),
+                migrated: true,
+                migratedAt: Date.now()
+            }));
+            console.log('✅ Migration complete (localStorage kept as backup)');
+        } else {
+            console.warn('⚠️ Migration verification failed! Keeping localStorage data.');
+        }
+
+    } catch (error) {
+        console.error('❌ Migration failed for:', email, error);
+    }
 }
     
   // ============================================================
