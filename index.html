@@ -4885,92 +4885,93 @@ let saveTimeout = null;
 let lastSavedTimestamp = 0;
 
 async function saveUserData(email) {
-  if (!email) return;
+    if (!email) return;
+    if (!allCards || allCards.length === 0) {
+        console.warn('⚠️ saveUserData skipped: allCards is empty');
+        return;
+    }
 
-  // ===== GUARD =====
-  if (!allCards || allCards.length === 0) {
-    console.warn('⚠️ saveUserData skipped: allCards is empty');
-    return;
-  }
+    // ============================================================
+    //  BUILD PROGRESS DATA SEKALI UNTUK INDEXEDDB & LOCALSTORAGE
+    // ============================================================
+    const progressData = buildProgressData();
 
-  // ===== SAVE LOCAL =====
-  const now = Date.now();
-
-  const localData = {
-    cards: buildProgressData(), // progress only
-    schema_version: 2,
-    last_updated: now,
-    user_plan: userPlan,
-    is_admin: isAdmin
-  };
-
-  localStorage.setItem(
-    DATA_PREFIX + email,
-    JSON.stringify(localData)
-  );
-
-  lastSavedTimestamp = now;
-
-  // ===== DEBOUNCE FIREBASE =====
-  if (saveTimeout) {
-    clearTimeout(saveTimeout);
-  }
-
-  saveTimeout = setTimeout(async () => {
-
-    const snapshot = buildProgressData();
-    const planSnapshot = userPlan;
-
-    let retries = 3;
-    let saved = false;
-
-    while (retries > 0 && !saved) {
-
-      try {
-
-        const saveTime = Date.now();
-
-        await db.collection('users').doc(email).set({
-          cards: snapshot,
-          plan: planSnapshot,
-          schema_version: 2,
-          last_updated: saveTime
-        }, { merge: true });
-
-        lastSavedTimestamp = saveTime;
-        saved = true;
-
-        console.log('☁️ FIREBASE SAVE', {
-          cards: snapshot.length,
-          timestamp: saveTime
+    // ============================================================
+    //  STEP 1: SAVE KE INDEXEDDB (TAMBAHAN)
+    // ============================================================
+    try {
+        await saveToIndexedDB(email, {
+            cards: progressData,
+            plan: userPlan,
+            schema_version: 2
         });
+        console.log('📦 IndexedDB OK');
+    } catch (error) {
+        console.warn('⚠️ ❌ IndexedDB failed:', error);
+    }
 
-      } catch (err) {
+    // ============================================================
+    //  STEP 2: SAVE KE LOCALSTORAGE (TETAP)
+    // ============================================================
+    try {
+        const now = Date.now();
+        const localData = {
+            cards: progressData,
+            schema_version: 2,
+            last_updated: now,
+            user_plan: userPlan,
+            is_admin: isAdmin
+        };
+        localStorage.setItem(DATA_PREFIX + email, JSON.stringify(localData));
+        lastSavedTimestamp = now;
+        console.log('💾 localStorage OK');
+    } catch (error) {
+        console.warn('⚠️ ❌ localStorage failed:', error);
+    }
 
-        retries--;
+    // ============================================================
+    //  STEP 3: DEBOUNCE FIRESTORE
+    // ============================================================
+    if (saveTimeout) {
+        clearTimeout(saveTimeout);
+    }
 
-        console.warn(
-          `⚠️ Save failed (${3 - retries}/3)`,
-          err.message
-        );
+    saveTimeout = setTimeout(async () => {
+        const snapshot = buildProgressData();
+        const planSnapshot = userPlan;
 
-        if (retries > 0) {
-          await new Promise(r =>
-            setTimeout(r, 2000)
-          );
+        let retries = 3;
+        let saved = false;
+
+        while (retries > 0 && !saved) {
+            try {
+                const saveTime = Date.now();
+
+                await db.collection('users').doc(email).set({
+                    cards: snapshot,
+                    plan: planSnapshot,
+                    schema_version: 2,
+                    last_updated: saveTime
+                }, { merge: true });
+
+                saved = true;
+                console.log('☁️ Firestore OK:', snapshot.length, 'cards');
+
+            } catch (err) {
+                retries--;
+                console.warn(`⚠️ Firestore retry ${3 - retries}/3:`, err.message);
+                if (retries > 0) {
+                    await new Promise(r => setTimeout(r, 2000));
+                }
+            }
         }
-      }
-    }
 
-    if (!saved) {
-      console.error(
-        '❌ Save failed after 3 retries'
-      );
-    }
+        if (!saved) {
+            console.error('❌ Firestore failed after 3 retries');
+        }
 
-  }, 2000);
+    }, 2000);
 }
-
     // ============================================================
 //  FLUSH SAVE - Paksa Save ke Firestore (Dengan Snapshot)
 // ============================================================
