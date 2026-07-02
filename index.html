@@ -3022,7 +3022,7 @@ style="max-height:90vh;overflow-y:auto;">
         </p>
 
         <button id="pay-now-btn" onclick="processPayment()" class="pay-btn">
-  Pay Rp68,000 via QRIS
+  Pay Rp68,000
 </button>
 
     </div>
@@ -3071,8 +3071,6 @@ style="max-height:90vh;overflow-y:auto;">
 
 // ============================================================
 //  INDEXEDDB WRAPPER - FINAL VERSION
-//  PHASE 1: CORE STORAGE
-//  Siap untuk Sprint A (saveUserData)
 // ============================================================
 
 // ============================================================
@@ -3567,10 +3565,11 @@ function resetSessionStats(){
     };
 }
 
-// ============================================================
-//  SPRINT B1 - COMMIT 1: HELPER FUNCTIONS
+    // ============================================================
+//  SPRINT B1 - COMMIT 1: TAMBAHKAN YANG BELUM ADA
 // ============================================================
 
+// ===== 1. DEFAULT_PROGRESS =====
 const DEFAULT_PROGRESS = {
     ease_factor: 2.5,
     interval: 0,
@@ -3582,6 +3581,7 @@ const DEFAULT_PROGRESS = {
     review_history: []
 };
 
+// ===== 2. mergeProgress() =====
 function mergeProgress(sharedCards, progressCards) {
     if (!sharedCards || sharedCards.length === 0) return [];
     
@@ -3602,37 +3602,6 @@ function mergeProgress(sharedCards, progressCards) {
             ...progress
         };
     });
-}
-
-// ============================================================
-//  SHARED DECKS CACHE
-// ============================================================
-
-let sharedDecksCache = null;
-
-function hasSharedDeckCache() {
-    return Array.isArray(sharedDecksCache);
-}
-
-async function loadSharedDecksOnce() {
-    if (hasSharedDeckCache()) {
-        console.log('📚 Using cached shared decks:', sharedDecksCache.length);
-        return sharedDecksCache;
-    }
-    
-    try {
-        sharedDecksCache = await loadSharedDecks();
-        console.log('📚 Shared decks loaded:', sharedDecksCache.length, 'cards');
-        return sharedDecksCache;
-    } catch (error) {
-        console.warn('⚠️ Shared decks load failed:', error);
-        return [];
-    }
-}
-
-function invalidateSharedDeckCache() {
-    sharedDecksCache = null;
-    console.log('🔄 Shared deck cache invalidated');
 }
     
     // ============================================================
