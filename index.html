@@ -3163,17 +3163,26 @@ async function saveToIndexedDB(email, data) {
         const tx = db.transaction(STORE_NAME, 'readwrite');
         const store = tx.objectStore(STORE_NAME);
         
-        // ===== AMBIL DATA LAMA JIKA ADA =====
         const existing = await new Promise((resolve) => {
             const request = store.get(email);
             request.onsuccess = () => resolve(request.result);
         });
         
-        // ===== MERGE: EXISTING + DATA BARU =====
+        // ============================================================
+        //  URUTAN SPREAD: EXISTING + DATA, FIELD FINAL DI AKHIR
+        // ============================================================
         const record = {
-            email: email,
+            email,
             ...existing,
             ...data,
+            createdAt:
+                existing?.createdAt ??
+                data.createdAt ??
+                Date.now(),
+            schema_version:
+                data.schema_version ??
+                existing?.schema_version ??
+                CURRENT_SCHEMA_VERSION,
             updatedAt: Date.now()
         };
         
