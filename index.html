@@ -3070,13 +3070,19 @@ style="max-height:90vh;overflow-y:auto;">
     const auth = firebase.auth();
 
 // ============================================================
-//  PHASE 1: INDEXEDDB CORE
-//  GENERIC STORAGE - TIDAK TAHU BUSINESS LOGIC
+//  INDEXEDDB WRAPPER - FINAL VERSION
+//  PHASE 1: CORE STORAGE
+//  Siap untuk Sprint A (saveUserData)
+// ============================================================
+
+// ============================================================
+//  KONSTANTA
 // ============================================================
 
 const DB_NAME = 'FlashMindDB';
-const DB_VERSION = 1;
+const DB_VERSION = 2;  // ← VERSION 2 (karena ada 2 store)
 const STORE_NAME = 'user_data';
+const SYNC_QUEUE_STORE = 'sync_queue';
 
 // ============================================================
 //  DEBUG MODE
@@ -3101,9 +3107,23 @@ function getDB() {
             
             request.onupgradeneeded = (e) => {
                 const db = e.target.result;
+                
+                // ===== STORE 1: user_data =====
                 if (!db.objectStoreNames.contains(STORE_NAME)) {
                     db.createObjectStore(STORE_NAME, { keyPath: 'email' });
-                    log('✅ IndexedDB store created');
+                    log('✅ IndexedDB store created: user_data');
+                }
+                
+                // ===== STORE 2: sync_queue (untuk future) =====
+                if (!db.objectStoreNames.contains(SYNC_QUEUE_STORE)) {
+                    const queueStore = db.createObjectStore(SYNC_QUEUE_STORE, { 
+                        keyPath: 'id', 
+                        autoIncrement: true 
+                    });
+                    queueStore.createIndex('email', 'email', { unique: false });
+                    queueStore.createIndex('timestamp', 'timestamp', { unique: false });
+                    queueStore.createIndex('synced', 'synced', { unique: false });
+                    log('✅ IndexedDB store created: sync_queue');
                 }
             };
             
@@ -3131,9 +3151,6 @@ function getDB() {
 }
 
 // ============================================================
-//  SAVE
-// ============================================================
-// ============================================================
 //  SAVE - GENERIC, TIDAK OVERRIDE STATUS
 // ============================================================
 
@@ -3155,12 +3172,11 @@ async function saveToIndexedDB(email, data) {
         });
         
         // ===== MERGE: EXISTING + DATA BARU =====
-        // Data baru MENANG (override), tapi tidak menghapus field yang tidak ada di data baru
         const record = {
             email: email,
-            ...existing,      // Field lama
-            ...data,          // Field baru (override)
-            updatedAt: Date.now()  // Selalu update timestamp
+            ...existing,
+            ...data,
+            updatedAt: Date.now()
         };
         
         // ===== HAPUS FIELD INTERNAL =====
@@ -3186,7 +3202,87 @@ async function saveToIndexedDB(email, data) {
     }
 }
 
-    // ============================================================
+// ============================================================
+//  LOAD
+// ============================================================
+
+async function loadFromIndexedDB(email) {
+    if (!email) {
+        console.warn('⚠️ loadFromIndexedDB: No email provided');
+        return null;
+    }
+    
+    try {
+        const db = await getDB();
+        const tx = db.transaction(STORE_NAME, 'readonly');
+        const store = tx.objectStore(STORE_NAME);
+        
+        return new Promise((resolve, reject) => {
+            const request = store.get(email);
+            request.onsuccess = () => {
+                const result = request.result;
+                if (result) {
+                    log(`✅ IndexedDB loaded: ${email}`);
+                    resolve(result);
+                } else {
+                    log(`ℹ️ No data for: ${email}`);
+                    resolve(null);
+                }
+            };
+            request.onerror = () => {
+                console.error('❌ IndexedDB load error:', request.error);
+                reject(request.error);
+            };
+        });
+        
+    } catch (error) {
+        console.error('❌ loadFromIndexedDB error:', error);
+        return null;
+    }
+}
+
+// ============================================================
+//  HAS (CHECK EXISTING)
+// ============================================================
+
+async function hasIndexedDB(email) {
+    const data = await loadFromIndexedDB(email);
+    return data !== null;
+}
+
+// ============================================================
+//  DELETE
+// ============================================================
+
+async function deleteFromIndexedDB(email) {
+    if (!email) {
+        console.warn('⚠️ deleteFromIndexedDB: No email provided');
+        return;
+    }
+    
+    try {
+        const db = await getDB();
+        const tx = db.transaction(STORE_NAME, 'readwrite');
+        const store = tx.objectStore(STORE_NAME);
+        store.delete(email);
+        
+        return new Promise((resolve, reject) => {
+            tx.oncomplete = () => {
+                log(`🗑️ IndexedDB deleted: ${email}`);
+                resolve();
+            };
+            tx.onerror = () => {
+                console.error('❌ IndexedDB delete error:', tx.error);
+                reject(tx.error);
+            };
+        });
+        
+    } catch (error) {
+        console.error('❌ deleteFromIndexedDB error:', error);
+    }
+}
+
+// ============================================================
 //  UPDATE FIELDS - TANPA REWRITE SELURUH DATA
 // ============================================================
 
@@ -3238,377 +3334,8 @@ async function updateFields(email, fields) {
     }
 }
 
-// ===== MARK AS SYNCED - PAKAI updateFields() =====
-async function markAsSynced(email) {
-    if (!email) return;
-    
-    try {
-        await updateFields(email, {
-            syncStatus: 'synced',
-            lastSync: Date.now(),
-            errorCount: 0,
-            lastError: null
-        });
-        console.log(`✅ Marked as synced: ${email}`);
-    } catch (error) {
-        console.error('❌ Failed to mark as synced:', error);
-    }
-}
-
-async function markAsPending(email) {
-    if (!email) return;
-    await updateFields(email, {
-        syncStatus: 'pending'
-    });
-}
-
-async function markAsError(email, errorMessage) {
-    if (!email) return;
-    await updateFields(email, {
-        syncStatus: 'error',
-        lastError: errorMessage,
-        errorCount: (await loadFromIndexedDB(email))?.errorCount + 1 || 1
-    });
-}
-
 // ============================================================
-//  SCHEMA MIGRATION - LOOP BERTAHAP
-// ============================================================
-
-const CURRENT_SCHEMA_VERSION = 2;
-
-async function migrateIndexedDB(email) {
-    try {
-        const data = await loadFromIndexedDB(email);
-        if (!data) return;
-        
-        let version = data.schema_version || 1;
-        let currentData = { ...data };
-        let migrated = false;
-        
-        // ===== MIGRASI BERTAHAP =====
-        while (version < CURRENT_SCHEMA_VERSION) {
-            console.log(`🔄 Migrating from v${version} to v${version + 1}...`);
-            
-            if (version === 1) {
-                currentData = migrateV1ToV2(currentData);
-            }
-            // Future: if (version === 2) { currentData = migrateV2ToV3(currentData); }
-            // Future: if (version === 3) { currentData = migrateV3ToV4(currentData); }
-            
-            version++;
-            migrated = true;
-        }
-        
-        if (migrated) {
-            // ===== GUNAKAN saveToIndexedDB() LANGSUNG =====
-            await saveToIndexedDB(email, currentData);
-            console.log(`✅ Migrated to v${CURRENT_SCHEMA_VERSION}`);
-        }
-        
-        return currentData;
-        
-    } catch (error) {
-        console.error('❌ Migration failed:', error);
-        throw error;
-    }
-}
-
-// ===== MIGRASI V1 → V2 =====
-function migrateV1ToV2(data) {
-    return {
-        ...data,
-        schema_version: 2,
-        syncStatus: data.syncStatus || 'pending',
-        updatedAt: data.updatedAt || Date.now(),
-        createdAt: data.createdAt || Date.now()
-    };
-}
-
-    // ============================================================
-//  RETRY LOGIC - HANYA UNTUK ERROR SEMENTARA
-// ============================================================
-
-const TEMPORARY_ERRORS = [
-    'transaction abort',
-    'lock contention',
-    'timeout',
-    'network',
-    'quota'  // Quota tidak sementara, tapi bisa retry setelah cleanup
-];
-
-async function safeSaveToIndexedDB(email, data, maxRetries = 3) {
-    let lastError = null;
-    
-    for (let attempt = 1; attempt <= maxRetries; attempt++) {
-        try {
-            const result = await saveToIndexedDB(email, data);
-            return result;
-        } catch (error) {
-            lastError = error;
-            const isTemporary = TEMPORARY_ERRORS.some(e => 
-                error.message?.toLowerCase().includes(e)
-            );
-            
-            if (!isTemporary || attempt === maxRetries) {
-                // ===== ERROR PERMANEN ATAU RETRY HABIS =====
-                console.error('❌ Permanent save error:', error);
-                showToast('⚠️ Failed to save progress. Please check your storage.', 'error');
-                throw error;
-            }
-            
-            console.warn(`⚠️ Retry ${attempt}/${maxRetries}...`);
-            await new Promise(r => setTimeout(r, 1000 * attempt)); // Exponential backoff
-        }
-    }
-    
-    throw lastError;
-}
-    // ============================================================
-//  SYNC QUEUE - DELTA SYNC
-// ============================================================
-
-const SYNC_QUEUE_STORE = 'sync_queue';
-const SYNC_QUEUE_VERSION = 1;
-
-// ===== BUAT STORE UNTUK SYNC QUEUE =====
-// Tambahkan di getDB() onupgradeneeded:
-if (!db.objectStoreNames.contains(SYNC_QUEUE_STORE)) {
-    const queueStore = db.createObjectStore(SYNC_QUEUE_STORE, { 
-        keyPath: 'id', 
-        autoIncrement: true 
-    });
-    queueStore.createIndex('email', 'email', { unique: false });
-    queueStore.createIndex('timestamp', 'timestamp', { unique: false });
-    queueStore.createIndex('synced', 'synced', { unique: false });
-}
-
-// ===== TAMBAHKAN KE QUEUE =====
-async function addToSyncQueue(email, cardId, operation, data = null) {
-    try {
-        const db = await getDB();
-        const tx = db.transaction(SYNC_QUEUE_STORE, 'readwrite');
-        const store = tx.objectStore(SYNC_QUEUE_STORE);
-        
-        const record = {
-            email: email,
-            cardId: cardId,
-            operation: operation, // 'update', 'delete', 'create'
-            data: data,
-            timestamp: Date.now(),
-            synced: false
-        };
-        
-        store.add(record);
-        
-        return new Promise((resolve, reject) => {
-            tx.oncomplete = () => {
-                log(`📤 Added to sync queue: ${cardId} (${operation})`);
-                resolve();
-            };
-            tx.onerror = () => reject(tx.error);
-        });
-        
-    } catch (error) {
-        console.error('❌ addToSyncQueue error:', error);
-    }
-}
-
-// ===== GET PENDING QUEUE =====
-async function getPendingQueue(email) {
-    try {
-        const db = await getDB();
-        const tx = db.transaction(SYNC_QUEUE_STORE, 'readonly');
-        const store = tx.objectStore(SYNC_QUEUE_STORE);
-        const index = store.index('email');
-        
-        return new Promise((resolve, reject) => {
-            const request = index.getAll(email);
-            request.onsuccess = () => {
-                const results = request.result || [];
-                const pending = results.filter(r => !r.synced);
-                log(`📤 Pending queue: ${pending.length}`);
-                resolve(pending);
-            };
-            request.onerror = () => reject(request.error);
-        });
-        
-    } catch (error) {
-        console.error('❌ getPendingQueue error:', error);
-        return [];
-    }
-}
-
-// ===== MARK QUEUE AS SYNCED =====
-async function markQueueSynced(queueId) {
-    try {
-        const db = await getDB();
-        const tx = db.transaction(SYNC_QUEUE_STORE, 'readwrite');
-        const store = tx.objectStore(SYNC_QUEUE_STORE);
-        
-        const existing = await new Promise((resolve) => {
-            const request = store.get(queueId);
-            request.onsuccess = () => resolve(request.result);
-        });
-        
-        if (existing) {
-            store.put({ ...existing, synced: true, syncedAt: Date.now() });
-        }
-        
-        return new Promise((resolve, reject) => {
-            tx.oncomplete = () => resolve();
-            tx.onerror = () => reject(tx.error);
-        });
-        
-    } catch (error) {
-        console.error('❌ markQueueSynced error:', error);
-    }
-}
-
-// ===== CLEAN OLD QUEUE =====
-async function cleanOldQueue(days = 30) {
-    const cutoff = Date.now() - (days * 24 * 60 * 60 * 1000);
-    try {
-        const db = await getDB();
-        const tx = db.transaction(SYNC_QUEUE_STORE, 'readwrite');
-        const store = tx.objectStore(SYNC_QUEUE_STORE);
-        const index = store.index('timestamp');
-        
-        const range = IDBKeyRange.upperBound(cutoff);
-        const request = index.openCursor(range);
-        
-        let count = 0;
-        return new Promise((resolve, reject) => {
-            request.onsuccess = (e) => {
-                const cursor = e.target.result;
-                if (cursor) {
-                    cursor.delete();
-                    count++;
-                    cursor.continue();
-                } else {
-                    log(`🧹 Cleaned ${count} old queue entries`);
-                    resolve();
-                }
-            };
-            request.onerror = () => reject(request.error);
-        });
-        
-    } catch (error) {
-        console.error('❌ cleanOldQueue error:', error);
-    }
-}
-// ============================================================
-//  LOAD
-// ============================================================
-
-async function loadFromIndexedDB(email) {
-    if (!email) {
-        console.warn('⚠️ loadFromIndexedDB: No email provided');
-        return null;
-    }
-    
-    try {
-        const db = await getDB();
-        const tx = db.transaction(STORE_NAME, 'readonly');
-        const store = tx.objectStore(STORE_NAME);
-        
-        return new Promise((resolve, reject) => {
-            const request = store.get(email);
-            request.onsuccess = () => {
-                const result = request.result;
-                if (result) {
-                    log(`✅ IndexedDB loaded: ${email}`);
-                    resolve(result);
-                } else {
-                    log(`ℹ️ No data for: ${email}`);
-                    resolve(null);
-                }
-            };
-            request.onerror = () => {
-                console.error('❌ IndexedDB load error:', request.error);
-                reject(request.error);
-            };
-        });
-        
-    } catch (error) {
-        console.error('❌ loadFromIndexedDB error:', error);
-        return null;
-    }
-}
-
-// ============================================================
-//  HAS
-// ============================================================
-
-async function hasIndexedDB(email) {
-    const data = await loadFromIndexedDB(email);
-    return data !== null;
-}
-
-// ============================================================
-//  DELETE
-// ============================================================
-
-async function deleteFromIndexedDB(email) {
-    if (!email) {
-        console.warn('⚠️ deleteFromIndexedDB: No email provided');
-        return;
-    }
-    
-    try {
-        const db = await getDB();
-        const tx = db.transaction(STORE_NAME, 'readwrite');
-        const store = tx.objectStore(STORE_NAME);
-        store.delete(email);
-        
-        return new Promise((resolve, reject) => {
-            tx.oncomplete = () => {
-                log(`🗑️ IndexedDB deleted: ${email}`);
-                resolve();
-            };
-            tx.onerror = () => {
-                console.error('❌ IndexedDB delete error:', tx.error);
-                reject(tx.error);
-            };
-        });
-        
-    } catch (error) {
-        console.error('❌ deleteFromIndexedDB error:', error);
-    }
-}
-
-async function getPendingRecords() {
-    if (!DEBUG) {
-        console.warn('⚠️ getPendingRecords only available in debug mode');
-        return [];
-    }
-    
-    try {
-        let results = [];
-        
-        await withStore('readonly', (store) => {
-            const request = store.getAll();
-            request.onsuccess = () => {
-                results = request.result || [];
-            };
-            request.onerror = () => {
-                console.error('❌ Get pending request error:', request.error);
-            };
-        });
-        
-        // ===== FILTER YANG PENDING =====
-        const pending = results.filter(r => r.syncStatus === 'pending');
-        log(`📤 Pending records: ${pending.length}`);
-        return pending;
-        
-    } catch (error) {
-        console.error('❌ getPendingRecords error:', error);
-        return [];
-    }
-}
-
-// ============================================================
-//  GET ALL
+//  GET ALL (UNTUK DEBUGGING)
 // ============================================================
 
 async function getAllIndexedDB() {
@@ -3664,6 +3391,74 @@ async function clearStore() {
 }
 
 // ============================================================
+//  GET PENDING RECORDS (UNTUK FUTURE SYNC)
+// ============================================================
+
+async function getPendingRecords() {
+    if (!DEBUG) {
+        console.warn('⚠️ getPendingRecords only available in debug mode');
+        return [];
+    }
+    
+    try {
+        const allRecords = await getAllIndexedDB();
+        const pending = allRecords.filter(r => r.syncStatus === 'pending');
+        log(`📤 Pending records: ${pending.length}`);
+        return pending;
+        
+    } catch (error) {
+        console.error('❌ getPendingRecords error:', error);
+        return [];
+    }
+}
+
+// ============================================================
+//  MARK AS SYNCED (UNTUK FUTURE SYNC)
+// ============================================================
+
+async function markAsSynced(email) {
+    if (!email) return;
+    
+    try {
+        await updateFields(email, {
+            syncStatus: 'synced',
+            lastSync: Date.now(),
+            errorCount: 0,
+            lastError: null
+        });
+        log(`✅ Marked as synced: ${email}`);
+    } catch (error) {
+        console.error('❌ Failed to mark as synced:', error);
+    }
+}
+
+async function markAsPending(email) {
+    if (!email) return;
+    await updateFields(email, {
+        syncStatus: 'pending'
+    });
+}
+
+async function markAsError(email, errorMessage) {
+    if (!email) return;
+    
+    try {
+        const current = await loadFromIndexedDB(email);
+        const errorCount = (current?.errorCount ?? 0) + 1;
+        
+        await updateFields(email, {
+            syncStatus: 'error',
+            lastError: errorMessage,
+            errorCount: errorCount
+        });
+        
+        console.warn(`⚠️ Marked as error: ${email} - ${errorMessage}`);
+    } catch (error) {
+        console.error('❌ Failed to mark as error:', error);
+    }
+}
+
+// ============================================================
 //  EXPOSE FOR DEBUGGING (ONLY DEVELOPMENT)
 // ============================================================
 
@@ -3674,16 +3469,21 @@ if (DEBUG) {
         loadFromIndexedDB,
         hasIndexedDB,
         deleteFromIndexedDB,
+        updateFields,
         getAllIndexedDB,
-        clearStore
+        clearStore,
+        getPendingRecords,
+        markAsSynced,
+        markAsPending,
+        markAsError
     };
     console.log('📦 IndexedDB ready (debug mode)');
-    console.log('🔧 Run: await saveToIndexedDB("test", {hello:"world"})');
+    console.log('🔧 Test: await saveToIndexedDB("test", {hello:"world"})');
 }
     
-    // ============================================================
-    //  CONFIGURATION
-    // ============================================================
+  // ============================================================
+  //  CONFIGURATION
+  // ============================================================
     const ADMIN_EMAILS = ['adm.pharmacore@gmail.com'];
     const ADMIN_PASSWORD = 'admin9900';
 
