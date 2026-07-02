@@ -3340,6 +3340,27 @@ async function updateFields(email, fields) {
 }
 
 // ============================================================
+//  UPDATE SYNC STATUS DI INDEXEDDB
+//  Memakai updateFields() yang sudah ada
+// ============================================================
+
+async function updateIndexedDBSyncStatus(email, status) {
+    if (!email) {
+        console.warn('⚠️ updateIndexedDBSyncStatus: No email provided');
+        return;
+    }
+    
+    try {
+        await updateFields(email, {
+            syncStatus: status
+        });
+        console.log(`✅ Sync status updated in IndexedDB: ${email} -> ${status}`);
+    } catch (error) {
+        console.error('❌ updateIndexedDBSyncStatus error:', error);
+    }
+}
+
+// ============================================================
 //  GET ALL (UNTUK DEBUGGING)
 // ============================================================
 
@@ -3790,35 +3811,24 @@ function resetSessionStats(){
     // ============================================================
     //  SYNC STATUS
     // ============================================================
-   async function updateSyncStatus(email, status) {
-    if (!email) {
-        console.warn('⚠️ updateSyncStatus: No email provided');
-        return;
-    }
+function updateSyncStatus(status, text) {
+    const dotIds = ['sync-dot', 'sync-dot-home', 'sync-dot-signup'];
+    const textIds = ['sync-text', 'sync-text-home', 'sync-text-signup'];
     
-    try {
-        // ===== AMBIL DATA LAMA =====
-        const existing = await loadFromIndexedDB(email);
-        if (!existing) {
-            console.warn(`⚠️ No record found for ${email}`);
-            return;
+    dotIds.forEach(id => {
+        const dot = document.getElementById(id);
+        if (dot) {
+            dot.className = 'dot';
+            if (status === 'syncing') dot.classList.add('syncing');
+            else if (status === 'offline') dot.classList.add('offline');
         }
-        
-        // ===== UPDATE SYNC STATUS =====
-        await saveToIndexedDB(email, {
-            ...existing,
-            syncStatus: status
-        });
-        
-        log(`✅ Sync status updated: ${email} -> ${status}`);
-        
-    } catch (error) {
-        console.error('❌ updateSyncStatus error:', error);
-        throw error;
-    }
+    });
+    
+    textIds.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.textContent = text || 'Synced';
+    });
 }
-
-
     // ============================================================
     //  NICKNAME FUNCTIONS
     // ============================================================
