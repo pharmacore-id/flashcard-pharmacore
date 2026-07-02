@@ -3567,6 +3567,74 @@ function resetSessionStats(){
     };
 }
 
+// ============================================================
+//  SPRINT B1 - COMMIT 1: HELPER FUNCTIONS
+// ============================================================
+
+const DEFAULT_PROGRESS = {
+    ease_factor: 2.5,
+    interval: 0,
+    repetitions: 0,
+    total_reviews: 0,
+    correct_count: 0,
+    next_review: '',
+    last_review: '',
+    review_history: []
+};
+
+function mergeProgress(sharedCards, progressCards) {
+    if (!sharedCards || sharedCards.length === 0) return [];
+    
+    const progressMap = new Map();
+    if (progressCards && progressCards.length > 0) {
+        progressCards.forEach(c => {
+            const key = c.__id || c.card_id;
+            if (key) progressMap.set(key, c);
+        });
+    }
+    
+    return sharedCards.map(card => {
+        const key = card.__id || card.card_id;
+        const progress = progressMap.get(key) || {};
+        return {
+            ...card,
+            ...DEFAULT_PROGRESS,
+            ...progress
+        };
+    });
+}
+
+// ============================================================
+//  SHARED DECKS CACHE
+// ============================================================
+
+let sharedDecksCache = null;
+
+function hasSharedDeckCache() {
+    return Array.isArray(sharedDecksCache);
+}
+
+async function loadSharedDecksOnce() {
+    if (hasSharedDeckCache()) {
+        console.log('📚 Using cached shared decks:', sharedDecksCache.length);
+        return sharedDecksCache;
+    }
+    
+    try {
+        sharedDecksCache = await loadSharedDecks();
+        console.log('📚 Shared decks loaded:', sharedDecksCache.length, 'cards');
+        return sharedDecksCache;
+    } catch (error) {
+        console.warn('⚠️ Shared decks load failed:', error);
+        return [];
+    }
+}
+
+function invalidateSharedDeckCache() {
+    sharedDecksCache = null;
+    console.log('🔄 Shared deck cache invalidated');
+}
+    
     // ============================================================
     //  PASSWORD TOGGLE
     // ============================================================
