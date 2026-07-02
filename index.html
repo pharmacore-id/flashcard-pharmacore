@@ -3526,6 +3526,37 @@ function mergeProgress(sharedCards, progressCards) {
 }
 
     // ============================================================
+//  SHARED DECKS CACHE
+// ============================================================
+
+let sharedDecksCache = null;
+
+function hasSharedDeckCache() {
+    return Array.isArray(sharedDecksCache);
+}
+
+async function loadSharedDecksOnce() {
+    if (hasSharedDeckCache()) {
+        console.log('📚 Using cached shared decks:', sharedDecksCache.length);
+        return sharedDecksCache;
+    }
+    
+    try {
+        sharedDecksCache = await loadSharedDecks();
+        console.log('📚 Shared decks loaded:', sharedDecksCache.length, 'cards');
+        return sharedDecksCache;
+    } catch (error) {
+        console.warn('⚠️ Shared decks load failed:', error);
+        return [];
+    }
+}
+
+function invalidateSharedDeckCache() {
+    sharedDecksCache = null;
+    console.log('🔄 Shared deck cache invalidated');
+}
+
+    // ============================================================
 //  SPRINT B1 - COMMIT 3: MIGRATION FUNCTIONS
 // ============================================================
 
