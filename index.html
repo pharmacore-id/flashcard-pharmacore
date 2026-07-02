@@ -4629,24 +4629,114 @@ async function loadSharedDecks() {
 //  LOAD USER DATA - UPDATED WITH GLOBAL DECK ORDER
 // ============================================================
 
+// ============================================================
+//  LOAD USER DATA - TAHAP 2 (CACHE-FIRST + FIRESTORE FALLBACK)
+// ============================================================
+
 async function loadUserData(email) {
-    if (!email) return;
+    if (!email) return false;
 
     console.log('🔍 Loading user data for:', email);
 
-    // 1. Load local data
-    let localData = null;
+    // ============================================================
+    //  STEP 1: COBA DARI INDEXEDDB (CACHE-FIRST)
+    // ============================================================
+    let cachedRecord = null;
+    let cachedProgress = null;
+    let loadedFromCache = false;
+    let sharedCards = [];
+
     try {
-        const raw = localStorage.getItem(DATA_PREFIX + email);
-        if (raw) {
-            localData = JSON.parse(raw);
-            console.log('💾 Local data found:', localData.cards?.length || 0, 'cards');
+        cachedRecord = await loadFromIndexedDB(email);
+        if (cachedRecord && cachedRecord.cards && cachedRecord.cards.length > 0) {
+            cachedProgress = cachedRecord.cards;
+            console.log('📦 Found cached progress in IndexedDB:', cachedProgress.length, 'cards');
         }
-    } catch (e) {
-        console.warn('⚠️ Failed to parse local data');
+    } catch (error) {
+        console.warn('⚠️ IndexedDB load failed:', error);
     }
 
-    // 2. Try cloud load
+    // ===== JIKA ADA CACHE, PAKAI =====
+    if (cachedProgress) {
+        console.log('✅ Using cached data from IndexedDB');
+        
+        // ===== LOAD SHARED DECKS =====
+        try {
+            sharedCards = await loadSharedDecksOnce();
+            console.log('📚 Shared decks loaded:', sharedCards.length, 'cards');
+        } catch (error) {
+            console.warn('⚠️ Shared decks load failed:', error);
+        }
+
+        if (sharedCards.length > 0) {
+            allCards = mergeProgress(sharedCards, cachedProgress);
+            userPlan = cachedRecord.plan || 'free';
+            
+            // ===== UPDATE METADATA =====
+            try {
+                localStorage.setItem('Pharmadeck_metadata_' + email, JSON.stringify({
+                    email: email,
+                    plan: userPlan,
+                    schema_version: CURRENT_SCHEMA_VERSION,
+                    lastUpdated: cachedRecord.updatedAt || Date.now(),
+                    cloudUpdatedAt: cachedRecord.cloudUpdatedAt ?? null,
+                    cardsCount: allCards.length,
+                    isAdmin: isAdmin,
+                    nickname: getNickname(),
+                    source: 'indexeddb'
+                }));
+            } catch (e) { /* ignore */ }
+            
+            console.log('✅ Loaded from IndexedDB:', allCards.length, 'cards');
+            loadedFromCache = true;
+        }
+    }
+
+    // ============================================================
+    //  STEP 2: JIKA DARI CACHE, LANGSUNG KE SIDE EFFECT
+    // ============================================================
+    if (loadedFromCache) {
+        // ===== LOAD GLOBAL DECK ORDER =====
+        await loadGlobalDeckOrder();
+        initializeDeckOrder();
+        isAdmin = ADMIN_EMAILS.includes(email);
+        localStorage.setItem('Pharmadeck_plan_' + email, userPlan);
+
+        if (!allCards || allCards.length === 0) {
+            console.warn('⚠️ All cards is empty after loading!');
+            alert('⚠️ Your account has no flashcards.\n\nPlease contact admin: adm.pharmacore@gmail.com');
+            await firebase.auth().signOut();
+            clearSession();
+            document.getElementById('view-login').classList.add('active');
+            document.getElementById('view-login').style.display = 'flex';
+            document.getElementById('bottomNav').style.display = 'none';
+            return false;
+        }
+
+        console.log('✅ Load user data complete (from cache):', {
+            cards: allCards.length,
+            plan: userPlan,
+            isAdmin: isAdmin,
+            deckOrder: deckOrderConfig
+        });
+
+        return true;
+    }
+
+    // ============================================================
+    //  STEP 3: FALLBACK KE FIRESTORE (TANPA localStorage)
+    // ============================================================
+    console.log('📂 No cache, loading from Firestore...');
+
+    // ===== LOAD SHARED DECKS UNTUK FIRESTORE =====
+    try {
+        sharedCards = await loadSharedDecksOnce();
+        console.log('📚 Shared decks loaded:', sharedCards.length, 'cards');
+    } catch (error) {
+        console.warn('⚠️ Shared decks load failed:', error);
+    }
+
+    // ===== LOAD DARI FIRESTORE =====
     let cloudData = null;
     try {
         cloudData = await loadFromFirebase(email);
@@ -4658,33 +4748,46 @@ async function loadUserData(email) {
         console.warn('⚠️ Cloud load failed:', err.message);
     }
 
-    // 3. Decide which data to use based on timestamps
-    let useCloudData = false;
-
+    // ============================================================
+    //  STEP 4: APPLY FIRESTORE DATA
+    // ============================================================
     if (cloudData && cloudData.cards && cloudData.cards.length > 0) {
-        if (localData && localData.cards && localData.cards.length > 0) {
-            const cloudTime = cloudData.last_updated || 0;
-            const localTime = localData.last_updated || 0;
-            console.log("TIMESTAMP CHECK", {
-                cloudTime,
-                localTime,
-                diff: cloudTime - localTime,
-                cloudLastUpdated: cloudData.last_updated,
-                localLastUpdated: localData.last_updated,
-                cloudCards: cloudData.cards.length,
-                localCards: localData.cards.length,
-                useCloudWillBe: cloudTime > localTime
-            });
-            useCloudData = cloudTime > localTime;
-        } else {
-            useCloudData = true;
-        }
-    } else if (localData && localData.cards && localData.cards.length > 0) {
-        useCloudData = false;
-    } else {
-        // ===== TIDAK ADA DATA SAMA SEKALI =====
-        console.warn('⚠️ No data found for user:', email);
+        console.log('✅ Loaded from Firestore:', cloudData.cards.length, 'cards');
+        
+        allCards = mergeProgress(sharedCards, cloudData.cards);
+        userPlan = cloudData.plan || 'free';
+        
+        // ============================================================
+        //  TAHAP 1: SIMPAN KE INDEXEDDB (BUKAN LOCALSTORAGE!)
+        // ============================================================
+        await saveToIndexedDB(email, {
+            cards: cloudData.cards,
+            plan: cloudData.plan || 'free',
+            schema_version: cloudData.schema_version || CURRENT_SCHEMA_VERSION,
+            cloudUpdatedAt: cloudData.last_updated ?? null
+        });
+        console.log('📦 Saved to IndexedDB (migrated from Firestore)');
 
+        // ===== METADATA KECIL DI LOCALSTORAGE (BUKAN CARDS!) =====
+        try {
+            localStorage.setItem('Pharmadeck_metadata_' + email, JSON.stringify({
+                email: email,
+                plan: userPlan,
+                schema_version: CURRENT_SCHEMA_VERSION,
+                lastUpdated: Date.now(),
+                cloudUpdatedAt: cloudData.last_updated ?? null,
+                cardsCount: allCards.length,
+                isAdmin: isAdmin,
+                nickname: getNickname(),
+                source: 'firestore'
+            }));
+        } catch (e) {
+            console.warn('⚠️ Metadata save failed:', e);
+        }
+
+    } else {
+        // ===== TIDAK ADA DATA =====
+        console.warn('⚠️ No data found for user:', email);
         allCards = [];
         userPlan = 'free';
         isAdmin = ADMIN_EMAILS.includes(email);
@@ -4694,111 +4797,40 @@ async function loadUserData(email) {
 
         await firebase.auth().signOut();
         clearSession();
-
         document.getElementById('view-login').classList.add('active');
         document.getElementById('view-login').style.display = 'flex';
         document.getElementById('bottomNav').style.display = 'none';
-
-        return;
-    }
-
-    // 4. Apply the chosen data
-    if (useCloudData && cloudData) {
-        allCards = cloudData.cards || [];
-        userPlan = cloudData.plan || 'free';
-
-        // ============================================================
-//  TAHAP 1: SIMPAN KE INDEXEDDB (BUKAN LOCALSTORAGE)
-// ============================================================
-await saveToIndexedDB(email, {
-    cards: cloudData.cards,
-    plan: cloudData.plan || 'free',
-    schema_version: cloudData.schema_version || CURRENT_SCHEMA_VERSION,
-    cloudUpdatedAt: cloudData.last_updated ?? null
-});
-console.log('📦 Saved to IndexedDB (migrated from Firestore)');
-
-// ===== METADATA KECIL DI LOCALSTORAGE (BUKAN CARDS!) =====
-try {
-    localStorage.setItem('Pharmadeck_metadata_' + email, JSON.stringify({
-        plan: userPlan,
-        cardsCount: allCards.length,
-        source: 'firestore',
-        lastUpdated: Date.now()
-    }));
-} catch (e) {
-    console.warn('⚠️ Metadata save failed:', e);
-}
-
-        console.log('✅ Loaded from cloud:', allCards.length, 'cards');
-
-    } else if (!useCloudData && localData) {
-        const schemaVersion = localData.schema_version || 1;
-
-        if (schemaVersion === 2) {
-            console.log('LOCAL CARD SAMPLE', localData.cards?.[0]);
-            const progressCards = localData.cards || [];
-            const sharedCards = await loadSharedDecks();
-            const progressMap = new Map(
-                progressCards.map(c => [c.__id || c.card_id, c])
-            );
-
-            allCards = sharedCards.map(card => {
-                const key = card.__id || card.card_id;
-                const progress = progressMap.get(key) || {};
-                return {
-                    ...card,
-                    ...progress
-                };
-            });
-
-            userPlan = localData.user_plan || 'free';
-        } else {
-            // ===== FORMAT LAMA: full cards =====
-            allCards = localData.cards || [];
-            userPlan = localData.user_plan || 'free';
-        }
-
-        console.log('✅ Loaded from localStorage:', allCards.length, 'cards');
-
-    } else {
-        console.warn('⚠️ No valid data source, setting empty cards');
-        allCards = [];
-        userPlan = 'free';
+        return false;
     }
 
     // ============================================================
-    //  5. LOAD GLOBAL DECK ORDER & INITIALIZE
+    //  STEP 5: LOAD GLOBAL DECK ORDER & INITIALIZE
     // ============================================================
 
-    // ===== LOAD DARI FIRESTORE (GLOBAL) =====
     await loadGlobalDeckOrder();
-
-    // ===== BARU INITIALIZE =====
     initializeDeckOrder();
-
     isAdmin = ADMIN_EMAILS.includes(email);
     localStorage.setItem('Pharmadeck_plan_' + email, userPlan);
 
-    // ===== VALIDASI: Jika allCards masih kosong, logout =====
     if (!allCards || allCards.length === 0) {
         console.warn('⚠️ All cards is empty after loading!');
         alert('⚠️ Your account has no flashcards.\n\nPlease contact admin: adm.pharmacore@gmail.com');
-
         await firebase.auth().signOut();
         clearSession();
         document.getElementById('view-login').classList.add('active');
         document.getElementById('view-login').style.display = 'flex';
         document.getElementById('bottomNav').style.display = 'none';
-        return;
+        return false;
     }
 
-    console.log('✅ Load user data complete:', {
+    console.log('✅ Load user data complete (from Firestore):', {
         cards: allCards.length,
         plan: userPlan,
         isAdmin: isAdmin,
         deckOrder: deckOrderConfig
     });
+
+    return true;
 }
     
   async function handleSignup(e) {
