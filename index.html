@@ -3133,6 +3133,10 @@ function getDB() {
 // ============================================================
 //  SAVE
 // ============================================================
+// ============================================================
+//  SAVE - GENERIC, TIDAK OVERRIDE STATUS
+// ============================================================
+
 async function saveToIndexedDB(email, data) {
     if (!email) {
         console.warn('⚠️ saveToIndexedDB: No email provided');
@@ -3144,13 +3148,24 @@ async function saveToIndexedDB(email, data) {
         const tx = db.transaction(STORE_NAME, 'readwrite');
         const store = tx.objectStore(STORE_NAME);
         
+        // ===== AMBIL DATA LAMA JIKA ADA =====
+        const existing = await new Promise((resolve) => {
+            const request = store.get(email);
+            request.onsuccess = () => resolve(request.result);
+        });
+        
+        // ===== MERGE: EXISTING + DATA BARU =====
+        // Data baru MENANG (override), tapi tidak menghapus field yang tidak ada di data baru
         const record = {
             email: email,
-            schema_version: data.schemaVersion || 2,
-            syncStatus: 'pending',
-            ...data,
-            updatedAt: Date.now()
+            ...existing,      // Field lama
+            ...data,          // Field baru (override)
+            updatedAt: Date.now()  // Selalu update timestamp
         };
+        
+        // ===== HAPUS FIELD INTERNAL =====
+        delete record._forceDirty;
+        delete record._tempFlag;
         
         store.put(record);
         
@@ -3168,6 +3183,318 @@ async function saveToIndexedDB(email, data) {
     } catch (error) {
         console.error('❌ saveToIndexedDB error:', error);
         throw error;
+    }
+}
+
+    // ============================================================
+//  UPDATE FIELDS - TANPA REWRITE SELURUH DATA
+// ============================================================
+
+async function updateFields(email, fields) {
+    if (!email || !fields) {
+        console.warn('⚠️ updateFields: Missing email or fields');
+        return;
+    }
+    
+    try {
+        const db = await getDB();
+        const tx = db.transaction(STORE_NAME, 'readwrite');
+        const store = tx.objectStore(STORE_NAME);
+        
+        // ===== AMBIL DATA LAMA =====
+        const existing = await new Promise((resolve) => {
+            const request = store.get(email);
+            request.onsuccess = () => resolve(request.result);
+        });
+        
+        if (!existing) {
+            console.warn(`⚠️ No data found for ${email}`);
+            return;
+        }
+        
+        // ===== UPDATE HANYA FIELD YANG DISEBUTKAN =====
+        const record = {
+            ...existing,
+            ...fields,
+            updatedAt: Date.now()
+        };
+        
+        store.put(record);
+        
+        return new Promise((resolve, reject) => {
+            tx.oncomplete = () => {
+                log(`✅ Fields updated: ${email}`, Object.keys(fields));
+                resolve(record);
+            };
+            tx.onerror = () => {
+                console.error('❌ updateFields error:', tx.error);
+                reject(tx.error);
+            };
+        });
+        
+    } catch (error) {
+        console.error('❌ updateFields error:', error);
+        throw error;
+    }
+}
+
+// ===== MARK AS SYNCED - PAKAI updateFields() =====
+async function markAsSynced(email) {
+    if (!email) return;
+    
+    try {
+        await updateFields(email, {
+            syncStatus: 'synced',
+            lastSync: Date.now(),
+            errorCount: 0,
+            lastError: null
+        });
+        console.log(`✅ Marked as synced: ${email}`);
+    } catch (error) {
+        console.error('❌ Failed to mark as synced:', error);
+    }
+}
+
+async function markAsPending(email) {
+    if (!email) return;
+    await updateFields(email, {
+        syncStatus: 'pending'
+    });
+}
+
+async function markAsError(email, errorMessage) {
+    if (!email) return;
+    await updateFields(email, {
+        syncStatus: 'error',
+        lastError: errorMessage,
+        errorCount: (await loadFromIndexedDB(email))?.errorCount + 1 || 1
+    });
+}
+
+// ============================================================
+//  SCHEMA MIGRATION - LOOP BERTAHAP
+// ============================================================
+
+const CURRENT_SCHEMA_VERSION = 2;
+
+async function migrateIndexedDB(email) {
+    try {
+        const data = await loadFromIndexedDB(email);
+        if (!data) return;
+        
+        let version = data.schema_version || 1;
+        let currentData = { ...data };
+        let migrated = false;
+        
+        // ===== MIGRASI BERTAHAP =====
+        while (version < CURRENT_SCHEMA_VERSION) {
+            console.log(`🔄 Migrating from v${version} to v${version + 1}...`);
+            
+            if (version === 1) {
+                currentData = migrateV1ToV2(currentData);
+            }
+            // Future: if (version === 2) { currentData = migrateV2ToV3(currentData); }
+            // Future: if (version === 3) { currentData = migrateV3ToV4(currentData); }
+            
+            version++;
+            migrated = true;
+        }
+        
+        if (migrated) {
+            // ===== GUNAKAN saveToIndexedDB() LANGSUNG =====
+            await saveToIndexedDB(email, currentData);
+            console.log(`✅ Migrated to v${CURRENT_SCHEMA_VERSION}`);
+        }
+        
+        return currentData;
+        
+    } catch (error) {
+        console.error('❌ Migration failed:', error);
+        throw error;
+    }
+}
+
+// ===== MIGRASI V1 → V2 =====
+function migrateV1ToV2(data) {
+    return {
+        ...data,
+        schema_version: 2,
+        syncStatus: data.syncStatus || 'pending',
+        updatedAt: data.updatedAt || Date.now(),
+        createdAt: data.createdAt || Date.now()
+    };
+}
+
+    // ============================================================
+//  RETRY LOGIC - HANYA UNTUK ERROR SEMENTARA
+// ============================================================
+
+const TEMPORARY_ERRORS = [
+    'transaction abort',
+    'lock contention',
+    'timeout',
+    'network',
+    'quota'  // Quota tidak sementara, tapi bisa retry setelah cleanup
+];
+
+async function safeSaveToIndexedDB(email, data, maxRetries = 3) {
+    let lastError = null;
+    
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+        try {
+            const result = await saveToIndexedDB(email, data);
+            return result;
+        } catch (error) {
+            lastError = error;
+            const isTemporary = TEMPORARY_ERRORS.some(e => 
+                error.message?.toLowerCase().includes(e)
+            );
+            
+            if (!isTemporary || attempt === maxRetries) {
+                // ===== ERROR PERMANEN ATAU RETRY HABIS =====
+                console.error('❌ Permanent save error:', error);
+                showToast('⚠️ Failed to save progress. Please check your storage.', 'error');
+                throw error;
+            }
+            
+            console.warn(`⚠️ Retry ${attempt}/${maxRetries}...`);
+            await new Promise(r => setTimeout(r, 1000 * attempt)); // Exponential backoff
+        }
+    }
+    
+    throw lastError;
+}
+    // ============================================================
+//  SYNC QUEUE - DELTA SYNC
+// ============================================================
+
+const SYNC_QUEUE_STORE = 'sync_queue';
+const SYNC_QUEUE_VERSION = 1;
+
+// ===== BUAT STORE UNTUK SYNC QUEUE =====
+// Tambahkan di getDB() onupgradeneeded:
+if (!db.objectStoreNames.contains(SYNC_QUEUE_STORE)) {
+    const queueStore = db.createObjectStore(SYNC_QUEUE_STORE, { 
+        keyPath: 'id', 
+        autoIncrement: true 
+    });
+    queueStore.createIndex('email', 'email', { unique: false });
+    queueStore.createIndex('timestamp', 'timestamp', { unique: false });
+    queueStore.createIndex('synced', 'synced', { unique: false });
+}
+
+// ===== TAMBAHKAN KE QUEUE =====
+async function addToSyncQueue(email, cardId, operation, data = null) {
+    try {
+        const db = await getDB();
+        const tx = db.transaction(SYNC_QUEUE_STORE, 'readwrite');
+        const store = tx.objectStore(SYNC_QUEUE_STORE);
+        
+        const record = {
+            email: email,
+            cardId: cardId,
+            operation: operation, // 'update', 'delete', 'create'
+            data: data,
+            timestamp: Date.now(),
+            synced: false
+        };
+        
+        store.add(record);
+        
+        return new Promise((resolve, reject) => {
+            tx.oncomplete = () => {
+                log(`📤 Added to sync queue: ${cardId} (${operation})`);
+                resolve();
+            };
+            tx.onerror = () => reject(tx.error);
+        });
+        
+    } catch (error) {
+        console.error('❌ addToSyncQueue error:', error);
+    }
+}
+
+// ===== GET PENDING QUEUE =====
+async function getPendingQueue(email) {
+    try {
+        const db = await getDB();
+        const tx = db.transaction(SYNC_QUEUE_STORE, 'readonly');
+        const store = tx.objectStore(SYNC_QUEUE_STORE);
+        const index = store.index('email');
+        
+        return new Promise((resolve, reject) => {
+            const request = index.getAll(email);
+            request.onsuccess = () => {
+                const results = request.result || [];
+                const pending = results.filter(r => !r.synced);
+                log(`📤 Pending queue: ${pending.length}`);
+                resolve(pending);
+            };
+            request.onerror = () => reject(request.error);
+        });
+        
+    } catch (error) {
+        console.error('❌ getPendingQueue error:', error);
+        return [];
+    }
+}
+
+// ===== MARK QUEUE AS SYNCED =====
+async function markQueueSynced(queueId) {
+    try {
+        const db = await getDB();
+        const tx = db.transaction(SYNC_QUEUE_STORE, 'readwrite');
+        const store = tx.objectStore(SYNC_QUEUE_STORE);
+        
+        const existing = await new Promise((resolve) => {
+            const request = store.get(queueId);
+            request.onsuccess = () => resolve(request.result);
+        });
+        
+        if (existing) {
+            store.put({ ...existing, synced: true, syncedAt: Date.now() });
+        }
+        
+        return new Promise((resolve, reject) => {
+            tx.oncomplete = () => resolve();
+            tx.onerror = () => reject(tx.error);
+        });
+        
+    } catch (error) {
+        console.error('❌ markQueueSynced error:', error);
+    }
+}
+
+// ===== CLEAN OLD QUEUE =====
+async function cleanOldQueue(days = 30) {
+    const cutoff = Date.now() - (days * 24 * 60 * 60 * 1000);
+    try {
+        const db = await getDB();
+        const tx = db.transaction(SYNC_QUEUE_STORE, 'readwrite');
+        const store = tx.objectStore(SYNC_QUEUE_STORE);
+        const index = store.index('timestamp');
+        
+        const range = IDBKeyRange.upperBound(cutoff);
+        const request = index.openCursor(range);
+        
+        let count = 0;
+        return new Promise((resolve, reject) => {
+            request.onsuccess = (e) => {
+                const cursor = e.target.result;
+                if (cursor) {
+                    cursor.delete();
+                    count++;
+                    cursor.continue();
+                } else {
+                    log(`🧹 Cleaned ${count} old queue entries`);
+                    resolve();
+                }
+            };
+            request.onerror = () => reject(request.error);
+        });
+        
+    } catch (error) {
+        console.error('❌ cleanOldQueue error:', error);
     }
 }
 // ============================================================
