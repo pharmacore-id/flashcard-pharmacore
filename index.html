@@ -3150,6 +3150,10 @@ function getDB() {
 //  SAVE - GENERIC, TIDAK OVERRIDE STATUS
 // ============================================================
 
+// ============================================================
+//  SAVE TO INDEXEDDB - DENGAN TIMESTAMP TRACKING
+// ============================================================
+
 async function saveToIndexedDB(email, data) {
     if (!email) {
         console.warn('⚠️ saveToIndexedDB: No email provided');
@@ -3166,27 +3170,25 @@ async function saveToIndexedDB(email, data) {
             request.onsuccess = () => resolve(request.result);
         });
         
-        // ============================================================
-        //  URUTAN SPREAD: EXISTING + DATA, FIELD FINAL DI AKHIR
-        // ============================================================
+        const now = Date.now();
+        
         const record = {
             email,
             ...existing,
             ...data,
-            createdAt:
-                existing?.createdAt ??
-                data.createdAt ??
-                Date.now(),
-            schema_version:
-                data.schema_version ??
-                existing?.schema_version ??
-                CURRENT_SCHEMA_VERSION,
-            updatedAt: Date.now()
+            createdAt: existing?.createdAt ?? data.createdAt ?? now,
+            schema_version: data.schema_version ?? existing?.schema_version ?? CURRENT_SCHEMA_VERSION,
+            updatedAt: now,
+            localProgressUpdatedAt: data.markProgressUpdated
+                ? now
+                : (existing?.localProgressUpdatedAt ?? null),
+            cloudUpdatedAt: data.cloudUpdatedAt ?? existing?.cloudUpdatedAt ?? null
         };
         
         // ===== HAPUS FIELD INTERNAL =====
         delete record._forceDirty;
         delete record._tempFlag;
+        delete record.markProgressUpdated;
         
         store.put(record);
         
@@ -3206,7 +3208,6 @@ async function saveToIndexedDB(email, data) {
         throw error;
     }
 }
-
 // ============================================================
 //  LOAD
 // ============================================================
@@ -4194,6 +4195,14 @@ async function loadSharedDecks() {
       review_history: c.review_history || []
     }));
 }
+
+function createProgressSnapshot() {
+    return {
+        cards: buildProgressData(),
+        plan: userPlan,
+        schema_version: CURRENT_SCHEMA_VERSION
+    };
+}
     
     function generateId() { return 'id_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6) }
 
@@ -4640,11 +4649,8 @@ async function loadSharedDecks() {
         }}}
 
 // ============================================================
-//  LOAD USER DATA - UPDATED WITH GLOBAL DECK ORDER
-// ============================================================
-
-// ============================================================
-//  LOAD USER DATA - TAHAP 2 (CACHE-FIRST + FIRESTORE FALLBACK)
+//  LOAD USER DATA - CACHE-FIRST + FIRESTORE FALLBACK
+//  Sprint B1.5 - Dengan timestamp tracking
 // ============================================================
 
 async function loadUserData(email) {
@@ -4665,6 +4671,8 @@ async function loadUserData(email) {
         if (cachedRecord && cachedRecord.cards && cachedRecord.cards.length > 0) {
             cachedProgress = cachedRecord.cards;
             console.log('📦 Found cached progress in IndexedDB:', cachedProgress.length, 'cards');
+            console.log('📋 localProgressUpdatedAt:', cachedRecord.localProgressUpdatedAt);
+            console.log('📋 cloudUpdatedAt:', cachedRecord.cloudUpdatedAt);
         }
     } catch (error) {
         console.warn('⚠️ IndexedDB load failed:', error);
@@ -4686,7 +4694,7 @@ async function loadUserData(email) {
             allCards = mergeProgress(sharedCards, cachedProgress);
             userPlan = cachedRecord.plan || 'free';
             
-            // ===== UPDATE METADATA =====
+            // ===== UPDATE METADATA DI LOCALSTORAGE =====
             try {
                 localStorage.setItem('Pharmadeck_metadata_' + email, JSON.stringify({
                     email: email,
@@ -4694,6 +4702,7 @@ async function loadUserData(email) {
                     schema_version: CURRENT_SCHEMA_VERSION,
                     lastUpdated: cachedRecord.updatedAt || Date.now(),
                     cloudUpdatedAt: cachedRecord.cloudUpdatedAt ?? null,
+                    localProgressUpdatedAt: cachedRecord.localProgressUpdatedAt ?? null,
                     cardsCount: allCards.length,
                     isAdmin: isAdmin,
                     nickname: getNickname(),
@@ -4738,11 +4747,11 @@ async function loadUserData(email) {
     }
 
     // ============================================================
-    //  STEP 3: FALLBACK KE FIRESTORE (TANPA localStorage)
+    //  STEP 3: FALLBACK KE FIRESTORE (TIDAK ADA CACHE)
     // ============================================================
     console.log('📂 No cache, loading from Firestore...');
 
-    // ===== LOAD SHARED DECKS UNTUK FIRESTORE =====
+    // ===== LOAD SHARED DECKS =====
     try {
         sharedCards = await loadSharedDecksOnce();
         console.log('📚 Shared decks loaded:', sharedCards.length, 'cards');
@@ -4772,17 +4781,19 @@ async function loadUserData(email) {
         userPlan = cloudData.plan || 'free';
         
         // ============================================================
-        //  TAHAP 1: SIMPAN KE INDEXEDDB (BUKAN LOCALSTORAGE!)
+        //  SAVE KE INDEXEDDB (TANPA markProgressUpdated!)
+        //  Ini hanya cache dari cloud, BUKAN perubahan progress user
         // ============================================================
         await saveToIndexedDB(email, {
             cards: cloudData.cards,
             plan: cloudData.plan || 'free',
             schema_version: cloudData.schema_version || CURRENT_SCHEMA_VERSION,
             cloudUpdatedAt: cloudData.last_updated ?? null
+            // TIDAK ADA markProgressUpdated!
         });
-        console.log('📦 Saved to IndexedDB (migrated from Firestore)');
+        console.log('📦 Cached from Firestore to IndexedDB');
 
-        // ===== METADATA KECIL DI LOCALSTORAGE (BUKAN CARDS!) =====
+        // ===== METADATA KECIL =====
         try {
             localStorage.setItem('Pharmadeck_metadata_' + email, JSON.stringify({
                 email: email,
@@ -4914,6 +4925,10 @@ async function loadUserData(email) {
 let saveTimeout = null;
 let lastSavedTimestamp = 0;
 
+// ============================================================
+//  SAVE USER DATA - DENGAN TIMESTAMP TRACKING
+// ============================================================
+
 async function saveUserData(email) {
     if (!email) return;
     if (!allCards || allCards.length === 0) {
@@ -4921,32 +4936,38 @@ async function saveUserData(email) {
         return;
     }
 
-    const progressData = buildProgressData();
-
-    // ===== SAVE KE INDEXEDDB (PRIMARY) =====
+    // ===== STEP 1: SAVE KE INDEXEDDB (LANGSUNG) =====
+    const indexSnapshot = createProgressSnapshot();
+    
     await saveToIndexedDB(email, {
-        cards: progressData,
-        plan: userPlan,
-        schema_version: CURRENT_SCHEMA_VERSION
+        cards: indexSnapshot.cards,
+        plan: indexSnapshot.plan,
+        schema_version: indexSnapshot.schema_version,
+        markProgressUpdated: true  // ← TANDA PROGRESS BERUBAH
     });
+    console.log('📦 IndexedDB saved (local)');
 
-    // ===== METADATA KECIL DI LOCALSTORAGE (BUKAN CARDS!) =====
+    // ===== STEP 2: METADATA DI LOCALSTORAGE =====
     try {
         localStorage.setItem('Pharmadeck_metadata_' + email, JSON.stringify({
-            plan: userPlan,
-            cardsCount: progressData.length,
+            plan: indexSnapshot.plan,
+            cardsCount: indexSnapshot.cards.length,
             lastUpdated: Date.now()
         }));
     } catch (e) {
         console.warn('⚠️ Metadata save failed:', e);
     }
 
+    // ===== STEP 3: DEBOUNCE FIRESTORE =====
     if (saveTimeout) {
         clearTimeout(saveTimeout);
     }
 
     saveTimeout = setTimeout(async () => {
-        const snapshot = buildProgressData();
+        // ============================================================
+        //  SNAPSHOT DIBUAT DI DALAM DEBOUNCE (FRESH!)
+        // ============================================================
+        const snapshot = createProgressSnapshot();
         const planSnapshot = userPlan;
 
         let retries = 3;
@@ -4954,20 +4975,29 @@ async function saveUserData(email) {
 
         while (retries > 0 && !saved) {
             try {
-                const saveTime = Date.now();
+                const saveTime = Date.now();  // ← SETIAP RETRY BUAT BARU
 
                 await db.collection('users').doc(email).set({
-                    cards: snapshot,
+                    cards: snapshot.cards,
                     plan: planSnapshot,
-                    schema_version: 2,
+                    schema_version: CURRENT_SCHEMA_VERSION,
                     last_updated: saveTime
                 }, { merge: true });
 
                 saved = true;
                 console.log('☁️ FIREBASE SAVE:', {
-                    cards: snapshot.length,
+                    cards: snapshot.cards.length,
                     timestamp: saveTime
                 });
+
+                // ============================================================
+                //  UPDATE cloudUpdatedAt SETELAH UPLOAD BERHASIL
+                // ============================================================
+                await saveToIndexedDB(email, {
+                    cloudUpdatedAt: saveTime
+                    // TIDAK ADA markProgressUpdated!
+                });
+                console.log('📦 cloudUpdatedAt updated in IndexedDB');
 
             } catch (err) {
                 retries--;
@@ -4988,6 +5018,10 @@ async function saveUserData(email) {
 //  FLUSH SAVE - Paksa Save ke Firestore (Dengan Snapshot)
 // ============================================================
 
+// ============================================================
+//  FLUSH SAVE NOW - PAKSA SAVE KE FIRESTORE
+// ============================================================
+
 async function flushSaveNow(email) {
     if (!email) return;
     if (!allCards || allCards.length === 0) {
@@ -4995,39 +5029,46 @@ async function flushSaveNow(email) {
         return;
     }
     
-    const progressData = buildProgressData();
+    const snapshot = createProgressSnapshot();
     const planSnapshot = userPlan;
-    
-    try {
-        // ===== SAVE KE FIRESTORE =====
-        await db.collection('users').doc(email).set({
-            cards: progressData,
-            plan: planSnapshot,
-            schema_version: 2,
-            last_updated: Date.now()
-        }, { merge: true });
-        console.log('☁️ Flush save to Firestore complete (', progressData.length, 'cards)');
-        
-        // ===== SAVE KE INDEXEDDB =====
-        await saveToIndexedDB(email, {
-            cards: progressData,
-            plan: userPlan,
-            schema_version: CURRENT_SCHEMA_VERSION
-        });
-        console.log('📦 Flush save to IndexedDB complete');
-        
-        // ===== METADATA KECIL (OPSIONAL) =====
+
+    let retries = 3;
+    let saved = false;
+
+    while (retries > 0 && !saved) {
         try {
-            localStorage.setItem('Pharmadeck_metadata_' + email, JSON.stringify({
-                plan: userPlan,
-                cardsCount: progressData.length,
-                lastUpdated: Date.now(),
-                source: 'flush'
-            }));
-        } catch (e) { /* ignore */ }
-        
-    } catch (e) {
-        console.warn('⚠️ Flush save failed:', e.message);
+            const saveTime = Date.now();
+
+            await db.collection('users').doc(email).set({
+                cards: snapshot.cards,
+                plan: planSnapshot,
+                schema_version: CURRENT_SCHEMA_VERSION,
+                last_updated: saveTime
+            }, { merge: true });
+
+            saved = true;
+            console.log('☁️ Flush save to Firestore complete (', snapshot.cards.length, 'cards)');
+
+            await saveToIndexedDB(email, {
+                cards: snapshot.cards,
+                plan: planSnapshot,
+                schema_version: CURRENT_SCHEMA_VERSION,
+                cloudUpdatedAt: saveTime
+                // TIDAK ADA markProgressUpdated!
+            });
+            console.log('📦 IndexedDB updated with cloud timestamp');
+
+        } catch (err) {
+            retries--;
+            console.warn(`⚠️ Flush retry ${3 - retries}/3:`, err.message);
+            if (retries > 0) {
+                await new Promise(r => setTimeout(r, 2000));
+            }
+        }
+    }
+
+    if (!saved) {
+        console.error('❌ Flush save failed after 3 retries');
     }
 }
     
@@ -8615,10 +8656,17 @@ async function deleteSelectedDecks() {
 
   alert(`✅ ${selectedDeckIds.length} deck(s) deleted successfully!`);
 }
+    
+// ============================================================
+//  REFRESH USER DATA - SYNC DARI CLOUD KE LOCAL
+//  Dipanggil saat user klik tombol "Refresh Now" di Settings
+// ============================================================
+
 async function refreshUserData() {
     const btn = document.getElementById('refresh-btn');
     if (!btn) return;
 
+    // ===== DISABLE TOMBOL =====
     btn.disabled = true;
     btn.textContent = 'Refreshing...';
     btn.classList.add('opacity-50', 'cursor-not-allowed');
@@ -8626,32 +8674,42 @@ async function refreshUserData() {
     try {
         updateSyncStatus('syncing', 'Refreshing data...');
 
+        // ===================================================
+        //  STEP 1: FLUSH SAVE DULU (PASTIKAN DATA LOCAL TERSIMPAN)
+        // ===================================================
         if (currentUser) {
             if (saveTimeout) {
                 clearTimeout(saveTimeout);
                 saveTimeout = null;
             }
-
             await flushSaveNow(currentUser);
         }
 
+        // ===================================================
+        //  STEP 2: LOAD ULANG DARI FIRESTORE
+        // ===================================================
         const cloudData = await loadFromFirebase(currentUser);
 
         if (cloudData && cloudData.cards) {
+            // ===== SET DATA =====
             allCards = cloudData.cards;
             userPlan = cloudData.plan || 'free';
 
             // ============================================================
-            //  ✅ SAVE KE INDEXEDDB (BUKAN LOCALSTORAGE!)
+            //  STEP 3: SAVE KE INDEXEDDB (TANPA markProgressUpdated!)
+            //  Ini hanya sync dari cloud, BUKAN perubahan progress user
             // ============================================================
             await saveToIndexedDB(currentUser, {
-                cards: buildProgressData(),
-                plan: userPlan,
-                schema_version: CURRENT_SCHEMA_VERSION
+                cards: cloudData.cards,
+                plan: cloudData.plan || 'free',
+                schema_version: cloudData.schema_version || CURRENT_SCHEMA_VERSION,
+                cloudUpdatedAt: cloudData.last_updated ?? null
+                // TIDAK ADA markProgressUpdated!
             });
+            console.log('📦 IndexedDB updated from cloud');
 
             // ============================================================
-            //  ✅ METADATA KECIL DI LOCALSTORAGE
+            //  STEP 4: METADATA KECIL DI LOCALSTORAGE
             // ============================================================
             try {
                 localStorage.setItem('Pharmadeck_metadata_' + currentUser, JSON.stringify({
@@ -8664,9 +8722,10 @@ async function refreshUserData() {
                 console.warn('⚠️ Metadata save failed:', e);
             }
 
+            // ===== RENDER ULANG UI =====
             renderDecks();
             updateHome();
-            renderStats?.();
+            if (typeof renderStats === 'function') renderStats();
 
             updateSyncStatus('', 'Data refreshed');
             console.log(`✅ Refresh complete (${allCards.length} cards loaded)`);
@@ -8674,10 +8733,12 @@ async function refreshUserData() {
         }
 
         // ============================================================
-        //  FALLBACK: RELOAD SHARED DECKS
+        //  STEP 5: FALLBACK - RELOAD SHARED DECKS
+        //  (Jika cloudData tidak ditemukan)
         // ============================================================
         console.warn('⚠️ Cloud data not found, reloading shared decks...');
 
+        // ===== SIMPAN PROGRESS LAMA =====
         const progressMap = new Map();
         allCards.forEach(card => {
             if (card.isShared) {
@@ -8695,28 +8756,35 @@ async function refreshUserData() {
             }
         });
 
-        const sharedCards = await loadSharedDecks();
+        // ===== LOAD SHARED DECKS BARU =====
+        const sharedCards = await loadSharedDecksOnce();
+
+        // ===== MERGE PROGRESS =====
         const mergedSharedCards = sharedCards.map(card => {
             const key = card.__id || card.card_id;
             const progress = progressMap.get(key);
             return progress ? { ...card, ...progress } : card;
         });
 
+        // ===== PERTAHANKAN CUSTOM CARDS =====
         const customCards = allCards.filter(c => !c.isShared);
+
+        // ===== GABUNGKAN =====
         allCards = [...customCards, ...mergedSharedCards];
 
         // ============================================================
-        //  ✅ SAVE KE INDEXEDDB (BUKAN LOCALSTORAGE!)
+        //  SAVE KE INDEXEDDB (TANPA markProgressUpdated)
         // ============================================================
         await saveToIndexedDB(currentUser, {
             cards: buildProgressData(),
             plan: userPlan,
-            schema_version: CURRENT_SCHEMA_VERSION
+            schema_version: CURRENT_SCHEMA_VERSION,
+            cloudUpdatedAt: null
+            // TIDAK ADA markProgressUpdated!
         });
+        console.log('📦 IndexedDB updated (fallback)');
 
-        // ============================================================
-        //  ✅ METADATA KECIL
-        // ============================================================
+        // ===== METADATA =====
         try {
             localStorage.setItem('Pharmadeck_metadata_' + currentUser, JSON.stringify({
                 plan: userPlan,
@@ -8730,7 +8798,8 @@ async function refreshUserData() {
 
         renderDecks();
         updateHome();
-        renderStats?.();
+        if (typeof renderStats === 'function') renderStats();
+
         updateSyncStatus('', 'Shared decks refreshed');
         console.log(`✅ Shared decks refreshed (${allCards.length} cards loaded)`);
 
@@ -8739,6 +8808,7 @@ async function refreshUserData() {
         updateSyncStatus('offline', 'Refresh failed');
         alert('❌ Failed to refresh data.\n\n' + (error?.message || 'Unknown error'));
     } finally {
+        // ===== ENABLE KEMBALI TOMBOL =====
         btn.disabled = false;
         btn.textContent = 'Refresh Now';
         btn.classList.remove('opacity-50', 'cursor-not-allowed');
