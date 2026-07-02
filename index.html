@@ -3943,6 +3943,86 @@ function updateSyncStatus(status, text) {
   alert('✅ Display name updated to "' + name + '"!');
 }
 
+    // ============================================================
+//  TOAST NOTIFICATION - GLOBAL FUNCTION
+// ============================================================
+
+function showToast(message, type = 'info') {
+    // ===== VALIDASI =====
+    if (!message) {
+        console.warn('⚠️ showToast called without message');
+        return;
+    }
+    
+    // ===== KONFIGURASI =====
+    const colors = {
+        success: '#10b981',
+        error: '#ef4444',
+        warning: '#f59e0b',
+        info: '#3b82f6'
+    };
+    
+    const icons = {
+        success: '✅',
+        error: '❌',
+        warning: '⚠️',
+        info: 'ℹ️'
+    };
+    
+    // ===== BUAT CONTAINER JIKA BELUM ADA =====
+    let container = document.getElementById('toast-container');
+    if (!container) {
+        container = document.createElement('div');
+        container.id = 'toast-container';
+        container.style.cssText = `
+            position: fixed;
+            bottom: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 99999;
+            width: 90%;
+            max-width: 380px;
+            pointer-events: none;
+        `;
+        document.body.appendChild(container);
+    }
+    
+    // ===== BUAT TOAST =====
+    const toast = document.createElement('div');
+    const color = colors[type] || '#3b82f6';
+    const icon = icons[type] || 'ℹ️';
+    
+    toast.style.cssText = `
+        background: var(--surface, #ffffff);
+        color: var(--text, #1a1a2e);
+        padding: 12px 16px;
+        border-radius: 12px;
+        box-shadow: 0 8px 30px rgba(0,0,0,0.15);
+        border-left: 4px solid ${color};
+        margin-bottom: 8px;
+        font-size: 13px;
+        font-weight: 500;
+        transition: opacity 0.3s ease, transform 0.3s ease;
+        pointer-events: all;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        border: 1px solid var(--border, #e5e7eb);
+    `;
+    toast.innerHTML = `${icon} ${message}`;
+    
+    container.appendChild(toast);
+    
+    // ===== AUTO REMOVE SETELAH 3 DETIK =====
+    setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateY(-20px)';
+        setTimeout(() => {
+            if (toast.parentNode) toast.parentNode.removeChild(toast);
+        }, 300);
+    }, 3000);
+}
+
     function loadNickname() {
   const name = getNickname();
   const displayElement = document.getElementById('user-display-name');
