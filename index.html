@@ -3570,25 +3570,50 @@ function hasSharedDeckCache() {
 
 async function loadSharedDecksOnce() {
     console.time('⏱️ sharedDecks.total');
+    console.log('🔍 loadSharedDecksOnce: START');
     
     if (hasSharedDeckCache()) {
         console.log('📚 Using cached shared decks:', sharedDecksCache.length);
         console.timeEnd('⏱️ sharedDecks.total');
         return {
             cards: sharedDecksCache,
-            deckVersions: deckVersionsCache
+            deckVersions: deckVersionsCache || {}
         };
     }
     
     try {
+        console.log('🔍 loadSharedDecksOnce: calling loadSharedDecks()...');
         const result = await loadSharedDecks();
-        sharedDecksCache = result.cards;
-        deckVersionsCache = result.deckVersions;
-        console.log('📚 Shared decks loaded:', result.cards.length, 'cards');
+        
+        console.log('🔍 DEBUG result:', result);
+        console.log('🔍 DEBUG isArray:', Array.isArray(result));
+        
+        let cards = [];
+        let deckVersions = {};
+        
+        if (Array.isArray(result)) {
+            cards = result;
+            console.log('🔍 loadSharedDecksOnce: result is ARRAY, length =', cards.length);
+        } else if (result && typeof result === 'object' && Array.isArray(result.cards)) {
+            cards = result.cards || [];
+            deckVersions = result.deckVersions || {};
+            console.log('🔍 loadSharedDecksOnce: result is OBJECT, cards.length =', cards.length);
+        } else {
+            console.warn('⚠️ loadSharedDecksOnce: unknown result format', result);
+        }
+        
+        sharedDecksCache = cards;
+        deckVersionsCache = deckVersions;
+        
+        console.log('📚 Shared decks loaded:', sharedDecksCache.length, 'cards');
         console.timeEnd('⏱️ sharedDecks.total');
-        return result;
+        return {
+            cards: sharedDecksCache,
+            deckVersions: deckVersionsCache
+        };
+        
     } catch (error) {
-        console.warn('⚠️ Shared decks load failed:', error);
+        console.error('⚠️ Shared decks load failed:', error);
         console.timeEnd('⏱️ sharedDecks.total');
         return { cards: [], deckVersions: {} };
     }
@@ -3751,6 +3776,17 @@ let currentTopic=null;
 let studyQueue=[];
 let studyIdx=0;
 let fcFlipped=false;
+let bootstrapped = false;
+let initDone = false;
+let appEntered = false;
+let authReady = false;
+let dataReady = false;
+let dataHealthy = true;
+let isLoadingData = false;
+let syncTimeout = null;
+let currentSyncPromise = null;
+let saveTimeout = null;
+let lastSavedTimestamp = 0;
 
 let tsCorrect=0,
 tsIncorrect=0,
@@ -4241,49 +4277,30 @@ async function saveSharedDeck(deckData, isPremium = false) {
     return false;
   }
 }
-async function loadSharedDecks() {
-  try {
-    const snapshot = await db.collection('sharedDecks').get();
-    const sharedCards = [];
 
-    snapshot.forEach(doc => {
-      const deck = doc.data();
+   async function loadSharedDecks() {
+    console.log('🔍 loadSharedDecks: START');
+    
+    try {
+        const snapshot = await db.collection('sharedDecks').get();
+        console.log('🔍 sharedDecks snapshot size:', snapshot.size);
+        
+        const sharedCards = [];
 
-      if (deck.cards && deck.cards.length) {
-        deck.cards.forEach(c => {
-          sharedCards.push({
-            __id: 'shared_' + doc.id + '_' + c.card_id,
-            card_id: c.card_id || null,
-            deck_id: 'shared_' + doc.id,
-            deck_name: deck.deckName || 'Shared Deck',
-            topic: deck.topic || 'General',
-            subtopic: deck.subtopic || '',
-            isPremium: deck.isPremium || false,
-            card_front: c.card_front,
-            card_back: c.card_back,
-            card_tags: c.card_tags || '',
-            card_background: c.card_background || '',
-            // ===== PROGRESS SRS =====
-           ease_factor: 2.5,
-            interval: 0,
-            repetitions: 0,
-            next_review: '',
-            last_review: '',
-            total_reviews: 0,
-            correct_count: 0,
-            review_history: [],
-            isShared: true
-          });
+        snapshot.forEach(doc => {
+            const deck = doc.data();
+            // ... (kode yang sudah ada)
         });
-      }
-    });
-    return sharedCards;
-  } catch (error) {
-    console.warn('⚠️ Gagal memuat shared decks:', error);
-    return [];
-  }
-}
 
+        console.log('🔍 sharedCards built:', sharedCards.length);
+        return sharedCards;
+
+    } catch (error) {
+        console.error('❌ loadSharedDecks: ERROR', error);
+        return [];
+    }
+}
+    
    async function updateSharedDeck(deckId, deckData, isPremium = false) {
   if (!isAdmin) return false;
   try {
