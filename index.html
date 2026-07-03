@@ -1658,20 +1658,22 @@ color:white;
 </div>
     
     <!-- ===== AUTH: LOGIN ===== -->
-    <div id="view-login" class="view active" style="padding:1rem;justify-content:center;z-index:200;bottom:0;">
-      <div class="auth-card">
-        <div class="text-center mb-6">
-          <img
-    src="logo.svg"
-    alt="Pharmadeck"
-    class="h-12 w-auto object-contain"
-/>
-          <p class="text-sec text-sm mt-1">Pharmacy Study Companion</p>
-          <div id="sync-status" class="sync-status justify-center mt-1">
-            <span class="dot" id="sync-dot"></span>
-            <span id="sync-text">Ready</span>
-          </div>
-        </div>
+  <div id="view-login" class="view active" style="padding:1rem; justify-content:center; z-index:200; bottom:0;">
+  <div class="auth-card">
+    <div class="text-center mb-6">
+      
+      <!-- LOGO: Ukuran diturunkan jadi h-10 (40px), dan ditambahkan mb-2 agar ada jarak ke teks di bawahnya -->
+      <img src="logo.svg" alt="Pharmadeck" class="h-10 w-auto object-contain mx-auto mb-2" />
+      
+      <!-- Subtitle -->
+      <p class="text-sec text-sm mt-1">Pharmacy Study Companion</p>
+      
+      <!-- Status Ready -->
+      <div id="sync-status" class="sync-status justify-center mt-1">
+        <span class="dot" id="sync-dot"></span>
+        <span id="sync-text">Ready</span>
+      </div>
+    </div>
         <form onsubmit="handleLogin(event)" class="space-y-4">
           <div><label class="text-sm font-medium text-sec">Email</label><input type="email" id="login-email" placeholder="you@example.com" required /></div>
           <div>
