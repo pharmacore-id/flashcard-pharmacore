@@ -5111,9 +5111,6 @@ async function flushSaveNow(email) {
 //  SPRINT B2: BACKGROUND SYNC
 // ============================================================
 
-let syncTimeout = null;
-let currentSyncPromise = null;
-
 // ===== SCHEDULE SYNC (DEBOUNCE) =====
 function scheduleSync(debounceMs = 3000) {
     if (syncTimeout) {
@@ -5337,19 +5334,6 @@ async function performSync({
 
 // ============================================================
 //  ENTER APP - DENGAN GLOBAL DECK ORDER
-// ============================================================
-// ============================================================
-//  FLAG UNTUK MENCEGAH INFINITE LOOP
-// ============================================================
-
-let isLoadingData = false;
-
-// ============================================================
-//  ENTER APP - LENGKAP
-// ============================================================
-
-// ============================================================
-//  ENTER APP - UI RENDERING ONLY (NO AUTH DECISION!)
 // ============================================================
 
 let appEntered = false;
