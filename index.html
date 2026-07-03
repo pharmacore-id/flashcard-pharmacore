@@ -4275,7 +4275,7 @@ async function saveSharedDeck(deckData, isPremium = false) {
   }
 }
 
-   async function loadSharedDecks() {
+  async function loadSharedDecks() {
     console.log('🔍 loadSharedDecks: START');
     
     try {
@@ -4286,7 +4286,45 @@ async function saveSharedDeck(deckData, isPremium = false) {
 
         snapshot.forEach(doc => {
             const deck = doc.data();
-            // ... (kode yang sudah ada)
+            const deckId = doc.id;
+            const deckName = deck.deckName || 'Shared Deck';
+            const topic = deck.topic || 'General';
+            const subtopic = deck.subtopic || '';
+            const isPremium = deck.isPremium || false;
+            const version = deck.version || 0;
+            
+            // ============================================================
+            //  AMBIL CARDS DARI DECK
+            // ============================================================
+            const cards = deck.cards || [];
+            
+            if (cards.length > 0) {
+                console.log(`📚 Deck ${deckId}: ${cards.length} cards`);
+                
+                cards.forEach(c => {
+                    const cardId = c.card_id || c.id || null;
+                    if (!cardId) {
+                        console.warn('⚠️ Card without ID in deck', deckId);
+                        return;
+                    }
+                    
+                    sharedCards.push({
+                        __id: 'shared_' + deckId + '_' + cardId,
+                        card_id: cardId,
+                        deck_id: 'shared_' + deckId,
+                        deck_name: deckName,
+                        topic: topic,
+                        subtopic: subtopic,
+                        isPremium: isPremium,
+                        card_front: c.card_front || c.front || c.question || '',
+                        card_back: c.card_back || c.back || c.answer || '',
+                        card_tags: c.card_tags || c.tags || '',
+                        card_background: c.card_background || c.background || '',
+                        isShared: true,
+                        deckVersion: version
+                    });
+                });
+            }
         });
 
         console.log('🔍 sharedCards built:', sharedCards.length);
