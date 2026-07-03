@@ -1698,7 +1698,7 @@ color:white;
       <div class="auth-card">
         <div class="text-center mb-6">
           <img
-    src="logo-pharmadeck.png"
+    src="logo.png"
     alt="Pharmadeck"
     class="h-12 w-auto object-contain"
 />
@@ -4167,11 +4167,11 @@ function showToast(message, type = 'info') {
     // ============================================================
 
 async function loadFromFirebase(email) {
-  console.time('⏱️ firestore.load');
+    console.time('⏱️ firestore.load');
     try {
-    if (!email || !navigator.onLine) return null;
-    
-    try {
+        if (!email || !navigator.onLine) return null;
+        
+        // ===== FIRESTORE QUERY =====
         updateSyncStatus('syncing', 'Loading...');
 
         const userDoc = await db.collection('users').doc(email).get();
@@ -4206,9 +4206,7 @@ async function loadFromFirebase(email) {
         console.warn('⚠️ Firebase load failed:', err.message);
         updateSyncStatus('offline', 'Offline');
         return null;
-    }
-}
-   } finally {
+    } finally {
         console.timeEnd('⏱️ firestore.load');
     }
 }
@@ -5123,119 +5121,120 @@ async function performSync({
     force = false,
     email = currentUser
 } = {}) {
-    console.time('⏱️ performSync.total');  // ← TAMBAHKAN
+    console.time('⏱️ performSync.total');
     
-    if (!email) {
-        console.warn('⚠️ performSync: No email provided');
-        console.timeEnd('⏱️ performSync.total');
-        return;
-    }
-
-    // ===== JIKA SYNC SEDANG BERJALAN =====
-    if (currentSyncPromise) {
-        if (force) {
-            console.log('⏳ Sync in progress, waiting...');
-            await currentSyncPromise;
-            return performSync({ force: true, email });
+    try {
+        if (!email) {
+            console.warn('⚠️ performSync: No email provided');
+            return;
         }
-        console.log('⏳ Sync already in progress, skipping...');
-        return;
-    }
 
-    if (!navigator.onLine) {
-        console.log('📴 Offline, sync skipped');
-        updateSyncStatus('offline', 'Offline');
-        return;
-    }
+        // ===== JIKA SYNC SEDANG BERJALAN =====
+        if (currentSyncPromise) {
+            if (force) {
+                console.log('⏳ Sync in progress, waiting...');
+                await currentSyncPromise;
+                return performSync({ force: true, email });
+            }
+            console.log('⏳ Sync already in progress, skipping...');
+            return;
+        }
 
-    console.log('🔄 Performing sync...', force ? '(force)' : '');
-    updateSyncStatus('syncing', 'Syncing...');
+        if (!navigator.onLine) {
+            console.log('📴 Offline, sync skipped');
+            updateSyncStatus('offline', 'Offline');
+            return;
+        }
 
-    currentSyncPromise = (async () => {
-        try {
-            let retries = 3;
-            let saved = false;
+        console.log('🔄 Performing sync...', force ? '(force)' : '');
+        updateSyncStatus('syncing', 'Syncing...');
 
-            while (retries > 0 && !saved) {
-                try {
-                    // ===== AMBIL DATA TERBARU DARI INDEXEDDB =====
-                    const cached = await loadFromIndexedDB(email);
-                    if (!cached || !cached.cards || cached.cards.length === 0) {
-                        console.log('ℹ️ No data to sync');
-                        updateSyncStatus('', 'Synced');
-                        return;
-                    }
+        currentSyncPromise = (async () => {
+            try {
+                let retries = 3;
+                let saved = false;
 
-                    // ===== COMPARE TIMESTAMP (HANYA JIKA TIDAK FORCE) =====
-                    if (!force) {
-                        const local = cached.localProgressUpdatedAt ?? 0;
-                        const cloud = cached.cloudUpdatedAt ?? 0;
-
-                        console.log('📊 Timestamp comparison:', {
-                            localProgressUpdatedAt: local,
-                            cloudUpdatedAt: cloud,
-                            diff: local - cloud
-                        });
-
-                        if (local <= cloud) {
-                            console.log('✅ No local changes to sync');
+                while (retries > 0 && !saved) {
+                    try {
+                        // ===== AMBIL DATA TERBARU DARI INDEXEDDB =====
+                        const cached = await loadFromIndexedDB(email);
+                        if (!cached || !cached.cards || cached.cards.length === 0) {
+                            console.log('ℹ️ No data to sync');
                             updateSyncStatus('', 'Synced');
                             return;
                         }
-                    }
 
-                    console.log('📤 Uploading (', cached.cards.length, 'cards)...');
+                        // ===== COMPARE TIMESTAMP (HANYA JIKA TIDAK FORCE) =====
+                        if (!force) {
+                            const local = cached.localProgressUpdatedAt ?? 0;
+                            const cloud = cached.cloudUpdatedAt ?? 0;
 
-                    // ===== UPLOAD KE FIRESTORE =====
-                    const saveTime = Date.now();
+                            console.log('📊 Timestamp comparison:', {
+                                localProgressUpdatedAt: local,
+                                cloudUpdatedAt: cloud,
+                                diff: local - cloud
+                            });
 
-                    await db.collection('users').doc(email).set({
-                        cards: cached.cards,
-                        plan: cached.plan || 'free',
-                        schema_version: cached.schema_version || CURRENT_SCHEMA_VERSION,
-                        last_updated: saveTime
-                    }, { merge: true });
+                            if (local <= cloud) {
+                                console.log('✅ No local changes to sync');
+                                updateSyncStatus('', 'Synced');
+                                return;
+                            }
+                        }
 
-                    saved = true;
-                    console.log('☁️ Sync complete (', cached.cards.length, 'cards)');
+                        console.log('📤 Uploading (', cached.cards.length, 'cards)...');
 
-                    // ===== UPDATE cloudUpdatedAt =====
-                    await saveToIndexedDB(email, {
-                        cloudUpdatedAt: saveTime
-                    });
-                    console.log('📦 cloudUpdatedAt updated');
+                        // ===== UPLOAD KE FIRESTORE =====
+                        const saveTime = Date.now();
 
-                    updateSyncStatus('', 'Synced');
+                        await db.collection('users').doc(email).set({
+                            cards: cached.cards,
+                            plan: cached.plan || 'free',
+                            schema_version: cached.schema_version || CURRENT_SCHEMA_VERSION,
+                            last_updated: saveTime
+                        }, { merge: true });
 
-                } catch (err) {
-                    retries--;
-                    console.warn(`⚠️ Retry ${3 - retries}/3:`, err.message);
-                    if (retries > 0) {
-                        await new Promise(r => setTimeout(r, 2000));
+                        saved = true;
+                        console.log('☁️ Sync complete (', cached.cards.length, 'cards)');
+
+                        // ===== UPDATE cloudUpdatedAt =====
+                        await saveToIndexedDB(email, {
+                            cloudUpdatedAt: saveTime
+                        });
+                        console.log('📦 cloudUpdatedAt updated');
+
+                        updateSyncStatus('', 'Synced');
+
+                    } catch (err) {
+                        retries--;
+                        console.warn(`⚠️ Retry ${3 - retries}/3:`, err.message);
+                        if (retries > 0) {
+                            await new Promise(r => setTimeout(r, 2000));
+                        }
                     }
                 }
-            }
 
-            if (!saved) {
-                console.error('❌ Upload failed after 3 retries');
+                if (!saved) {
+                    console.error('❌ Upload failed after 3 retries');
+                    updateSyncStatus('error', 'Sync failed');
+                    scheduleSync(5000);
+                }
+
+            } catch (error) {
+                console.error('❌ Sync failed:', error);
                 updateSyncStatus('error', 'Sync failed');
                 scheduleSync(5000);
+            } finally {
+                currentSyncPromise = null;
             }
+        })();
 
-        } catch (error) {
-            console.error('❌ Sync failed:', error);
-            updateSyncStatus('error', 'Sync failed');
-            scheduleSync(5000);
-        } finally {
-            currentSyncPromise = null;
-        }
-    })();
-
-    await currentSyncPromise;
+        await currentSyncPromise;
+        
+    } finally {
+        console.timeEnd('⏱️ performSync.total');
+    }
 }
-     console.timeEnd('⏱️ performSync.total');  // ← TAMBAHKAN DI AKHIR
-}
-    
     function savePlan(email, plan, expiry) {
   localStorage.setItem('Pharmadeck_plan_' + email, plan);
   if (expiry) localStorage.setItem('Pharmadeck_expiry_' + email, expiry);
@@ -5845,92 +5844,100 @@ async function checkSession() {
     // ============================================================
     //  UI RENDERING
     // ============================================================
-    function updateHome() {
-      console.time('⏱️ updateHome');
-      const due = getDueCards();
-      const dueCount = document.getElementById('due-count');
-      if (dueCount) dueCount.textContent = due.length;
+  function updateHome() {
+    console.time('⏱️ updateHome');
+    
+    try {
+        const due = getDueCards();
+        const dueCount = document.getElementById('due-count');
+        if (dueCount) dueCount.textContent = due.length;
 
-      const real = getRealCards();
-      const total = real.reduce((s, c) => s + (c.total_reviews || 0), 0);
-      const correct = real.reduce((s, c) => s + (c.correct_count || 0), 0);
-      const acc = total > 0 ? Math.round(correct / total * 100) : 0;
-      const mastered = real.filter(c => (c.interval || 0) >= 21).length;
-      const streak = getStreak();
+        const real = getRealCards();
+        const total = real.reduce((s, c) => s + (c.total_reviews || 0), 0);
+        const correct = real.reduce((s, c) => s + (c.correct_count || 0), 0);
+        const acc = total > 0 ? Math.round(correct / total * 100) : 0;
+        const mastered = real.filter(c => (c.interval || 0) >= 21).length;
+        const streak = getStreak();
 
-      loadNickname();
-      loadDailyGoal();
+        loadNickname();
+        loadDailyGoal();
 
-      const statStreak = document.getElementById('stat-streak');
-      if (statStreak) statStreak.textContent = streak;
+        const statStreak = document.getElementById('stat-streak');
+        if (statStreak) statStreak.textContent = streak;
 
-      const statAccuracy = document.getElementById('stat-accuracy');
-      if (statAccuracy) statAccuracy.textContent = acc + '%';
+        const statAccuracy = document.getElementById('stat-accuracy');
+        if (statAccuracy) statAccuracy.textContent = acc + '%';
 
-      const statMastered = document.getElementById('stat-mastered');
-      if (statMastered) statMastered.textContent = mastered;
+        const statMastered = document.getElementById('stat-mastered');
+        if (statMastered) statMastered.textContent = mastered;
 
-      const streakNumber = document.getElementById('streak-number');
-      if (streakNumber) streakNumber.textContent = streak;
+        const streakNumber = document.getElementById('streak-number');
+        if (streakNumber) streakNumber.textContent = streak;
 
-      const goal = getDailyGoal();
-      const todayCount = getTodayStudyCount();
+        const goal = getDailyGoal();
+        const todayCount = getTodayStudyCount();
 
-      const dailyProgressFill = document.getElementById('daily-progress-fill');
-      if (dailyProgressFill) {
-        const pct = Math.min((todayCount / goal) * 100, 100);
-        dailyProgressFill.style.width = pct + '%';
-      }
-
-      const todayCountEl = document.getElementById('today-count');
-      if (todayCountEl) todayCountEl.textContent = todayCount;
-
-const days = getStreakDays();
-const dayLabels = ['1', '2', '3', '4', '5', '6', '7'];
-const calendar = document.getElementById('streak-calendar');
-if (calendar) {
- calendar.innerHTML = days.map((d, i) => {
-    let cls = 'streak-dot';
-    if (d.active) {cls += ' active';
-    } else {cls += ' inactive';}
-    if (d.isToday) {
-        cls += ' today';}
-    return `<div class="${cls}">${dayLabels[i]}</div>`;
-}).join('');
-}
-
-      const lastReview = real.filter(c => c.last_review).sort((a, b) =>
-        new Date(b.last_review) - new Date(a.last_review)
-      )[0];
-      const lastStudyText = document.getElementById('last-study-text');
-      if (lastStudyText) {
-        if (lastReview) {
-          const diff = Math.floor((Date.now() - new Date(lastReview.last_review)) / (1000 * 60));
-          if (diff < 1) lastStudyText.textContent = 'Last studied: Just now';
-          else if (diff < 60) lastStudyText.textContent = `Last studied: ${diff} min ago`;
-          else if (diff < 1440) lastStudyText.textContent =
-            `Last studied: ${Math.floor(diff / 60)}h ${diff % 60}m ago`;
-          else lastStudyText.textContent = `Last studied: ${Math.floor(diff / 1440)} days ago`;
-        } else {
-          lastStudyText.textContent = 'Last studied: Never';
+        const dailyProgressFill = document.getElementById('daily-progress-fill');
+        if (dailyProgressFill) {
+            const pct = Math.min((todayCount / goal) * 100, 100);
+            dailyProgressFill.style.width = pct + '%';
         }
-      }
 
-      const btn = document.getElementById('home-review-btn');
-      if (btn) {
-        if (due.length === 0) {
-          btn.textContent = '🎉 All caught up!';
-          btn.disabled = true;
-          btn.classList.add('opacity-60', 'cursor-not-allowed');
-        } else {
-          btn.textContent = '📖 Continue Studying';
-          btn.disabled = false;
-          btn.classList.remove('opacity-60', 'cursor-not-allowed');
+        const todayCountEl = document.getElementById('today-count');
+        if (todayCountEl) todayCountEl.textContent = todayCount;
+
+        const days = getStreakDays();
+        const dayLabels = ['1', '2', '3', '4', '5', '6', '7'];
+        const calendar = document.getElementById('streak-calendar');
+        if (calendar) {
+            calendar.innerHTML = days.map((d, i) => {
+                let cls = 'streak-dot';
+                if (d.active) {
+                    cls += ' active';
+                } else {
+                    cls += ' inactive';
+                }
+                if (d.isToday) {
+                    cls += ' today';
+                }
+                return `<div class="${cls}">${dayLabels[i]}</div>`;
+            }).join('');
         }
-      }
-      updatePlanUI();
+
+        const lastReview = real.filter(c => c.last_review).sort((a, b) =>
+            new Date(b.last_review) - new Date(a.last_review)
+        )[0];
+        const lastStudyText = document.getElementById('last-study-text');
+        if (lastStudyText) {
+            if (lastReview) {
+                const diff = Math.floor((Date.now() - new Date(lastReview.last_review)) / (1000 * 60));
+                if (diff < 1) lastStudyText.textContent = 'Last studied: Just now';
+                else if (diff < 60) lastStudyText.textContent = `Last studied: ${diff} min ago`;
+                else if (diff < 1440) lastStudyText.textContent =
+                    `Last studied: ${Math.floor(diff / 60)}h ${diff % 60}m ago`;
+                else lastStudyText.textContent = `Last studied: ${Math.floor(diff / 1440)} days ago`;
+            } else {
+                lastStudyText.textContent = 'Last studied: Never';
+            }
+        }
+
+        const btn = document.getElementById('home-review-btn');
+        if (btn) {
+            if (due.length === 0) {
+                btn.textContent = '🎉 All caught up!';
+                btn.disabled = true;
+                btn.classList.add('opacity-60', 'cursor-not-allowed');
+            } else {
+                btn.textContent = '📖 Continue Studying';
+                btn.disabled = false;
+                btn.classList.remove('opacity-60', 'cursor-not-allowed');
+            }
+        }
+        updatePlanUI();
+        
+    } finally {
+        console.timeEnd('⏱️ updateHome');
     }
-     console.timeEnd('⏱️ updateHome');
 }
     
         // ============================================================
@@ -5938,12 +5945,13 @@ if (calendar) {
     // ============================================================
 
    function renderDecks() {
-  console.time('⏱️ renderDecks');  // ← TAMBAHKAN TIMER DI AWAL
-  
-  const container = document.getElementById('deck-list');
-  const no = document.getElementById('no-decks');
+    console.time('⏱️ renderDecks');
+    
+    try {
+        const container = document.getElementById('deck-list');
+        const no = document.getElementById('no-decks');
 
-  if (!container) return;
+        if (!container) return;
 
   const decks = getDecks();
 
@@ -6313,10 +6321,14 @@ moveTopicDown('${topic}');
       </div>
     `;
   });
-  container.innerHTML = html;
-  if (typeof lucide !== 'undefined' && lucide.createIcons) lucide.createIcons();
-}
-    console.timeEnd('⏱️ renderDecks');  // ← TAMBAHKAN TIMER DI AKHIR
+     container.innerHTML = html;
+        if (typeof lucide !== 'undefined' && lucide.createIcons) {
+            lucide.createIcons();
+        }
+        
+    } finally {
+        console.timeEnd('⏱️ renderDecks');
+    }
 }
     // ============================================================
     //  ADMIN FUNCTIONS - RENAME DECK
