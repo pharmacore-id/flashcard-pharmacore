@@ -5478,17 +5478,6 @@ function enterApp() {
     if (typeof lucide !== 'undefined' && lucide.createIcons) {
         lucide.createIcons();
     }
-    
-    // ============================================================
-    //  DATA KOSONG? TAMPILKAN PESAN TAPI TETAP LOGIN
-    // ============================================================
-    if (!allCards || allCards.length === 0) {
-        console.warn('⚠️ No cards loaded, but user remains logged in');
-        showToast('📂 Loading your data...', 'info');
-        // TIDAK LOGOUT!
-    } else {
-        console.log('✅ Cards loaded:', allCards.length);
-    }
 }
 
 // ============================================================
