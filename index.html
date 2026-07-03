@@ -3569,18 +3569,28 @@ function hasSharedDeckCache() {
 }
 
 async function loadSharedDecksOnce() {
+    console.time('⏱️ sharedDecks.total');
+    
     if (hasSharedDeckCache()) {
         console.log('📚 Using cached shared decks:', sharedDecksCache.length);
-        return sharedDecksCache;
+        console.timeEnd('⏱️ sharedDecks.total');
+        return {
+            cards: sharedDecksCache,
+            deckVersions: deckVersionsCache
+        };
     }
     
     try {
-        sharedDecksCache = await loadSharedDecks();
-        console.log('📚 Shared decks loaded:', sharedDecksCache.length, 'cards');
-        return sharedDecksCache;
+        const result = await loadSharedDecks();
+        sharedDecksCache = result.cards;
+        deckVersionsCache = result.deckVersions;
+        console.log('📚 Shared decks loaded:', result.cards.length, 'cards');
+        console.timeEnd('⏱️ sharedDecks.total');
+        return result;
     } catch (error) {
         console.warn('⚠️ Shared decks load failed:', error);
-        return [];
+        console.timeEnd('⏱️ sharedDecks.total');
+        return { cards: [], deckVersions: {} };
     }
 }
 
@@ -3796,18 +3806,8 @@ regular:{
 //  BOOTSTRAP - SINGLE SOURCE OF TRUTH
 // ============================================================
 
-let bootstrapped = false;
-let initDone = false;
-
 async function bootstrap(user) {
-    if (bootstrapped) {
-        console.log('⚠️ Bootstrap already done, skipping...');
-        return;
-    }
-    bootstrapped = true;
-    
-    console.log('🚀 Bootstrapping app...');
-    console.log('👤 User:', user?.email || 'No user');
+    window.__startupAt = performance.now();
     
     if (!user) {
         console.log('🔴 No user, showing login');
@@ -3815,17 +3815,29 @@ async function bootstrap(user) {
         return;
     }
     
+    if (bootstrapped) {
+        console.log('⚠️ Bootstrap already done, skipping...');
+        return;
+    }
+    bootstrapped = true;
+    
     // ===== AUTH =====
     currentUser = user.email;
     isAdmin = ADMIN_EMAILS.includes(user.email);
     saveSession(user.email);
     authReady = true;
     
-    // ===== UI =====
+    // ===== ENTER APP =====
     enterApp();
     
-    // ===== DATA =====
-    await loadDataInBackground();
+    // ===== TIME TO INTERACTIVE =====
+    const tti = performance.now() - window.__startupAt;
+    console.log('🚀 Time to Interactive:', Math.round(tti), 'ms');
+    
+    // ===== LOAD DATA BACKGROUND =====
+    loadDataInBackground().catch(error => {
+        console.error('❌ Background data load failed:', error);
+    });
 }
 
 function resetSessionStats(){
@@ -3845,18 +3857,18 @@ let dataHealthy = true;
 let dataReady = false;
 
 async function loadDataInBackground() {
-    if (!currentUser) {
-        console.warn('⚠️ loadDataInBackground called without user');
-        return;
-    }
-    
+    console.time('⏱️ loadDataInBackground.total');
     try {
-        console.log('📂 Loading data in background...');
+        if (!currentUser) {
+            console.warn('⚠️ loadDataInBackground called without user');
+            return;
+        }
+        
         const loaded = await loadUserData(currentUser);
         
         if (!loaded) {
             dataHealthy = false;
-            console.warn('⚠️ Data incomplete, using fallback state');
+            console.warn('⚠️ Data incomplete');
             allCards = [];
             return;
         }
@@ -3870,12 +3882,13 @@ async function loadDataInBackground() {
         updateHome();
         
         console.log('✅ Data loaded successfully');
+        console.log('📊 Cards in UI:', allCards?.length || 0);
         
     } catch (error) {
-        dataHealthy = false;
         console.error('❌ Data loading error:', error);
         allCards = [];
-        // ✅ TETAP LOGIN, JANGAN LOGOUT!
+    } finally {
+        console.timeEnd('⏱️ loadDataInBackground.total');
     }
 }
     
@@ -4154,6 +4167,8 @@ function showToast(message, type = 'info') {
     // ============================================================
 
 async function loadFromFirebase(email) {
+  console.time('⏱️ firestore.load');
+    try {
     if (!email || !navigator.onLine) return null;
     
     try {
@@ -4191,6 +4206,10 @@ async function loadFromFirebase(email) {
         console.warn('⚠️ Firebase load failed:', err.message);
         updateSyncStatus('offline', 'Offline');
         return null;
+    }
+}
+   } finally {
+        console.timeEnd('⏱️ firestore.load');
     }
 }
 
@@ -4814,208 +4833,82 @@ function createProgressSnapshot() {
 // ============================================================
 
 async function loadUserData(email) {
-    if (!email) return false;
-
-    console.log('🔍 Loading user data for:', email);
-
-    // ============================================================
-    //  STEP 1: COBA DARI INDEXEDDB (CACHE-FIRST)
-    // ============================================================
-    let cachedRecord = null;
-    let cachedProgress = null;
-    let loadedFromCache = false;
-    let sharedCards = [];
-
+    console.time('⏱️ loadUserData.total');
     try {
-        cachedRecord = await loadFromIndexedDB(email);
-        if (cachedRecord && cachedRecord.cards && cachedRecord.cards.length > 0) {
-            cachedProgress = cachedRecord.cards;
-            console.log('📦 Found cached progress in IndexedDB:', cachedProgress.length, 'cards');
-            console.log('📋 localProgressUpdatedAt:', cachedRecord.localProgressUpdatedAt);
-            console.log('📋 cloudUpdatedAt:', cachedRecord.cloudUpdatedAt);
-        }
-    } catch (error) {
-        console.warn('⚠️ IndexedDB load failed:', error);
-    }
+        if (!email) return false;
 
-    // ===== JIKA ADA CACHE, PAKAI =====
-    if (cachedProgress) {
-        console.log('✅ Using cached data from IndexedDB');
-        
-        // ===== LOAD SHARED DECKS =====
+        console.log('🔍 Loading user data for:', email);
+
+        // ===== STEP 1: LOAD INDEXEDDB =====
+        console.time('⏱️ loadUserData.indexeddb');
+        let cachedRecord = null;
+        let cachedProgress = null;
+
         try {
-            sharedCards = await loadSharedDecksOnce();
+            cachedRecord = await loadFromIndexedDB(email);
+            if (cachedRecord && cachedRecord.cards && cachedRecord.cards.length > 0) {
+                cachedProgress = cachedRecord.cards;
+                console.log('📦 Found cached progress in IndexedDB:', cachedProgress.length, 'cards');
+            }
+        } catch (error) {
+            console.warn('⚠️ IndexedDB load failed:', error);
+        }
+        console.timeEnd('⏱️ loadUserData.indexeddb');
+
+        // ===== STEP 2: LOAD SHARED DECKS =====
+        console.time('⏱️ loadUserData.sharedDecks');
+        let sharedCards = [];
+        try {
+            const result = await loadSharedDecksOnce();
+            sharedCards = result.cards || result;
             console.log('📚 Shared decks loaded:', sharedCards.length, 'cards');
         } catch (error) {
             console.warn('⚠️ Shared decks load failed:', error);
         }
+        console.timeEnd('⏱️ loadUserData.sharedDecks');
 
-        if (sharedCards.length > 0) {
+        // ===== STEP 3: MERGE =====
+        if (cachedProgress && sharedCards.length > 0) {
+            console.log('📊 Cached progress:', cachedProgress.length);
+            console.log('📊 Shared cards:', sharedCards.length);
+            
+            console.time('⏱️ loadUserData.merge');
             allCards = mergeProgress(sharedCards, cachedProgress);
             userPlan = cachedRecord.plan || 'free';
+            console.timeEnd('⏱️ loadUserData.merge');
             
-            // ===== UPDATE METADATA DI LOCALSTORAGE =====
-            try {
-                localStorage.setItem('Pharmadeck_metadata_' + email, JSON.stringify({
-                    email: email,
-                    plan: userPlan,
-                    schema_version: CURRENT_SCHEMA_VERSION,
-                    lastUpdated: cachedRecord.updatedAt || Date.now(),
-                    cloudUpdatedAt: cachedRecord.cloudUpdatedAt ?? null,
-                    localProgressUpdatedAt: cachedRecord.localProgressUpdatedAt ?? null,
-                    cardsCount: allCards.length,
-                    isAdmin: isAdmin,
-                    nickname: getNickname(),
-                    source: 'indexeddb'
-                }));
-            } catch (e) { /* ignore */ }
-            
-            console.log('✅ Loaded from IndexedDB:', allCards.length, 'cards');
-            loadedFromCache = true;
-        }
-    }
-
-    // ============================================================
-    //  STEP 2: JIKA DARI CACHE, LANGSUNG KE SIDE EFFECT
-    // ============================================================
-    if (loadedFromCache) {
-        // ===== LOAD GLOBAL DECK ORDER =====
-        await loadGlobalDeckOrder();
-        initializeDeckOrder();
-        isAdmin = ADMIN_EMAILS.includes(email);
-        localStorage.setItem('Pharmadeck_plan_' + email, userPlan);
-
-        if (!allCards || allCards.length === 0) {
-            console.warn('⚠️ All cards is empty after loading!');
-            alert('⚠️ Your account has no flashcards.\n\nPlease contact admin: adm.pharmacore@gmail.com');
-            await firebase.auth().signOut();
-            clearSession();
-            document.getElementById('view-login').classList.add('active');
-            document.getElementById('view-login').style.display = 'flex';
-            document.getElementById('bottomNav').style.display = 'none';
-            return false;
+            console.log('✅ Merged:', allCards.length, 'cards');
+            return true;
         }
 
-        console.log('✅ Load user data complete (from cache):', {
-            cards: allCards.length,
-            plan: userPlan,
-            isAdmin: isAdmin,
-            deckOrder: deckOrderConfig
-        });
-
-        return true;
-    }
-
-    // ============================================================
-    //  STEP 3: FALLBACK KE FIRESTORE (TIDAK ADA CACHE)
-    // ============================================================
-    console.log('📂 No cache, loading from Firestore...');
-
-    // ===== LOAD SHARED DECKS =====
-    try {
-        sharedCards = await loadSharedDecksOnce();
-        console.log('📚 Shared decks loaded:', sharedCards.length, 'cards');
-    } catch (error) {
-        console.warn('⚠️ Shared decks load failed:', error);
-    }
-
-    // ===== LOAD DARI FIRESTORE =====
-    let cloudData = null;
-    try {
-        cloudData = await loadFromFirebase(email);
-        console.log('☁️ Cloud data:', cloudData ? 'found' : 'not found');
-        if (cloudData) {
-            console.log('📊 Cloud cards:', cloudData.cards?.length || 0);
-        }
-    } catch (err) {
-        console.warn('⚠️ Cloud load failed:', err.message);
-    }
-
-    // ============================================================
-    //  STEP 4: APPLY FIRESTORE DATA
-    // ============================================================
-    if (cloudData && cloudData.cards && cloudData.cards.length > 0) {
-        console.log('✅ Loaded from Firestore:', cloudData.cards.length, 'cards');
+        // ===== STEP 4: FIRESTORE FALLBACK =====
+        console.log('📂 No cache, loading from Firestore...');
         
-        allCards = mergeProgress(sharedCards, cloudData.cards);
-        userPlan = cloudData.plan || 'free';
-        
-        // ============================================================
-        //  SAVE KE INDEXEDDB (TANPA markProgressUpdated!)
-        //  Ini hanya cache dari cloud, BUKAN perubahan progress user
-        // ============================================================
-        await saveToIndexedDB(email, {
-            cards: cloudData.cards,
-            plan: cloudData.plan || 'free',
-            schema_version: cloudData.schema_version || CURRENT_SCHEMA_VERSION,
-            cloudUpdatedAt: cloudData.last_updated ?? null
-            // TIDAK ADA markProgressUpdated!
-        });
-        console.log('📦 Cached from Firestore to IndexedDB');
-
-        // ===== METADATA KECIL =====
+        console.time('⏱️ loadUserData.firestore');
+        let cloudData = null;
         try {
-            localStorage.setItem('Pharmadeck_metadata_' + email, JSON.stringify({
-                email: email,
-                plan: userPlan,
-                schema_version: CURRENT_SCHEMA_VERSION,
-                lastUpdated: Date.now(),
-                cloudUpdatedAt: cloudData.last_updated ?? null,
-                cardsCount: allCards.length,
-                isAdmin: isAdmin,
-                nickname: getNickname(),
-                source: 'firestore'
-            }));
-        } catch (e) {
-            console.warn('⚠️ Metadata save failed:', e);
+            cloudData = await loadFromFirebase(email);
+            console.log('☁️ Cloud data loaded:', cloudData?.cards?.length || 0);
+        } catch (err) {
+            console.warn('⚠️ Cloud load failed:', err.message);
+        }
+        console.timeEnd('⏱️ loadUserData.firestore');
+
+        if (cloudData && cloudData.cards && cloudData.cards.length > 0) {
+            allCards = mergeProgress(sharedCards, cloudData.cards);
+            userPlan = cloudData.plan || 'free';
+            console.log('✅ Merged from Firestore:', allCards.length, 'cards');
+            return true;
         }
 
-    } else {
-        // ===== TIDAK ADA DATA =====
         console.warn('⚠️ No data found for user:', email);
         allCards = [];
         userPlan = 'free';
-        isAdmin = ADMIN_EMAILS.includes(email);
-        localStorage.setItem('Pharmadeck_plan_' + email, userPlan);
-
-        alert('📚 No flashcards found for this account.\n\nPlease contact admin to get access to decks.');
-
-        await firebase.auth().signOut();
-        clearSession();
-        document.getElementById('view-login').classList.add('active');
-        document.getElementById('view-login').style.display = 'flex';
-        document.getElementById('bottomNav').style.display = 'none';
         return false;
+        
+    } finally {
+        console.timeEnd('⏱️ loadUserData.total');
     }
-
-    // ============================================================
-    //  STEP 5: LOAD GLOBAL DECK ORDER & INITIALIZE
-    // ============================================================
-
-    await loadGlobalDeckOrder();
-    initializeDeckOrder();
-    isAdmin = ADMIN_EMAILS.includes(email);
-    localStorage.setItem('Pharmadeck_plan_' + email, userPlan);
-
-    if (!allCards || allCards.length === 0) {
-        console.warn('⚠️ All cards is empty after loading!');
-        alert('⚠️ Your account has no flashcards.\n\nPlease contact admin: adm.pharmacore@gmail.com');
-        await firebase.auth().signOut();
-        clearSession();
-        document.getElementById('view-login').classList.add('active');
-        document.getElementById('view-login').style.display = 'flex';
-        document.getElementById('bottomNav').style.display = 'none';
-        return false;
-    }
-
-    console.log('✅ Load user data complete (from Firestore):', {
-        cards: allCards.length,
-        plan: userPlan,
-        isAdmin: isAdmin,
-        deckOrder: deckOrderConfig
-    });
-
-    return true;
 }
     
   async function handleSignup(e) {
@@ -5181,13 +5074,28 @@ scheduleSync(3000);
 // ============================================================
 
 async function flushSaveNow(email) {
-    if (!email) return;
-    if (!allCards || allCards.length === 0) return;
+    console.time('⏱️ flushSaveNow.total');  // ← TAMBAHKAN
+    
+    if (!email) {
+        console.warn('⚠️ flushSaveNow: No email provided');
+        console.timeEnd('⏱️ flushSaveNow.total');
+        return;
+    }
+    
+    if (!allCards || allCards.length === 0) {
+        console.warn('⚠️ flushSaveNow skipped: allCards is empty');
+        console.timeEnd('⏱️ flushSaveNow.total');
+        return;
+    }
+    
+    console.log('📤 Flush save (force sync)...');
     
     await performSync({
         force: true,
         email: email
     });
+    
+    console.timeEnd('⏱️ flushSaveNow.total');  // ← TAMBAHKAN
 }
 
     // ============================================================
@@ -5215,8 +5123,11 @@ async function performSync({
     force = false,
     email = currentUser
 } = {}) {
+    console.time('⏱️ performSync.total');  // ← TAMBAHKAN
+    
     if (!email) {
         console.warn('⚠️ performSync: No email provided');
+        console.timeEnd('⏱️ performSync.total');
         return;
     }
 
@@ -5321,6 +5232,8 @@ async function performSync({
     })();
 
     await currentSyncPromise;
+}
+     console.timeEnd('⏱️ performSync.total');  // ← TAMBAHKAN DI AKHIR
 }
     
     function savePlan(email, plan, expiry) {
@@ -5933,6 +5846,7 @@ async function checkSession() {
     //  UI RENDERING
     // ============================================================
     function updateHome() {
+      console.time('⏱️ updateHome');
       const due = getDueCards();
       const dueCount = document.getElementById('due-count');
       if (dueCount) dueCount.textContent = due.length;
@@ -6014,14 +5928,18 @@ if (calendar) {
           btn.classList.remove('opacity-60', 'cursor-not-allowed');
         }
       }
-
       updatePlanUI();
     }
+     console.timeEnd('⏱️ updateHome');
+}
     
         // ============================================================
     //  RENDER DECKS (VERSI BARU DENGAN TOPIC GROUPING)
     // ============================================================
-function renderDecks() {
+
+   function renderDecks() {
+  console.time('⏱️ renderDecks');  // ← TAMBAHKAN TIMER DI AWAL
+  
   const container = document.getElementById('deck-list');
   const no = document.getElementById('no-decks');
 
@@ -6040,7 +5958,7 @@ function renderDecks() {
 
     topicMap[topic].push(d);
   });
-
+     
   const sortedTopics =
   Object.keys(topicMap)
   .sort((a,b)=>{
@@ -6397,6 +6315,8 @@ moveTopicDown('${topic}');
   });
   container.innerHTML = html;
   if (typeof lucide !== 'undefined' && lucide.createIcons) lucide.createIcons();
+}
+    console.timeEnd('⏱️ renderDecks');  // ← TAMBAHKAN TIMER DI AKHIR
 }
     // ============================================================
     //  ADMIN FUNCTIONS - RENAME DECK
