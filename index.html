@@ -747,70 +747,111 @@
       gap: 0.5rem;
     }
     
-    .progress-chart-wrapper {
-      overflow-x: auto;
-      overflow-y: hidden;
-      padding-bottom: 4px;
-      -webkit-overflow-scrolling: touch;
-      scrollbar-width: thin;
-      scrollbar-color: var(--border) transparent;
-      width: 100%;
-    }
-    .progress-chart-wrapper::-webkit-scrollbar { height: 4px; }
-    .progress-chart-wrapper::-webkit-scrollbar-track { background: transparent; }
-    .progress-chart-wrapper::-webkit-scrollbar-thumb { background: var(--border); border-radius: 99px; }
-    
-    #progress-chart {
-      display: flex;
-      align-items: flex-end;
-      gap: 3px;
-      padding: 4px 4px 4px 4px;
-      min-height: 80px;
-      width: 100%;
-    }
-    #progress-chart .bar-group {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 3px;
-      flex: 1 1 0;
-      min-width: 12px;
-      max-width: 40px;
-    }
-    #progress-chart .bar-value {
-      font-size: 8px;
-      font-weight: 700;
-      color: var(--text-secondary);
-      line-height: 1;
-      min-height: 12px;
-    }
-    #progress-chart .bar {
-      width: 100%;
-      max-width: 24px;
-      border-radius: 3px 3px 0 0;
-      background: var(--border);
-      transition: height 0.4s ease, background 0.3s ease;
-      min-height: 3px;
-    }
-    #progress-chart .bar.filled { background: var(--accent); }
-    #progress-chart .bar.today {
-      background: var(--premium-gold);
-      box-shadow: 0 0 8px rgba(217, 119, 6, 0.3);
-    }
-    #progress-chart .bar-label {
-      font-size: 7px;
-      font-weight: 600;
-      color: var(--text-secondary);
-      text-align: center;
-      line-height: 1;
-      min-height: 10px;
-      white-space: nowrap;
-    }
-    #progress-chart.month .bar-group { min-width: 10px; max-width: 24px; }
-    #progress-chart.month .bar { max-width: 14px; }
-    #progress-chart.all .bar-group { min-width: 8px; max-width: 18px; }
-    #progress-chart.all .bar { max-width: 8px; }
-    #progress-chart.all .bar-value { font-size: 7px; min-height: 10px; }
+   .progress-chart-wrapper {
+    overflow-x: auto;
+    overflow-y: hidden;
+    padding-bottom: 4px;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+    scrollbar-color: var(--border) transparent;
+    width: 100%;
+}
+
+.progress-chart-wrapper::-webkit-scrollbar { height: 4px; }
+.progress-chart-wrapper::-webkit-scrollbar-track { background: transparent; }
+.progress-chart-wrapper::-webkit-scrollbar-thumb { background: var(--border); border-radius: 99px; }
+
+#progress-chart {
+    display: flex;
+    align-items: flex-end;
+    gap: 3px;
+    padding: 4px 4px 4px 4px;
+    min-height: 80px;
+    width: 100%;
+}
+
+/* ===== BAR GROUP ===== */
+#progress-chart .bar-group {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+    flex: 1 1 0;
+    min-width: 12px;
+    max-width: 40px;
+}
+
+/* ===== BAR VALUE (ANGKA DI ATAS BAR) ===== */
+#progress-chart .bar-value {
+    font-size: 8px;
+    font-weight: 700;
+    color: var(--text-secondary);
+    line-height: 1;
+    min-height: 12px;
+}
+
+/* ===== BAR ===== */
+#progress-chart .bar {
+    width: 100%;
+    max-width: 24px;
+    border-radius: 3px 3px 0 0;
+    background: var(--border);
+    transition: height 0.4s ease, background 0.3s ease;
+    min-height: 3px;
+}
+
+#progress-chart .bar.filled { background: var(--accent); }
+#progress-chart .bar.today {
+    background: var(--premium-gold);
+    box-shadow: 0 0 8px rgba(217, 119, 6, 0.3);
+}
+
+/* ===== BAR LABEL (TANGGAL DI BAWAH BAR) ===== */
+#progress-chart .bar-label {
+    font-size: 7px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    text-align: center;
+    line-height: 1.2;
+    min-height: 18px;  /* ← TAMBAHKAN AGAR CUKUP RUANG */
+    white-space: normal; /* ← UBAH AGAR BISA WRAP */
+    word-break: break-word;
+    max-width: 100%;
+}
+
+/* ===== MONTH VARIANT ===== */
+#progress-chart.month .bar-group { 
+    min-width: 10px; 
+    max-width: 24px; 
+}
+
+#progress-chart.month .bar { 
+    max-width: 14px; 
+}
+
+#progress-chart.month .bar-label {
+    min-height: 20px;  /* ← TAMBAHKAN UNTUK BULAN */
+}
+
+/* ===== ALL VARIANT ===== */
+#progress-chart.all .bar-group { 
+    min-width: 8px; 
+    max-width: 18px; 
+}
+
+#progress-chart.all .bar { 
+    max-width: 8px; 
+}
+
+#progress-chart.all .bar-value { 
+    font-size: 7px; 
+    min-height: 10px; 
+}
+
+#progress-chart.all .bar-label {
+    font-size: 6px;
+    min-height: 16px;
+}
     
     .progress-toggle {
       display: flex;
@@ -8234,7 +8275,7 @@ function toggleFAQ(button) {
     // ============================================================
     //  1. PROGRESS CHART
     // ============================================================
-    function renderProgressChart() {
+  function renderProgressChart() {
     const days = progressPeriod === 'week' ? 7 : progressPeriod === 'month' ? getDaysInMonth() : 60;
     const dates = getDateRangeForPeriod(days);
     const counts = dates.map(d => getTotalReviewsForDate(d));
@@ -8257,12 +8298,11 @@ function toggleFAQ(button) {
     //  HITUNG LABEL STEP
     // ============================================================
     let labelStep = 1;
-    // Week → tampil semua (7 hari)
     if (days > 7 && days <= 31) {
-        labelStep = 5;   // Month (28-31 hari) → tampil tiap 5 hari
+        labelStep = 5;
     }
     if (days > 31) {
-        labelStep = 10;  // All (60 hari) → tampil tiap 10 hari
+        labelStep = 10;
     }
 
     const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
@@ -8271,10 +8311,21 @@ function toggleFAQ(button) {
     const containerWidth = container.parentElement?.offsetWidth || 320;
     const gapTotal = (barCount - 1) * 3;
     const availableWidth = containerWidth - 16 - gapTotal;
-    let barWidth = Math.max(Math.min(availableWidth / barCount, 30), 6);
 
-    if (days > 14) barWidth = Math.min(barWidth, 14);
-    if (days > 40) barWidth = Math.min(barWidth, 8);
+    // ============================================================
+    //  HITUNG LEBAR BAR - FIX UNTUK MONTH & ALL
+    // ============================================================
+    let barWidth = Math.max(Math.min(availableWidth / barCount, 30), 10);
+
+    // Month (28-31 hari) → lebih lebar agar label terbaca
+    if (days > 14 && days <= 31) {
+        barWidth = Math.max(barWidth, 18);
+    }
+
+    // All (60 hari) → lebih lebar dari sebelumnya
+    if (days > 31) {
+        barWidth = Math.max(Math.min(availableWidth / barCount, 18), 8);
+    }
 
     container.innerHTML = dates.map((d, i) => {
         const height = Math.max((counts[i] / maxCount) * 55, 3);
@@ -8345,12 +8396,9 @@ function toggleFAQ(button) {
             `;
         }
 
-        const minWidth = Math.max(barWidth, 6);
-
         return `
             <div class="bar-group" style="
-                min-width: ${minWidth}px; 
-                max-width: ${barWidth + 4}px; 
+                width: ${barWidth}px;
                 flex: 0 0 ${barWidth}px;
                 display: flex;
                 flex-direction: column;
@@ -8375,15 +8423,10 @@ function toggleFAQ(button) {
                      ">
                 </div>
                 <div class="bar-label" style="
-                    font-size: 7px;
-                    font-weight: 600;
-                    color: var(--text-secondary);
+                    width: 100%;
                     text-align: center;
                     min-height: 18px;
-                    overflow: hidden;
-                    text-overflow: ellipsis;
-                    max-width: 100%;
-                    white-space: nowrap;
+                    line-height: 1;
                 ">
                     ${showLabel ? labelText : ''}
                 </div>
@@ -8428,11 +8471,6 @@ function toggleFAQ(button) {
         }
     }
 }
-
-    function getDateRangeForPeriod(days) {
-      return getDateRange(days);
-    }
-
   // ============================================================
 //  2. DECK PERFORMANCE (scroll vertikal)
 // ============================================================
