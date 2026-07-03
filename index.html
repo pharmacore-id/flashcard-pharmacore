@@ -5286,76 +5286,100 @@ async function performSync({
   if (expiry) localStorage.setItem('Pharmadeck_expiry_' + email, expiry);
   userPlan = plan;}
 
-   async function handleLogout() {
-  // ===== TAMPILKAN LOADING =====
-  var overlay = document.getElementById('logout-overlay');
-  if (overlay) overlay.classList.add('active');
-  
-  // ===== DISABLE TOMBOL =====
-  var logoutBtn = document.querySelector('.bg-red-500');
-  if (logoutBtn) {
-    logoutBtn.disabled = true;
-    logoutBtn.textContent = 'Logging out...';
-  }
-  
-  try {
+  async function handleLogout() {
     console.log('🚪 Logout started...');
     
-    if (currentUser) {
-      console.log('💾 Flushing save...');
-      if (saveTimeout) {
-        clearTimeout(saveTimeout);
-        saveTimeout = null;
-      }
-      await flushSaveNow(currentUser);
-      console.log('✅ Flush done');
-    }
+    // ===== TAMPILKAN LOADING =====
+    var overlay = document.getElementById('logout-overlay');
+    if (overlay) overlay.classList.add('active');
     
-    console.log('🔥 Signing out from Firebase...');
-    await firebase.auth().signOut();
-    console.log('✅ Firebase signOut success');
-    
-    console.log('🧹 Cleaning up...');
-    clearSession();
-    localStorage.removeItem('Pharmadeck_session_token');
-    localStorage.removeItem('Pharmadeck_token_expiry');
-    currentUser = null;
-    allCards = [];
-    isAdmin = false;
-    
-    console.log('🎨 Updating UI...');
-    document.querySelectorAll('.view').forEach(function(v) {
-      v.classList.remove('active');
-      v.style.display = 'none';
-    });
-    
-    var loginView = document.getElementById('view-login');
-    if (loginView) {
-      loginView.classList.add('active');
-      loginView.style.display = 'flex';
-    }
-    
-    var emailInput = document.getElementById('login-email');
-    var passInput = document.getElementById('login-password');
-    if (emailInput) emailInput.value = '';
-    if (passInput) passInput.value = '';
-    
-    var bottomNav = document.getElementById('bottomNav');
-    if (bottomNav) bottomNav.style.display = 'none';
-    
-    console.log('✅ Logout complete!');
-    
-  } catch (error) {
-    console.error('❌ Logout error:', error);
-    alert('Logout error: ' + error.message);
-  } finally {
-    // ===== HILANGKAN LOADING =====
-    if (overlay) overlay.classList.remove('active');
+    // ===== DISABLE TOMBOL LOGOUT =====
+    var logoutBtn = document.querySelector('.bg-red-500');
     if (logoutBtn) {
-      logoutBtn.disabled = false;
-      logoutBtn.textContent = 'Logout';
+        logoutBtn.disabled = true;
+        logoutBtn.textContent = 'Logging out...';
     }
-  }
+    
+    try {
+        // ============================================================
+        //  SAVE DATA DI BACKGROUND (TANPA MENUNGGU LAMA)
+        // ============================================================
+        if (currentUser) {
+            console.log('💾 Starting background save...');
+            
+            if (saveTimeout) {
+                clearTimeout(saveTimeout);
+                saveTimeout = null;
+            }
+            
+            // ============================================================
+            //  ✅ JANGAN TUNGGU! KASIH BATAS WAKTU 3 DETIK
+            // ============================================================
+            try {
+                await Promise.race([
+                    flushSaveNow(currentUser),
+                    new Promise(resolve => setTimeout(resolve, 3000))
+                ]);
+                console.log('✅ Save completed (or timed out)');
+            } catch (e) {
+                console.error('❌ Save error:', e);
+            }
+        }
+        
+        // ============================================================
+        //  SIGNOUT DARI FIREBASE (CEPAT)
+        // ============================================================
+        console.log('🔥 Signing out from Firebase...');
+        await firebase.auth().signOut();
+        console.log('✅ Firebase signOut success');
+        
+        // ============================================================
+        //  CLEANUP
+        // ============================================================
+        console.log('🧹 Cleaning up...');
+        clearSession();
+        localStorage.removeItem('Pharmadeck_session_token');
+        localStorage.removeItem('Pharmadeck_token_expiry');
+        currentUser = null;
+        allCards = [];
+        isAdmin = false;
+        
+        // ============================================================
+        //  UPDATE UI
+        // ============================================================
+        console.log('🎨 Updating UI...');
+        document.querySelectorAll('.view').forEach(function(v) {
+            v.classList.remove('active');
+            v.style.display = 'none';
+        });
+        
+        var loginView = document.getElementById('view-login');
+        if (loginView) {
+            loginView.classList.add('active');
+            loginView.style.display = 'flex';
+        }
+        
+        var emailInput = document.getElementById('login-email');
+        var passInput = document.getElementById('login-password');
+        if (emailInput) emailInput.value = '';
+        if (passInput) passInput.value = '';
+        
+        var bottomNav = document.getElementById('bottomNav');
+        if (bottomNav) bottomNav.style.display = 'none';
+        
+        console.log('✅ Logout complete!');
+        
+    } catch (error) {
+        console.error('❌ Logout error:', error);
+        alert('Logout error: ' + error.message);
+    } finally {
+        // ===== HILANGKAN LOADING =====
+        if (overlay) overlay.classList.remove('active');
+        if (logoutBtn) {
+            logoutBtn.disabled = false;
+            logoutBtn.textContent = 'Logout';
+        }
+    }
 }
 
     function getPlanExpiry(email) {
