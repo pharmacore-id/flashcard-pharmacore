@@ -1878,18 +1878,12 @@ color:white;
       </div>
       
       <!-- Action Buttons -->
-      <div class="flex gap-3 mt-4">
-        <button onclick="checkQrisStatus()" 
-                id="qris-check-btn"
-                class="flex-1 py-3 rounded-2xl border border-theme font-medium text-sm"
-                style="color:var(--text-secondary)">
-          🔄 Check Status
-        </button>
-        <button onclick="closeQrisModal()" 
-                class="flex-1 py-3 rounded-2xl accent-bg text-white font-medium text-sm">
-          Close
-        </button>
-      </div>
+<div class="mt-4">
+  <button onclick="closeQrisModal()"
+          class="w-full py-3 rounded-2xl accent-bg text-white font-medium text-sm">
+    Close
+  </button>
+</div>
       
       <p class="text-center text-xs text-sec mt-3">
         🔒 Pembayaran aman melalui DOKU
@@ -9638,61 +9632,74 @@ updatePricingDisplay();
 // ============================================================
 
 let currentQrisOrderId = null;
-let qrisCheckInterval = null;
 
 async function processPayment() {
-  if (!selectedPlan || !selectedDuration) {
-    alert('Please select a plan first.');
-    return;
-  }
-  
-  if (isPremiumActive()) {
-    alert('You already have Premium access!');
-    return;
-  }
-  
-  // Book Buyer harus validasi code dulu
-  if (selectedPlan === 'book' && !hasValidCode) {
-    alert('Please validate your access code first.');
-    return;
-  }
-  
-  const price = PRICING[selectedPlan][selectedDuration];
-  const planLabel = selectedPlan === 'book' ? 'Book Buyer' : 'Regular';
-  
-  const btn = document.getElementById('pay-now-btn');
-  btn.disabled = true;
-  btn.textContent = 'Creating payment...';
-  
-  try {
-    // ===== 1. Create QRIS Payment =====
-    const result = await createQrisPayment(price, planLabel, selectedDuration);
-    
-    if (!result.success) {
-      alert('❌ Failed to create payment: ' + (result.message || 'Unknown error'));
-      btn.disabled = false;
-      updatePricingDisplay();
-      return;
-    }
-    
-    currentQrisOrderId = result.orderId;
-    
-    // ===== 2. Show QRIS Modal =====
-    closeUpgradeModal();
-    showQrisModal(result);
-    
-    // ===== 3. Start checking payment status =====
-    startQrisPolling(result.orderId);
-    
-  } catch (error) {
-    console.error('Payment error:', error);
-    alert('❌ Payment error: ' + error.message);
-  } finally {
-    btn.disabled = false;
-    updatePricingDisplay();
-  }
-}
 
+  if (!selectedPlan || !selectedDuration) {
+    alert("Please select a plan first.");
+    return;
+  }
+
+  if (isPremiumActive()) {
+    alert("You already have Premium access!");
+    return;
+  }
+
+  if (selectedPlan === "book" && !hasValidCode) {
+    alert("Please validate your access code first.");
+    return;
+  }
+
+  const btn = document.getElementById("pay-now-btn");
+  btn.disabled = true;
+  btn.textContent = "Creating payment...";
+
+  try {
+
+    const createPayment = firebase
+      .app()
+      .functions("asia-southeast2")
+      .httpsCallable("createPayment");
+
+    const response = await createPayment({
+
+      userType: selectedPlan,
+
+      plan: `${selectedDuration}_month`,
+
+      accessCode:
+        selectedPlan === "book"
+          ? document.getElementById("upgrade-code-input").value.trim()
+          : null
+
+    });
+
+    const payment = response.data;
+
+    currentQrisOrderId = payment.orderId;
+
+    closeUpgradeModal();
+
+    showQrisModal(payment);
+
+  } catch (err) {
+
+    console.error(err);
+
+    alert(
+      "Payment failed\n\n" +
+      (err.message || "Unknown error")
+    );
+
+  } finally {
+
+    btn.disabled = false;
+
+    updatePricingDisplay();
+
+  }
+
+}
 // ============================================================
 //  SHOW QRIS MODAL
 // ============================================================
@@ -9764,11 +9771,6 @@ function showQrisModal(result) {
   let seconds = 300; // 5 minutes
   const timerEl = document.getElementById('qris-countdown');
   
-  if (qrisCheckInterval) {
-    clearInterval(qrisCheckInterval);
-    qrisCheckInterval = null;
-  }
-  
   // Timer countdown
   const timerInterval = setInterval(() => {
     seconds--;
@@ -9794,149 +9796,6 @@ function showQrisModal(result) {
 }
 
 // ============================================================
-//  START QRIS POLLING
-// ============================================================
-
-function startQrisPolling(orderId) {
-  if (qrisCheckInterval) {
-    clearInterval(qrisCheckInterval);
-  }
-  
-  let attempts = 0;
-  const maxAttempts = 20; // 20 * 15 detik = 5 menit
-  
-  qrisCheckInterval = setInterval(async () => {
-    attempts++;
-    
-    const status = await checkQrisStatus(orderId);
-    
-    if (status.isPaid) {
-      // ===== PAYMENT SUCCESS =====
-      clearInterval(qrisCheckInterval);
-      qrisCheckInterval = null;
-      
-      // Update UI
-      const badge = document.getElementById('qris-status-badge');
-      badge.textContent = '✅ Payment Successful!';
-      badge.className = 'status-badge success';
-      
-      document.getElementById('qris-transaction-status').textContent = 'PAID';
-      
-      // ===== ACTIVATE PREMIUM =====
-      await activatePremiumAfterPayment();
-      
-      // Show success message
-      alert('🎉 Payment successful! Premium is now active.');
-      
-      // Close modal after 3 seconds
-      setTimeout(() => {
-        closeQrisModal();
-      }, 3000);
-      
-    } else if (status.isFailed) {
-      // ===== PAYMENT FAILED =====
-      clearInterval(qrisCheckInterval);
-      qrisCheckInterval = null;
-      
-      const badge = document.getElementById('qris-status-badge');
-      badge.textContent = '❌ Payment ' + (status.status || 'Failed');
-      badge.className = 'status-badge failed';
-      
-      document.getElementById('qris-transaction-status').textContent = status.status || 'FAILED';
-      
-    } else if (attempts >= maxAttempts) {
-      // ===== TIMEOUT =====
-      clearInterval(qrisCheckInterval);
-      qrisCheckInterval = null;
-      
-      const badge = document.getElementById('qris-status-badge');
-      badge.textContent = '⏰ Payment timeout';
-      badge.className = 'status-badge failed';
-    }
-    
-    // Update status text
-    if (status.status) {
-      document.getElementById('qris-transaction-status').textContent = status.status;
-    }
-    
-  }, 15000); // Check every 15 seconds
-}
-
-// ============================================================
-//  CHECK QRIS STATUS (Manual)
-// ============================================================
-
-async function checkQrisStatusManual() {
-  if (!currentQrisOrderId) {
-    alert('No active payment.');
-    return;
-  }
-  
-  const btn = document.getElementById('qris-check-btn');
-  btn.disabled = true;
-  btn.textContent = 'Checking...';
-  
-  try {
-    const status = await checkQrisStatus(currentQrisOrderId);
-    
-    if (status.isPaid) {
-      document.getElementById('qris-status-badge').textContent = '✅ Payment Successful!';
-      document.getElementById('qris-status-badge').className = 'status-badge success';
-      document.getElementById('qris-transaction-status').textContent = 'PAID';
-      
-      if (qrisCheckInterval) {
-        clearInterval(qrisCheckInterval);
-        qrisCheckInterval = null;
-      }
-      
-      await activatePremiumAfterPayment();
-      alert('🎉 Payment confirmed! Premium is now active.');
-      
-      setTimeout(() => closeQrisModal(), 2000);
-    } else {
-      const msg = status.isPending ? '⏳ Still waiting for payment...' : '❌ Payment ' + (status.status || 'failed');
-      document.getElementById('qris-status-badge').textContent = msg;
-      document.getElementById('qris-status-badge').className = 'status-badge ' + (status.isPending ? 'pending' : 'failed');
-      document.getElementById('qris-transaction-status').textContent = status.status || 'UNKNOWN';
-    }
-  } catch (error) {
-    alert('❌ Status check failed: ' + error.message);
-  } finally {
-    btn.disabled = false;
-    btn.textContent = '🔄 Check Status';
-  }
-}
-
-// ============================================================
-//  ACTIVATE PREMIUM AFTER PAYMENT
-// ============================================================
-
-async function activatePremiumAfterPayment() {
-  const expiry = addMonths(new Date(), selectedDuration).toISOString();
-  
-  savePlan(currentUser, 'premium', expiry);
-  userPlan = 'premium';
-  
-  // Jika Book Buyer, tandai kode sebagai used
-  if (selectedPlan === 'book' && hasValidCode) {
-    const code = document.getElementById('upgrade-code-input').value.trim().toUpperCase();
-    try {
-      await db.collection('accessCodes').doc(code).update({
-        used: true,
-        usedBy: currentUser,
-        usedAt: firebase.firestore.FieldValue.serverTimestamp()
-      });
-    } catch (error) {
-      console.error('Failed to mark code as used:', error);
-    }
-  }
-  
-  updatePlanUI();
-  updateHome();
-  renderDecks();
-}
-
-// ============================================================
 //  CLOSE QRIS MODAL
 // ============================================================
 
@@ -9948,12 +9807,6 @@ function closeQrisModal() {
   if (modal.dataset.timerInterval) {
     clearInterval(modal.dataset.timerInterval);
     modal.dataset.timerInterval = null;
-  }
-  
-  // Clear polling interval
-  if (qrisCheckInterval) {
-    clearInterval(qrisCheckInterval);
-    qrisCheckInterval = null;
   }
   
   // Reset QRIS image
