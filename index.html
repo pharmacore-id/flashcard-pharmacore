@@ -9504,106 +9504,56 @@ function initializeDeckOrder() {
 
     function closeUpgradeModal() { document.getElementById('upgrade-modal').classList.add('hidden') }
 
-  async function validateUpgradeCode(){
+ async function validateUpgradeCode() {
+  const code = document
+    .getElementById('upgrade-code-input')
+    .value
+    .trim()
+    .toUpperCase();
 
-const code=
-document
-.getElementById(
-'upgrade-code-input'
-)
-.value
-.trim()
-.toUpperCase();
+  const status = document.getElementById('upgrade-code-status');
 
-const status=
-document
-.getElementById(
-'upgrade-code-status'
-);
+  if (!code) {
+    hasValidCode = false;
+    status.textContent = 'Please enter access code';
+    status.style.color = '#ef4444';
+    updatePricingDisplay();
+    return;
+  }
 
-if(!code){
+  try {
+    status.textContent = '⏳ Validating...';
+    status.style.color = '#6b7280';
 
-hasValidCode=false;
+    // Validasi dilakukan di backend, bukan membaca Firestore langsung
+    const validateAccessCode = functions.httpsCallable('validateAccessCode');
+    const result = await validateAccessCode({ code });
 
-status.textContent=
-'Please enter access code';
+    if (!result.data.valid) {
+      hasValidCode = false;
+      status.textContent = '❌ ' + (result.data.message || 'Invalid access code');
+      status.style.color = '#ef4444';
+      updatePricingDisplay();
+      return;
+    }
 
-status.style.color=
-'#ef4444';
+    hasValidCode = true;
+    status.textContent = '✅ Access code verified';
+    status.style.color = '#10b981';
+    updatePricingDisplay();
 
-updatePricingDisplay();
+  } catch (error) {
+    console.error('Access code validation error:', error);
 
-return;
+    hasValidCode = false;
+    status.textContent =
+      '❌ ' + (error.message || 'Validation error');
+    status.style.color = '#ef4444';
+
+    updatePricingDisplay();
+  }
 }
-
-try{
-
-const docRef=
-await db
-.collection('accessCodes')
-.doc(code)
-.get();
-
-if(!docRef.exists){
-
-hasValidCode=false;
-
-status.textContent=
-'❌ Invalid access code';
-
-status.style.color=
-'#ef4444';
-
-updatePricingDisplay();
-
-return;
-}
-
-const codeData=
-docRef.data();
-
-if(codeData.used){
-
-hasValidCode=false;
-
-status.textContent=
-'❌ This code has already been used';
-
-status.style.color=
-'#ef4444';
-
-updatePricingDisplay();
-
-return;
-
-}
-
-hasValidCode=true;
-
-status.textContent=
-'✅ Access code verified';
-
-status.style.color=
-'#10b981';
-
-updatePricingDisplay();
-
-}catch(error){
-
-console.error(error);
-
-hasValidCode=false;
-
-status.textContent=
-'❌ Validation error';
-
-status.style.color=
-'#ef4444';
-
-}
-
-}
-
+    
 function selectPlan(type){
 
 if(isPremiumActive()){
@@ -10193,5 +10143,3 @@ async function moveSubtopicDown(topic, subtopic) {
     </script>
 </body>
 </html>
-
-   
