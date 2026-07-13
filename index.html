@@ -9676,7 +9676,8 @@ function showQrisModal(result) {
     planLabel + ' · ' + selectedDuration + ' Months';
   
   // Set transaction ID
-  document.getElementById('qris-transaction-id').textContent = result.transactionId;
+  document.getElementById('qris-transaction-id').textContent =
+  result.referenceNo || result.orderId;
   document.getElementById('qris-transaction-status').textContent = 'PENDING';
   document.getElementById('qris-payment-detail').classList.remove('hidden');
   
