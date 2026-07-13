@@ -9590,6 +9590,7 @@ updatePricingDisplay();
 // ============================================================
 
 let currentQrisOrderId = null;
+let paymentStatusUnsubscribe = null;
 
 async function processPayment() {
 
@@ -9639,6 +9640,7 @@ async function processPayment() {
     closeUpgradeModal();
 
     showQrisModal(payment);
+    startPaymentStatusListener(payment.orderId);
 
   } catch (err) {
 
@@ -9727,7 +9729,7 @@ function showQrisModal(result) {
   badge.className = 'status-badge pending';
   
   // Reset timer
-  let seconds = 300; // 5 minutes
+  let seconds = 600; // 5 minutes
   const timerEl = document.getElementById('qris-countdown');
   
   // Timer countdown
@@ -9757,7 +9759,75 @@ function showQrisModal(result) {
 // ============================================================
 //  CLOSE QRIS MODAL
 // ============================================================
+function startPaymentStatusListener(orderId) {
+  // Hentikan listener lama jika ada
+  if (paymentStatusUnsubscribe) {
+    paymentStatusUnsubscribe();
+    paymentStatusUnsubscribe = null;
+  }
 
+  paymentStatusUnsubscribe = db
+    .collection('payments')
+    .doc(orderId)
+    .onSnapshot(async (doc) => {
+      if (!doc.exists) return;
+
+      const payment = doc.data();
+
+      document.getElementById('qris-transaction-status').textContent =
+        (payment.status || 'pending').toUpperCase();
+
+      if (payment.status === 'paid') {
+        if (paymentStatusUnsubscribe) {
+          paymentStatusUnsubscribe();
+          paymentStatusUnsubscribe = null;
+        }
+
+        const badge = document.getElementById('qris-status-badge');
+        badge.textContent = '✅ Payment Successful!';
+        badge.className = 'status-badge success';
+
+        // Ambil status premium terbaru yang sudah diubah webhook
+        const userDoc = await db
+          .collection('users')
+          .doc(currentUser)
+          .get();
+
+        if (userDoc.exists) {
+          const userData = userDoc.data();
+
+          userPlan = userData.plan || 'premium';
+
+          const expiry =
+            userData.planExpiry?.toDate?.().toISOString() || null;
+
+          savePlan(currentUser, userPlan, expiry);
+        }
+
+        updatePlanUI();
+        updateHome();
+        renderDecks();
+
+        alert('🎉 Payment successful! Premium is now active.');
+
+        setTimeout(() => {
+          closeQrisModal();
+        }, 2000);
+      }
+
+      if (
+        payment.status === 'failed' ||
+        payment.status === 'expired'
+      ) {
+        const badge = document.getElementById('qris-status-badge');
+        badge.textContent = '❌ Payment ' + payment.status;
+        badge.className = 'status-badge failed';
+      }
+    }, (error) => {
+      console.error('Payment status listener error:', error);
+    });
+}
+  
 function closeQrisModal() {
   const modal = document.getElementById('qris-modal');
   modal.classList.add('hidden');
@@ -9767,6 +9837,11 @@ function closeQrisModal() {
     clearInterval(modal.dataset.timerInterval);
     modal.dataset.timerInterval = null;
   }
+
+  if (paymentStatusUnsubscribe) {
+  paymentStatusUnsubscribe();
+  paymentStatusUnsubscribe = null;
+}
   
   // Reset QRIS image
   document.getElementById('qris-image').classList.add('hidden');
