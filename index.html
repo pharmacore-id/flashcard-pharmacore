@@ -11210,35 +11210,26 @@ console.log("QR end:", result.qrisCode.slice(-50));
     correctLevel: QRCode.CorrectLevel.H
   });
 
-  // Save QR Code
-  document.getElementById("save-qr-btn").onclick = () => {
-    const canvas = document.querySelector("#qrcode canvas");
+  const saveBtn = document.getElementById("download-qr-btn");
 
-    if (!canvas) {
-      alert("QR Code belum tersedia.");
-      return;
-    }
+if (saveBtn) {
 
-    const link = document.createElement("a");
-    link.download = `PHARMACORE_QRIS_${result.orderId}.png`;
-    link.href = canvas.toDataURL("image/png");
-    link.click();
-  };
+    saveBtn.onclick = () => {
 
-} else {
+        const canvas = document.querySelector("#qrcode canvas");
 
-  imageEl.classList.add('hidden');
-  placeholderEl.classList.remove('hidden');
+        if (!canvas) {
+            alert("QR Code belum tersedia.");
+            return;
+        }
 
-  placeholderEl.innerHTML = `
-    <div style="font-size:12px;text-align:center;">
-      <p style="font-size:3rem;">💳</p>
-      <p style="font-weight:600;">QRIS</p>
-      <p style="font-size:10px;color:var(--text-secondary);">
-        Scan dengan aplikasi QRIS
-      </p>
-    </div>
-  `;
+        const link = document.createElement("a");
+        link.download = `PHARMACORE_QRIS_${result.orderId || "payment"}.png`;
+        link.href = canvas.toDataURL("image/png");
+        link.click();
+
+    };
+
 }
   
   // Reset status badge
