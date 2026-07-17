@@ -1676,1274 +1676,1188 @@ color:white;
     }
 
 /* ==========================================================
-   QRIS MODAL V3
-   PART 1
-   Overlay + Card + Header + Premium
-========================================================== */
-
-.qris2-overlay{
-
-    position:fixed;
-
-    inset:0;
-
-    z-index:9999;
-
-    display:flex;
-
-    align-items:center;
-
-    justify-content:center;
-
-    padding:24px;
-
-    background:rgba(15,23,42,.65);
-
-    backdrop-filter:blur(8px);
-
-    -webkit-backdrop-filter:blur(8px);
-
-}
-
-.qris2-card{
-
-    width:100%;
-
-    max-width:580px;
-
-    max-height:92vh;
-
-    overflow-y:auto;
-
-    background:#ffffff;
-
-    border-radius:28px;
-
-    box-shadow:
-        0 30px 80px rgba(0,0,0,.28);
-
-    animation:qrisPopup .28s ease;
-
-    padding:30px;
-
-}
-
-@keyframes qrisPopup{
-
-    from{
-
-        opacity:0;
-
-        transform:
-            translateY(20px)
-            scale(.98);
-
-    }
-
-    to{
-
-        opacity:1;
-
-        transform:none;
-
-    }
-
-}
-
-/* ===========================
-          HEADER
-=========================== */
-
-.qris2-header{
-
-    display:flex;
-
-    justify-content:space-between;
-
-    align-items:flex-start;
-
-    margin-bottom:26px;
-
-}
-
-.qris2-title{
-
-    margin:0;
-
-    font-size:30px;
-
-    font-weight:800;
-
-    color:#111827;
-
-}
-
-.qris2-subtitle{
-
-    margin-top:8px;
-
-    color:#6b7280;
-
-    font-size:14px;
-
-    line-height:1.6;
-
-}
-
-.qris2-close{
-
-    width:46px;
-
-    height:46px;
-
-    border:none;
-
-    border-radius:14px;
-
-    background:#f3f4f6;
-
-    cursor:pointer;
-
-    display:flex;
-
-    align-items:center;
-
-    justify-content:center;
-
-    transition:.2s;
-
-}
-
-.qris2-close:hover{
-
-    background:#e5e7eb;
-
-    transform:rotate(90deg);
-
-}
-
-/* ===========================
-       PREMIUM CARD
-=========================== */
-
-.qris2-summary{
-
-    display:flex;
-
-    align-items:center;
-
-    gap:18px;
-
-    padding:24px;
-
-    margin-bottom:26px;
-
-    border-radius:24px;
-
-    background:
-        linear-gradient(
-            135deg,
-            #ff9d2f,
-            #ff6b00
-        );
-
-    color:white;
-
-    box-shadow:
-        0 18px 40px rgba(255,107,0,.30);
-
-}
-
-.qris2-crown{
-
-    width:74px;
-
-    height:74px;
-
-    border-radius:22px;
-
-    background:rgba(255,255,255,.18);
-
-    display:flex;
-
-    align-items:center;
-
-    justify-content:center;
-
-    flex-shrink:0;
-
-}
-
-.qris2-crown i{
-
-    width:34px;
-
-    height:34px;
-
-}
-
-.qris2-summary-content{
-
-    flex:1;
-
-}
-
-.qris2-summary-top{
-
-    display:flex;
-
-    justify-content:space-between;
-
-    align-items:flex-start;
-
-    gap:12px;
-
-}
-
-.qris2-summary-top h3{
-
-    margin:0;
-
-    font-size:24px;
-
-    font-weight:800;
-
-}
-
-.qris2-badge{
-
-    display:inline-block;
-
-    margin-top:10px;
-
-    padding:6px 14px;
-
-    border-radius:999px;
-
-    background:rgba(255,255,255,.18);
-
-    font-size:11px;
-
-    font-weight:700;
-
-    letter-spacing:.05em;
-
-}
-
-.qris2-plan{
-
-    margin-top:12px;
-
-    font-size:18px;
-
-    font-weight:700;
-
-}
-
-.qris2-order{
-
-    margin-top:16px;
-
-    font-size:12px;
-
-    opacity:.92;
-
-}
-
-.qris2-status{
-
-    display:inline-flex;
-
-    align-items:center;
-
-    justify-content:center;
-
-    padding:7px 14px;
-
-    border-radius:999px;
-
-    font-size:11px;
-
-    font-weight:700;
-
-}
-
-.qris2-status.pending{
-
-    background:#fff7d6;
-
-    color:#92400e;
-
-}
-
-.qris2-status.success{
-
-    background:#dcfce7;
-
-    color:#166534;
-
-}
-
-.qris2-status.failed{
-
-    background:#fee2e2;
-
-    color:#991b1b;
-
-}
-
-.qris2-status.expired{
-
-    background:#e5e7eb;
-
-    color:#374151;
-
-}
-    /* ==========================================================
-   QRIS MODAL V3
-   PART 2
-   Detail + Total + QR
+   QRIS MODAL V3 - OPTIMIZED
+   Full CSS dengan Mobile Optimization
 ========================================================== */
 
 /* ===========================
-        DETAIL CARD
+   OVERLAY & CARD
 =========================== */
 
-.qris2-section{
-
-    background:#ffffff;
-
-    border:1px solid #e5e7eb;
-
-    border-radius:22px;
-
-    padding:22px;
-
-    margin-bottom:22px;
-
+.qris2-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    background: rgba(15, 23, 42, 0.65);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
 }
 
-.qris2-section-title{
-
-    display:flex;
-
-    align-items:center;
-
-    gap:10px;
-
-    font-size:16px;
-
-    font-weight:700;
-
-    color:#111827;
-
-    margin-bottom:18px;
-
+.qris2-card {
+    width: 100%;
+    max-width: 580px;
+    max-height: 92vh;
+    overflow-y: auto;
+    background: #ffffff;
+    border-radius: 28px;
+    box-shadow: 0 30px 80px rgba(0, 0, 0, 0.28);
+    animation: qrisPopup 0.28s ease;
+    padding: 30px;
 }
 
-.qris2-section-title i{
-
-    width:20px;
-
-    height:20px;
-
-    color:#2563eb;
-
-}
-
-.qris2-row{
-
-    display:flex;
-
-    justify-content:space-between;
-
-    align-items:center;
-
-    gap:18px;
-
-    padding:15px 0;
-
-    border-bottom:1px solid #f1f5f9;
-
-}
-
-.qris2-row:last-child{
-
-    border-bottom:none;
-
-    padding-bottom:0;
-
-}
-
-.qris2-label{
-
-    display:flex;
-
-    align-items:center;
-
-    gap:10px;
-
-    color:#6b7280;
-
-    font-size:14px;
-
-}
-
-.qris2-label i{
-
-    width:18px;
-
-    height:18px;
-
-    color:#2563eb;
-
-}
-
-.qris2-value{
-
-    font-weight:700;
-
-    color:#111827;
-
-    text-align:right;
-
+@keyframes qrisPopup {
+    from {
+        opacity: 0;
+        transform: translateY(20px) scale(0.98);
+    }
+    to {
+        opacity: 1;
+        transform: none;
+    }
 }
 
 /* ===========================
-        TOTAL CARD
+   HEADER
 =========================== */
 
-.qris2-total-card{
-
-    margin-bottom:24px;
-
-    border-radius:24px;
-
-    padding:26px;
-
-    text-align:center;
-
-    background:linear-gradient(
-        135deg,
-        #eff6ff,
-        #ffffff
-    );
-
-    border:1px solid #bfdbfe;
-
+.qris2-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 26px;
 }
 
-.qris2-total-label{
-
-    font-size:13px;
-
-    text-transform:uppercase;
-
-    letter-spacing:.08em;
-
-    color:#64748b;
-
-    font-weight:700;
-
+.qris2-title {
+    margin: 0;
+    font-size: 30px;
+    font-weight: 800;
+    color: #111827;
 }
 
-.qris2-total-price{
+.qris2-subtitle {
+    margin-top: 8px;
+    color: #6b7280;
+    font-size: 14px;
+    line-height: 1.6;
+}
 
-    margin-top:10px;
+.qris2-close {
+    width: 46px;
+    height: 46px;
+    border: none;
+    border-radius: 14px;
+    background: #f3f4f6;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: 0.2s;
+    flex-shrink: 0;
+}
 
-    font-size:42px;
-
-    font-weight:800;
-
-    color:#2563eb;
-
-    line-height:1;
-
+.qris2-close:hover {
+    background: #e5e7eb;
+    transform: rotate(90deg);
 }
 
 /* ===========================
-         QR CARD
+   PREMIUM CARD
 =========================== */
 
-.qris2-qr-card{
-
-    border-radius:24px;
-
-    border:1px solid #e5e7eb;
-
-    background:#ffffff;
-
-    padding:24px;
-
-    margin-bottom:20px;
-
+.qris2-summary {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    padding: 24px;
+    margin-bottom: 26px;
+    border-radius: 24px;
+    background: linear-gradient(135deg, #ff9d2f, #ff6b00);
+    color: white;
+    box-shadow: 0 18px 40px rgba(255, 107, 0, 0.30);
 }
 
-.qris2-qr-header{
-
-    display:flex;
-
-    align-items:center;
-
-    gap:16px;
-
-    margin-bottom:22px;
-
+.qris2-crown {
+    width: 74px;
+    height: 74px;
+    border-radius: 22px;
+    background: rgba(255, 255, 255, 0.18);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
 }
 
-.qris2-qr-logo{
-
-    width:64px;
-
-    height:64px;
-
-    border-radius:18px;
-
-    display:flex;
-
-    align-items:center;
-
-    justify-content:center;
-
-    background:linear-gradient(
-        135deg,
-        #0f172a,
-        #2563eb
-    );
-
-    color:white;
-
-    font-size:18px;
-
-    font-weight:800;
-
-    flex-shrink:0;
-
+.qris2-crown i {
+    width: 34px;
+    height: 34px;
 }
 
-.qris2-qr-title{
-
-    font-size:18px;
-
-    font-weight:700;
-
-    color:#111827;
-
+.qris2-summary-content {
+    flex: 1;
+    min-width: 0;
 }
 
-.qris2-qr-subtitle{
+.qris2-summary-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 12px;
+    flex-wrap: wrap;
+}
 
-    margin-top:4px;
+.qris2-summary-top h3 {
+    margin: 0;
+    font-size: 24px;
+    font-weight: 800;
+}
 
-    font-size:13px;
+.qris2-badge {
+    display: inline-block;
+    margin-top: 10px;
+    padding: 6px 14px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.18);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+}
 
-    color:#6b7280;
+.qris2-plan {
+    margin-top: 12px;
+    font-size: 18px;
+    font-weight: 700;
+}
 
-    line-height:1.5;
+.qris2-order {
+    margin-top: 16px;
+    font-size: 12px;
+    opacity: 0.92;
+}
 
+.qris2-status {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 7px 14px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 700;
+}
+
+.qris2-status.pending {
+    background: #fff7d6;
+    color: #92400e;
+}
+
+.qris2-status.success {
+    background: #dcfce7;
+    color: #166534;
+}
+
+.qris2-status.failed {
+    background: #fee2e2;
+    color: #991b1b;
+}
+
+.qris2-status.expired {
+    background: #e5e7eb;
+    color: #374151;
 }
 
 /* ===========================
-      QR CONTAINER
+   DETAIL CARD
 =========================== */
 
-.qris2-qr-wrapper{
-
-    min-height:320px;
-
-    display:flex;
-
-    justify-content:center;
-
-    align-items:center;
-
-    border:2px dashed #dbeafe;
-
-    border-radius:22px;
-
-    background:#f8fafc;
-
-    overflow:hidden;
-
-    margin-bottom:22px;
-
+.qris2-section {
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 22px;
+    padding: 22px;
+    margin-bottom: 22px;
 }
 
-.qris2-placeholder{
-
-    display:flex;
-
-    flex-direction:column;
-
-    align-items:center;
-
-    justify-content:center;
-
-    gap:14px;
-
-    color:#94a3b8;
-
+.qris2-section-title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 16px;
+    font-weight: 700;
+    color: #111827;
+    margin-bottom: 18px;
 }
 
-.qris2-placeholder-icon{
-
-    width:72px;
-
-    height:72px;
-
-    border-radius:18px;
-
-    background:white;
-
-    display:flex;
-
-    align-items:center;
-
-    justify-content:center;
-
-    box-shadow:
-        0 10px 25px rgba(0,0,0,.08);
-
+.qris2-section-title i {
+    width: 20px;
+    height: 20px;
+    color: #2563eb;
 }
 
-.qris2-placeholder-icon i{
-
-    width:36px;
-
-    height:36px;
-
+.qris2-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 18px;
+    padding: 15px 0;
+    border-bottom: 1px solid #f1f5f9;
 }
 
-.qris2-placeholder-text{
-
-    font-size:14px;
-
+.qris2-row:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
 }
 
-.qris2-image{
+.qris2-label {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: #6b7280;
+    font-size: 14px;
+}
 
-    width:280px;
+.qris2-label i {
+    width: 18px;
+    height: 18px;
+    color: #2563eb;
+}
 
-    max-width:88%;
-
-    height:auto;
-
-    display:block;
-
-    padding:12px;
-
-    background:white;
-
-    border-radius:16px;
-
-    box-shadow:
-        0 12px 30px rgba(0,0,0,.10);
-
+.qris2-value {
+    font-weight: 700;
+    color: #111827;
+    text-align: right;
 }
 
 /* ===========================
-        COUNTDOWN
+   TOTAL CARD
 =========================== */
 
-.qris2-expire{
-
-    display:flex;
-
-    justify-content:center;
-
-    align-items:center;
-
-    gap:8px;
-
-    color:#64748b;
-
-    font-size:13px;
-
+.qris2-total-card {
+    margin-bottom: 24px;
+    border-radius: 24px;
+    padding: 26px;
+    text-align: center;
+    background: linear-gradient(135deg, #eff6ff, #ffffff);
+    border: 1px solid #bfdbfe;
 }
 
-.qris2-expire i{
-
-    width:16px;
-
-    height:16px;
-
+.qris2-total-label {
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #64748b;
+    font-weight: 700;
 }
 
-.qris2-countdown{
-
-    width:fit-content;
-
-    margin:16px auto 0;
-
-    padding:12px 24px;
-
-    border-radius:999px;
-
-    background:#ef4444;
-
-    color:white;
-
-    font-size:30px;
-
-    font-weight:800;
-
-    letter-spacing:.05em;
-
-    box-shadow:
-        0 12px 28px rgba(239,68,68,.28);
-
+.qris2-total-price {
+    margin-top: 10px;
+    font-size: 42px;
+    font-weight: 800;
+    color: #2563eb;
+    line-height: 1;
 }
 
-    /* ==========================================================
-   QRIS MODAL V3
-   PART 3
-   Footer + Note + Responsive + Dark Mode
+/* ===========================
+   QR CARD
+=========================== */
+
+.qris2-qr-card {
+    border-radius: 24px;
+    border: 1px solid #e5e7eb;
+    background: #ffffff;
+    padding: 24px;
+    margin-bottom: 20px;
+}
+
+.qris2-qr-header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 22px;
+}
+
+.qris2-qr-logo {
+    width: 64px;
+    height: 64px;
+    border-radius: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #0f172a, #2563eb);
+    color: white;
+    font-size: 18px;
+    font-weight: 800;
+    flex-shrink: 0;
+}
+
+.qris2-qr-title {
+    font-size: 18px;
+    font-weight: 700;
+    color: #111827;
+}
+
+.qris2-qr-subtitle {
+    margin-top: 4px;
+    font-size: 13px;
+    color: #6b7280;
+    line-height: 1.5;
+}
+
+/* ===========================
+   QR CONTAINER
+=========================== */
+
+.qris2-qr-wrapper {
+    min-height: 320px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border: 2px dashed #dbeafe;
+    border-radius: 22px;
+    background: #f8fafc;
+    overflow: hidden;
+    margin-bottom: 22px;
+    padding: 16px;
+}
+
+.qris2-placeholder {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+    color: #94a3b8;
+}
+
+.qris2-placeholder-icon {
+    width: 72px;
+    height: 72px;
+    border-radius: 18px;
+    background: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+}
+
+.qris2-placeholder-icon i {
+    width: 36px;
+    height: 36px;
+}
+
+.qris2-placeholder-text {
+    font-size: 14px;
+}
+
+.qris2-image {
+    width: 280px;
+    max-width: 88%;
+    height: auto;
+    display: block;
+    padding: 12px;
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.10);
+}
+
+/* ===========================
+   COUNTDOWN
+=========================== */
+
+.qris2-expire {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    color: #64748b;
+    font-size: 13px;
+}
+
+.qris2-expire i {
+    width: 16px;
+    height: 16px;
+}
+
+.qris2-countdown {
+    width: fit-content;
+    margin: 16px auto 0;
+    padding: 12px 24px;
+    border-radius: 999px;
+    background: #ef4444;
+    color: white;
+    font-size: 30px;
+    font-weight: 800;
+    letter-spacing: 0.05em;
+    box-shadow: 0 12px 28px rgba(239, 68, 68, 0.28);
+}
+
+/* ===========================
+   NOTE
+=========================== */
+
+.qris2-note {
+    display: flex;
+    gap: 14px;
+    align-items: flex-start;
+    padding: 18px;
+    border-radius: 18px;
+    background: #fff7ed;
+    border: 1px solid #fed7aa;
+    margin-bottom: 22px;
+}
+
+.qris2-note i {
+    width: 20px;
+    height: 20px;
+    color: #ea580c;
+    flex-shrink: 0;
+}
+
+.qris2-note div {
+    font-size: 13px;
+    line-height: 1.6;
+    color: #9a3412;
+}
+
+/* ===========================
+   TRANSACTION
+=========================== */
+
+.qris2-transaction {
+    border: 1px solid #e5e7eb;
+    border-radius: 20px;
+    background: #ffffff;
+    padding: 18px;
+    margin-bottom: 24px;
+}
+
+/* ===========================
+   FOOTER
+=========================== */
+
+.qris2-footer {
+    display: flex;
+    gap: 14px;
+}
+
+.qris2-btn {
+    flex: 1;
+    height: 52px;
+    border: none;
+    border-radius: 16px;
+    cursor: pointer;
+    font-size: 15px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    transition: 0.2s;
+}
+
+.qris2-btn:hover {
+    transform: translateY(-2px);
+}
+
+.qris2-btn:active {
+    transform: none;
+}
+
+.qris2-btn-secondary {
+    background: #f3f4f6;
+    color: #111827;
+}
+
+.qris2-btn-secondary:hover {
+    background: #e5e7eb;
+}
+
+.qris2-btn-primary {
+    color: white;
+    background: linear-gradient(135deg, #2563eb, #1d4ed8);
+    box-shadow: 0 12px 28px rgba(37, 99, 235, 0.25);
+}
+
+.qris2-btn-primary:hover {
+    box-shadow: 0 18px 36px rgba(37, 99, 235, 0.35);
+}
+
+/* ===========================
+   SECURITY
+=========================== */
+
+.qris2-security {
+    margin-top: 18px;
+    text-align: center;
+    font-size: 12px;
+    color: #64748b;
+}
+
+/* ===========================
+   SCROLLBAR
+=========================== */
+
+.qris2-card::-webkit-scrollbar {
+    width: 8px;
+}
+
+.qris2-card::-webkit-scrollbar-thumb {
+    background: #d1d5db;
+    border-radius: 999px;
+}
+
+.qris2-card {
+    scrollbar-width: thin;
+}
+
+/* ==========================================================
+   MOBILE OPTIMIZATION - MAIN
 ========================================================== */
 
-/* ===========================
-        NOTE
-=========================== */
-
-.qris2-note{
-
-    display:flex;
-
-    gap:14px;
-
-    align-items:flex-start;
-
-    padding:18px;
-
-    border-radius:18px;
-
-    background:#fff7ed;
-
-    border:1px solid #fed7aa;
-
-    margin-bottom:22px;
-
-}
-
-.qris2-note i{
-
-    width:20px;
-
-    height:20px;
-
-    color:#ea580c;
-
-    flex-shrink:0;
-
-}
-
-.qris2-note div{
-
-    font-size:13px;
-
-    line-height:1.6;
-
-    color:#9a3412;
-
-}
-
-/* ===========================
-      TRANSACTION
-=========================== */
-
-.qris2-transaction{
-
-    border:1px solid #e5e7eb;
-
-    border-radius:20px;
-
-    background:#ffffff;
-
-    padding:18px;
-
-    margin-bottom:24px;
-
-}
-
-/* ===========================
-        FOOTER
-=========================== */
-
-.qris2-footer{
-
-    display:flex;
-
-    gap:14px;
-
-}
-
-.qris2-btn{
-
-    flex:1;
-
-    height:52px;
-
-    border:none;
-
-    border-radius:16px;
-
-    cursor:pointer;
-
-    font-size:15px;
-
-    font-weight:700;
-
-    display:flex;
-
-    align-items:center;
-
-    justify-content:center;
-
-    gap:10px;
-
-    transition:.2s;
-
-}
-
-.qris2-btn:hover{
-
-    transform:translateY(-2px);
-
-}
-
-.qris2-btn:active{
-
-    transform:none;
-
-}
-
-.qris2-btn-secondary{
-
-    background:#f3f4f6;
-
-    color:#111827;
-
-}
-
-.qris2-btn-secondary:hover{
-
-    background:#e5e7eb;
-
-}
-
-.qris2-btn-primary{
-
-    color:white;
-
-    background:linear-gradient(
-        135deg,
-        #2563eb,
-        #1d4ed8
-    );
-
-    box-shadow:
-        0 12px 28px rgba(37,99,235,.25);
-
-}
-
-.qris2-btn-primary:hover{
-
-    box-shadow:
-        0 18px 36px rgba(37,99,235,.35);
-
-}
-
-/* ===========================
-      SECURITY
-=========================== */
-
-.qris2-security{
-
-    margin-top:18px;
-
-    text-align:center;
-
-    font-size:12px;
-
-    color:#64748b;
-
-}
-
-/* ===========================
-      SCROLLBAR
-=========================== */
-
-.qris2-card::-webkit-scrollbar{
-
-    width:8px;
-
-}
-
-.qris2-card::-webkit-scrollbar-thumb{
-
-    background:#d1d5db;
-
-    border-radius:999px;
-
-}
-
-.qris2-card{
-
-    scrollbar-width:thin;
-
-}
-
-/* ===========================
-      RESPONSIVE
-=========================== */
-
-@media (max-width:640px){
-
-    .qris2-overlay{
-
-        padding:0;
-
-        align-items:flex-end;
-
+@media (max-width: 640px) {
+    .qris2-overlay {
+        padding: 0;
+        align-items: flex-end;
     }
 
-    .qris2-card{
-
-        border-radius:24px 24px 0 0;
-
-        max-width:none;
-
-        width:100%;
-
-        max-height:94vh;
-
-        padding:22px;
-
+    .qris2-card {
+        border-radius: 24px 24px 0 0;
+        max-width: none;
+        width: 100%;
+        max-height: 94vh;
+        padding: 22px;
     }
 
-    .qris2-title{
-
-        font-size:24px;
-
+    .qris2-title {
+        font-size: 24px;
     }
 
-    .qris2-summary{
-
-        flex-direction:column;
-
-        text-align:center;
-
+    .qris2-summary {
+        flex-direction: column;
+        text-align: center;
     }
 
-    .qris2-summary-top{
-
-        flex-direction:column;
-
-        align-items:center;
-
+    .qris2-summary-top {
+        flex-direction: column;
+        align-items: center;
     }
 
-    .qris2-row{
-
-        flex-direction:column;
-
-        align-items:flex-start;
-
-        gap:6px;
-
+    .qris2-row {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 6px;
     }
 
-    .qris2-value{
-
-        text-align:left;
-
+    .qris2-value {
+        text-align: left;
     }
 
-    .qris2-total-price{
-
-        font-size:34px;
-
+    .qris2-total-price {
+        font-size: 34px;
     }
 
-    .qris2-qr-wrapper{
-
-        min-height:260px;
-
+    .qris2-qr-wrapper {
+        min-height: 260px;
     }
 
-    .qris2-image{
-
-        width:220px;
-
+    .qris2-image {
+        width: 220px;
     }
 
-    .qris2-countdown{
-
-        font-size:24px;
-
+    .qris2-countdown {
+        font-size: 24px;
     }
 
-    .qris2-footer{
+    .qris2-footer {
+        flex-direction: column;
+    }
+}
 
-        flex-direction:column;
+/* ==========================================================
+   MOBILE OPTIMIZATION - FIXED (480px)
+========================================================== */
 
+@media (max-width: 480px) {
+    .qris2-overlay {
+        padding: 0;
+        align-items: flex-end;
     }
 
+    .qris2-card {
+        border-radius: 20px 20px 0 0;
+        max-height: 96vh;
+        padding: 16px 16px 20px;
+        max-width: 100%;
+    }
+
+    /* Header lebih compact */
+    .qris2-header {
+        margin-bottom: 16px;
+        align-items: center;
+    }
+
+    .qris2-title {
+        font-size: 20px;
+        line-height: 1.2;
+    }
+
+    .qris2-subtitle {
+        font-size: 12px;
+        margin-top: 4px;
+    }
+
+    .qris2-close {
+        width: 36px;
+        height: 36px;
+        border-radius: 10px;
+        flex-shrink: 0;
+    }
+
+    .qris2-close i {
+        width: 18px;
+        height: 18px;
+    }
+
+    /* Summary lebih compact & horizontal */
+    .qris2-summary {
+        flex-direction: row;
+        text-align: left;
+        padding: 14px 16px;
+        gap: 12px;
+        border-radius: 16px;
+        margin-bottom: 16px;
+    }
+
+    .qris2-summary-top {
+        flex-direction: row;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 6px;
+    }
+
+    .qris2-crown {
+        width: 50px;
+        height: 50px;
+        border-radius: 14px;
+        flex-shrink: 0;
+    }
+
+    .qris2-crown i {
+        width: 24px;
+        height: 24px;
+    }
+
+    .qris2-summary-top h3 {
+        font-size: 18px;
+        margin: 0;
+    }
+
+    .qris2-badge {
+        font-size: 10px;
+        padding: 4px 10px;
+        margin-top: 0;
+    }
+
+    .qris2-plan {
+        font-size: 14px;
+        margin-top: 4px;
+    }
+
+    .qris2-order {
+        font-size: 11px;
+        margin-top: 6px;
+    }
+
+    .qris2-status {
+        font-size: 10px;
+        padding: 4px 10px;
+    }
+
+    /* Sections lebih compact */
+    .qris2-section {
+        padding: 14px;
+        border-radius: 16px;
+        margin-bottom: 14px;
+    }
+
+    .qris2-section-title {
+        font-size: 14px;
+        margin-bottom: 12px;
+        gap: 8px;
+    }
+
+    .qris2-row {
+        flex-direction: row;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+        gap: 4px;
+        padding: 10px 0;
+    }
+
+    .qris2-label {
+        font-size: 12px;
+        gap: 6px;
+    }
+
+    .qris2-value {
+        text-align: right;
+        font-size: 13px;
+    }
+
+    /* Total card */
+    .qris2-total-card {
+        padding: 18px 14px;
+        border-radius: 16px;
+        margin-bottom: 16px;
+    }
+
+    .qris2-total-label {
+        font-size: 11px;
+    }
+
+    .qris2-total-price {
+        font-size: 28px;
+        margin-top: 6px;
+    }
+
+    /* QR Card */
+    .qris2-qr-card {
+        padding: 16px;
+        border-radius: 16px;
+        margin-bottom: 14px;
+    }
+
+    .qris2-qr-header {
+        gap: 12px;
+        margin-bottom: 14px;
+    }
+
+    .qris2-qr-logo {
+        width: 44px;
+        height: 44px;
+        border-radius: 12px;
+        font-size: 13px;
+        flex-shrink: 0;
+    }
+
+    .qris2-qr-title {
+        font-size: 15px;
+    }
+
+    .qris2-qr-subtitle {
+        font-size: 12px;
+    }
+
+    .qris2-qr-wrapper {
+        min-height: 200px;
+        border-radius: 14px;
+        padding: 12px;
+        margin-bottom: 14px;
+    }
+
+    .qris2-image {
+        width: 180px;
+        padding: 8px;
+        max-width: 90%;
+    }
+
+    .qris2-placeholder-icon {
+        width: 52px;
+        height: 52px;
+    }
+
+    .qris2-placeholder-icon i {
+        width: 26px;
+        height: 26px;
+    }
+
+    .qris2-placeholder-text {
+        font-size: 12px;
+    }
+
+    /* Countdown */
+    .qris2-expire {
+        font-size: 12px;
+        gap: 6px;
+    }
+
+    .qris2-countdown {
+        font-size: 20px;
+        padding: 8px 18px;
+        margin-top: 10px;
+    }
+
+    /* Note */
+    .qris2-note {
+        padding: 12px 14px;
+        gap: 10px;
+        border-radius: 14px;
+        margin-bottom: 14px;
+    }
+
+    .qris2-note i {
+        width: 16px;
+        height: 16px;
+    }
+
+    .qris2-note div {
+        font-size: 12px;
+    }
+
+    /* Transaction */
+    .qris2-transaction {
+        padding: 14px;
+        border-radius: 14px;
+        margin-bottom: 16px;
+    }
+
+    /* Footer */
+    .qris2-footer {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .qris2-btn {
+        height: 44px;
+        font-size: 13px;
+        border-radius: 12px;
+        gap: 8px;
+    }
+
+    /* Security */
+    .qris2-security {
+        font-size: 11px;
+        margin-top: 12px;
+    }
 }
 
-/* ===========================
-      DARK MODE
-=========================== */
+/* ==========================================================
+   EXTRA SMALL (360px ke bawah)
+========================================================== */
 
-.dark .qris2-card{
+@media (max-width: 380px) {
+    .qris2-card {
+        padding: 12px 12px 16px;
+        border-radius: 16px 16px 0 0;
+    }
 
-    background:#111827;
+    .qris2-title {
+        font-size: 17px;
+    }
 
+    .qris2-subtitle {
+        font-size: 11px;
+    }
+
+    .qris2-close {
+        width: 32px;
+        height: 32px;
+        border-radius: 8px;
+    }
+
+    .qris2-summary {
+        padding: 12px;
+        gap: 8px;
+        border-radius: 14px;
+    }
+
+    .qris2-crown {
+        width: 40px;
+        height: 40px;
+        border-radius: 12px;
+    }
+
+    .qris2-crown i {
+        width: 20px;
+        height: 20px;
+    }
+
+    .qris2-summary-top h3 {
+        font-size: 15px;
+    }
+
+    .qris2-summary-top {
+        gap: 4px;
+    }
+
+    .qris2-badge {
+        font-size: 9px;
+        padding: 3px 8px;
+    }
+
+    .qris2-plan {
+        font-size: 12px;
+    }
+
+    .qris2-order {
+        font-size: 10px;
+    }
+
+    .qris2-total-price {
+        font-size: 24px;
+    }
+
+    .qris2-qr-wrapper {
+        min-height: 160px;
+        padding: 8px;
+    }
+
+    .qris2-image {
+        width: 140px;
+        padding: 6px;
+    }
+
+    .qris2-qr-logo {
+        width: 38px;
+        height: 38px;
+        font-size: 11px;
+    }
+
+    .qris2-qr-title {
+        font-size: 14px;
+    }
+
+    .qris2-countdown {
+        font-size: 17px;
+        padding: 6px 14px;
+    }
+
+    .qris2-btn {
+        height: 40px;
+        font-size: 12px;
+        border-radius: 10px;
+    }
+
+    .qris2-section {
+        padding: 12px;
+        border-radius: 14px;
+    }
+
+    .qris2-row {
+        padding: 8px 0;
+    }
+
+    .qris2-label {
+        font-size: 11px;
+    }
+
+    .qris2-value {
+        font-size: 12px;
+    }
 }
 
-.dark .qris2-title{
+/* ==========================================================
+   DARK MODE
+========================================================== */
 
-    color:white;
-
+.dark .qris2-card {
+    background: #111827;
 }
 
-.dark .qris2-subtitle{
-
-    color:#9ca3af;
-
+.dark .qris2-title {
+    color: white;
 }
 
-.dark .qris2-section{
-
-    background:#1f2937;
-
-    border-color:#374151;
-
+.dark .qris2-subtitle {
+    color: #9ca3af;
 }
 
-.dark .qris2-section-title{
-
-    color:white;
-
+.dark .qris2-section {
+    background: #1f2937;
+    border-color: #374151;
 }
 
-.dark .qris2-value{
-
-    color:white;
-
+.dark .qris2-section-title {
+    color: white;
 }
 
-.dark .qris2-total-card{
-
-    background:#1f2937;
-
-    border-color:#374151;
-
+.dark .qris2-value {
+    color: white;
 }
 
-.dark .qris2-total-label{
-
-    color:#9ca3af;
-
+.dark .qris2-total-card {
+    background: #1f2937;
+    border-color: #374151;
 }
 
-.dark .qris2-qr-card{
-
-    background:#1f2937;
-
-    border-color:#374151;
-
+.dark .qris2-total-label {
+    color: #9ca3af;
 }
 
-.dark .qris2-qr-title{
-
-    color:white;
-
+.dark .qris2-qr-card {
+    background: #1f2937;
+    border-color: #374151;
 }
 
-.dark .qris2-qr-subtitle{
-
-    color:#9ca3af;
-
+.dark .qris2-qr-title {
+    color: white;
 }
 
-.dark .qris2-qr-wrapper{
-
-    background:#111827;
-
-    border-color:#374151;
-
+.dark .qris2-qr-subtitle {
+    color: #9ca3af;
 }
 
-.dark .qris2-transaction{
-
-    background:#1f2937;
-
-    border-color:#374151;
-
+.dark .qris2-qr-wrapper {
+    background: #111827;
+    border-color: #374151;
 }
 
-.dark .qris2-btn-secondary{
-
-    background:#374151;
-
-    color:white;
-
+.dark .qris2-transaction {
+    background: #1f2937;
+    border-color: #374151;
 }
 
-.dark .qris2-btn-secondary:hover{
-
-    background:#4b5563;
-
+.dark .qris2-btn-secondary {
+    background: #374151;
+    color: white;
 }
 
-.dark .qris2-security{
-
-    color:#9ca3af;
-
+.dark .qris2-btn-secondary:hover {
+    background: #4b5563;
 }
 
-/* ===========================
-      SMOOTH EFFECT
-=========================== */
+.dark .qris2-security {
+    color: #9ca3af;
+}
+
+/* ==========================================================
+   SMOOTH EFFECT
+========================================================== */
 
 .qris2-section,
 .qris2-total-card,
 .qris2-qr-card,
 .qris2-note,
-.qris2-transaction{
-
-    transition:.2s;
-
+.qris2-transaction {
+    transition: 0.2s;
 }
 
 .qris2-section:hover,
 .qris2-total-card:hover,
-.qris2-qr-card:hover{
-
-    transform:translateY(-2px);
-
-    box-shadow:0 12px 30px rgba(0,0,0,.06);
-
+.qris2-qr-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.06);
 }
 
-.qris2-image{
-
-    transition:.2s;
-
+.qris2-image {
+    transition: 0.2s;
 }
 
-.qris2-image:hover{
-
-    transform:scale(1.03);
-
+.qris2-image:hover {
+    transform: scale(1.03);
 }
 
-.phc-payment-modal{
-    width:100%;
-    max-width:430px;
-    max-height:92vh;
-    overflow-y:auto;
-    background:var(--surface);
-    border-radius:28px 28px 0 0;
-    padding:24px;
-    box-shadow:0 20px 60px rgba(0,0,0,.25);
+/* ==========================================================
+   ADDITIONAL CLASSES
+========================================================== */
+
+.phc-payment-modal {
+    width: 100%;
+    max-width: 430px;
+    max-height: 92vh;
+    overflow-y: auto;
+    background: var(--surface, #ffffff);
+    border-radius: 28px 28px 0 0;
+    padding: 24px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25);
 }
 
-@media (min-width:640px){
-    .phc-payment-modal{
-        border-radius:28px;
+@media (min-width: 640px) {
+    .phc-payment-modal {
+        border-radius: 28px;
     }
 }
 
-.upgrade-container{
-    display:flex;
-    flex-direction:column;
-    gap:20px;
+.upgrade-container {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
 }
 
-/* =====================================
-   MOBILE OPTIMIZATION
-===================================== */
+/* ==========================================================
+   MOBILE OPTIMIZATION FOR ADDITIONAL CLASSES
+========================================================== */
 
-@media (max-width:430px){
-
-    .phc-payment-modal{
-        padding:16px;
-        border-radius:24px 24px 0 0;
-        max-height:95vh;
+@media (max-width: 430px) {
+    .phc-payment-modal {
+        padding: 16px;
+        border-radius: 24px 24px 0 0;
+        max-height: 95vh;
     }
 
-    .upgrade-header{
-        margin-bottom:16px;
+    .upgrade-header {
+        margin-bottom: 16px;
     }
 
-    .upgrade-icon{
-        width:56px;
-        height:56px;
-        font-size:26px;
+    .upgrade-icon {
+        width: 56px;
+        height: 56px;
+        font-size: 26px;
     }
 
-    .upgrade-header h2{
-        font-size:20px;
-        margin-top:8px;
+    .upgrade-header h2 {
+        font-size: 20px;
+        margin-top: 8px;
     }
 
-    .upgrade-header p{
-        font-size:12px;
+    .upgrade-header p {
+        font-size: 12px;
     }
 
-    .upgrade-section{
-        margin-top:16px;
+    .upgrade-section {
+        margin-top: 16px;
     }
 
-    .pricing-card{
-        padding:12px;
-        border-radius:16px;
+    .pricing-card {
+        padding: 12px;
+        border-radius: 16px;
     }
 
-    .plan-name{
-        font-size:14px;
+    .plan-name {
+        font-size: 14px;
     }
 
-    .plan-desc{
-        font-size:11px;
+    .plan-desc {
+        font-size: 11px;
     }
 
-    .duration-grid{
-        gap:8px;
+    .duration-grid {
+        gap: 8px;
     }
 
-    .duration-btn{
-        padding:10px 6px;
-        font-size:12px;
-        border-radius:12px;
+    .duration-btn {
+        padding: 10px 6px;
+        font-size: 12px;
+        border-radius: 12px;
     }
 
-    .price-summary{
-        padding:14px;
-        border-radius:16px;
+    .price-summary {
+        padding: 14px;
+        border-radius: 16px;
     }
 
-    #modal-price-display{
-        font-size:22px;
+    #modal-price-display {
+        font-size: 22px;
     }
 
-    .daily-price{
-        font-size:11px;
-        padding:6px 10px;
+    .daily-price {
+        font-size: 11px;
+        padding: 6px 10px;
     }
 
-    .payment-box{
-        padding:16px;
-        border-radius:16px;
+    .payment-box {
+        padding: 16px;
+        border-radius: 16px;
     }
 
-    .pay-btn{
-        padding:12px;
-        font-size:13px;
-        border-radius:14px;
+    .pay-btn {
+        padding: 12px;
+        font-size: 13px;
+        border-radius: 14px;
     }
-
 }
 </style>
 </head>
