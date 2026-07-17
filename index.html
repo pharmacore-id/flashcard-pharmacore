@@ -3115,26 +3115,54 @@ color:white;
 
 </div>
 
-    <!-- ==== HOME ==== -->
-    <div id="view-home" class="view">
-      <div class="flex items-center justify-between mb-3">
-        <div>
-          <div class="flex items-center gap-2">
-            <img
-    src="logo.png"
-    alt="Pharmadeck"
-    class="w-auto object-contain max-w-[80px] md:max-w-[120px] h-auto"
-/>
-            <span id="plan-badge" class="free-badge">FREE</span>
-            <span id="admin-badge" class="admin-badge hidden">ADMIN</span>
-          </div>
-          <div id="sync-status-home" class="sync-status">
-            <span class="dot" id="sync-dot-home"></span>
-            <span id="sync-text-home">Synced</span>
-          </div>
-        </div>
-        <button onclick="toggleTheme()" class="w-10 h-10 rounded-full surface flex items-center justify-center shadow-card border border-theme"><i data-lucide="sun" class="w-5 h-5"></i></button>
+ <!-- ==== HOME ==== -->
+<div id="view-home" class="view">
+  <div class="flex items-center justify-between mb-3">
+
+    <!-- Left -->
+    <div class="flex-1 min-w-0">
+
+      <div class="flex items-center gap-2 min-w-0">
+
+        <img
+          src="logo.png"
+          alt="Pharmadeck"
+          class="h-10 md:h-12 w-auto object-contain flex-shrink min-w-0"
+        />
+
+        <span
+          id="plan-badge"
+          class="free-badge flex-shrink-0"
+        >
+          FREE
+        </span>
+
+        <span
+          id="admin-badge"
+          class="admin-badge hidden flex-shrink-0"
+        >
+          ADMIN
+        </span>
+
       </div>
+
+      <div id="sync-status-home" class="sync-status">
+        <span class="dot" id="sync-dot-home"></span>
+        <span id="sync-text-home">Synced</span>
+      </div>
+
+    </div>
+
+    <!-- Right -->
+    <button
+      onclick="toggleTheme()"
+      class="w-10 h-10 rounded-full surface flex items-center justify-center shadow-card border border-theme flex-shrink-0"
+    >
+      <i data-lucide="sun" class="w-5 h-5"></i>
+    </button>
+
+  </div>
+</div>
 
       <div class="daily-progress hero-gradient rounded-3xl p-6 mb-3 relative overflow-hidden shadow-card" style="background:linear-gradient(135deg,#f97316,#ea580c); min-height:160px;">
         <div class="relative z-10 h-full flex flex-col justify-center">
