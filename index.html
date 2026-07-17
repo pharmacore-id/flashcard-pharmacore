@@ -169,7 +169,7 @@ body {
   color: var(--text-secondary);
   background: transparent;
   border: none;
-  padding: 6px 12px;
+  padding: 6px 16px;
   border-radius: 16px;
   transition: 0.15s;
   cursor: pointer;
@@ -177,20 +177,49 @@ body {
   -webkit-tap-highlight-color: transparent;
   pointer-events: all;
   text-align: center;
-  min-width: 56px;
+  min-width: 64px;
+  flex: 1 1 0;
 }
-.nav-item.active { color: var(--accent); }
+
+.nav-item.active {
+  color: var(--accent);
+}
+
 .nav-item i {
   width: 24px;
   height: 24px;
   pointer-events: none;
-  display: block;
-  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   flex-shrink: 0;
+  margin: 0 auto;
 }
-.nav-item:hover { color: var(--text); }
-.nav-item.active:hover { color: var(--accent); }
-.nav-item:active { transform: scale(0.95); }
+
+.nav-item i svg {
+  display: block;
+  width: 24px;
+  height: 24px;
+  margin: 0 auto;
+}
+
+.nav-item span {
+  display: block;
+  text-align: center;
+  width: 100%;
+}
+
+.nav-item:hover {
+  color: var(--text);
+}
+
+.nav-item.active:hover {
+  color: var(--accent);
+}
+
+.nav-item:active {
+  transform: scale(0.95);
+}
 
 #view-login, #view-signup {
   z-index: 200 !important;
