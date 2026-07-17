@@ -1660,47 +1660,67 @@ color:white;
         to { transform: rotate(360deg); }
     }
 
-/* ============================================================
-   QRIS PAYMENT MODAL V2
-   PART 1 : CONTAINER + HEADER + PREMIUM + DETAIL
-============================================================ */
+/* ==========================================================
+   QRIS MODAL V3
+   PART 1
+   Overlay + Card + Header + Premium
+========================================================== */
 
-#qris-modal{
-    padding:20px;
-    backdrop-filter:blur(6px);
-    -webkit-backdrop-filter:blur(6px);
+.qris2-overlay{
+
+    position:fixed;
+
+    inset:0;
+
+    z-index:9999;
+
+    display:flex;
+
+    align-items:center;
+
+    justify-content:center;
+
+    padding:24px;
+
+    background:rgba(15,23,42,.65);
+
+    backdrop-filter:blur(8px);
+
+    -webkit-backdrop-filter:blur(8px);
+
 }
 
-#qris-modal .payment-modal-card{
+.qris2-card{
 
-    width:min(640px,100%);
+    width:100%;
+
+    max-width:580px;
+
     max-height:92vh;
 
     overflow-y:auto;
 
-    background:var(--surface);
+    background:#ffffff;
 
     border-radius:28px;
 
-    border:1px solid var(--border);
-
     box-shadow:
-        0 30px 70px rgba(0,0,0,.18);
+        0 30px 80px rgba(0,0,0,.28);
 
-    animation:qrisModalEnter .28s ease;
+    animation:qrisPopup .28s ease;
 
-    padding:28px;
+    padding:30px;
 
 }
 
-@keyframes qrisModalEnter{
+@keyframes qrisPopup{
 
     from{
 
         opacity:0;
 
         transform:
-            translateY(22px)
+            translateY(20px)
             scale(.98);
 
     }
@@ -1715,11 +1735,11 @@ color:white;
 
 }
 
-/* ==========================
-        HEADER
-========================== */
+/* ===========================
+          HEADER
+=========================== */
 
-#qris-modal .payment-header{
+.qris2-header{
 
     display:flex;
 
@@ -1727,43 +1747,45 @@ color:white;
 
     align-items:flex-start;
 
-    margin-bottom:24px;
+    margin-bottom:26px;
 
 }
 
-#qris-modal .payment-title{
-
-    font-size:28px;
-
-    font-weight:800;
+.qris2-title{
 
     margin:0;
 
-    color:var(--text);
+    font-size:30px;
+
+    font-weight:800;
+
+    color:#111827;
 
 }
 
-#qris-modal .payment-subtitle{
+.qris2-subtitle{
 
-    margin-top:6px;
+    margin-top:8px;
+
+    color:#6b7280;
 
     font-size:14px;
 
-    color:var(--text-secondary);
+    line-height:1.6;
 
 }
 
-#qris-modal .payment-close{
+.qris2-close{
 
-    width:44px;
+    width:46px;
 
-    height:44px;
+    height:46px;
 
     border:none;
 
     border-radius:14px;
 
-    background:transparent;
+    background:#f3f4f6;
 
     cursor:pointer;
 
@@ -1773,57 +1795,57 @@ color:white;
 
     justify-content:center;
 
-    transition:.25s;
+    transition:.2s;
 
 }
 
-#qris-modal .payment-close:hover{
+.qris2-close:hover{
 
-    background:var(--accent-light);
+    background:#e5e7eb;
 
     transform:rotate(90deg);
 
 }
 
-/* ==========================
-      PREMIUM CARD
-========================== */
+/* ===========================
+       PREMIUM CARD
+=========================== */
 
-#qris-modal .premium-summary{
+.qris2-summary{
 
     display:flex;
 
-    gap:18px;
-
     align-items:center;
 
-    padding:22px;
+    gap:18px;
 
-    margin-bottom:22px;
+    padding:24px;
+
+    margin-bottom:26px;
 
     border-radius:24px;
 
+    background:
+        linear-gradient(
+            135deg,
+            #ff9d2f,
+            #ff6b00
+        );
+
     color:white;
 
-    background:
-    linear-gradient(
-        135deg,
-        #ff962c,
-        #ff6b00
-    );
-
     box-shadow:
-        0 18px 40px rgba(255,107,0,.25);
+        0 18px 40px rgba(255,107,0,.30);
 
 }
 
-#qris-modal .premium-icon{
+.qris2-crown{
 
-    width:72px;
+    width:74px;
 
-    height:72px;
+    height:74px;
 
-    border-radius:20px;
+    border-radius:22px;
 
     background:rgba(255,255,255,.18);
 
@@ -1837,7 +1859,7 @@ color:white;
 
 }
 
-#qris-modal .premium-icon i{
+.qris2-crown i{
 
     width:34px;
 
@@ -1845,25 +1867,37 @@ color:white;
 
 }
 
-#qris-modal .premium-info{
+.qris2-summary-content{
 
     flex:1;
 
 }
 
-#qris-modal .premium-info h3{
+.qris2-summary-top{
+
+    display:flex;
+
+    justify-content:space-between;
+
+    align-items:flex-start;
+
+    gap:12px;
+
+}
+
+.qris2-summary-top h3{
 
     margin:0;
 
-    font-size:23px;
+    font-size:24px;
 
     font-weight:800;
 
 }
 
-#qris-modal .membership-badge{
+.qris2-badge{
 
-    display:inline-flex;
+    display:inline-block;
 
     margin-top:10px;
 
@@ -1877,37 +1911,23 @@ color:white;
 
     font-weight:700;
 
-    letter-spacing:.4px;
+    letter-spacing:.05em;
 
 }
 
-#qris-modal .premium-plan{
+.qris2-plan{
 
     margin-top:12px;
 
-    font-size:17px;
+    font-size:18px;
 
     font-weight:700;
 
 }
 
-#qris-modal .premium-bottom{
+.qris2-order{
 
     margin-top:16px;
-
-    display:flex;
-
-    justify-content:space-between;
-
-    align-items:center;
-
-    gap:12px;
-
-    flex-wrap:wrap;
-
-}
-
-#qris-modal #qris-order-id{
 
     font-size:12px;
 
@@ -1915,7 +1935,13 @@ color:white;
 
 }
 
-#qris-modal .status-badge{
+.qris2-status{
+
+    display:inline-flex;
+
+    align-items:center;
+
+    justify-content:center;
 
     padding:7px 14px;
 
@@ -1925,31 +1951,64 @@ color:white;
 
     font-weight:700;
 
-    background:rgba(255,255,255,.22);
+}
 
-    color:white;
+.qris2-status.pending{
+
+    background:#fff7d6;
+
+    color:#92400e;
 
 }
 
-/* ==========================
-     DETAIL CARD
-========================== */
+.qris2-status.success{
 
-#qris-modal .payment-detail-card{
+    background:#dcfce7;
 
-    border:1px solid var(--border);
+    color:#166534;
+
+}
+
+.qris2-status.failed{
+
+    background:#fee2e2;
+
+    color:#991b1b;
+
+}
+
+.qris2-status.expired{
+
+    background:#e5e7eb;
+
+    color:#374151;
+
+}
+    /* ==========================================================
+   QRIS MODAL V3
+   PART 2
+   Detail + Total + QR
+========================================================== */
+
+/* ===========================
+        DETAIL CARD
+=========================== */
+
+.qris2-section{
+
+    background:#ffffff;
+
+    border:1px solid #e5e7eb;
 
     border-radius:22px;
 
-    background:var(--bg);
-
-    padding:20px;
+    padding:22px;
 
     margin-bottom:22px;
 
 }
 
-#qris-modal .payment-section-title{
+.qris2-section-title{
 
     display:flex;
 
@@ -1957,25 +2016,27 @@ color:white;
 
     gap:10px;
 
-    font-size:15px;
+    font-size:16px;
 
-    font-weight:800;
+    font-weight:700;
 
-    margin-bottom:16px;
+    color:#111827;
+
+    margin-bottom:18px;
 
 }
 
-#qris-modal .payment-section-title i{
+.qris2-section-title i{
 
     width:20px;
 
     height:20px;
 
-    color:var(--accent);
+    color:#2563eb;
 
 }
 
-#qris-modal .payment-row{
+.qris2-row{
 
     display:flex;
 
@@ -1983,15 +2044,15 @@ color:white;
 
     align-items:center;
 
-    gap:20px;
+    gap:18px;
 
-    padding:14px 0;
+    padding:15px 0;
 
-    border-bottom:1px solid var(--border);
+    border-bottom:1px solid #f1f5f9;
 
 }
 
-#qris-modal .payment-row:last-child{
+.qris2-row:last-child{
 
     border-bottom:none;
 
@@ -1999,7 +2060,7 @@ color:white;
 
 }
 
-#qris-modal .payment-label{
+.qris2-label{
 
     display:flex;
 
@@ -2007,110 +2068,103 @@ color:white;
 
     gap:10px;
 
-    color:var(--text-secondary);
+    color:#6b7280;
 
     font-size:14px;
 
 }
 
-#qris-modal .payment-label i{
+.qris2-label i{
 
     width:18px;
 
     height:18px;
 
-    color:var(--accent);
+    color:#2563eb;
 
 }
 
-#qris-modal .payment-row>div:last-child{
+.qris2-value{
 
     font-weight:700;
 
-    color:var(--text);
+    color:#111827;
+
+    text-align:right;
 
 }
 
-/* ============================================================
-   QRIS PAYMENT MODAL V2
-   PART 2 : TOTAL + QR + COUNTDOWN + NOTE + TRANSACTION
-============================================================ */
-
-/* ==========================
+/* ===========================
         TOTAL CARD
-========================== */
+=========================== */
 
-#qris-modal .payment-total-card{
+.qris2-total-card{
 
-    margin-bottom:22px;
+    margin-bottom:24px;
 
     border-radius:24px;
 
-    padding:22px 24px;
-
-    background:linear-gradient(
-        135deg,
-        var(--accent-light),
-        rgba(59,130,246,.06)
-    );
-
-    border:1px solid rgba(59,130,246,.18);
+    padding:26px;
 
     text-align:center;
 
+    background:linear-gradient(
+        135deg,
+        #eff6ff,
+        #ffffff
+    );
+
+    border:1px solid #bfdbfe;
+
 }
 
-#qris-modal .payment-total-label{
-
-    display:block;
+.qris2-total-label{
 
     font-size:13px;
-
-    color:var(--text-secondary);
-
-    margin-bottom:8px;
 
     text-transform:uppercase;
 
     letter-spacing:.08em;
 
+    color:#64748b;
+
     font-weight:700;
 
 }
 
-#qris-modal .payment-total-price{
+.qris2-total-price{
 
-    margin:0;
+    margin-top:10px;
 
-    font-size:38px;
-
-    line-height:1;
+    font-size:42px;
 
     font-weight:800;
 
-    color:var(--accent);
+    color:#2563eb;
+
+    line-height:1;
 
 }
 
-/* ==========================
-          QR CARD
-========================== */
+/* ===========================
+         QR CARD
+=========================== */
 
-#qris-modal .payment-qr-card{
-
-    border:1px solid var(--border);
+.qris2-qr-card{
 
     border-radius:24px;
 
-    padding:24px;
+    border:1px solid #e5e7eb;
 
-    background:var(--surface);
+    background:#ffffff;
+
+    padding:24px;
 
     margin-bottom:20px;
 
 }
 
-#qris-modal .payment-qr-header{
+.qris2-qr-header{
 
     display:flex;
 
@@ -2122,11 +2176,11 @@ color:white;
 
 }
 
-#qris-modal .payment-qr-logo{
+.qris2-qr-logo{
 
-    width:60px;
+    width:64px;
 
-    height:60px;
+    height:64px;
 
     border-radius:18px;
 
@@ -2136,74 +2190,71 @@ color:white;
 
     justify-content:center;
 
-    font-size:18px;
-
-    font-weight:800;
-
-    color:white;
-
     background:linear-gradient(
         135deg,
         #0f172a,
         #2563eb
     );
 
+    color:white;
+
+    font-size:18px;
+
+    font-weight:800;
+
     flex-shrink:0;
 
 }
 
-#qris-modal .payment-qr-title{
+.qris2-qr-title{
 
     font-size:18px;
 
     font-weight:700;
 
-    color:var(--text);
+    color:#111827;
 
 }
 
-#qris-modal .payment-qr-subtitle{
+.qris2-qr-subtitle{
 
     margin-top:4px;
 
     font-size:13px;
 
-    color:var(--text-secondary);
+    color:#6b7280;
+
+    line-height:1.5;
 
 }
 
-/* ==========================
-       QR CONTAINER
-========================== */
+/* ===========================
+      QR CONTAINER
+=========================== */
 
-#qris-modal .payment-qr-wrapper{
-
-    display:flex;
-
-    align-items:center;
-
-    justify-content:center;
+.qris2-qr-wrapper{
 
     min-height:320px;
 
+    display:flex;
+
+    justify-content:center;
+
+    align-items:center;
+
+    border:2px dashed #dbeafe;
+
     border-radius:22px;
 
-    background:
-        linear-gradient(
-            180deg,
-            #ffffff,
-            #fafafa
-        );
-
-    border:2px dashed var(--border);
-
-    margin-bottom:22px;
+    background:#f8fafc;
 
     overflow:hidden;
 
+    margin-bottom:22px;
+
 }
 
-#qris-modal .payment-qr-placeholder{
+.qris2-placeholder{
 
     display:flex;
 
@@ -2215,44 +2266,19 @@ color:white;
 
     gap:14px;
 
-    color:var(--text-secondary);
-
-    font-size:14px;
+    color:#94a3b8;
 
 }
 
-#qris-modal .payment-phone{
+.qris2-placeholder-icon{
 
-    font-size:56px;
+    width:72px;
 
-}
+    height:72px;
 
-#qris-modal .payment-qr-image{
-
-    width:260px;
-
-    max-width:85%;
-
-    height:auto;
-
-    display:block;
-
-    border-radius:14px;
+    border-radius:18px;
 
     background:white;
-
-    padding:10px;
-
-    box-shadow:
-        0 12px 32px rgba(0,0,0,.08);
-
-}
-
-/* ==========================
-       COUNTDOWN
-========================== */
-
-#qris-modal .payment-expire{
 
     display:flex;
 
@@ -2260,17 +2286,67 @@ color:white;
 
     justify-content:center;
 
-    gap:8px;
-
-    color:var(--text-secondary);
-
-    font-size:13px;
-
-    margin-bottom:12px;
+    box-shadow:
+        0 10px 25px rgba(0,0,0,.08);
 
 }
 
-#qris-modal .payment-expire i{
+.qris2-placeholder-icon i{
+
+    width:36px;
+
+    height:36px;
+
+}
+
+.qris2-placeholder-text{
+
+    font-size:14px;
+
+}
+
+.qris2-image{
+
+    width:280px;
+
+    max-width:88%;
+
+    height:auto;
+
+    display:block;
+
+    padding:12px;
+
+    background:white;
+
+    border-radius:16px;
+
+    box-shadow:
+        0 12px 30px rgba(0,0,0,.10);
+
+}
+
+/* ===========================
+        COUNTDOWN
+=========================== */
+
+.qris2-expire{
+
+    display:flex;
+
+    justify-content:center;
+
+    align-items:center;
+
+    gap:8px;
+
+    color:#64748b;
+
+    font-size:13px;
+
+}
+
+.qris2-expire i{
 
     width:16px;
 
@@ -2278,40 +2354,42 @@ color:white;
 
 }
 
-#qris-modal .payment-countdown{
+.qris2-countdown{
 
     width:fit-content;
 
-    margin:auto;
+    margin:16px auto 0;
 
-    padding:12px 22px;
+    padding:12px 24px;
 
     border-radius:999px;
 
-    font-size:28px;
-
-    font-weight:800;
+    background:#ef4444;
 
     color:white;
 
-    background:linear-gradient(
-        135deg,
-        #ef4444,
-        #dc2626
-    );
+    font-size:30px;
 
-    box-shadow:
-        0 10px 28px rgba(239,68,68,.30);
+    font-weight:800;
 
     letter-spacing:.05em;
 
+    box-shadow:
+        0 12px 28px rgba(239,68,68,.28);
+
 }
 
-/* ==========================
-           NOTE
-========================== */
+    /* ==========================================================
+   QRIS MODAL V3
+   PART 3
+   Footer + Note + Responsive + Dark Mode
+========================================================== */
 
-#qris-modal .payment-note{
+/* ===========================
+        NOTE
+=========================== */
+
+.qris2-note{
 
     display:flex;
 
@@ -2331,7 +2409,7 @@ color:white;
 
 }
 
-#qris-modal .payment-note i{
+.qris2-note i{
 
     width:20px;
 
@@ -2343,7 +2421,7 @@ color:white;
 
 }
 
-#qris-modal .payment-note div{
+.qris2-note div{
 
     font-size:13px;
 
@@ -2353,109 +2431,51 @@ color:white;
 
 }
 
-/* ==========================
-      TRANSACTION DETAIL
-========================== */
+/* ===========================
+      TRANSACTION
+=========================== */
 
-#qris-modal .payment-transaction{
+.qris2-transaction{
 
-    border:1px solid var(--border);
+    border:1px solid #e5e7eb;
 
     border-radius:20px;
 
+    background:#ffffff;
+
     padding:18px;
 
-    margin-bottom:22px;
-
-    background:var(--bg);
+    margin-bottom:24px;
 
 }
 
-#qris-modal .payment-value{
+/* ===========================
+        FOOTER
+=========================== */
 
-    font-weight:700;
-
-    color:var(--text);
-
-    word-break:break-all;
-
-}
-
-/* ==========================
-        STATUS COLORS
-========================== */
-
-#qris-modal .status-badge.pending{
-
-    background:#fef3c7;
-
-    color:#92400e;
-
-}
-
-#qris-modal .status-badge.success{
-
-    background:#dcfce7;
-
-    color:#166534;
-
-}
-
-#qris-modal .status-badge.failed{
-
-    background:#fee2e2;
-
-    color:#991b1b;
-
-}
-
-#qris-modal .status-badge.expired{
-
-    background:#e5e7eb;
-
-    color:#374151;
-
-}
-
-/* ============================================================
-   QRIS PAYMENT MODAL V2
-   PART 3 : FOOTER + BUTTON + DARK MODE + RESPONSIVE
-============================================================ */
-
-/* ==========================
-         FOOTER
-========================== */
-
-#qris-modal .payment-footer{
+.qris2-footer{
 
     display:flex;
 
     gap:14px;
 
-    margin-top:8px;
-
 }
 
-#qris-modal .payment-btn{
+.qris2-btn{
 
     flex:1;
 
     height:52px;
 
+    border:none;
+
     border-radius:16px;
 
-    border:none;
+    cursor:pointer;
 
     font-size:15px;
 
     font-weight:700;
-
-    cursor:pointer;
-
-    transition:
-        transform .18s ease,
-        box-shadow .18s ease,
-        background .18s ease;
 
     display:flex;
 
@@ -2465,28 +2485,44 @@ color:white;
 
     gap:10px;
 
+    transition:.2s;
+
 }
 
-#qris-modal .payment-btn:hover{
+.qris2-btn:hover{
 
     transform:translateY(-2px);
 
 }
 
-#qris-modal .payment-btn:active{
+.qris2-btn:active{
 
-    transform:translateY(0);
+    transform:none;
 
 }
 
-#qris-modal .payment-btn-primary{
+.qris2-btn-secondary{
 
-    color:#fff;
+    background:#f3f4f6;
+
+    color:#111827;
+
+}
+
+.qris2-btn-secondary:hover{
+
+    background:#e5e7eb;
+
+}
+
+.qris2-btn-primary{
+
+    color:white;
 
     background:linear-gradient(
         135deg,
-        var(--accent),
-        #2563eb
+        #2563eb,
+        #1d4ed8
     );
 
     box-shadow:
@@ -2494,134 +2530,60 @@ color:white;
 
 }
 
-#qris-modal .payment-btn-primary:hover{
+.qris2-btn-primary:hover{
 
     box-shadow:
-        0 18px 34px rgba(37,99,235,.35);
+        0 18px 36px rgba(37,99,235,.35);
 
 }
 
-#qris-modal .payment-btn-outline{
+/* ===========================
+      SECURITY
+=========================== */
 
-    background:transparent;
-
-    border:1px solid var(--border);
-
-    color:var(--text);
-
-}
-
-#qris-modal .payment-btn-outline:hover{
-
-    background:var(--bg);
-
-}
-
-/* ==========================
-        SECURITY
-========================== */
-
-#qris-modal .payment-security{
-
-    text-align:center;
+.qris2-security{
 
     margin-top:18px;
 
+    text-align:center;
+
     font-size:12px;
 
-    color:var(--text-secondary);
+    color:#64748b;
 
 }
 
-/* ==========================
-        SCROLLBAR
-========================== */
+/* ===========================
+      SCROLLBAR
+=========================== */
 
-#qris-modal .payment-modal-card::-webkit-scrollbar{
+.qris2-card::-webkit-scrollbar{
 
     width:8px;
 
 }
 
-#qris-modal .payment-modal-card::-webkit-scrollbar-thumb{
+.qris2-card::-webkit-scrollbar-thumb{
 
-    background:rgba(0,0,0,.18);
+    background:#d1d5db;
 
     border-radius:999px;
 
 }
 
-#qris-modal .payment-modal-card::-webkit-scrollbar-track{
-
-    background:transparent;
-
-}
-
-/* Firefox */
-
-#qris-modal .payment-modal-card{
+.qris2-card{
 
     scrollbar-width:thin;
 
 }
 
-/* ==========================
-         DARK MODE
-========================== */
-
-.dark #qris-modal .payment-qr-wrapper{
-
-    background:#1f2937;
-
-    border-color:#374151;
-
-}
-
-.dark #qris-modal .payment-detail-card{
-
-    background:#111827;
-
-}
-
-.dark #qris-modal .payment-total-card{
-
-    background:#111827;
-
-}
-
-.dark #qris-modal .payment-transaction{
-
-    background:#111827;
-
-}
-
-.dark #qris-modal .payment-note{
-
-    background:rgba(245,158,11,.12);
-
-    border-color:rgba(245,158,11,.30);
-
-}
-
-.dark #qris-modal .payment-note div{
-
-    color:#fbbf24;
-
-}
-
-.dark #qris-modal .payment-modal-card::-webkit-scrollbar-thumb{
-
-    background:#4b5563;
-
-}
-
-/* ==========================
-        RESPONSIVE
-========================== */
+/* ===========================
+      RESPONSIVE
+=========================== */
 
 @media (max-width:640px){
 
-    #qris-modal{
+    .qris2-overlay{
 
         padding:0;
 
@@ -2629,25 +2591,27 @@ color:white;
 
     }
 
-    #qris-modal .payment-modal-card{
+    .qris2-card{
+
+        border-radius:24px 24px 0 0;
+
+        max-width:none;
 
         width:100%;
 
         max-height:94vh;
 
-        border-radius:24px 24px 0 0;
-
         padding:22px;
 
     }
 
-    #qris-modal .payment-title{
+    .qris2-title{
 
-        font-size:23px;
+        font-size:24px;
 
     }
 
-    #qris-modal .premium-summary{
+    .qris2-summary{
 
         flex-direction:column;
 
@@ -2655,13 +2619,15 @@ color:white;
 
     }
 
-    #qris-modal .premium-bottom{
+    .qris2-summary-top{
 
-        justify-content:center;
+        flex-direction:column;
+
+        align-items:center;
 
     }
 
-    #qris-modal .payment-row{
+    .qris2-row{
 
         flex-direction:column;
 
@@ -2671,33 +2637,37 @@ color:white;
 
     }
 
-    #qris-modal .payment-total-price{
+    .qris2-value{
 
-        font-size:32px;
+        text-align:left;
 
     }
 
-    #qris-modal .payment-qr-wrapper{
+    .qris2-total-price{
+
+        font-size:34px;
+
+    }
+
+    .qris2-qr-wrapper{
 
         min-height:260px;
 
     }
 
-    #qris-modal .payment-qr-image{
+    .qris2-image{
 
         width:220px;
 
     }
 
-    #qris-modal .payment-countdown{
+    .qris2-countdown{
 
-        font-size:22px;
-
-        padding:10px 18px;
+        font-size:24px;
 
     }
 
-    #qris-modal .payment-footer{
+    .qris2-footer{
 
         flex-direction:column;
 
@@ -2705,25 +2675,135 @@ color:white;
 
 }
 
-/* ==========================
-        SMOOTH EFFECTS
-========================== */
+/* ===========================
+      DARK MODE
+=========================== */
 
-#qris-modal .payment-detail-card,
-#qris-modal .payment-total-card,
-#qris-modal .payment-qr-card,
-#qris-modal .payment-note,
-#qris-modal .payment-transaction{
+.dark .qris2-card{
 
-    transition:
-        transform .2s ease,
-        box-shadow .2s ease;
+    background:#111827;
 
 }
 
-#qris-modal .payment-detail-card:hover,
-#qris-modal .payment-total-card:hover,
-#qris-modal .payment-qr-card:hover{
+.dark .qris2-title{
+
+    color:white;
+
+}
+
+.dark .qris2-subtitle{
+
+    color:#9ca3af;
+
+}
+
+.dark .qris2-section{
+
+    background:#1f2937;
+
+    border-color:#374151;
+
+}
+
+.dark .qris2-section-title{
+
+    color:white;
+
+}
+
+.dark .qris2-value{
+
+    color:white;
+
+}
+
+.dark .qris2-total-card{
+
+    background:#1f2937;
+
+    border-color:#374151;
+
+}
+
+.dark .qris2-total-label{
+
+    color:#9ca3af;
+
+}
+
+.dark .qris2-qr-card{
+
+    background:#1f2937;
+
+    border-color:#374151;
+
+}
+
+.dark .qris2-qr-title{
+
+    color:white;
+
+}
+
+.dark .qris2-qr-subtitle{
+
+    color:#9ca3af;
+
+}
+
+.dark .qris2-qr-wrapper{
+
+    background:#111827;
+
+    border-color:#374151;
+
+}
+
+.dark .qris2-transaction{
+
+    background:#1f2937;
+
+    border-color:#374151;
+
+}
+
+.dark .qris2-btn-secondary{
+
+    background:#374151;
+
+    color:white;
+
+}
+
+.dark .qris2-btn-secondary:hover{
+
+    background:#4b5563;
+
+}
+
+.dark .qris2-security{
+
+    color:#9ca3af;
+
+}
+
+/* ===========================
+      SMOOTH EFFECT
+=========================== */
+
+.qris2-section,
+.qris2-total-card,
+.qris2-qr-card,
+.qris2-note,
+.qris2-transaction{
+
+    transition:.2s;
+
+}
+
+.qris2-section:hover,
+.qris2-total-card:hover,
+.qris2-qr-card:hover{
 
     transform:translateY(-2px);
 
@@ -2731,14 +2811,13 @@ color:white;
 
 }
 
-#qris-modal .payment-qr-image{
+.qris2-image{
 
-    transition:
-        transform .25s ease;
+    transition:.2s;
 
 }
 
-#qris-modal .payment-qr-image:hover{
+.qris2-image:hover{
 
     transform:scale(1.03);
 
@@ -2908,32 +2987,33 @@ color:white;
 
    <!-- ===== QRIS PAYMENT MODAL ===== -->
 <div id="qris-modal"
-     class="hidden fixed inset-0 z-[9999] flex items-end sm:items-center justify-center"
-     style="background:rgba(0,0,0,.55)"
+     class="hidden qris2-overlay"
      onclick="if(event.target===this) closeQrisModal()">
 
-    <div class="payment-modal-card surface rounded-t-3xl sm:rounded-3xl"
+    <div class="qris2-card"
          onclick="event.stopPropagation()">
 
-        <!-- ================= HEADER ================= -->
+        <!-- =========================
+             HEADER
+        ========================== -->
 
-        <div class="payment-header">
+        <div class="qris2-header">
 
             <div>
 
-                <h2 class="payment-title">
+                <h2 class="qris2-title">
                     Detail Pembayaran
                 </h2>
 
-                <p class="payment-subtitle">
-                    Scan QRIS untuk menyelesaikan pembayaran
+                <p class="qris2-subtitle">
+                    Scan QRIS menggunakan aplikasi pembayaran favorit Anda.
                 </p>
 
             </div>
 
             <button
-                onclick="closeQrisModal()"
-                class="payment-close">
+                class="qris2-close"
+                onclick="closeQrisModal()">
 
                 <i data-lucide="x"></i>
 
@@ -2941,54 +3021,29 @@ color:white;
 
         </div>
 
+        <!-- =========================
+             PREMIUM SUMMARY
+        ========================== -->
 
+        <div class="qris2-summary">
 
-        <!-- ================= PREMIUM CARD ================= -->
-
-        <div class="premium-summary">
-
-            <div class="premium-icon">
+            <div class="qris2-crown">
 
                 <i data-lucide="crown"></i>
 
             </div>
 
-            <div class="premium-info">
+            <div class="qris2-summary-content">
 
-                <h3>
+                <div class="qris2-summary-top">
 
-                    PHARMACORE Premium
-
-                </h3>
-
-                <span
-                    id="membership-badge"
-                    class="membership-badge">
-
-                    BOOK ACCESS
-
-                </span>
-
-                <div
-                    id="qris-plan-display"
-                    class="premium-plan">
-
-                    Premium 3 Bulan
-
-                </div>
-
-                <div class="premium-bottom">
-
-                    <span
-                        id="qris-order-id">
-
-                        Order #PAY12345678
-
-                    </span>
+                    <h3>
+                        PHARMACORE Premium
+                    </h3>
 
                     <span
                         id="qris-status-badge"
-                        class="status-badge pending">
+                        class="qris2-status pending">
 
                         Pending
 
@@ -2996,200 +3051,323 @@ color:white;
 
                 </div>
 
+                <div
+                    id="membership-badge"
+                    class="qris2-badge">
+
+                    BOOK ACCESS
+
+                </div>
+
+                <div
+                    id="qris-plan-display"
+                    class="qris2-plan">
+
+                    Premium 3 Bulan
+
+                </div>
+
+                <div
+                    id="qris-order-id"
+                    class="qris2-order">
+
+                    Order #PAY123456
+
+                </div>
+
             </div>
 
         </div>
 
+              <!-- =========================
+             PAYMENT DETAIL
+        ========================== -->
 
+        <div class="qris2-section">
 
-        <!-- ================= PAYMENT DETAIL ================= -->
-
-        <div class="payment-detail-card">
-
-            <div class="payment-section-title">
+            <div class="qris2-section-title">
 
                 <i data-lucide="receipt-text"></i>
 
-                <span>
-
-                    Detail Pembayaran
-
-                </span>
+                <span>Detail Pembayaran</span>
 
             </div>
 
+            <div class="qris2-row">
 
-
-            <div class="payment-row">
-
-                <div class="payment-label">
+                <div class="qris2-label">
 
                     <i data-lucide="user-round"></i>
 
-                    Membership
+                    <span>Membership</span>
 
                 </div>
 
                 <div
-                    id="payment-membership">
+                    id="payment-membership"
+                    class="qris2-value">
+
                     Book Access
+
                 </div>
+
             </div>
 
-            <div class="payment-row">
-                <div class="payment-label">
+            <div class="qris2-row">
+
+                <div class="qris2-label">
+
                     <i data-lucide="package"></i>
-                    Paket
+
+                    <span>Paket</span>
+
                 </div>
+
                 <div
-                    id="payment-package">
+                    id="payment-package"
+                    class="qris2-value">
+
                     Premium 3 Bulan
+
                 </div>
+
             </div>
-            <div class="payment-row">
-                <div class="payment-label">
+
+            <div class="qris2-row">
+
+                <div class="qris2-label">
+
                     <i data-lucide="wallet"></i>
-                    Metode
+
+                    <span>Metode</span>
+
                 </div>
-                <div>
+
+                <div class="qris2-value">
+
                     QRIS
+
                 </div>
+
             </div>
-            <div class="payment-row">
-                <div class="payment-label">
+
+            <div class="qris2-row">
+
+                <div class="qris2-label">
+
                     <i data-lucide="clock-3"></i>
-                    Status
+
+                    <span>Status</span>
+
                 </div>
+
                 <div>
+
                     <span
                         id="payment-status-text"
-                        class="status-badge pending">
+                        class="qris2-status pending">
+
                         Menunggu Pembayaran
+
                     </span>
+
                 </div>
+
             </div>
+
         </div>
 
-        <!-- ================= TOTAL ================= -->
+        <!-- =========================
+             TOTAL
+        ========================== -->
 
-        <div class="payment-total-card">
-            <span class="payment-total-label">
+        <div class="qris2-total-card">
+
+            <div class="qris2-total-label">
+
                 Total Pembayaran
-            </span>
-            <h1
+
+            </div>
+
+            <div
                 id="qris-amount-display"
-                class="payment-total-price">
+                class="qris2-total-price">
+
                 Rp68.000
-            </h1>
+
+            </div>
+
         </div>
 
-              <!-- ================= QR CARD ================= -->
+              <!-- =========================
+             QR CARD
+        ========================== -->
 
-        <div class="payment-qr-card">
-            <div class="payment-qr-header">
-                <div class="payment-qr-logo">
+        <div class="qris2-qr-card">
+
+            <div class="qris2-qr-header">
+
+                <div class="qris2-qr-logo">
                     QRIS
                 </div>
+
                 <div>
-                    <div class="payment-qr-title">
+
+                    <div class="qris2-qr-title">
                         Scan QRIS
                     </div>
-                    <div class="payment-qr-subtitle">
-                        Gunakan aplikasi QRIS apapun
+
+                    <div class="qris2-qr-subtitle">
+                        Gunakan aplikasi QRIS apa pun yang mendukung standar QRIS.
                     </div>
+
                 </div>
+
             </div>
 
-
-            <div id="qris-image-container" class="payment-qr-wrapper">
+            <div
+                id="qris-image-container"
+                class="qris2-qr-wrapper">
 
                 <div
                     id="qris-placeholder"
-                    class="payment-qr-placeholder">
+                    class="qris2-placeholder">
 
-                    <div class="payment-phone">
-                        📱
+                    <div class="qris2-placeholder-icon">
+
+                        <i data-lucide="qr-code"></i>
+
                     </div>
-                    <div>
+
+                    <div class="qris2-placeholder-text">
 
                         QR akan muncul di sini
 
                     </div>
+
                 </div>
+
                 <img
                     id="qris-image"
-                    class="payment-qr-image hidden"
+                    class="qris2-image hidden"
                     alt="QRIS Code">
 
             </div>
 
-            <div class="payment-expire">
+            <div class="qris2-expire">
+
                 <i data-lucide="clock-3"></i>
-                <span>
-                    Berlaku hingga
-                </span>
+
+                Berlaku hingga
+
             </div>
+
             <div
                 id="qris-countdown"
-                class="payment-countdown">
+                class="qris2-countdown">
+
                 10:00
+
             </div>
+
         </div>
 
-        <!-- ================= INFO ================= -->
+        <!-- =========================
+             INFO
+        ========================== -->
 
-        <div class="payment-note">
+        <div class="qris2-note">
+
             <i data-lucide="info"></i>
+
             <div>
-                QR akan otomatis kedaluwarsa apabila
-                belum diselesaikan
+
+                QR akan otomatis kedaluwarsa apabila pembayaran tidak diselesaikan sebelum waktu habis.
+
             </div>
+
         </div>
 
-        <!-- ================= TRANSACTION ================= -->
+        <!-- =========================
+             TRANSACTION
+        ========================== -->
 
         <div
             id="qris-payment-detail"
-            class="payment-transaction hidden">
-            <div class="payment-row">
-                <span class="payment-label">
+            class="qris2-transaction hidden">
+
+            <div class="qris2-row">
+
+                <div class="qris2-label">
+
                     Transaction ID
-                </span>
-                <span
+
+                </div>
+
+                <div
                     id="qris-transaction-id"
-                    class="payment-value">
+                    class="qris2-value">
+
                     -
-                </span>
+
+                </div>
+
             </div>
-            <div class="payment-row">
-                <span class="payment-label">
+
+            <div class="qris2-row">
+
+                <div class="qris2-label">
+
                     Status
-                </span>
-                <span
+
+                </div>
+
+                <div
                     id="qris-transaction-status"
-                    class="payment-value">
+                    class="qris2-value">
+
                     -
-                </span>
+
+                </div>
+
             </div>
+
         </div>
-        <!-- ================= ACTION ================= -->
-        <div class="payment-footer">
+
+        <!-- =========================
+             FOOTER
+        ========================== -->
+
+        <div class="qris2-footer">
+
             <button
-                onclick="closeQrisModal()"
-                class="payment-btn payment-btn-outline">
+                class="qris2-btn qris2-btn-secondary"
+                onclick="closeQrisModal()">
+
                 Batal
+
             </button>
+
             <button
                 id="download-qr-btn"
-                class="payment-btn payment-btn-primary">
+                class="qris2-btn qris2-btn-primary">
+
                 <i data-lucide="download"></i>
+
                 Simpan QR
+
             </button>
+
         </div>
-        <div class="payment-security">
+
+        <div class="qris2-security">
+
             🔒 Pembayaran diproses secara aman melalui DOKU
+
         </div>
+
     </div>
+
 </div>
 
     <!-- ==== HOME ==== -->
