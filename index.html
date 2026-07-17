@@ -1583,6 +1583,13 @@ color:white;
   color: #1a1a2e !important;
 }
 
+#qrcode {
+  display: inline-block;
+  padding: 20px;
+  background: white;
+  border-radius: 12px; /* opsional */
+}
+    
 /* DARK MODE */
 .dark #book-buyer-card div.bg-gray-100,
 .dark #book-buyer-card div.bg-gray-50,
@@ -9725,6 +9732,10 @@ if (result.qrisImage) {
     </div>
   `;
 
+  console.log("QR type:", typeof result.qrisCode);
+console.log("QR length:", result.qrisCode.length);
+console.log("QR start:", result.qrisCode.slice(0, 50));
+console.log("QR end:", result.qrisCode.slice(-50));
   // Generate QR Code
   new QRCode(document.getElementById("qrcode"), {
     text: result.qrisCode,
