@@ -180,7 +180,14 @@ body {
   min-width: 56px;
 }
 .nav-item.active { color: var(--accent); }
-.nav-item i { width: 24px; height: 24px; pointer-events: none; }
+.nav-item i {
+  width: 24px;
+  height: 24px;
+  pointer-events: none;
+  display: block;
+  margin: 0 auto;
+  flex-shrink: 0;
+}
 .nav-item:hover { color: var(--text); }
 .nav-item.active:hover { color: var(--accent); }
 .nav-item:active { transform: scale(0.95); }
