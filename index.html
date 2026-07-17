@@ -11125,230 +11125,268 @@ async function processPayment() {
 // ============================================================
 
 function showQrisModal(result) {
-  const modal = document.getElementById('qris-modal');
-  modal.classList.remove('hidden');
-  
-  // Set amount display
-  document.getElementById('qris-amount-display').textContent = 
-    'Rp ' + result.amount.toLocaleString();
-  
-  // Set plan display
-  const planLabel = selectedPlan === 'book' ? 'Book Buyer' : 'Regular';
-  document.getElementById('qris-plan-display').textContent = 
-    planLabel + ' · ' + selectedDuration + ' Months';
-  
-  // Set transaction ID
-  document.getElementById('qris-transaction-id').textContent =
-  result.referenceNo || result.orderId;
-  document.getElementById('qris-transaction-status').textContent = 'PENDING';
-  document.getElementById('qris-payment-detail').classList.remove('hidden');
-  
- // ===== Set QRIS Image =====
-const imageEl = document.getElementById('qris-image');
-const placeholderEl = document.getElementById('qris-placeholder');
+  const modal = document.getElementById("qris-modal");
+  if (!modal) return;
 
-if (result.qrisImage && result.qrisImage.trim() !== "") {
-  imageEl.src = result.qrisImage;
-  imageEl.classList.remove('hidden');
-  placeholderEl.classList.add('hidden');
+  modal.classList.remove("hidden");
 
-} else if (result.qrisCode && result.qrisCode.trim() !== "") {
+  // Clear timer lama jika ada
+  if (modal.dataset.timerInterval) {
+    clearInterval(Number(modal.dataset.timerInterval));
+  }
 
-  imageEl.classList.add('hidden');
-  placeholderEl.classList.remove('hidden');
+  // ===== Amount =====
+  const amountEl = document.getElementById("qris-amount-display");
+  if (amountEl) {
+    amountEl.textContent =
+      "Rp " + Number(result.amount).toLocaleString("id-ID");
+  }
 
-  placeholderEl.innerHTML = `
-    <div style="display:flex;flex-direction:column;align-items:center;gap:16px;padding:12px;">
+  // ===== Plan =====
+  const planEl = document.getElementById("qris-plan-display");
+  if (planEl) {
+    const planLabel =
+      selectedPlan === "book" ? "Book Buyer" : "Regular";
 
-      <div id="qrcode"></div>
+    planEl.textContent =
+      `${planLabel} · ${selectedDuration} Months`;
+  }
 
-    </div>
-  `;
+  // ===== QR =====
+  const imageEl = document.getElementById("qris-image");
+  const placeholderEl = document.getElementById("qris-placeholder");
 
-  console.log("QR type:", typeof result.qrisCode);
-console.log("QR length:", result.qrisCode.length);
-console.log("QR start:", result.qrisCode.slice(0, 50));
-console.log("QR end:", result.qrisCode.slice(-50));
-  // Generate QR Code
-  new QRCode(document.getElementById("qrcode"), {
-    text: result.qrisCode,
-    width: 280,
-    height: 280,
-    correctLevel: QRCode.CorrectLevel.H
-  });
+  if (!imageEl || !placeholderEl) return;
 
-  const saveBtn = document.getElementById("download-qr-btn");
+  if (result.qrisImage && result.qrisImage.trim() !== "") {
 
-if (saveBtn) {
+    imageEl.src = result.qrisImage;
+    imageEl.classList.remove("hidden");
+    placeholderEl.classList.add("hidden");
 
-    saveBtn.onclick = () => {
+  } else if (result.qrisCode && result.qrisCode.trim() !== "") {
 
-        const canvas = document.querySelector("#qrcode canvas");
-
-        if (!canvas) {
-            alert("QR Code belum tersedia.");
-            return;
-        }
-
-        const link = document.createElement("a");
-        link.download = `PHARMACORE_QRIS_${result.orderId || "payment"}.png`;
-        link.href = canvas.toDataURL("image/png");
-        link.click();
-
-    };
-
-}
-  } else {
-
-    imageEl.classList.add('hidden');
-    placeholderEl.classList.remove('hidden');
+    imageEl.classList.add("hidden");
+    placeholderEl.classList.remove("hidden");
 
     placeholderEl.innerHTML = `
-        <div style="font-size:12px;text-align:center;">
-            <p style="font-size:3rem;">💳</p>
-            <p style="font-weight:600;">QRIS</p>
-            <p style="font-size:10px;color:var(--text-secondary);">
-                Scan dengan aplikasi QRIS
-            </p>
-        </div>
+      <div style="display:flex;justify-content:center;padding:12px;">
+        <div id="qrcode"></div>
+      </div>
     `;
 
-}
-  
-  // Reset status badge
-  const badge = document.getElementById('qris-status-badge');
-  badge.textContent = '⏳ Waiting for payment';
-  badge.className = 'status-badge pending';
-  
-  // Reset timer
-  let seconds = 600; // 10 minutes
-  const timerEl = document.getElementById('qris-countdown');
-  
-  // Timer countdown
-  const timerInterval = setInterval(() => {
-    seconds--;
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    timerEl.textContent = `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
-    
-    if (seconds <= 0) {
-      clearInterval(timerInterval);
-      timerEl.textContent = 'Expired';
-      const badge = document.getElementById('qris-status-badge');
-      badge.textContent = '⏰ Payment expired';
-      badge.className = 'status-badge failed';
+    const qrContainer = document.getElementById("qrcode");
+
+    if (qrContainer) {
+
+      qrContainer.innerHTML = "";
+
+      new QRCode(qrContainer, {
+        text: result.qrisCode,
+        width: 280,
+        height: 280,
+        correctLevel: QRCode.CorrectLevel.H
+      });
+
+      // Download QR
+      const saveBtn = document.getElementById("download-qr-btn");
+
+      if (saveBtn) {
+        saveBtn.onclick = () => {
+
+          const canvas = qrContainer.querySelector("canvas");
+
+          if (!canvas) {
+            alert("QR Code belum tersedia.");
+            return;
+          }
+
+          const link = document.createElement("a");
+          link.download = `PHARMACORE_QRIS_${result.orderId || "payment"}.png`;
+          link.href = canvas.toDataURL("image/png");
+          link.click();
+
+        };
+      }
     }
-  }, 1000);
-  
-  // Store timer reference
-  modal.dataset.timerInterval = timerInterval;
-  
-  if (typeof lucide !== 'undefined' && lucide.createIcons) {
+
+  } else {
+
+    imageEl.classList.add("hidden");
+    placeholderEl.classList.remove("hidden");
+
+    placeholderEl.innerHTML = `
+      <div style="text-align:center;padding:24px;">
+        <div style="font-size:42px;">💳</div>
+        <p style="margin-top:10px;font-weight:600;">QRIS tidak tersedia</p>
+      </div>
+    `;
+
+  }
+
+  // ===== Countdown =====
+  let seconds = 600;
+  const timerEl = document.getElementById("qris-countdown");
+
+  if (timerEl) {
+
+    timerEl.textContent = "10:00";
+
+    const timerInterval = setInterval(() => {
+
+      seconds--;
+
+      if (seconds <= 0) {
+
+        clearInterval(timerInterval);
+
+        timerEl.textContent = "Expired";
+        timerEl.style.background = "#6b7280";
+
+        return;
+      }
+
+      const mins = Math.floor(seconds / 60);
+      const secs = seconds % 60;
+
+      timerEl.textContent =
+        `${String(mins).padStart(2, "0")}:${String(secs).padStart(2, "0")}`;
+
+    }, 1000);
+
+    modal.dataset.timerInterval = timerInterval;
+  }
+
+  // Refresh icon
+  if (window.lucide?.createIcons) {
     lucide.createIcons();
   }
 }
+    
+// ============================================================
+// PAYMENT STATUS LISTENER
+// ============================================================
 
-// ============================================================
-//  CLOSE QRIS MODAL
-// ============================================================
 function startPaymentStatusListener(orderId) {
-  // Hentikan listener lama jika ada
+
+  // Stop listener lama
   if (paymentStatusUnsubscribe) {
     paymentStatusUnsubscribe();
     paymentStatusUnsubscribe = null;
   }
 
   paymentStatusUnsubscribe = db
-    .collection('payments')
+    .collection("payments")
     .doc(orderId)
     .onSnapshot(async (doc) => {
+
       if (!doc.exists) return;
 
       const payment = doc.data();
 
-      document.getElementById('qris-transaction-status').textContent =
-        (payment.status || 'pending').toUpperCase();
+      // ===== Payment Success =====
+      if (payment.status === "paid") {
 
-      if (payment.status === 'paid') {
         if (paymentStatusUnsubscribe) {
           paymentStatusUnsubscribe();
           paymentStatusUnsubscribe = null;
         }
 
-        const badge = document.getElementById('qris-status-badge');
-        badge.textContent = '✅ Payment Successful!';
-        badge.className = 'status-badge success';
-
-        // Ambil status premium terbaru yang sudah diubah webhook
+        // Ambil status premium terbaru
         const userDoc = await db
-          .collection('users')
+          .collection("users")
           .doc(currentUser)
           .get();
 
         if (userDoc.exists) {
+
           const userData = userDoc.data();
 
-          userPlan = userData.plan || 'premium';
+          userPlan = userData.plan || "premium";
 
           const expiry =
             userData.planExpiry?.toDate?.().toISOString() || null;
 
           savePlan(currentUser, userPlan, expiry);
+
         }
 
         updatePlanUI();
         updateHome();
         renderDecks();
 
-        alert('🎉 Payment successful! Premium is now active.');
+        alert("🎉 Payment successful! Premium is now active.");
 
-        setTimeout(() => {
-          closeQrisModal();
-        }, 2000);
+        setTimeout(closeQrisModal, 1500);
+
+        return;
       }
 
+      // ===== Payment Failed / Expired =====
       if (
-        payment.status === 'failed' ||
-        payment.status === 'expired'
+        payment.status === "failed" ||
+        payment.status === "expired"
       ) {
-        const badge = document.getElementById('qris-status-badge');
-        badge.textContent = '❌ Payment ' + payment.status;
-        badge.className = 'status-badge failed';
+
+        alert("Payment expired or failed.");
+
+        closeQrisModal();
+
       }
+
     }, (error) => {
-      console.error('Payment status listener error:', error);
+
+      console.error("Payment status listener error:", error);
+
     });
+
 }
-  
+
+
+// ============================================================
+// CLOSE QRIS MODAL
+// ============================================================
+
 function closeQrisModal() {
-  const modal = document.getElementById('qris-modal');
-  modal.classList.add('hidden');
-  
-  // Clear timer interval
+
+  const modal = document.getElementById("qris-modal");
+  if (!modal) return;
+
+  modal.classList.add("hidden");
+
+  // Stop countdown
   if (modal.dataset.timerInterval) {
-    clearInterval(modal.dataset.timerInterval);
-    modal.dataset.timerInterval = null;
+    clearInterval(Number(modal.dataset.timerInterval));
+    delete modal.dataset.timerInterval;
   }
 
+  // Stop Firestore listener
   if (paymentStatusUnsubscribe) {
-  paymentStatusUnsubscribe();
-  paymentStatusUnsubscribe = null;
-}
-  
-  // Reset QRIS image
-  document.getElementById('qris-image').classList.add('hidden');
-  document.getElementById('qris-image').src = '';
-  
-  const placeholder = document.getElementById('qris-placeholder');
-  placeholder.classList.remove('hidden');
-  placeholder.innerHTML = `
-    📱
-    <p style="font-size:12px;margin-top:8px;color:var(--text-secondary);">
-      Scan with QRIS app
-    </p>
-  `;
-  
+    paymentStatusUnsubscribe();
+    paymentStatusUnsubscribe = null;
+  }
+
+  // Reset QR image
+  const image = document.getElementById("qris-image");
+  if (image) {
+    image.classList.add("hidden");
+    image.src = "";
+  }
+
+  // Reset placeholder
+  const placeholder = document.getElementById("qris-placeholder");
+
+  if (placeholder) {
+    placeholder.classList.remove("hidden");
+    placeholder.innerHTML = `
+      <div style="text-align:center;padding:24px;">
+        <div style="font-size:42px;">💳</div>
+      </div>
+    `;
+  }
+
   currentQrisOrderId = null;
+
 }
     // ============================================================
     //  KEYBOARD SHORTCUTS
