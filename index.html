@@ -143,11 +143,11 @@ body {
   background: var(--surface);
   border-top: 1px solid var(--border);
   display: flex;
-  justify-content: center;
+  justify-content: space-around;
   align-items: center;
-  gap: 0.5rem;
-  z-index: 9999 !important;
   position: relative;
+  pointer-events: all;
+  z-index: 9999 !important;
   pointer-events: all !important;
 }
     
@@ -162,6 +162,7 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: center;
   gap: 2px;
   font-size: 10px;
   font-weight: 600;
@@ -175,6 +176,8 @@ body {
   user-select: none;
   -webkit-tap-highlight-color: transparent;
   pointer-events: all;
+  text-align: center;
+  min-width: 56px;
 }
 .nav-item.active { color: var(--accent); }
 .nav-item i { width: 24px; height: 24px; pointer-events: none; }
