@@ -15,6 +15,8 @@
   <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-functions-compat.js"></script>
   
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
   
   <style>
@@ -9683,45 +9685,84 @@ function showQrisModal(result) {
   document.getElementById('qris-transaction-status').textContent = 'PENDING';
   document.getElementById('qris-payment-detail').classList.remove('hidden');
   
-  // ===== Set QRIS Image =====
-  const imageEl = document.getElementById('qris-image');
-  const placeholderEl = document.getElementById('qris-placeholder');
-  
-  if (result.qrisImage) {
-    imageEl.src = result.qrisImage;
-    imageEl.classList.remove('hidden');
-    placeholderEl.classList.add('hidden');
-  } else if (result.qrisCode) {
-    // Jika API mengembalikan kode QRIS (bukan gambar), kita bisa gunakan library QR
-    // Atau tampilkan sebagai text
-    imageEl.classList.add('hidden');
-    placeholderEl.classList.remove('hidden');
-    placeholderEl.innerHTML = `
-      <div style="font-size:12px;text-align:center;">
-        <p style="font-size:2rem;">📱</p>
-        <p style="margin-top:4px;font-weight:600;">Scan QRIS Code</p>
-        <p style="font-size:10px;color:var(--text-secondary);word-break:break-all;max-width:180px;margin:4px auto;">
-          ${result.qrisCode}
-        </p>
-        <p style="font-size:9px;color:var(--text-secondary);margin-top:4px;">
-          Copy kode di atas ke aplikasi QRIS
-        </p>
-      </div>
-    `;
-  } else {
-    // Fallback: tampilkan placeholder
-    imageEl.classList.add('hidden');
-    placeholderEl.classList.remove('hidden');
-    placeholderEl.innerHTML = `
-      <div style="font-size:12px;text-align:center;">
-        <p style="font-size:3rem;">💳</p>
-        <p style="font-weight:600;">QRIS</p>
-        <p style="font-size:10px;color:var(--text-secondary);">
-          Scan dengan aplikasi QRIS
-        </p>
-      </div>
-    `;
-  }
+ // ===== Set QRIS Image =====
+const imageEl = document.getElementById('qris-image');
+const placeholderEl = document.getElementById('qris-placeholder');
+
+if (result.qrisImage) {
+  imageEl.src = result.qrisImage;
+  imageEl.classList.remove('hidden');
+  placeholderEl.classList.add('hidden');
+
+} else if (result.qrisCode) {
+
+  imageEl.classList.add('hidden');
+  placeholderEl.classList.remove('hidden');
+
+  placeholderEl.innerHTML = `
+    <div style="display:flex;flex-direction:column;align-items:center;gap:16px;padding:12px;">
+
+      <div id="qrcode"></div>
+
+      <button
+        id="save-qr-btn"
+        style="
+          background:#2563eb;
+          color:#fff;
+          border:none;
+          border-radius:10px;
+          padding:10px 18px;
+          font-weight:600;
+          cursor:pointer;
+        ">
+        📥 Save QR Code
+      </button>
+
+      <p style="font-size:12px;color:var(--text-secondary);text-align:center;">
+        Scan menggunakan aplikasi QRIS apa pun
+      </p>
+
+    </div>
+  `;
+
+  // Generate QR Code
+  new QRCode(document.getElementById("qrcode"), {
+    text: result.qrisCode,
+    width: 280,
+    height: 280,
+    correctLevel: QRCode.CorrectLevel.H
+  });
+
+  // Save QR Code
+  document.getElementById("save-qr-btn").onclick = () => {
+    const canvas = document.querySelector("#qrcode canvas");
+
+    if (!canvas) {
+      alert("QR Code belum tersedia.");
+      return;
+    }
+
+    const link = document.createElement("a");
+    link.download = `PHARMACORE_QRIS_${result.orderId}.png`;
+    link.href = canvas.toDataURL("image/png");
+    link.click();
+  };
+
+} else {
+
+  imageEl.classList.add('hidden');
+  placeholderEl.classList.remove('hidden');
+
+  placeholderEl.innerHTML = `
+    <div style="font-size:12px;text-align:center;">
+      <p style="font-size:3rem;">💳</p>
+      <p style="font-weight:600;">QRIS</p>
+      <p style="font-size:10px;color:var(--text-secondary);">
+        Scan dengan aplikasi QRIS
+      </p>
+    </div>
+  `;
+}
   
   // Reset status badge
   const badge = document.getElementById('qris-status-badge');
@@ -9729,7 +9770,7 @@ function showQrisModal(result) {
   badge.className = 'status-badge pending';
   
   // Reset timer
-  let seconds = 600; // 5 minutes
+  let seconds = 600; // 10 minutes
   const timerEl = document.getElementById('qris-countdown');
   
   // Timer countdown
