@@ -1675,8 +1675,7 @@ color:white;
     }
 
 /* ==========================================================
-   QRIS MODAL V3 - OPTIMIZED
-   Full CSS dengan Mobile Optimization
+   QRIS MODAL V3 - FINAL CSS
 ========================================================== */
 
 /* ===========================
@@ -1686,19 +1685,23 @@ color:white;
 .qris2-overlay {
     position: fixed;
     inset: 0;
-    z-index: 9999;
+    width: 100%;
+    max-width: 430px;
+    left: 50%;
+    transform: translateX(-50%);
     display: flex;
-    align-items: center;
     justify-content: center;
-    padding: 24px;
+    align-items: center;
+    padding: 16px;
     background: rgba(15, 23, 42, 0.65);
     backdrop-filter: blur(8px);
     -webkit-backdrop-filter: blur(8px);
+    z-index: 9999;
 }
 
 .qris2-card {
     width: 100%;
-    max-width: 580px;
+    max-width: 398px;
     max-height: 92vh;
     overflow-y: auto;
     background: #ffffff;
@@ -1959,52 +1962,6 @@ color:white;
 }
 
 /* ===========================
-   QR CARD
-=========================== */
-
-.qris2-qr-card {
-    border-radius: 24px;
-    border: 1px solid #e5e7eb;
-    background: #ffffff;
-    padding: 24px;
-    margin-bottom: 20px;
-}
-
-.qris2-qr-header {
-    display: flex;
-    align-items: center;
-    gap: 16px;
-    margin-bottom: 22px;
-}
-
-.qris2-qr-logo {
-    width: 64px;
-    height: 64px;
-    border-radius: 18px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: linear-gradient(135deg, #0f172a, #2563eb);
-    color: white;
-    font-size: 18px;
-    font-weight: 800;
-    flex-shrink: 0;
-}
-
-.qris2-qr-title {
-    font-size: 18px;
-    font-weight: 700;
-    color: #111827;
-}
-
-.qris2-qr-subtitle {
-    margin-top: 4px;
-    font-size: 13px;
-    color: #6b7280;
-    line-height: 1.5;
-}
-
-/* ===========================
    QR CONTAINER
 =========================== */
 
@@ -2121,22 +2078,6 @@ color:white;
 }
 
 /* ===========================
-   TRANSACTION
-=========================== */
-
-.qris2-transaction {
-    border: 1px solid #e5e7eb;
-    border-radius: 20px;
-    background: #ffffff;
-    padding: 18px;
-    margin-bottom: 24px;
-}
-
-/* ===========================
-   FOOTER
-=========================== */
-
-/* ===========================
    FOOTER
 =========================== */
 
@@ -2148,6 +2089,17 @@ color:white;
 
 .qris2-btn {
     flex: 1;
+    height: 52px;
+    border: none;
+    border-radius: 16px;
+    cursor: pointer;
+    font-size: 15px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    transition: 0.2s;
 }
 
 .qris2-btn:hover {
@@ -2206,19 +2158,19 @@ color:white;
 }
 
 /* ==========================================================
-   MOBILE OPTIMIZATION - MAIN
+   MOBILE OPTIMIZATION
 ========================================================== */
 
 @media (max-width: 640px) {
     .qris2-overlay {
-        padding: 0;
+        padding: 12px;
         align-items: flex-end;
     }
 
     .qris2-card {
-        border-radius: 24px 24px 0 0;
-        max-width: none;
         width: 100%;
+        max-width: 100%;
+        border-radius: 24px 24px 0 0;
         max-height: 94vh;
         padding: 22px;
     }
@@ -2264,10 +2216,6 @@ color:white;
     }
 }
 
-/* ==========================================================
-   MOBILE OPTIMIZATION - FIXED (480px)
-========================================================== */
-
 @media (max-width: 480px) {
     .qris2-overlay {
         padding: 0;
@@ -2281,7 +2229,6 @@ color:white;
         max-width: 100%;
     }
 
-    /* Header lebih compact */
     .qris2-header {
         margin-bottom: 16px;
         align-items: center;
@@ -2309,7 +2256,6 @@ color:white;
         height: 18px;
     }
 
-    /* Summary lebih compact & horizontal */
     .qris2-summary {
         flex-direction: row;
         text-align: left;
@@ -2364,7 +2310,6 @@ color:white;
         padding: 4px 10px;
     }
 
-    /* Sections lebih compact */
     .qris2-section {
         padding: 14px;
         border-radius: 16px;
@@ -2396,7 +2341,6 @@ color:white;
         font-size: 13px;
     }
 
-    /* Total card */
     .qris2-total-card {
         padding: 18px 14px;
         border-radius: 16px;
@@ -2410,34 +2354,6 @@ color:white;
     .qris2-total-price {
         font-size: 28px;
         margin-top: 6px;
-    }
-
-    /* QR Card */
-    .qris2-qr-card {
-        padding: 16px;
-        border-radius: 16px;
-        margin-bottom: 14px;
-    }
-
-    .qris2-qr-header {
-        gap: 12px;
-        margin-bottom: 14px;
-    }
-
-    .qris2-qr-logo {
-        width: 44px;
-        height: 44px;
-        border-radius: 12px;
-        font-size: 13px;
-        flex-shrink: 0;
-    }
-
-    .qris2-qr-title {
-        font-size: 15px;
-    }
-
-    .qris2-qr-subtitle {
-        font-size: 12px;
     }
 
     .qris2-qr-wrapper {
@@ -2467,7 +2383,6 @@ color:white;
         font-size: 12px;
     }
 
-    /* Countdown */
     .qris2-expire {
         font-size: 12px;
         gap: 6px;
@@ -2479,7 +2394,6 @@ color:white;
         margin-top: 10px;
     }
 
-    /* Note */
     .qris2-note {
         padding: 12px 14px;
         gap: 10px;
@@ -2496,11 +2410,9 @@ color:white;
         font-size: 12px;
     }
 
-    /* Transaction */
-    .qris2-transaction {
-        padding: 14px;
-        border-radius: 14px;
-        margin-bottom: 16px;
+    .qris2-footer {
+        flex-direction: row;
+        gap: 8px;
     }
 
     .qris2-btn {
@@ -2510,16 +2422,11 @@ color:white;
         gap: 8px;
     }
 
-    /* Security */
     .qris2-security {
         font-size: 11px;
         margin-top: 12px;
     }
 }
-
-/* ==========================================================
-   EXTRA SMALL (360px ke bawah)
-========================================================== */
 
 @media (max-width: 380px) {
     .qris2-card {
@@ -2562,10 +2469,6 @@ color:white;
         font-size: 15px;
     }
 
-    .qris2-summary-top {
-        gap: 4px;
-    }
-
     .qris2-badge {
         font-size: 9px;
         padding: 3px 8px;
@@ -2591,16 +2494,6 @@ color:white;
     .qris2-image {
         width: 140px;
         padding: 6px;
-    }
-
-    .qris2-qr-logo {
-        width: 38px;
-        height: 38px;
-        font-size: 11px;
-    }
-
-    .qris2-qr-title {
-        font-size: 14px;
     }
 
     .qris2-countdown {
@@ -2629,6 +2522,11 @@ color:white;
 
     .qris2-value {
         font-size: 12px;
+    }
+
+    .qris2-footer {
+        flex-direction: row;
+        gap: 6px;
     }
 }
 
@@ -2670,26 +2568,8 @@ color:white;
     color: #9ca3af;
 }
 
-.dark .qris2-qr-card {
-    background: #1f2937;
-    border-color: #374151;
-}
-
-.dark .qris2-qr-title {
-    color: white;
-}
-
-.dark .qris2-qr-subtitle {
-    color: #9ca3af;
-}
-
 .dark .qris2-qr-wrapper {
     background: #111827;
-    border-color: #374151;
-}
-
-.dark .qris2-transaction {
-    background: #1f2937;
     border-color: #374151;
 }
 
@@ -2707,141 +2587,40 @@ color:white;
 }
 
 /* ==========================================================
-   SMOOTH EFFECT
+   SMOOTH EFFECT - Hanya untuk perangkat dengan hover
 ========================================================== */
 
-.qris2-section,
-.qris2-total-card,
-.qris2-qr-card,
-.qris2-note,
-.qris2-transaction {
-    transition: 0.2s;
-}
+@media (hover: hover) {
+    .qris2-section:hover,
+    .qris2-total-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 12px 30px rgba(0, 0, 0, 0.06);
+    }
 
-.qris2-section:hover,
-.qris2-total-card:hover,
-.qris2-qr-card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.06);
-}
-
-.qris2-image {
-    transition: 0.2s;
-}
-
-.qris2-image:hover {
-    transform: scale(1.03);
+    .qris2-image:hover {
+        transform: scale(1.03);
+    }
 }
 
 /* ==========================================================
-   ADDITIONAL CLASSES
+   HIDDEN CLASS
 ========================================================== */
 
-.phc-payment-modal {
-    width: 100%;
-    max-width: 430px;
-    max-height: 92vh;
-    overflow-y: auto;
-    background: var(--surface, #ffffff);
-    border-radius: 28px 28px 0 0;
-    padding: 24px;
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25);
-}
-
-@media (min-width: 640px) {
-    .phc-payment-modal {
-        border-radius: 28px;
-    }
-}
-
-.upgrade-container {
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
+.hidden {
+    display: none !important;
 }
 
 /* ==========================================================
-   MOBILE OPTIMIZATION FOR ADDITIONAL CLASSES
+   QR CODE
 ========================================================== */
 
-@media (max-width: 430px) {
-    .phc-payment-modal {
-        padding: 16px;
-        border-radius: 24px 24px 0 0;
-        max-height: 95vh;
-    }
-
-    .upgrade-header {
-        margin-bottom: 16px;
-    }
-
-    .upgrade-icon {
-        width: 56px;
-        height: 56px;
-        font-size: 26px;
-    }
-
-    .upgrade-header h2 {
-        font-size: 20px;
-        margin-top: 8px;
-    }
-
-    .upgrade-header p {
-        font-size: 12px;
-    }
-
-    .upgrade-section {
-        margin-top: 16px;
-    }
-
-    .pricing-card {
-        padding: 12px;
-        border-radius: 16px;
-    }
-
-    .plan-name {
-        font-size: 14px;
-    }
-
-    .plan-desc {
-        font-size: 11px;
-    }
-
-    .duration-grid {
-        gap: 8px;
-    }
-
-    .duration-btn {
-        padding: 10px 6px;
-        font-size: 12px;
-        border-radius: 12px;
-    }
-
-    .price-summary {
-        padding: 14px;
-        border-radius: 16px;
-    }
-
-    #modal-price-display {
-        font-size: 22px;
-    }
-
-    .daily-price {
-        font-size: 11px;
-        padding: 6px 10px;
-    }
-
-    .payment-box {
-        padding: 16px;
-        border-radius: 16px;
-    }
-
-    .pay-btn {
-        padding: 12px;
-        font-size: 13px;
-        border-radius: 14px;
-    }
+#qrcode {
+    display: inline-block;
+    padding: 20px;
+    background: white;
+    border-radius: 12px;
 }
+
 </style>
 </head>
 <body>
@@ -3058,7 +2837,7 @@ color:white;
                 <div class="qris2-summary-top">
 
                     <h3>
-                        PHARMACORE Premium
+                        PHARMADECK by pharmacore
                     </h3>
 
                 </div>
