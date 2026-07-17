@@ -11180,12 +11180,12 @@ function showQrisModal(result) {
 const imageEl = document.getElementById('qris-image');
 const placeholderEl = document.getElementById('qris-placeholder');
 
-if (result.qrisImage) {
+if (result.qrisImage && result.qrisImage.trim() !== "") {
   imageEl.src = result.qrisImage;
   imageEl.classList.remove('hidden');
   placeholderEl.classList.add('hidden');
 
-} else if (result.qrisCode) {
+} else if (result.qrisCode && result.qrisCode.trim() !== "") {
 
   imageEl.classList.add('hidden');
   placeholderEl.classList.remove('hidden');
@@ -11229,6 +11229,22 @@ if (saveBtn) {
         link.click();
 
     };
+
+}
+  } else {
+
+    imageEl.classList.add('hidden');
+    placeholderEl.classList.remove('hidden');
+
+    placeholderEl.innerHTML = `
+        <div style="font-size:12px;text-align:center;">
+            <p style="font-size:3rem;">💳</p>
+            <p style="font-weight:600;">QRIS</p>
+            <p style="font-size:10px;color:var(--text-secondary);">
+                Scan dengan aplikasi QRIS
+            </p>
+        </div>
+    `;
 
 }
   
