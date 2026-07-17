@@ -139,3 +139,8 @@ if (localStorage.getItem('Pharmadeck_theme') === 'dark') {
         console.log('✅ Bootstrap already done, init skip');
     }
 })();
+
+firebase.auth().onAuthStateChanged(async user => {
+    console.log('🔥 Auth State Changed:', user?.email || 'No user');
+    bootstrap(user);
+});
