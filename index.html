@@ -1822,84 +1822,418 @@ color:white;
       </div>
     </div>
 
-    <!-- ===== QRIS PAYMENT MODAL ===== -->
-<div id="qris-modal" class="hidden fixed inset-0 z-[9999] flex items-end sm:items-center justify-center" 
-     style="background:rgba(0,0,0,0.5);" 
+   <!-- ===== QRIS PAYMENT MODAL ===== -->
+<div id="qris-modal"
+     class="hidden fixed inset-0 z-[9999] flex items-end sm:items-center justify-center"
+     style="background:rgba(0,0,0,.55)"
      onclick="if(event.target===this) closeQrisModal()">
-  
-  <div class="surface rounded-t-3xl sm:rounded-3xl w-full max-w-md p-6" 
-       onclick="event.stopPropagation()" 
-       style="max-height:90vh;overflow-y:auto;">
-    
-    <div class="flex justify-between items-center mb-4">
-      <h3 class="font-bold text-xl">💳 QRIS Payment</h3>
-      <button onclick="closeQrisModal()" class="text-sec">
-        <i data-lucide="x" class="w-6 h-6"></i>
-      </button>
+
+    <div class="payment-modal-card surface rounded-t-3xl sm:rounded-3xl"
+         onclick="event.stopPropagation()">
+
+        <!-- ================= HEADER ================= -->
+
+        <div class="payment-header">
+
+            <div>
+
+                <h2 class="payment-title">
+                    Detail Pembayaran
+                </h2>
+
+                <p class="payment-subtitle">
+                    Scan QRIS untuk menyelesaikan pembayaran
+                </p>
+
+            </div>
+
+            <button
+                onclick="closeQrisModal()"
+                class="payment-close">
+
+                <i data-lucide="x"></i>
+
+            </button>
+
+        </div>
+
+
+
+        <!-- ================= PREMIUM CARD ================= -->
+
+        <div class="premium-summary">
+
+            <div class="premium-icon">
+
+                <i data-lucide="crown"></i>
+
+            </div>
+
+            <div class="premium-info">
+
+                <h3>
+
+                    PHARMACORE Premium
+
+                </h3>
+
+                <span
+                    id="membership-badge"
+                    class="membership-badge">
+
+                    BOOK ACCESS
+
+                </span>
+
+                <div
+                    id="qris-plan-display"
+                    class="premium-plan">
+
+                    Premium 3 Bulan
+
+                </div>
+
+                <div class="premium-bottom">
+
+                    <span
+                        id="qris-order-id">
+
+                        Order #PAY12345678
+
+                    </span>
+
+                    <span
+                        id="qris-status-badge"
+                        class="status-badge pending">
+
+                        Pending
+
+                    </span>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+
+        <!-- ================= PAYMENT DETAIL ================= -->
+
+        <div class="payment-detail-card">
+
+            <div class="payment-section-title">
+
+                <i data-lucide="receipt-text"></i>
+
+                <span>
+
+                    Detail Pembayaran
+
+                </span>
+
+            </div>
+
+
+
+            <div class="payment-row">
+
+                <div class="payment-label">
+
+                    <i data-lucide="user-round"></i>
+
+                    Membership
+
+                </div>
+
+                <div
+                    id="payment-membership">
+
+                    Book Access
+
+                </div>
+
+            </div>
+
+
+
+            <div class="payment-row">
+
+                <div class="payment-label">
+
+                    <i data-lucide="package"></i>
+
+                    Paket
+
+                </div>
+
+                <div
+                    id="payment-package">
+
+                    Premium 3 Bulan
+
+                </div>
+
+            </div>
+
+
+
+            <div class="payment-row">
+
+                <div class="payment-label">
+
+                    <i data-lucide="wallet"></i>
+
+                    Metode
+
+                </div>
+
+                <div>
+
+                    QRIS (DOKU)
+
+                </div>
+
+            </div>
+
+
+
+            <div class="payment-row">
+
+                <div class="payment-label">
+
+                    <i data-lucide="clock-3"></i>
+
+                    Status
+
+                </div>
+
+                <div>
+
+                    <span
+                        id="payment-status-text"
+                        class="status-badge pending">
+
+                        Menunggu Pembayaran
+
+                    </span>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+
+        <!-- ================= TOTAL ================= -->
+
+        <div class="payment-total-card">
+
+            <span class="payment-total-label">
+
+                Total Pembayaran
+
+            </span>
+
+            <h1
+                id="qris-amount-display"
+                class="payment-total-price">
+
+                Rp68.000
+
+            </h1>
+
+        </div>
+
+              <!-- ================= QR CARD ================= -->
+
+        <div class="payment-qr-card">
+
+            <div class="payment-qr-header">
+
+                <div class="payment-qr-logo">
+
+                    QRIS
+
+                </div>
+
+                <div>
+
+                    <div class="payment-qr-title">
+
+                        Scan QRIS
+
+                    </div>
+
+                    <div class="payment-qr-subtitle">
+
+                        Gunakan aplikasi QRIS favorit Anda
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+
+            <div id="qris-image-container" class="payment-qr-wrapper">
+
+                <div
+                    id="qris-placeholder"
+                    class="payment-qr-placeholder">
+
+                    <div class="payment-phone">
+
+                        📱
+
+                    </div>
+
+                    <div>
+
+                        QR akan muncul di sini
+
+                    </div>
+
+                </div>
+
+                <img
+                    id="qris-image"
+                    class="payment-qr-image hidden"
+                    alt="QRIS Code">
+
+            </div>
+
+
+
+            <div class="payment-expire">
+
+                <i data-lucide="clock-3"></i>
+
+                <span>
+
+                    Berlaku hingga
+
+                </span>
+
+            </div>
+
+
+
+            <div
+                id="qris-countdown"
+                class="payment-countdown">
+
+                10:00
+
+            </div>
+
+        </div>
+
+
+
+        <!-- ================= INFO ================= -->
+
+        <div class="payment-note">
+
+            <i data-lucide="info"></i>
+
+            <div>
+
+                QR akan otomatis kedaluwarsa apabila
+                belum diselesaikan.
+
+            </div>
+
+        </div>
+
+
+
+        <!-- ================= TRANSACTION ================= -->
+
+        <div
+            id="qris-payment-detail"
+            class="payment-transaction hidden">
+
+            <div class="payment-row">
+
+                <span class="payment-label">
+
+                    Transaction ID
+
+                </span>
+
+                <span
+                    id="qris-transaction-id"
+                    class="payment-value">
+
+                    -
+
+                </span>
+
+            </div>
+
+
+
+            <div class="payment-row">
+
+                <span class="payment-label">
+
+                    Status
+
+                </span>
+
+                <span
+                    id="qris-transaction-status"
+                    class="payment-value">
+
+                    -
+
+                </span>
+
+            </div>
+
+        </div>
+
+
+
+        <!-- ================= ACTION ================= -->
+
+        <div class="payment-footer">
+
+            <button
+                onclick="closeQrisModal()"
+                class="payment-btn payment-btn-outline">
+
+                Batal
+
+            </button>
+
+
+
+            <button
+                id="download-qr-btn"
+                class="payment-btn payment-btn-primary">
+
+                <i data-lucide="download"></i>
+
+                Download QR
+
+            </button>
+
+        </div>
+
+
+
+        <div class="payment-security">
+
+            🔒 Pembayaran diproses secara aman melalui DOKU
+
+        </div>
+
     </div>
-    
-    <div class="qris-container">
-      <!-- Status -->
-      <div class="text-center mb-4">
-        <span id="qris-status-badge" class="status-badge pending">⏳ Waiting for payment</span>
-      </div>
-      
-      <p class="qris-title" id="qris-amount-display">Rp 68.000</p>
-      <p class="qris-sub" id="qris-plan-display">Regular · 3 Months</p>
-      
-      <!-- QRIS Image -->
-      <div id="qris-image-container">
-        <div id="qris-placeholder" class="qris-image-placeholder">
-          📱
-          <p style="font-size:12px;margin-top:8px;color:var(--text-secondary);">
-            Scan with QRIS app
-          </p>
-        </div>
-        <!-- QRIS Image akan muncul di sini dari API -->
-        <img id="qris-image" class="qris-image hidden" alt="QRIS Code" />
-      </div>
-      
-      <!-- Timer / Countdown -->
-      <div class="text-center text-sm text-sec mt-2" id="qris-timer">
-        ⏱️ Expires in: <span id="qris-countdown">05:00</span>
-      </div>
-      
-      <!-- Instructions -->
-      <div class="mt-4 p-3 bg-gray-50 dark:bg-gray-800 rounded-xl text-xs text-sec">
-        <p class="font-semibold text-xs">📌 Cara Bayar:</p>
-        <ol class="list-decimal ml-4 mt-1 space-y-1">
-          <li>Buka aplikasi QRIS (GoPay, DANA, OVO, ShopeePay, BCA, Mandiri)</li>
-          <li>Scan QR Code di atas</li>
-          <li>Konfirmasi pembayaran</li>
-          <li>Premium akan aktif otomatis</li>
-        </ol>
-      </div>
-      
-      <!-- Payment Status Detail -->
-      <div id="qris-payment-detail" class="mt-3 hidden">
-        <div class="flex justify-between text-xs border-t border-theme pt-2">
-          <span class="text-sec">Transaction ID:</span>
-          <span id="qris-transaction-id" class="font-mono text-xs">-</span>
-        </div>
-        <div class="flex justify-between text-xs border-t border-theme pt-1">
-          <span class="text-sec">Status:</span>
-          <span id="qris-transaction-status" class="font-semibold">-</span>
-        </div>
-      </div>
-      
-      <!-- Action Buttons -->
-<div class="mt-4">
-  <button onclick="closeQrisModal()"
-          class="w-full py-3 rounded-2xl accent-bg text-white font-medium text-sm">
-    Close
-  </button>
-</div>
-      
-      <p class="text-center text-xs text-sec mt-3">
-        🔒 Pembayaran aman melalui DOKU
-      </p>
-    </div>
-  </div>
+
 </div>
 
     <!-- ==== HOME ==== -->
