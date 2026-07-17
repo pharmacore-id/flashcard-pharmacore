@@ -4921,7 +4921,6 @@ async function migrateLocalStorageToIndexedDB(email) {
  // AUTH & DATA LAYER
  // ============================================================
 const USERS_KEY='Pharmadeck_users';
-const SESSION_KEY='Pharmadeck_session';
 const DATA_PREFIX='Pharmadeck_data_';
 const CODES_KEY='Pharmadeck_codes';
 const GOAL_KEY='Pharmadeck_goal';
@@ -6142,7 +6141,6 @@ async function loadUserData(email) {
     users[email] = {
       username: un,
       email,
-      password: pw,
       created: Date.now(),
       plan: plan,
       isBookBuyer: false,
