@@ -1685,10 +1685,7 @@ color:white;
 .qris2-overlay {
     position: fixed;
     inset: 0;
-    width: 100%;
-    max-width: 430px;
-    left: 50%;
-    transform: translateX(-50%);
+    z-index: 9999;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -1696,12 +1693,11 @@ color:white;
     background: rgba(15, 23, 42, 0.65);
     backdrop-filter: blur(8px);
     -webkit-backdrop-filter: blur(8px);
-    z-index: 9999;
 }
 
 .qris2-card {
     width: 100%;
-    max-width: 398px;
+    max-width: 430px;
     max-height: 92vh;
     overflow-y: auto;
     background: #ffffff;
@@ -1709,6 +1705,7 @@ color:white;
     box-shadow: 0 30px 80px rgba(0, 0, 0, 0.28);
     animation: qrisPopup 0.28s ease;
     padding: 30px;
+    box-sizing: border-box;
 }
 
 @keyframes qrisPopup {
@@ -2168,7 +2165,6 @@ color:white;
     }
 
     .qris2-card {
-        width: 100%;
         max-width: 100%;
         border-radius: 24px 24px 0 0;
         max-height: 94vh;
@@ -2187,16 +2183,6 @@ color:white;
     .qris2-summary-top {
         flex-direction: column;
         align-items: center;
-    }
-
-    .qris2-row {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 6px;
-    }
-
-    .qris2-value {
-        text-align: left;
     }
 
     .qris2-total-price {
