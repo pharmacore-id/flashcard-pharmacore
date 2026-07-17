@@ -145,9 +145,18 @@ body {
   display: flex;
   justify-content: space-around;
   align-items: center;
-  z-index: 100;
   position: relative;
   pointer-events: all;
+  z-index: 9999 !important;
+  pointer-events: all !important;
+}
+    
+#view-login:not(.active),
+#view-signup:not(.active) {
+  display: none !important;
+  pointer-events: none !important;
+  opacity: 0 !important;
+}
 }
 .nav-item {
   display: flex;
@@ -549,17 +558,6 @@ body {
 .payment-option .icon.bank { background: #2563eb; color: #fff; }
 .payment-option .icon.qris { background: #059669; color: #fff; }
 .payment-option .icon.ewallet { background: #7c3aed; color: #fff; }
-
-.pricing-header {
-  background: linear-gradient(135deg, var(--premium-gold), var(--premium-purple));
-  color: #fff;
-  padding: 1.5rem;
-  border-radius: var(--radius);
-  text-align: center;
-  margin-bottom: 1rem;
-}
-.pricing-header .big-price { font-size: 1.75rem; font-weight: 800; }
-.pricing-card .price { font-size: 1.25rem; font-weight: 800; }
 
 .stat-card {
   background: var(--surface);
@@ -1143,17 +1141,6 @@ body {
   border: 2px solid var(--accent);
 }
 
-.bottom-nav {
-  position: relative;
-  z-index: 9999 !important;
-  pointer-events: all !important;
-}
-#view-login:not(.active),
-#view-signup:not(.active) {
-  display: none !important;
-  pointer-events: none !important;
-  opacity: 0 !important;
-}
 .flip-front,
 .flip-back {
   overflow-y: auto;
@@ -1202,7 +1189,7 @@ body {
 }
 
 .summary-box{
-  background:var(--card-bg);
+  background: var(--surface);
   padding:14px;
   border-radius:16px;
   border:1px solid var(--border);
@@ -5034,7 +5021,6 @@ async function bootstrap(user) {
     // ===== AUTH =====
     currentUser = user.email;
     isAdmin = ADMIN_EMAILS.includes(user.email);
-    saveSession(user.email);
     authReady = true;
     
     // ===== ENTER APP =====
@@ -5613,12 +5599,6 @@ function createProgressSnapshot() {
 
     function saveUsers(u) { localStorage.setItem(USERS_KEY, JSON.stringify(u)) }
 
-    function getSession() { try { return JSON.parse(localStorage.getItem(SESSION_KEY)) } catch { return null } }
-
-    function saveSession(e) { localStorage.setItem(SESSION_KEY, JSON.stringify({ email: e, ts: Date.now() })) }
-
-    function clearSession() { localStorage.removeItem(SESSION_KEY) }
-
     function getCodes() { try { return JSON.parse(localStorage.getItem(CODES_KEY)) || {} } catch { return {} } }
 
     function saveCodes(c) { localStorage.setItem(CODES_KEY, JSON.stringify(c)) }
@@ -6034,7 +6014,6 @@ function createProgressSnapshot() {
         const userCredential = await firebase.auth().signInWithEmailAndPassword(email, pw);
         const user = userCredential.user;
         currentUser = email;
-        saveSession(email);
         await loadUserData(email);
       } catch (error) {
         console.error('Login error:', error);
@@ -6047,7 +6026,7 @@ function createProgressSnapshot() {
         } else if (error.code === 'auth/too-many-requests') {
           err.textContent = 'Too many failed attempts. Please try again later.';
         } else if (error.code === 'auth/invalid-credential') {
-          err.textContent = 'Invalid credentials. Please check your email and password.';
+          err.textContent = 'Wrong information. Please check your email and password.';
         } else {err.textContent = 'Login failed: ' + error.message;
         }}}
 
@@ -6172,7 +6151,6 @@ async function loadUserData(email) {
     saveUsers(users);
 
     currentUser = email;
-    saveSession(email);
     allCards = await loadSharedDecks();
     if (isAdminUser) {
       savePlan(email, 'premium', expiry);
@@ -6705,74 +6683,6 @@ function resetAppState() {
     userPlan = 'free';
     isAdmin = false;
     isLoadingData = false;
-}
-
-// ============================================================
-//  CHECK SESSION
-// ============================================================
-
-async function checkSession() {
-    const s = getSession();
-    console.log("===== CHECK SESSION =====");
-    console.log("SESSION:", s);
-    console.log("Firebase user:", firebase.auth().currentUser);
-
-    if (!s?.email) return false;
-
-    const users = getUsers();
-
-    if (!users[s.email]) {
-        console.warn('⚠️ User not found in local storage:', s.email);
-        clearSession();
-        return false;
-    }
-
-    currentUser = s.email;
-
-    isAdmin = users[s.email].isAdmin || ADMIN_EMAILS.includes(s.email);
-
-    try {
-        await loadUserData(s.email);
-        await loadGlobalDeckOrder();
-        
-        // ===== CEK APAKAH DATA BERHASIL DIMUAT =====
-        if (!allCards || allCards.length === 0) {
-            console.warn('⚠️ No cards loaded for user:', s.email);
-            
-            // Coba reload dari Firebase lagi
-            const cloudData = await loadFromFirebase(s.email);
-            if (cloudData && cloudData.cards && cloudData.cards.length > 0) {
-                allCards = cloudData.cards;
-                userPlan = cloudData.plan || 'free';
-                console.log('✅ Reloaded from Firebase:', allCards.length, 'cards');
-            } else {
-                // Jika tetap kosong, beri tahu user
-                alert('Your data could not be loaded. Please try again later.');
-                await firebase.auth().signOut();
-                clearSession();
-                return false;
-            }
-        }
-        
-        enterApp();
-        return true;
-        
-    } catch (error) {
-        console.error('❌ Failed to load user data:', error);
-        
-        // Jika error karena quota exceeded
-        if (error.message && error.message.includes('quota')) {
-            alert('⚠️ Server is busy. Please try again later.');
-        } else {
-            alert('❌ Failed to load your data. Please login again.');
-        }
-        
-        // Logout dan redirect ke login
-        await firebase.auth().signOut();
-        clearSession();
-        showLoginPage();
-        return false;
-    }
 }
 
     // ============================================================
