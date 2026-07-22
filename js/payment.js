@@ -77,8 +77,8 @@ function showQrisModal(result) {
   if (!modal) return;
 
   modal.classList.remove("hidden");
-
-showPaymentView();
+  document.body.classList.add("payment-open");
+  showPaymentView();
 
   const checkPaymentBtn = document.getElementById("check-payment-btn");
 
@@ -315,6 +315,7 @@ function closeQrisModal() {
   if (!modal) return;
 
   modal.classList.add("hidden");
+  document.body.classList.remove("payment-open");
 
   // Stop countdown
   if (modal.dataset.timerInterval) {
