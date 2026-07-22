@@ -78,6 +78,16 @@ function showQrisModal(result) {
 
   modal.classList.remove("hidden");
 
+showPaymentView();
+
+  const checkPaymentBtn = document.getElementById("check-payment-btn");
+
+if (checkPaymentBtn) {
+    checkPaymentBtn.onclick = () => {
+        showCheckingView();
+    };
+}
+
   // Clear timer lama jika ada
   if (modal.dataset.timerInterval) {
     clearInterval(Number(modal.dataset.timerInterval));
@@ -258,11 +268,17 @@ function startPaymentStatusListener(orderId) {
         updateHome();
         renderDecks();
 
-        alert("🎉 Payment successful! Premium is now active.");
+       // Isi data di success view
+document.getElementById("success-membership").textContent =
+  "Premium";
 
-        setTimeout(closeQrisModal, PAYMENT_SUCCESS_DELAY);
+document.getElementById("success-package").textContent =
+  `${selectedPlan === "book" ? "Book" : "Regular"} • ${selectedDuration} Month${selectedDuration > 1 ? "s" : ""}`;
 
-        return;
+// Tampilkan halaman sukses
+showSuccessView();
+
+return;
       }
 
       // ===== Payment Failed / Expired =====
@@ -271,9 +287,12 @@ function startPaymentStatusListener(orderId) {
         payment.status === "expired"
       ) {
 
-        alert("Payment expired or failed.");
+       showPaymentView();
 
-        closeQrisModal();
+showToast(
+  "Pembayaran gagal atau telah kedaluwarsa.",
+  "error"
+);
 
       }
 
@@ -327,5 +346,41 @@ function closeQrisModal() {
       </div>
     `;
   }
+  showPaymentView();
 
 }
+
+const paymentView=document.getElementById("qris-payment-view");
+const checkingView=document.getElementById("qris-checking-view");
+const successView=document.getElementById("qris-success-view");
+
+function showPaymentView(){
+
+    paymentView.classList.remove("hidden");
+    checkingView.classList.add("hidden");
+    successView.classList.add("hidden");
+
+}
+
+function showCheckingView(){
+
+    paymentView.classList.add("hidden");
+    checkingView.classList.remove("hidden");
+    successView.classList.add("hidden");
+
+}
+
+function showSuccessView(){
+
+    paymentView.classList.add("hidden");
+    checkingView.classList.add("hidden");
+    successView.classList.remove("hidden");
+
+}
+
+document.getElementById("success-close-btn").onclick = () => {
+
+    closeQrisModal();
+
+};
+
