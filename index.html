@@ -15,6 +15,7 @@
   <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-functions-compat.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
   
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
   
@@ -4296,16 +4297,95 @@ color:var(--qris-text-light);
 
 }
 
-.download-card{
-    position: fixed;
-    left: -9999px;
-    top: 0;
+#download-card{
 
-    width: 420px;
-    background: #fff;
-    border-radius: 24px;
-    overflow: hidden;
-    box-shadow: 0 10px 40px rgba(0,0,0,.12);
+    position:fixed;
+
+    left:-9999px;
+    top:0;
+
+    width:700px;
+
+    background:#fff;
+
+    border-radius:30px;
+
+    padding:45px;
+
+    font-family:inherit;
+
+    color:#222;
+
+    box-sizing:border-box;
+
+}
+
+.download-logo{
+
+    font-size:36px;
+
+    font-weight:900;
+
+    color:#ff6b00;
+
+}
+
+.download-brand{
+
+    margin-top:4px;
+
+    color:#666;
+
+    font-size:18px;
+
+}
+
+.download-title{
+
+    margin:30px 0;
+
+    font-size:28px;
+
+    font-weight:700;
+
+}
+
+.download-info{
+
+    border:2px solid #eee;
+
+    border-radius:18px;
+
+    padding:20px;
+
+}
+
+.download-row{
+
+    display:flex;
+
+    justify-content:space-between;
+
+    margin:12px 0;
+
+    font-size:22px;
+
+}
+
+.download-qr-wrapper{
+
+    margin-top:35px;
+
+    text-align:center;
+
+}
+
+.download-qr-wrapper img{
+
+    width:360px;
+
+    height:360px;
+
 }
     
 </style>
