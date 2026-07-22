@@ -2812,272 +2812,341 @@ body {
 
         </div>
 
-              <!-- =========================
-             PAYMENT DETAIL
-        ========================== -->
+   <!-- ======================================================
+     PAYMENT VIEW
+======================================================= -->
 
-        <div class="qris2-section">
+<div id="qris-payment-view">
+  <div id="qris-checking-view" class="hidden">
 
-            <div class="qris2-section-title">
+    <div class="qris2-checking">
 
-                <i data-lucide="receipt-text"></i>
+        <div class="qris2-spinner">
+            <i data-lucide="loader-circle"></i>
+        </div>
 
-                <span>Detail Pembayaran</span>
+        <h2>Mengecek Pembayaran...</h2>
 
-            </div>
+        <p>
+            Mohon tunggu sebentar.
+            Kami sedang memverifikasi pembayaran Anda.
+        </p>
+
+        <div class="qris2-progress">
+
+            <div class="qris2-progress-bar"></div>
+
+        </div>
+
+        <div class="qris2-check-note">
+
+            QRIS biasanya terkonfirmasi dalam
+            5–30 detik.
+
+        </div>
+
+    </div>
+
+</div>
+
+  <div id="qris-success-view" class="hidden">
+
+    <div class="qris2-success">
+
+        <div class="qris2-success-icon">
+
+            <i data-lucide="badge-check"></i>
+
+        </div>
+
+        <h2>Pembayaran Berhasil</h2>
+
+        <p>
+
+            Premium berhasil diaktifkan.
+
+        </p>
+
+        <div class="qris2-success-card">
 
             <div class="qris2-row">
 
-                <div class="qris2-label">
+                <span>Membership</span>
 
-                    <i data-lucide="user-round"></i>
-
-                    <span>Membership</span>
-
-                </div>
-
-                <div
-                    id="payment-membership"
-                    class="qris2-value">
+                <strong id="success-membership">
 
                     Book Access
 
-                </div>
+                </strong>
 
             </div>
 
             <div class="qris2-row">
 
-                <div class="qris2-label">
+                <span>Paket</span>
 
-                    <i data-lucide="package"></i>
-
-                    <span>Paket</span>
-
-                </div>
-
-                <div
-                    id="payment-package"
-                    class="qris2-value">
+                <strong id="success-package">
 
                     Premium 3 Bulan
 
-                </div>
+                </strong>
 
             </div>
 
             <div class="qris2-row">
 
-                <div class="qris2-label">
+                <span>Berlaku Sampai</span>
 
-                    <i data-lucide="wallet"></i>
+                <strong id="success-expiry">
 
-                    <span>Metode</span>
+                    -
 
-                </div>
-
-                <div class="qris2-value">
-
-                    QRIS
-
-                </div>
-
-            </div>
-
-            <div class="qris2-row">
-
-                <div class="qris2-label">
-
-                    <i data-lucide="clock-3"></i>
-
-                    <span>Status</span>
-
-                </div>
-
-                <div>
-
-                    <span
-                        id="payment-status-text"
-                        class="qris2-status pending">
-
-                        Menunggu Pembayaran
-
-                    </span>
-
-                </div>
+                </strong>
 
             </div>
 
         </div>
 
-        <!-- =========================
-             TOTAL
-        ========================== -->
+        <button
+            class="qris2-btn qris2-btn-primary"
+            onclick="closeQrisModal()">
 
-        <div class="qris2-total-card">
+            Mulai Belajar
 
-            <div class="qris2-total-label">
+        </button>
 
-                Total Pembayaran
+    </div>
 
+</div>
+
+    <!-- =========================
+         PAYMENT DETAIL
+    ========================== -->
+
+    <div class="qris2-section">
+
+        <div class="qris2-section-title">
+            <i data-lucide="receipt-text"></i>
+            <span>Detail Pembayaran</span>
+        </div>
+
+        <div class="qris2-row">
+
+            <div class="qris2-label">
+                <i data-lucide="user-round"></i>
+                <span>Membership</span>
             </div>
 
-            <div
-                id="qris-amount-display"
-                class="qris2-total-price">
-
-                Rp68.000
-
+            <div id="payment-membership"
+                 class="qris2-value">
+                Book Access
             </div>
 
         </div>
 
-              <!-- =========================
-             QR CARD
-        ========================== -->
+        <div class="qris2-row">
 
-        <div class="qris2-qr-card">
-
-            <div
-                id="qris-image-container"
-                class="qris2-qr-wrapper">
-
-                <div
-                    id="qris-placeholder"
-                    class="qris2-placeholder">
-
-                    <div class="qris2-placeholder-icon">
-
-                        <i data-lucide="qr-code"></i>
-
-                    </div>
-
-                    <div class="qris2-placeholder-text">
-
-                        QR akan muncul di sini
-
-                    </div>
-
-                </div>
-
-                <img
-                    id="qris-image"
-                    class="qris2-image hidden"
-                    alt="QRIS Code">
-
+            <div class="qris2-label">
+                <i data-lucide="package"></i>
+                <span>Paket</span>
             </div>
 
-            <div class="qris2-expire">
+            <div id="payment-package"
+                 class="qris2-value">
+                Premium 3 Bulan
+            </div>
 
+        </div>
+
+        <div class="qris2-row">
+
+            <div class="qris2-label">
+                <i data-lucide="wallet"></i>
+                <span>Metode</span>
+            </div>
+
+            <div class="qris2-value">
+                QRIS
+            </div>
+
+        </div>
+
+        <div class="qris2-row">
+
+            <div class="qris2-label">
                 <i data-lucide="clock-3"></i>
-
-                Berlaku hingga
-
+                <span>Status</span>
             </div>
-
-            <div
-                id="qris-countdown"
-                class="qris2-countdown">
-
-                10:00
-
-            </div>
-
-        </div>
-
-        <!-- =========================
-             INFO
-        ========================== -->
-
-        <div class="qris2-note">
-
-            <i data-lucide="info"></i>
 
             <div>
 
-                QR akan otomatis kedaluwarsa apabila pembayaran tidak diselesaikan sebelum waktu habis
+                <span id="payment-status-text"
+                      class="qris2-status pending">
+
+                    Menunggu Pembayaran
+
+                </span>
 
             </div>
 
         </div>
 
-        <!-- =========================
-             TRANSACTION
-        ========================== -->
+    </div>
 
-        <div
-            id="qris-payment-detail"
-            class="qris2-transaction hidden">
 
-            <div class="qris2-row">
+    <!-- =========================
+         QR CARD
+    ========================== -->
 
-                <div class="qris2-label">
+    <div class="qris2-qr-card">
 
-                    Transaction ID
+        <div id="qris-image-container"
+             class="qris2-qr-wrapper">
 
+            <div id="qris-placeholder"
+                 class="qris2-placeholder">
+
+                <div class="qris2-placeholder-icon">
+                    <i data-lucide="qr-code"></i>
                 </div>
 
-                <div
-                    id="qris-transaction-id"
-                    class="qris2-value">
-
-                    -
-
-                </div>
-
-            </div>
-
-            <div class="qris2-row">
-
-                <div class="qris2-label">
-
-                    Status
-
-                </div>
-
-                <div
-                    id="qris-transaction-status"
-                    class="qris2-value">
-
-                    -
-
+                <div class="qris2-placeholder-text">
+                    QR akan muncul di sini
                 </div>
 
             </div>
+
+            <img id="qris-image"
+                 class="qris2-image hidden"
+                 alt="QRIS Code">
 
         </div>
 
-        <!-- =========================
-             FOOTER
-        ========================== -->
+        <div class="qris2-expire">
 
-        <div class="qris2-footer">
+            <i data-lucide="clock-3"></i>
 
-            <button
-                class="qris2-btn qris2-btn-secondary"
+            Berlaku hingga
+
+        </div>
+
+        <div id="qris-countdown"
+             class="qris2-countdown">
+
+            10:00
+
+        </div>
+
+    </div>
+
+
+    <!-- =========================
+         INFO
+    ========================== -->
+
+    <div class="qris2-note">
+
+        <i data-lucide="info"></i>
+
+        <div>
+
+            QR akan otomatis kedaluwarsa setelah waktu habis.
+
+        </div>
+
+    </div>
+
+
+    <!-- =========================
+         PRIMARY ACTION
+    ========================== -->
+
+    <button id="download-qr-btn"
+            class="qris2-btn qris2-btn-primary qris2-btn-full">
+
+        <i data-lucide="download"></i>
+
+        Simpan QR
+
+    </button>
+
+
+    <!-- =========================
+         SECONDARY ACTION
+    ========================== -->
+
+    <div class="qris2-footer">
+
+        <button class="qris2-btn qris2-btn-secondary"
                 onclick="closeQrisModal()">
 
-                Batal
+            Batal
 
-            </button>
+        </button>
 
-            <button
-                id="download-qr-btn"
-                class="qris2-btn qris2-btn-primary">
+        <button id="check-payment-btn"
+                class="qris2-btn qris2-btn-success">
 
-                <i data-lucide="download"></i>
+            <i data-lucide="badge-check"></i>
 
-                Simpan QR
+            Saya Sudah Bayar
 
-            </button>
+        </button>
+
+    </div>
+
+
+    <!-- =========================
+         TRANSACTION DETAIL
+    ========================== -->
+
+    <div id="qris-payment-detail"
+         class="qris2-transaction hidden">
+
+        <div class="qris2-row">
+
+            <div class="qris2-label">
+
+                Transaction ID
+
+            </div>
+
+            <div id="qris-transaction-id"
+                 class="qris2-value">
+
+                -
+
+            </div>
 
         </div>
 
-        <div class="qris2-security">
+        <div class="qris2-row">
 
-            🔒 Pembayaran diproses secara aman melalui DOKU
+            <div class="qris2-label">
+
+                Status
+
+            </div>
+
+            <div id="qris-transaction-status"
+                 class="qris2-value">
+
+                -
+
+            </div>
 
         </div>
+
+    </div>
+
+
+    <!-- =========================
+         SECURITY
+    ========================== -->
+
+    <div class="qris2-security">
+
+        🔒 Pembayaran diproses secara aman melalui DOKU
 
     </div>
 
