@@ -431,28 +431,41 @@ document.getElementById("regular-card").style.borderColor =
     
 function selectPlan(type){
 
-if(isPremiumActive()){
-alert('You already have Premium access!');
-return;
-}
+    if(isPremiumActive()){
+        alert("You already have Premium access!");
+        return;
+    }
 
-selectedPlan=type;
+    selectedPlan = type;
 
-document
-.getElementById('book-buyer-card')
-.style.borderColor =
-type === "book"
-    ? ACTIVE_BORDER_COLOR
-    : DEFAULT_BORDER_COLOR;
+    document
+        .getElementById("book-buyer-card")
+        .style.borderColor =
+            type === "book"
+                ? ACTIVE_BORDER_COLOR
+                : DEFAULT_BORDER_COLOR;
 
-document
-.getElementById('regular-card')
-.style.borderColor =
-type === "regular"
-    ? ACTIVE_BORDER_COLOR
-    : DEFAULT_BORDER_COLOR;
+    document
+        .getElementById("regular-card")
+        .style.borderColor =
+            type === "regular"
+                ? ACTIVE_BORDER_COLOR
+                : DEFAULT_BORDER_COLOR;
 
-updatePricingDisplay();
+    // ===== Show / Hide Access Code =====
+    const accessSection = document.getElementById("access-code-section");
+
+    if (type === "book") {
+        accessSection.classList.remove("hidden");
+    } else {
+        accessSection.classList.add("hidden");
+
+        document.getElementById("upgrade-code-input").value = "";
+        document.getElementById("upgrade-code-status").textContent = "";
+        hasValidCode = false;
+    }
+
+    updatePricingDisplay();
 
 }
 
