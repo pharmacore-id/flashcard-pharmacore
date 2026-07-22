@@ -1,6 +1,4 @@
-ADMIN
-
- function switchTab(tab) {
+function switchTab(tab) {
   if (currentTab === tab && tab !== 'study-select') return;
 
   currentTab = tab;
