@@ -4320,17 +4320,15 @@ color:var(--qris-text-light);
 }
 
 .download-header{
-    text-align:center;
+    display:flex;
+    justify-content:center;
+    margin-bottom:24px;
 }
 
 .download-logo{
-
-    font-size:40px;
-
-    font-weight:900;
-
-    color:#ff6b00;
-
+    width:220px;
+    height:auto;
+    display:block;
 }
 
 .download-brand{
@@ -4387,17 +4385,35 @@ color:var(--qris-text-light);
 
 .download-qr-wrapper{
 
-    margin-top:36px;
+    display:flex;
+    justify-content:center;
 
-    text-align:center;
+    margin-top:40px;
+    margin-bottom:28px;
 
 }
 
-.download-qr-wrapper img{
+.download-qr-card{
 
-    width:340px;
+    background:#fff;
 
-    height:340px;
+    border:2px solid #FFE5C7;
+
+    border-radius:28px;
+
+    padding:22px;
+
+    box-shadow:
+        0 10px 30px rgba(255,107,0,.08);
+
+}
+
+.download-qr-card img{
+
+    width:360px;
+    height:360px;
+
+    display:block;
 
 }
 
@@ -4999,10 +5015,13 @@ Pembayaran diproses secara aman melalui DOKU
 
 <div id="download-card">
 
-    <div class="download-header">
-        <div class="download-logo">PHARMADECK</div>
-        <div class="download-brand">by PharmaCore</div>
-    </div>
+   <div class="download-header">
+    <img
+        id="download-logo"
+        class="download-logo"
+        src="logo.png"
+        alt="Pharmadeck">
+</div>
 
     <div class="download-title">
         Premium Membership
@@ -5028,8 +5047,12 @@ Pembayaran diproses secara aman melalui DOKU
     </div>
 
     <div class="download-qr-wrapper">
+
+    <div class="download-qr-card">
         <img id="download-qr-image">
     </div>
+
+</div>
 
     <div class="download-footer">
         Scan menggunakan aplikasi QRIS apa pun.
