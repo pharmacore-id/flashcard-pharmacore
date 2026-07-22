@@ -1574,20 +1574,10 @@ body {
   opacity:.8;
 }
 
-/* Desktop */
 .pricing-card-grid{
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
+    display: flex;
+    flex-direction: column;
     gap: 20px;
-}
-
-/* Mobile */
-@media (max-width: 768px){
-
-    .pricing-card-grid{
-        grid-template-columns: 1fr;
-    }
-
 }
 
 /* ============================================================
