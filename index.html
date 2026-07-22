@@ -149,9 +149,10 @@ body {
   z-index: 9999 !important;
   pointer-events: all !important;
 }
-    body.payment-open #bottomNav{
-    display: none !important;
-
+  body.payment-open #bottomNav{
+    visibility:hidden;
+    opacity:0;
+    pointer-events:none;
 }
     
 #view-login:not(.active),
