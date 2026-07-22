@@ -183,29 +183,26 @@ if (saveBtn) {
         const downloadImage =
             document.getElementById("download-qr-image");
 
-        // Jika dari DOKU sudah berupa gambar
-        if (result.qrisImage) {
+       // Jika dari DOKU sudah berupa gambar
+if (result.qrisImage && result.qrisImage.trim() !== "") {
 
-            downloadImage.src = result.qrisImage;
+    downloadImage.src = result.qrisImage;
 
-        }
+}
 
-        // Jika hanya qrisCode
-        else {
+// Jika hanya qrisCode
+else {
 
-            const canvas =
-                document.querySelector("#qrcode canvas");
+    const canvas = document.querySelector("#qrcode canvas");
 
-            if (!canvas) {
+    if (!canvas) {
+        alert("QR Code belum tersedia.");
+        return;
+    }
 
-                alert("QR Code belum tersedia.");
-                return;
+    downloadImage.src = canvas.toDataURL("image/png");
 
-            }
-
-            downloadImage.src = canvas.toDataURL("image/png");
-
-        }
+}
 
         await downloadQrisCard();
 
