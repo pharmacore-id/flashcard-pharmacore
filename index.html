@@ -146,7 +146,6 @@ body {
   justify-content: space-around;
   align-items: center;
   position: relative;
-  pointer-events: all;
   z-index: 9999 !important;
   pointer-events: all !important;
 }
@@ -490,12 +489,6 @@ body {
   touch-action: manipulation;
 }
 .settings-goal button:hover { opacity: 0.8; }
-
-.daily-progress.hero-gradient .goal-text { color: rgba(255, 255, 255, 0.7); }
-.daily-progress.hero-gradient .big-number { color: #fff; }
-.daily-progress.hero-gradient .big-number small { color: rgba(255, 255, 255, 0.6); }
-.daily-progress.hero-gradient .progress-bar { background: rgba(255, 255, 255, 0.3); }
-.daily-progress.hero-gradient .progress-fill { background: #ffffff; }
 
 .upload-zone {
   border: 2px dashed var(--border);
@@ -1289,15 +1282,15 @@ body {
 #upgrade-modal{
     position:fixed;
     inset:0;
-    z-index:9999;
+    z-index:99999;
     display:flex;
     justify-content:center;
     align-items:center;
     padding:20px;
     background:rgba(0,0,0,.55);
     overflow-y:auto;
+    -webkit-overflow-scrolling:touch;
 }
-
 
 /* ============================================================
    UPGRADE MODAL (V2)
@@ -4068,19 +4061,19 @@ Back to Settings
         </div>
       </div>
     </div>
+<div id="upgrade-modal"
+     class="hidden"
+     style="background:rgba(0,0,0,0.5);"
+     onclick="if(event.target===this) closeUpgradeModal()">
 
-<div id="upgrade-modal" class="hidden">
-style="background:rgba(0,0,0,0.5);"
-onclick="if(event.target===this) closeUpgradeModal()">
+    <div class="upgrade-card"
+         onclick="event.stopPropagation()">
 
-<div class="upgrade-card"
-     onclick="event.stopPropagation()">
-
-<div class="flex justify-end items-center mb-4">
-  <button onclick="closeUpgradeModal()" class="text-sec">
-    <i data-lucide="x" class="w-6 h-6"></i>
-  </button>
-</div>
+        <div class="flex justify-end items-center mb-4">
+            <button onclick="closeUpgradeModal()" class="text-sec">
+                <i data-lucide="x" class="w-6 h-6"></i>
+            </button>
+        </div>
 
 <div class="upgrade-container">
 
