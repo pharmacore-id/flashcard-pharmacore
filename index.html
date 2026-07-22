@@ -4188,6 +4188,80 @@ html{
 box-sizing:border-box;
 
 }
+
+.qris2-qr-card{
+
+margin-bottom:20px;
+
+}
+
+.qris2-placeholder-icon{
+
+display:flex;
+
+align-items:center;
+
+justify-content:center;
+
+width:56px;
+
+height:56px;
+
+margin:0 auto 10px;
+
+border-radius:16px;
+
+background:#e0f2fe;
+
+}
+
+.qris2-placeholder-icon i{
+
+width:30px;
+
+height:30px;
+
+color:var(--qris-primary);
+
+}
+
+.qris2-placeholder-text{
+
+font-size:14px;
+
+font-weight:600;
+
+color:#64748b;
+
+}
+
+.qris2-transaction{
+
+margin-top:20px;
+
+padding:18px;
+
+background:#f8fafc;
+
+border:1px solid var(--qris-border);
+
+border-radius:18px;
+
+}
+
+.qris2-check-note{
+
+margin-top:20px;
+
+text-align:center;
+
+font-size:13px;
+
+line-height:1.6;
+
+color:var(--qris-text-light);
+
+}
     
 </style>
 </head>
@@ -4659,10 +4733,13 @@ box-sizing:border-box;
 
     <div class="qris2-security">
 
-        🔒 Pembayaran diproses secara aman melalui DOKU
+<i data-lucide="shield-check"></i>
 
-    </div>
+<span>
+Pembayaran diproses secara aman melalui DOKU
+</span>
 
+</div>
 </div>
 
 
@@ -4678,12 +4755,14 @@ box-sizing:border-box;
             <i data-lucide="loader-circle"></i>
         </div>
 
-        <h2>Mengecek Pembayaran...</h2>
+       <h2 class="qris2-checking-title">
+    Mengecek Pembayaran...
+</h2>
 
-        <p>
-            Mohon tunggu sebentar.
-            Kami sedang memverifikasi pembayaran Anda.
-        </p>
+        <p class="qris2-checking-subtitle">
+    Mohon tunggu sebentar.
+    Kami sedang memverifikasi pembayaran Anda.
+</p>
 
         <div class="qris2-progress">
 
@@ -4711,20 +4790,19 @@ box-sizing:border-box;
 
     <div class="qris2-success">
 
-        <div class="qris2-success-icon">
+        <div class="qris2-success-circle">
 
             <i data-lucide="badge-check"></i>
 
         </div>
 
-        <h2>Pembayaran Berhasil</h2>
+       <h2 class="qris2-success-title">
+    Pembayaran Berhasil
+</h2>
 
-        <p>
-
-            Premium berhasil diaktifkan.
-
-        </p>
-
+       <p class="qris2-success-subtitle">
+    Premium berhasil diaktifkan.
+</p>
         <div class="qris2-success-card">
 
             <div class="qris2-row">
