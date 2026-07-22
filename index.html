@@ -4275,6 +4275,18 @@ line-height:1.6;
 color:var(--qris-text-light);
 
 }
+
+.download-card{
+    position: fixed;
+    left: -9999px;
+    top: 0;
+
+    width: 420px;
+    background: #fff;
+    border-radius: 24px;
+    overflow: hidden;
+    box-shadow: 0 10px 40px rgba(0,0,0,.12);
+}
     
 </style>
 </head>
@@ -4876,6 +4888,73 @@ Pembayaran diproses secara aman melalui DOKU
       </div> <!-- qris2-card -->
 
 </div> <!-- qris-modal -->
+
+<!-- ======================================================
+     DOWNLOAD QR CARD (Hidden)
+======================================================= -->
+
+<div id="download-card" class="download-card hidden">
+
+    <div class="download-header">
+
+        <h1>PHARMADECK</h1>
+
+        <div class="download-brand">
+            by PharmaCore
+        </div>
+
+    </div>
+
+    <div class="download-membership">
+
+        <div id="download-badge"
+             class="download-badge">
+
+            BOOK ACCESS
+
+        </div>
+
+        <div id="download-plan"
+             class="download-plan">
+
+            Regular • 3 Months
+
+        </div>
+
+    </div>
+
+    <div class="download-total">
+
+        <span>Total Pembayaran</span>
+
+        <h2 id="download-total-price">
+
+            Rp0
+
+        </h2>
+
+    </div>
+
+    <div class="download-qr">
+
+        <img id="download-qr-image"
+             alt="QRIS">
+
+    </div>
+
+    <div class="download-order">
+
+        <span>Order ID</span>
+
+        <strong id="download-order-id">
+
+            -
+
+        </strong>
+
+    </div>
+
+</div>
 
  <!-- ==== HOME ==== -->
 <div id="view-home" class="view">
