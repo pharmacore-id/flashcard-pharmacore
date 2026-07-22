@@ -427,7 +427,7 @@ scheduleSync(3000);
         //  CLEANUP
         // ============================================================
         console.log('🧹 Cleaning up...');
-        clearSession();
+       // clearSession() sudah dihapus
         localStorage.removeItem('Pharmadeck_session_token');
         localStorage.removeItem('Pharmadeck_token_expiry');
         currentUser = null;
@@ -587,7 +587,7 @@ function showLoginPage() {
     }
     
     // ===== CLEAR SESSION =====
-    clearSession();
+    // clearSession() sudah dihapus
     
     if (typeof lucide !== 'undefined' && lucide.createIcons) {
         lucide.createIcons();
