@@ -461,7 +461,7 @@ function selectDuration(months,event){
 selectedDuration=months;
 
 document
-.querySelectorAll('.duration-btn')
+.querySelectorAll('.upgrade-duration-btn')
 .forEach(btn=>{
 
 btn.classList.remove('active');
