@@ -27,7 +27,7 @@ async function processPayment() {
     return;
   }
 
-  const btn = document.getElementById("pay-now-btn");
+  const btn = document.getElementById("upgrade-pay-btn");
 if (!btn) return;
   btn.disabled = true;
   btn.textContent = "Creating payment...";
