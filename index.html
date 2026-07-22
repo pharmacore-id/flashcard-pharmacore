@@ -1413,6 +1413,12 @@ body {
     font-size:13px;
     color:var(--text-secondary);
 }
+
+.upgrade-container{
+    display:flex;
+    flex-direction:column;
+    gap:20px;
+}
 .upgrade-summary .total-price{
     font-size:30px;
     font-weight:800;
@@ -1552,6 +1558,12 @@ body {
   font-weight:700;
   margin-bottom:10px;
   opacity:.8;
+}
+
+.pricing-card-grid{
+    display:grid;
+    grid-template-columns:repeat(2,1fr);
+    gap:12px;
 }
 
 /* ============================================================
@@ -4044,7 +4056,7 @@ class="hidden fixed inset-0 z-[9999] flex items-end sm:items-center justify-cent
 style="background:rgba(0,0,0,0.5);"
 onclick="if(event.target===this) closeUpgradeModal()">
 
-<div class="phc-payment-modal"
+<div class="upgrade-card"
      onclick="event.stopPropagation()">
 
 <div class="flex justify-end items-center mb-4">
@@ -4082,10 +4094,10 @@ onclick="if(event.target===this) closeUpgradeModal()">
 
         <div class="pricing-card-grid">
 
-           <div class="pricing-card popular" id="book-buyer-card" onclick="selectPlan('book')">
+           <div class="upgrade-plan-card popular" id="book-buyer-card" onclick="selectPlan('book')">
   <span class="badge-popular">⭐ Best Value</span>
-  <p class="plan-name">Book Buyer</p>
-  <p class="plan-desc">Requires valid access code</p>
+  <p class="upgrade-plan-title">Book Buyer</p>
+ <p class="upgrade-plan-desc">Requires valid access code</p>
   <div class="mt-2 text-xs text-sec bg-gray-100 dark:bg-gray-800 p-2 rounded-lg border border-gray-200 dark:border-gray-700">
     💡 Buy <b>any book by Pharmacore</b> (e.g. <i>Pharmacy Boostcard</i>) on e-commerce. 
     Code will be sent via <b>chat</b> after purchase. ⚠️ One-time use.
@@ -4168,7 +4180,7 @@ onclick="if(event.target===this) closeUpgradeModal()">
             </button>
 
             <button
-            class="duration-btn"
+            class="upgrade-duration-btn"
             onclick="selectDuration(6,event)">
 
                 6 Months
@@ -4182,11 +4194,11 @@ onclick="if(event.target===this) closeUpgradeModal()">
 
     <!-- PRICE SUMMARY -->
 
-    <div class="price-summary">
+    <div class="upgrade-summary">
 
         <div>
 
-            <p class="summary-label">
+            <p class="upgrade-summary-label">
 
                 Total Price
 
@@ -4206,7 +4218,7 @@ onclick="if(event.target===this) closeUpgradeModal()">
 
         </div>
 
-        <div class="daily-price">
+        <div class="upgrade-daily-price">
 
             <span id="price-per-day">
 
@@ -4221,21 +4233,21 @@ onclick="if(event.target===this) closeUpgradeModal()">
 
     <!-- PAYMENT -->
 
-    <div class="payment-box">
+    <div class="upgrade-payment">
 
-        <div class="payment-title">
+        <div class="upgrade-payment-title">
 
             QRIS Payment
 
         </div>
 
-        <p class="payment-sub">
+        <p class="upgrade-payment-sub">
 
             Supports GoPay, DANA, OVO, ShopeePay, BCA, Mandiri and other QRIS apps
 
         </p>
 
-        <button id="pay-now-btn" onclick="processPayment()" class="pay-btn">
+        <button id="upgrade-pay-btn" onclick="processPayment()" class="upgrade-pay-btn">
   Pay Rp68,000
 </button>
 
