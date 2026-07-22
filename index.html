@@ -2812,112 +2812,11 @@ body {
 
         </div>
 
-   <!-- ======================================================
+<!-- ======================================================
      PAYMENT VIEW
 ======================================================= -->
 
 <div id="qris-payment-view">
-  <div id="qris-checking-view" class="hidden">
-
-    <div class="qris2-checking">
-
-        <div class="qris2-spinner">
-            <i data-lucide="loader-circle"></i>
-        </div>
-
-        <h2>Mengecek Pembayaran...</h2>
-
-        <p>
-            Mohon tunggu sebentar.
-            Kami sedang memverifikasi pembayaran Anda.
-        </p>
-
-        <div class="qris2-progress">
-
-            <div class="qris2-progress-bar"></div>
-
-        </div>
-
-        <div class="qris2-check-note">
-
-            QRIS biasanya terkonfirmasi dalam
-            5–30 detik.
-
-        </div>
-
-    </div>
-
-</div>
-
-  <div id="qris-success-view" class="hidden">
-
-    <div class="qris2-success">
-
-        <div class="qris2-success-icon">
-
-            <i data-lucide="badge-check"></i>
-
-        </div>
-
-        <h2>Pembayaran Berhasil</h2>
-
-        <p>
-
-            Premium berhasil diaktifkan.
-
-        </p>
-
-        <div class="qris2-success-card">
-
-            <div class="qris2-row">
-
-                <span>Membership</span>
-
-                <strong id="success-membership">
-
-                    Book Access
-
-                </strong>
-
-            </div>
-
-            <div class="qris2-row">
-
-                <span>Paket</span>
-
-                <strong id="success-package">
-
-                    Premium 3 Bulan
-
-                </strong>
-
-            </div>
-
-            <div class="qris2-row">
-
-                <span>Berlaku Sampai</span>
-
-                <strong id="success-expiry">
-
-                    -
-
-                </strong>
-
-            </div>
-
-        </div>
-
-        <button
-            class="qris2-btn qris2-btn-primary"
-            onclick="closeQrisModal()">
-
-            Mulai Belajar
-
-        </button>
-
-    </div>
-
-</div>
 
     <!-- =========================
          PAYMENT DETAIL
@@ -2939,7 +2838,7 @@ body {
 
             <div id="payment-membership"
                  class="qris2-value">
-                Book Access
+                -
             </div>
 
         </div>
@@ -2953,7 +2852,7 @@ body {
 
             <div id="payment-package"
                  class="qris2-value">
-                Premium 3 Bulan
+                -
             </div>
 
         </div>
@@ -3106,9 +3005,7 @@ body {
         <div class="qris2-row">
 
             <div class="qris2-label">
-
                 Transaction ID
-
             </div>
 
             <div id="qris-transaction-id"
@@ -3123,9 +3020,7 @@ body {
         <div class="qris2-row">
 
             <div class="qris2-label">
-
                 Status
-
             </div>
 
             <div id="qris-transaction-status"
@@ -3147,6 +3042,118 @@ body {
     <div class="qris2-security">
 
         🔒 Pembayaran diproses secara aman melalui DOKU
+
+    </div>
+
+</div>
+
+
+<!-- ======================================================
+     CHECKING VIEW
+======================================================= -->
+
+<div id="qris-checking-view" class="hidden">
+
+    <div class="qris2-checking">
+
+        <div class="qris2-spinner">
+            <i data-lucide="loader-circle"></i>
+        </div>
+
+        <h2>Mengecek Pembayaran...</h2>
+
+        <p>
+            Mohon tunggu sebentar.
+            Kami sedang memverifikasi pembayaran Anda.
+        </p>
+
+        <div class="qris2-progress">
+
+            <div class="qris2-progress-bar"></div>
+
+        </div>
+
+        <div class="qris2-check-note">
+
+            QRIS biasanya terkonfirmasi dalam
+            5–30 detik.
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- ======================================================
+     SUCCESS VIEW
+======================================================= -->
+
+<div id="qris-success-view" class="hidden">
+
+    <div class="qris2-success">
+
+        <div class="qris2-success-icon">
+
+            <i data-lucide="badge-check"></i>
+
+        </div>
+
+        <h2>Pembayaran Berhasil</h2>
+
+        <p>
+
+            Premium berhasil diaktifkan.
+
+        </p>
+
+        <div class="qris2-success-card">
+
+            <div class="qris2-row">
+
+                <span>Membership</span>
+
+                <strong id="success-membership">
+
+                    Premium
+
+                </strong>
+
+            </div>
+
+            <div class="qris2-row">
+
+                <span>Paket</span>
+
+                <strong id="success-package">
+
+                    -
+
+                </strong>
+
+            </div>
+
+            <div class="qris2-row">
+
+                <span>Berlaku Sampai</span>
+
+                <strong id="success-expiry">
+
+                    -
+
+                </strong>
+
+            </div>
+
+        </div>
+
+        <button
+            id="success-close-btn"
+            class="qris2-btn qris2-btn-primary">
+
+            Mulai Belajar
+
+        </button>
 
     </div>
 
