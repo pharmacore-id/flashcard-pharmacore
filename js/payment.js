@@ -141,30 +141,9 @@ if (checkPaymentBtn) {
       new QRCode(qrContainer, {
         text: result.qrisCode,
        width: QRIS_SIZE,
-height: QRIS_SIZE,
+        height: QRIS_SIZE,
         correctLevel: QRCode.CorrectLevel.H
       });
-
-      // Download QR
-      const saveBtn = document.getElementById("download-qr-btn");
-
-      if (saveBtn) {
-        saveBtn.onclick = () => {
-
-          const canvas = qrContainer.querySelector("canvas");
-
-          if (!canvas) {
-            alert("QR Code belum tersedia.");
-            return;
-          }
-
-          const link = document.createElement("a");
-          link.download = `PHARMACORE_QRIS_${result.orderId || "payment"}.png`;
-          link.href = canvas.toDataURL("image/png");
-          link.click();
-
-        };
-      }
     }
 
   } else {
@@ -180,6 +159,59 @@ height: QRIS_SIZE,
     `;
 
   }
+
+  // ======================================================
+// DOWNLOAD QR CARD
+// ======================================================
+
+const saveBtn = document.getElementById("download-qr-btn");
+
+if (saveBtn) {
+
+    saveBtn.onclick = async () => {
+
+        // Isi data kartu download
+        document.getElementById("download-plan").textContent =
+            `${selectedPlan === "book" ? "Book Buyer" : "Regular"} • ${selectedDuration} Months`;
+
+        document.getElementById("download-total").textContent =
+            formatRupiah(result.amount);
+
+        document.getElementById("download-order").textContent =
+            result.orderId || "-";
+
+        const downloadImage =
+            document.getElementById("download-qr-image");
+
+        // Jika dari DOKU sudah berupa gambar
+        if (result.qrisImage) {
+
+            downloadImage.src = result.qrisImage;
+
+        }
+
+        // Jika hanya qrisCode
+        else {
+
+            const canvas =
+                document.querySelector("#qrcode canvas");
+
+            if (!canvas) {
+
+                alert("QR Code belum tersedia.");
+                return;
+
+            }
+
+            downloadImage.src = canvas.toDataURL("image/png");
+
+        }
+
+        await downloadQrisCard();
+
+    };
+
+}
 
   // ===== Countdown =====
  let seconds = QRIS_EXPIRE_SECONDS;
@@ -384,4 +416,23 @@ document.getElementById("success-close-btn").onclick = () => {
     closeQrisModal();
 
 };
+
+async function downloadQrisCard(){
+
+    const card=document.getElementById("download-card");
+
+    const canvas=await html2canvas(card,{
+        scale:3,
+        backgroundColor:"#ffffff"
+    });
+
+    const link=document.createElement("a");
+
+    link.download=`PHARMADECK_QRIS_${Date.now()}.png`;
+
+    link.href=canvas.toDataURL("image/png");
+
+    link.click();
+
+}
 
