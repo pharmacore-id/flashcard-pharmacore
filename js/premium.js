@@ -337,11 +337,11 @@ const DEFAULT_BORDER_COLOR = "var(--border)";
       hasValidCode = false;
       selectedPlan = null;
         selectedDuration = 3;
-        document.querySelectorAll('.duration-btn').forEach(btn => {
+        document.querySelectorAll('.upgrade-duration-btn').forEach(btn => {
     btn.classList.remove('active');
 });
 
-document.querySelector('.duration-btn[onclick*="selectDuration(3"]')
+document.querySelector('.upgrade-duration-btn[onclick*="selectDuration(3"]')
     ?.classList.add('active');
      document.getElementById("book-buyer-card").style.borderColor =
     DEFAULT_BORDER_COLOR;
@@ -516,7 +516,7 @@ document
 
 const payBtn=
 document.getElementById(
-'pay-now-btn'
+'upgrade-pay-btn'
 );
 
 payBtn.textContent=
