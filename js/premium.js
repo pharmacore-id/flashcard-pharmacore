@@ -334,9 +334,15 @@ const DEFAULT_BORDER_COLOR = "var(--border)";
       document.getElementById('upgrade-modal').classList.remove('hidden');
       document.getElementById('upgrade-code-input').value = '';
       document.getElementById('upgrade-code-status').textContent = '';
-      document.getElementById('payment-section').classList.add('hidden');
       hasValidCode = false;
       selectedPlan = null;
+        selectedDuration = 3;
+        document.querySelectorAll('.duration-btn').forEach(btn => {
+    btn.classList.remove('active');
+});
+
+document.querySelector('.duration-btn[onclick*="selectDuration(3"]')
+    ?.classList.add('active');
      document.getElementById("book-buyer-card").style.borderColor =
     DEFAULT_BORDER_COLOR;
 document.getElementById("regular-card").style.borderColor =
@@ -344,12 +350,16 @@ document.getElementById("regular-card").style.borderColor =
 
       const isPremium = isPremiumActive();
       if (isPremium) {
-        document.getElementById('modal-price-display').textContent = '✅ Premium Active';
-        document.getElementById('modal-price-label').textContent = 'You already have premium!';
-      } else {
-        document.getElementById('modal-price-display').textContent = 'Rp 35.000';
-        document.getElementById('modal-price-label').textContent = 'Book Buyer Price';
-      }
+    document.getElementById('modal-price-display').textContent =
+        '✅ Premium Active';
+
+    document.getElementById('modal-price-label').textContent =
+        'You already have premium!';
+} else {
+    selectedPlan = "book";
+    selectedDuration = 3;
+    updatePricingDisplay();
+}
 
       const currentPlanLabel = document.getElementById('upgrade-current-plan');
       if (currentPlanLabel) {
