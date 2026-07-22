@@ -1,8 +1,3 @@
-function selectPayment(method, evt) {
-      document.querySelectorAll('.payment-option').forEach(el => el.classList.remove('selected'));
-      evt.currentTarget.classList.add('selected');
-    }
-
 // ============================================================
 //  PROCESS PAYMENT - QRIS VERSION
 // ============================================================
@@ -13,7 +8,6 @@ const QRIS_EXPIRE_SECONDS = 600;
 const QRIS_SIZE = 280;
 const PAYMENT_SUCCESS_DELAY = 1500;
 
-let currentQrisOrderId = null;
 let paymentStatusUnsubscribe = null;
 
 async function processPayment() {
@@ -34,6 +28,7 @@ async function processPayment() {
   }
 
   const btn = document.getElementById("pay-now-btn");
+if (!btn) return;
   btn.disabled = true;
   btn.textContent = "Creating payment...";
 
@@ -48,8 +43,6 @@ async function processPayment() {
             : null
 });
     const payment = response.data;
-
-    currentQrisOrderId = payment.orderId;
 
     closeUpgradeModal();
 
@@ -334,7 +327,5 @@ function closeQrisModal() {
       </div>
     `;
   }
-
-  currentQrisOrderId = null;
 
 }
