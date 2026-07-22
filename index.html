@@ -1290,17 +1290,12 @@ body {
     position:fixed;
     inset:0;
     z-index:9999;
-
     display:flex;
     justify-content:center;
     align-items:center;
-
     padding:20px;
-
     background:rgba(0,0,0,.55);
-
     overflow-y:auto;
-    -webkit-overflow-scrolling:touch;
 }
 
 
@@ -1309,6 +1304,11 @@ body {
    ============================================================ */
 /* ---------- CARD ---------- */
 .upgrade-card{
+    width:min(720px, calc(100vw - 32px));
+    max-height:90vh;
+
+    overflow-y:auto;
+
     background:var(--surface);
     border:1px solid var(--border);
     border-radius:var(--radius);
@@ -4069,8 +4069,7 @@ Back to Settings
       </div>
     </div>
 
-<div id="upgrade-modal"
-class="hidden fixed inset-0 z-[9999] flex items-end sm:items-center justify-center"
+<div id="upgrade-modal" class="hidden">
 style="background:rgba(0,0,0,0.5);"
 onclick="if(event.target===this) closeUpgradeModal()">
 
@@ -4128,11 +4127,11 @@ onclick="if(event.target===this) closeUpgradeModal()">
             id="regular-card"
             onclick="selectPlan('regular')">
 
-                <p class="plan-name">
+                <p class="upgrade-plan-title">
                     Regular User
                 </p>
 
-                <p class="plan-desc">
+                <p class="upgrade-plan-desc">
                     No access code required
                 </p>
 
