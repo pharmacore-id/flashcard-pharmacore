@@ -1,7 +1,7 @@
-const DEFAULT_DAILY_GOAL = 20;
-const MAX_DAILY_GOAL = 500;
+const DEFAULT_DAILY_GOAL = 50;
+const MAX_DAILY_GOAL = 1000;
 const ALL_TIME_DAYS = 60;
-const MAX_STREAK_DAYS = 365;
+const MAX_STREAK_DAYS = 5000;
 
  function buildProgressData() {
   return allCards
