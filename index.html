@@ -1946,100 +1946,7 @@ transform:rotate(90deg);
 }
 
 
-/* ===========================
-   PREMIUM CARD
-=========================== */
 
-.qris2-summary{
-    display:flex;
-    align-items:center;
-    gap:24px;
-
-    padding:28px;
-
-    border-radius:28px;
-
-    background:linear-gradient(
-        135deg,
-        #ffb347,
-        #ff7b00
-    );
-
-    color:#fff;
-}
-    
-.qris2-crown{
-    width:78px;
-    height:78px;
-    border-radius:20px;
-    flex-shrink:0;
-}
-
-.qris2-crown i{
-
-width:30px;
-
-height:30px;
-
-}
-
-.qris2-summary-content{
-    flex:1;
-
-    display:flex;
-    flex-direction:column;
-    justify-content:center;
-}
-
-.qris2-summary-top{
-    display:flex;
-    align-items:baseline;
-    gap:14px;
-    margin-bottom:16px;
-}
-    
-.qris2-summary-top h3{
-    margin:0;
-    font-size:30px;
-    font-weight:300;
-    line-height:1;
-}
-
-.qris2-badge{
-    display:inline-flex;
-    align-self:flex-start;
-    margin-bottom:14px;
-    padding:8px 18px;
-    font-size:12px;
-}
-
-.qris2-plan{
-    font-size:24px;
-    font-weight:700;
-    line-height:1.2;
-}
-
-.qris2-order{
-
-margin-top:10px;
-
-font-size:12px;
-
-opacity:.92;
-
-}
-
-.qris2-brand{
-    margin:0;
-
-    font-size:16px;
-
-    font-weight:500;
-
-    opacity:.9;
-
-    white-space:nowrap;
-}
 
 /* ===========================
    ANIMATION
@@ -2594,36 +2501,6 @@ transform:translateY(0);
 
 }
 
-.qris2-summary{
-    display:flex !important;
-    flex-direction:row !important;
-    align-items:center !important;
-    gap:24px !important;
-}
-
-.qris2-summary-content{
-    flex:1 !important;
-    display:flex !important;
-    flex-direction:column !important;
-    justify-content:center !important;
-    align-items:flex-start !important;
-    text-align:left !important;
-}
-
-.qris2-summary-top{
-    display:flex !important;
-    align-items:baseline !important;
-    gap:12px !important;
-}
-
-.qris2-brand{
-    margin:0 !important;
-}
-
-.qris2-badge{
-    align-self:flex-start !important;
-}
-
 /* ===========================
    FULL BUTTON
 =========================== */
@@ -3126,83 +3003,141 @@ font-size:24px;
 
 }
 
-.qris2-summary{
-
-background:linear-gradient(
-180deg,
-#fff2df,
-#ffe2b3);
-
-color:#3d2d1f;
-
-border:1px solid #ffd1a3;
-
-box-shadow:0 8px 24px rgba(255,107,0,.08);
-
-}
-
-.qris2-total-price{
-
-font-size:34px;
-
-}
-
-}
-
 /* ===========================
-   480px
+   PREMIUM CARD
 =========================== */
+
+.qris2-summary{
+    display:flex;
+    align-items:flex-start;
+    gap:18px;
+
+    padding:28px;
+
+    border-radius:28px;
+
+    background:linear-gradient(
+        135deg,
+        #ffb347,
+        #ff7b00
+    );
+
+    color:#fff;
+}
+
+.qris2-crown{
+    width:78px;
+    height:78px;
+
+    flex-shrink:0;
+
+    display:flex;
+    align-items:center;
+    justify-content:center;
+
+    border-radius:20px;
+
+    background:rgba(255,255,255,.14);
+    border:1px solid rgba(255,255,255,.22);
+
+    margin-top:2px;
+}
+
+.qris2-crown i{
+    width:34px;
+    height:34px;
+}
+
+.qris2-summary-content{
+    flex:1;
+
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+
+    align-items:flex-start;
+}
+
+.qris2-summary-top{
+    display:flex;
+    align-items:flex-end;
+    gap:10px;
+
+    margin-bottom:16px;
+}
+
+.qris2-summary-top h3{
+    margin:0;
+
+    font-size:30px;
+    font-weight:300;
+    line-height:1;
+
+    letter-spacing:.5px;
+}
+
+.qris2-brand{
+    margin:0 0 2px;
+
+    font-size:14px;
+    font-weight:500;
+
+    opacity:.9;
+
+    white-space:nowrap;
+}
+
+.qris2-badge{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+
+    align-self:flex-start;
+
+    padding:8px 18px;
+
+    margin-bottom:16px;
+
+    border-radius:999px;
+
+    background:rgba(255,255,255,.18);
+    border:1px solid rgba(255,255,255,.24);
+
+    backdrop-filter:blur(8px);
+
+    font-size:12px;
+    font-weight:700;
+
+    letter-spacing:.08em;
+}
+
+.qris2-plan{
+    font-size:28px;
+    font-weight:700;
+
+    line-height:1.15;
+
+    letter-spacing:.02em;
+}
+
+.qris2-order{
+    margin-top:10px;
+
+    font-size:12px;
+
+    opacity:.9;
+}
 
 @media (max-width:480px){
 
     .qris2-summary{
-        padding:20px;
-        gap:18px;
+        padding:22px;
+        gap:16px;
     }
 
     .qris2-crown{
-        width:72px;
-        height:72px;
-    }
-
-    .qris2-summary-top h3{
-        font-size:28px;
-    }
-
-    .qris2-brand{
-        font-size:16px;
-    }
-
-    .qris2-plan{
-        font-size:22px;
-    }
-
-    .qris2-badge{
-        font-size:12px;
-        padding:8px 18px;
-    }
-
-}
-
-/* ===========================
-   360px
-=========================== */
-
-@media (max-width:360px){
-
-    .qris2-card{
-        padding:16px;
-    }
-
-    .qris2-summary{
-        padding:18px;
-        gap:14px;
-    }
-
-    .qris2-crown{
-        width:60px;
-        height:60px;
-        border-radius:16px;
+        width:64px;
+        height:64px;
     }
 
     .qris2-crown i{
@@ -3211,8 +3146,7 @@ font-size:34px;
     }
 
     .qris2-summary-top h3{
-        font-size:22px;
-        line-height:1.1;
+        font-size:26px;
     }
 
     .qris2-brand{
@@ -3220,35 +3154,17 @@ font-size:34px;
     }
 
     .qris2-badge{
-        font-size:10px;
-        padding:6px 14px;
-        margin:10px 0 12px;
+        font-size:11px;
+        padding:7px 16px;
     }
 
     .qris2-plan{
-        font-size:18px;
-    }
-
-    .qris2-total-price{
-        font-size:24px;
-    }
-
-    .qris2-image{
-        width:170px;
-    }
-
-    .qris2-countdown{
-        width:100px;
-        height:42px;
-        font-size:18px;
-    }
-
-    .qris2-btn{
-        min-height:48px;
-        font-size:14px;
+        font-size:22px;
     }
 
 }
+
+
 /* ==========================================================
    DARK MODE
 ========================================================== */
@@ -4385,7 +4301,7 @@ color:var(--qris-text-light);
 
         </div>
 
-       <div class="qris2-summary">
+     <div class="qris2-summary">
 
     <div class="qris2-crown">
         <i data-lucide="crown"></i>
@@ -4394,22 +4310,16 @@ color:var(--qris-text-light);
     <div class="qris2-summary-content">
 
         <div class="qris2-summary-top">
-
-            <div>
-                <h3>PHARMADECK</h3>
-                <div class="qris2-brand">
-                    by pharmacore
-                </div>
-            </div>
-
+            <h3>PHARMADECK</h3>
+            <span class="qris2-brand">by pharmacore</span>
         </div>
 
         <div id="membership-badge" class="qris2-badge">
-            BOOK ACCESS
+            BOOK BUYER
         </div>
 
         <div id="qris-plan-display" class="qris2-plan">
-            Premium 3 Bulan
+            3 MONTHS
         </div>
 
     </div>
