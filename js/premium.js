@@ -501,24 +501,15 @@ Math.round(
 price/(selectedDuration*30)
 );
 
-const label=
-selectedPlan==='book'
-? 'Book Buyer'
-: 'Regular';
+const label =
+selectedPlan === "book"
+    ? "BOOK BUYER"
+    : "REGULAR";
 
 document
-.getElementById(
-'modal-price-display'
-)
-.textContent=
-`Rp${price.toLocaleString()}`;
-
-document
-.getElementById(
-'modal-price-label'
-)
-.textContent=
-`${label} · ${selectedDuration} Months`;
+.getElementById("modal-price-label")
+.textContent =
+label;
 
 document
 .getElementById(
