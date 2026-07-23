@@ -80,14 +80,13 @@ function showQrisModal(result) {
   document.body.classList.add("payment-open");
   showPaymentView();
 
-  const checkPaymentBtn = document.getElementById("check-payment-btn");
+const checkPaymentBtn = document.getElementById("already-paid-btn");
 
 if (checkPaymentBtn) {
     checkPaymentBtn.onclick = () => {
         showCheckingView();
     };
 }
-
   // Clear timer lama jika ada
   if (modal.dataset.timerInterval) {
     clearInterval(Number(modal.dataset.timerInterval));
