@@ -2973,39 +2973,9 @@ transform:translateX(320%);
    RESPONSIVE
 ========================================================== */
 
-@media (max-width:768px){
-
-.qris2-overlay{
-
-padding:16px;
-
-align-items:flex-end;
-
-}
-
-.qris2-card{
-
-width:100%;
-
-max-width:460px;
-
-max-height:94vh;
-
-border-radius:24px 24px 0 0;
-
-padding:22px;
-
-}
-
-.qris2-title{
-
-font-size:24px;
-
-}
-
-/* ===========================
-   PREMIUM CARD
-=========================== */
+/* ==========================================================
+   PREMIUM SUMMARY (DEFAULT)
+========================================================== */
 
 .qris2-summary{
     display:flex;
@@ -3070,7 +3040,8 @@ font-size:24px;
     margin:0;
 
     font-size:30px;
-    font-weight:300;
+    font-weight:700;
+
     line-height:1;
 
     letter-spacing:.5px;
@@ -3128,6 +3099,39 @@ font-size:24px;
     opacity:.9;
 }
 
+
+/* ==========================================================
+   TABLET
+========================================================== */
+
+@media (max-width:768px){
+
+    .qris2-overlay{
+        padding:16px;
+        align-items:flex-end;
+    }
+
+    .qris2-card{
+        width:100%;
+        max-width:460px;
+        max-height:94vh;
+
+        border-radius:24px 24px 0 0;
+
+        padding:22px;
+    }
+
+    .qris2-title{
+        font-size:24px;
+    }
+
+}
+
+
+/* ==========================================================
+   MOBILE
+========================================================== */
+
 @media (max-width:480px){
 
     .qris2-summary{
@@ -3163,7 +3167,6 @@ font-size:24px;
     }
 
 }
-
 
 /* ==========================================================
    DARK MODE
