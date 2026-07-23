@@ -4301,7 +4301,7 @@ color:var(--qris-text-light);
 
         </div>
 
-     <div class="qris2-summary">
+  <div class="qris2-summary">
 
     <div class="qris2-crown">
         <i data-lucide="crown"></i>
@@ -4328,20 +4328,18 @@ color:var(--qris-text-light);
       
 <!-- ======================================================
      PAYMENT VIEW
-======================================================= -->
+====================================================== -->
 
 <div id="qris-payment-view">
-
-    <!-- =========================
-         PAYMENT DETAIL
-    ========================== -->
 
     <div class="qris2-section">
 
         <div class="qris2-section-title">
             <i data-lucide="receipt-text"></i>
-            <span>Detail Pembayaran</span>
+            <span>Detail Transaksi</span>
         </div>
+
+        <!-- Membership -->
 
         <div class="qris2-row">
 
@@ -4352,10 +4350,12 @@ color:var(--qris-text-light);
 
             <div id="payment-membership"
                  class="qris2-value">
-                -
+                BOOK BUYER
             </div>
 
         </div>
+
+        <!-- Paket -->
 
         <div class="qris2-row">
 
@@ -4366,10 +4366,28 @@ color:var(--qris-text-light);
 
             <div id="payment-package"
                  class="qris2-value">
-                -
+                3 MONTHS
             </div>
 
         </div>
+
+        <!-- Total -->
+
+        <div class="qris2-row">
+
+            <div class="qris2-label">
+                <i data-lucide="banknote"></i>
+                <span>Total Pembayaran</span>
+            </div>
+
+            <div id="payment-amount"
+                 class="qris2-value">
+                Rp35.000
+            </div>
+
+        </div>
+
+        <!-- Metode -->
 
         <div class="qris2-row">
 
@@ -4383,6 +4401,8 @@ color:var(--qris-text-light);
             </div>
 
         </div>
+
+        <!-- Status -->
 
         <div class="qris2-row">
 
@@ -4406,6 +4426,7 @@ color:var(--qris-text-light);
 
     </div>
 
+</div>
 
     <!-- =========================
          QR CARD
