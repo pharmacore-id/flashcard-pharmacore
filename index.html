@@ -1951,53 +1951,29 @@ transform:rotate(90deg);
 =========================== */
 
 .qris2-summary{
+    display:flex;
+    align-items:center;
+    gap:24px;
 
-display:flex;
+    padding:28px;
 
-align-items:center;
+    border-radius:28px;
 
-gap:16px;
+    background:linear-gradient(
+        135deg,
+        #ffb347,
+        #ff7b00
+    );
 
-padding:20px;
-
-border-radius:24px;
-
-margin-bottom:20px;
-
-background:
-linear-gradient(
-135deg,
-#ffb347,
-#ff7b00);
-
-color:#fff;
-
-box-shadow:
-0 18px 40px
-rgba(255,123,0,.28);
-
+    color:#fff;
 }
-
+    
 .qris2-crown{
 
-width:68px;
+    width:96px;
+    height:96px;
 
-height:68px;
-
-border-radius:18px;
-
-background:#ff6b00;
-
-color:white;
-
-display:flex;
-
-align-items:center;
-
-justify-content:center;
-
-flex-shrink:0;
-
+    border-radius:24px;
 }
 
 .qris2-crown i{
@@ -2009,67 +1985,46 @@ height:30px;
 }
 
 .qris2-summary-content{
+    flex:1;
 
-flex:1;
-
-min-width:0;
-
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
 }
 
 .qris2-summary-top{
-
-display:flex;
-
-justify-content:space-between;
-
-align-items:center;
-
-gap:10px;
-
-flex-wrap:wrap;
-
+    margin-bottom:14px;
 }
     
 .qris2-summary-top h3{
+    margin:0;
 
-    font-size:18px;
-
-    line-height:1.3;
-
+    font-size:34px;
+    font-weight:300;
+    letter-spacing:.5px;
+    line-height:1.1;
 }
 
 .qris2-badge{
 
-display:inline-flex;
+    width:fit-content;
 
-align-items:center;
+    margin-bottom:18px;
 
-padding:4px 10px;
+    padding:10px 22px;
 
-border-radius:999px;
+    font-size:14px;
 
-background:#fff;
-
-color:#ff6b00;
-
-font-size:10px;
-
-font-weight:700;
-
-letter-spacing:.05em;
-
-text-transform:uppercase;
-
+    font-weight:700;
 }
 
 .qris2-plan{
 
-margin-top:12px;
+    font-size:28px;
 
-font-size:16px;
+    font-weight:700;
 
-font-weight:700;
-
+    line-height:1.2;
 }
 
 .qris2-order{
@@ -2086,14 +2041,12 @@ opacity:.92;
 
     margin-top:4px;
 
-    font-size:13px;
+    font-size:18px;
 
-    font-weight:500;
+    font-weight:600;
 
     opacity:.9;
-
 }
-
 
 /* ===========================
    ANIMATION
@@ -3174,256 +3127,37 @@ font-size:34px;
 }
 
 /* ===========================
-   640px
-=========================== */
-
-@media (max-width:640px){
-
-.qris2-card{
-
-padding:20px;
-
-}
-
-.qris2-summary{
-
-flex-direction:column;
-
-text-align:center;
-
-gap:14px;
-
-}
-
-.qris2-summary-top{
-
-justify-content:center;
-
-}
-
-.qris2-summary-content{
-
-text-align:center;
-
-}
-
-.qris2-crown{
-
-width:58px;
-
-height:58px;
-
-}
-
-.qris2-total-price{
-
-font-size:30px;
-
-}
-
-.qris2-image{
-
-width:200px;
-
-}
-
-.qris2-countdown{
-
-background:#ff6b00;
-
-box-shadow:0 8px 18px rgba(255,107,0,.25);
-
-}
-
-}
-
-/* ===========================
    480px
 =========================== */
 
 @media (max-width:480px){
 
-.qris2-overlay{
-
-padding:0;
-
-align-items:flex-end;
-
-}
-
-.qris2-card{
-
-border-radius:22px 22px 0 0;
-
-padding:18px 16px 20px;
-
-max-height:96vh;
-
-}
-
-.qris2-header{
-
-margin-bottom:18px;
-
-}
-
-.qris2-title{
-
-font-size:21px;
-
-}
-
-.qris2-subtitle{
-
-font-size:12px;
-
-}
-
-.qris2-close{
-
-width:38px;
-
-height:38px;
-
-border-radius:12px;
-
-}
-
-.qris2-summary{
-
-flex-direction:row;
-
-text-align:left;
-
-padding:14px;
-
-border-radius:18px;
-
-}
-
-.qris2-summary-top{
-
-justify-content:flex-start;
-
-}
-
-.qris2-summary-top h3{
-
-font-size:18px;
-
-}
-
-.qris2-plan{
-
-font-size:14px;
-
-}
-
-.qris2-order{
-
-font-size:11px;
-
-}
-
-.qris2-crown{
-
-width:50px;
-
-height:50px;
-
-border-radius:14px;
-
-}
-
-.qris2-section{
-
-padding:14px;
-
-}
-
-.qris2-row{
-
-padding:10px 0;
-
-}
-
-.qris2-label{
-
-font-size:12px;
-
-}
-
-.qris2-value{
-
-font-size:13px;
-
-}
-
-.qris2-total-card{
-
-padding:16px;
-
-}
-
-.qris2-total-price{
-
-font-size:28px;
-
-}
-
-.qris2-qr-wrapper{
-
-min-height:190px;
-
-padding:12px;
-
-}
-
-.qris2-image{
-
-width:180px;
-
-}
-
-.qris2-countdown{
-
-font-size:20px;
-
-padding:8px 18px;
-
-}
-
-.qris2-note{
-
-padding:14px;
-
-}
-
-.qris2-note div{
-
-font-size:12px;
-
-}
-
-.qris2-btn{
-
-height:46px;
-
-font-size:13px;
-
-}
-
-.qris2-footer{
-
-flex-direction:column;
-
-}
-
-.qris2-btn-full{
-
-margin-bottom:12px;
-
-}
+    .qris2-summary{
+        padding:20px;
+        gap:18px;
+    }
+
+    .qris2-crown{
+        width:72px;
+        height:72px;
+    }
+
+    .qris2-summary-top h3{
+        font-size:28px;
+    }
+
+    .qris2-brand{
+        font-size:16px;
+    }
+
+    .qris2-plan{
+        font-size:22px;
+    }
+
+    .qris2-badge{
+        font-size:12px;
+        padding:8px 18px;
+    }
 
 }
 
@@ -3433,74 +3167,65 @@ margin-bottom:12px;
 
 @media (max-width:360px){
 
-.qris2-card{
+    .qris2-card{
+        padding:16px;
+    }
 
-padding:14px;
+    .qris2-summary{
+        padding:18px;
+        gap:14px;
+    }
 
-}
+    .qris2-crown{
+        width:60px;
+        height:60px;
+        border-radius:16px;
+    }
 
-.qris2-title{
+    .qris2-crown i{
+        width:28px;
+        height:28px;
+    }
 
-font-size:18px;
+    .qris2-summary-top h3{
+        font-size:22px;
+        line-height:1.1;
+    }
 
-}
+    .qris2-brand{
+        font-size:13px;
+    }
 
-.qris2-summary{
+    .qris2-badge{
+        font-size:10px;
+        padding:6px 14px;
+        margin:10px 0 12px;
+    }
 
-padding:12px;
+    .qris2-plan{
+        font-size:18px;
+    }
 
-}
+    .qris2-total-price{
+        font-size:24px;
+    }
 
-.qris2-crown{
+    .qris2-image{
+        width:170px;
+    }
 
-width:42px;
+    .qris2-countdown{
+        width:100px;
+        height:42px;
+        font-size:18px;
+    }
 
-height:42px;
-
-}
-
-.qris2-summary-top h3{
-
-font-size:15px;
-
-}
-
-.qris2-plan{
-
-font-size:12px;
-
-}
-
-.qris2-total-price{
-
-font-size:24px;
-
-}
-
-.qris2-image{
-
-width:145px;
-
-}
-
-.qris2-countdown{
-
-font-size:17px;
-
-padding:7px 14px;
-
-}
-
-.qris2-btn{
-
-height:42px;
-
-font-size:12px;
+    .qris2-btn{
+        min-height:48px;
+        font-size:14px;
+    }
 
 }
-
-}
-
 /* ==========================================================
    DARK MODE
 ========================================================== */
@@ -4637,54 +4362,37 @@ color:var(--qris-text-light);
 
         </div>
 
-        <!-- =========================
-             PREMIUM SUMMARY
-        ========================== -->
+       <div class="qris2-summary">
 
-        <div class="qris2-summary">
+    <div class="qris2-crown">
+        <i data-lucide="crown"></i>
+    </div>
 
-            <div class="qris2-crown">
+    <div class="qris2-summary-content">
 
-                <i data-lucide="crown"></i>
+        <div class="qris2-summary-top">
 
-            </div>
-
-            <div class="qris2-summary-content">
-
-                <div class="qris2-summary-top">
-
-                   <h3>
-    PHARMADECK
-</h3>
-
-<div class="qris2-brand">
-
-by pharmacore
-
-</div>
-
+            <div>
+                <h3>PHARMADECK</h3>
+                <div class="qris2-brand">
+                    by pharmacore
                 </div>
-
-                <div
-                    id="membership-badge"
-                    class="qris2-badge">
-
-                    BOOK ACCESS
-
-                </div>
-
-                <div
-                    id="qris-plan-display"
-                    class="qris2-plan">
-
-                    Premium 3 Bulan
-
-                </div>
-
             </div>
 
         </div>
 
+        <div id="membership-badge" class="qris2-badge">
+            BOOK ACCESS
+        </div>
+
+        <div id="qris-plan-display" class="qris2-plan">
+            Premium 3 Bulan
+        </div>
+
+    </div>
+
+</div>
+      
 <!-- ======================================================
      PAYMENT VIEW
 ======================================================= -->
