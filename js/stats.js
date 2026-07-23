@@ -35,7 +35,7 @@
     // ============================================================
   function renderProgressChart() {
     const days = progressPeriod === 'week' ? 7 : progressPeriod === 'month' ? getDaysInMonth() : 60;
-    const dates = Array.from({ length: days }, (_, i) => i);
+    const dates = getDateRange(days;
     const counts = dates.map(d => getTotalReviewsForDate(d));
     const maxCount = Math.max(...counts, 1);
 
