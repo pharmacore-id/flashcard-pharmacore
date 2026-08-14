@@ -206,78 +206,188 @@ function showLogin() {
 
 async function loadUserData(email) {
     console.time('⏱️ loadUserData.total');
+
     try {
         if (!email) return false;
 
         console.log('🔍 Loading user data for:', email);
 
-        // ===== STEP 1: LOAD INDEXEDDB =====
-        console.time('⏱️ loadUserData.indexeddb');
+        // ============================================================
+        // 1. SHARED DECKS = LIBRARY UTAMA SEMUA USER
+        // ============================================================
+
+        console.time('⏱️ loadUserData.sharedDecks');
+
+        let sharedCards = [];
+
+        try {
+            const result = await loadSharedDecksOnce();
+
+            sharedCards = Array.isArray(result)
+                ? result
+                : (result.cards || []);
+
+            console.log(
+                '📚 Shared library loaded:',
+                sharedCards.length,
+                'cards'
+            );
+
+        } catch (error) {
+            console.error(
+                '❌ Failed to load shared library:',
+                error
+            );
+        }
+
+        console.timeEnd('⏱️ loadUserData.sharedDecks');
+
+        // Kalau shared library gagal, jangan overwrite
+        // dengan data user yang mungkin kosong.
+        if (sharedCards.length === 0) {
+            console.error(
+                '❌ Shared library is empty. User data will not be initialized.'
+            );
+
+            allCards = [];
+            userPlan = 'free';
+
+            return false;
+        }
+
+        // ============================================================
+        // 2. LOAD USER PROGRESS DARI INDEXEDDB
+        // ============================================================
+
         let cachedRecord = null;
         let cachedProgress = null;
 
         try {
             cachedRecord = await loadFromIndexedDB(email);
-            if (cachedRecord && cachedRecord.cards && cachedRecord.cards.length > 0) {
+
+            if (
+                cachedRecord &&
+                Array.isArray(cachedRecord.cards) &&
+                cachedRecord.cards.length > 0
+            ) {
                 cachedProgress = cachedRecord.cards;
-                console.log('📦 Found cached progress in IndexedDB:', cachedProgress.length, 'cards');
+
+                console.log(
+                    '📦 Cached progress:',
+                    cachedProgress.length,
+                    'cards'
+                );
             }
-        } catch (error) {
-            console.warn('⚠️ IndexedDB load failed:', error);
-        }
-        console.timeEnd('⏱️ loadUserData.indexeddb');
 
-        // ===== STEP 2: LOAD SHARED DECKS =====
-        console.time('⏱️ loadUserData.sharedDecks');
-        let sharedCards = [];
-        try {
-            const result = await loadSharedDecksOnce();
-            sharedCards = result.cards || result;
-            console.log('📚 Shared decks loaded:', sharedCards.length, 'cards');
         } catch (error) {
-            console.warn('⚠️ Shared decks load failed:', error);
+            console.warn(
+                '⚠️ IndexedDB load failed:',
+                error
+            );
         }
-        console.timeEnd('⏱️ loadUserData.sharedDecks');
 
-        // ===== STEP 3: MERGE =====
-        if (cachedProgress && sharedCards.length > 0) {
-            console.log('📊 Cached progress:', cachedProgress.length);
-            console.log('📊 Shared cards:', sharedCards.length);
-            
-            console.time('⏱️ loadUserData.merge');
-            allCards = mergeProgress(sharedCards, cachedProgress);
-            userPlan = cachedRecord.plan || 'free';
-            console.timeEnd('⏱️ loadUserData.merge');
-            
-            console.log('✅ Merged:', allCards.length, 'cards');
+        // ============================================================
+        // 3. DEFAULT = SHARED LIBRARY
+        // ============================================================
+
+        allCards = sharedCards;
+        userPlan = cachedRecord?.plan || 'free';
+
+        // ============================================================
+        // 4. MERGE PROGRESS USER JIKA ADA
+        // ============================================================
+
+        if (cachedProgress) {
+
+            console.log(
+                '🔄 Merging user progress with shared library...'
+            );
+
+            allCards = mergeProgress(
+                sharedCards,
+                cachedProgress
+            );
+
+            console.log(
+                '✅ Shared library + cached progress:',
+                allCards.length,
+                'cards'
+            );
+
             return true;
         }
 
-        // ===== STEP 4: FIRESTORE FALLBACK =====
-        console.log('📂 No cache, loading from Firestore...');
-        
-        console.time('⏱️ loadUserData.firestore');
+        // ============================================================
+        // 5. TIDAK ADA CACHE → LOAD FIRESTORE
+        // ============================================================
+
+        console.log(
+            '📂 No local progress. Checking Firestore...'
+        );
+
         let cloudData = null;
+
         try {
             cloudData = await loadFromFirebase(email);
-            console.log('☁️ Cloud data loaded:', cloudData?.cards?.length || 0);
-        } catch (err) {
-            console.warn('⚠️ Cloud load failed:', err.message);
-        }
-        console.timeEnd('⏱️ loadUserData.firestore');
 
-        if (cloudData && cloudData.cards && cloudData.cards.length > 0) {
-            allCards = mergeProgress(sharedCards, cloudData.cards);
+            console.log(
+                '☁️ Cloud progress loaded:',
+                cloudData?.cards?.length || 0,
+                'cards'
+            );
+
+        } catch (error) {
+            console.warn(
+                '⚠️ Cloud load failed:',
+                error.message
+            );
+        }
+
+        // ============================================================
+        // 6. MERGE FIRESTORE PROGRESS JIKA ADA
+        // ============================================================
+
+        if (
+            cloudData &&
+            Array.isArray(cloudData.cards) &&
+            cloudData.cards.length > 0
+        ) {
+
+            allCards = mergeProgress(
+                sharedCards,
+                cloudData.cards
+            );
+
             userPlan = cloudData.plan || 'free';
-            console.log('✅ Merged from Firestore:', allCards.length, 'cards');
+
+            console.log(
+                '✅ Shared library + cloud progress:',
+                allCards.length,
+                'cards'
+            );
+
             return true;
         }
 
-        console.log('📚 New user: using shared decks as initial library');
+        // ============================================================
+        // 7. USER BARU
+        // ============================================================
+
+        console.log(
+            '📚 New user: using shared library'
+        );
+
         allCards = sharedCards;
         userPlan = 'free';
+
+        console.log(
+            '✅ New user library:',
+            allCards.length,
+            'cards'
+        );
+
         return true;
-        
+
     } finally {
         console.timeEnd('⏱️ loadUserData.total');
     }
