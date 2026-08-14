@@ -18,46 +18,116 @@
 
 async function loadFromFirebase(email) {
     console.time('⏱️ firestore.load');
+
     try {
-        if (!email || !navigator.onLine) return null;
-        
-        // ===== FIRESTORE QUERY =====
+        if (!email || !navigator.onLine) {
+            return null;
+        }
+
         updateSyncStatus('syncing', 'Loading...');
 
-        const userDoc = await db.collection('users').doc(email).get();
-        
-        if (!userDoc.exists) return null;
+        // ============================================================
+        // 1. LOAD USER METADATA
+        // ============================================================
 
-        const data = userDoc.data();
-        
-        if (data.nickname) {
-            localStorage.setItem(NICKNAME_KEY + email, data.nickname);
+        const userRef = db
+            .collection('users')
+            .doc(email);
+
+        const userDoc = await userRef.get();
+
+        const userData = userDoc.exists
+            ? userDoc.data()
+            : {};
+
+        // Simpan nickname kalau ada
+        if (userData.nickname) {
+            localStorage.setItem(
+                NICKNAME_KEY + email,
+                userData.nickname
+            );
         }
 
         // ============================================================
-        //  HANYA AMBIL PROGRESS DARI FIRESTORE
-        //  JANGAN MERGE DENGAN SHARED DECKS DI SINI!
+        // 2. LOAD USER PROGRESS
+        //
+        // Struktur Firestore:
+        //
+        // users/{email}/progress/{cardId}
+        //
         // ============================================================
-        const progressCards = data.cards || [];
-        
-        console.log('✅ User data loaded from Firebase (progress only):', progressCards.length, 'cards');
 
-        const plan = data.plan || 'free';
-        const schemaVersion = data.schema_version || 1;
+        const progressRef = userRef.collection('progress');
+
+        const snapshot = await progressRef.get();
+
+        const progressCards = [];
+
+        snapshot.forEach(doc => {
+            const data = doc.data();
+
+            if (data) {
+                progressCards.push({
+                    __id: data.__id || doc.id,
+                    ...data
+                });
+            }
+        });
+
+        console.log(
+            '✅ User progress loaded from Firebase:',
+            progressCards.length,
+            'cards'
+        );
+
+        // ============================================================
+        // 3. USER METADATA
+        // ============================================================
+
+        const plan =
+            userData.plan ||
+            'free';
+
+        const schemaVersion =
+            userData.schema_version ||
+            CURRENT_SCHEMA_VERSION;
+
+        const lastUpdated =
+            userData.last_updated ||
+            userData.updatedAt?.toMillis?.() ||
+            Date.now();
+
+        // ============================================================
+        // 4. RETURN PROGRESS ONLY
+        //
+        // Shared library akan digabung di loadUserData()
+        // ============================================================
 
         return {
-            cards: progressCards,  // ← PROGRESS ONLY!
+            cards: progressCards,
             plan: plan,
-            last_updated: data.last_updated || data.updatedAt?.toMillis?.() || Date.now(),
+            last_updated: lastUpdated,
             schema_version: schemaVersion
         };
 
     } catch (err) {
-        console.warn('⚠️ Firebase load failed:', err.message);
-        updateSyncStatus('offline', 'Offline');
+
+        console.warn(
+            '⚠️ Firebase load failed:',
+            err.message
+        );
+
+        updateSyncStatus(
+            'offline',
+            'Offline'
+        );
+
         return null;
+
     } finally {
-        console.timeEnd('⏱️ firestore.load');
+
+        console.timeEnd(
+            '⏱️ firestore.load'
+        );
     }
 }
-
