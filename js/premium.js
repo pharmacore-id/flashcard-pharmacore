@@ -496,6 +496,14 @@ if (!selectedPlan || !selectedDuration) {
 const price=
 PRICING[selectedPlan][selectedDuration];
 
+const priceDisplay =
+    document.getElementById("modal-price-display");
+
+if (priceDisplay) {
+    priceDisplay.textContent =
+        `Rp${price.toLocaleString()}`;
+}
+
 const perDay=
 Math.round(
 price/(selectedDuration*30)
