@@ -273,10 +273,10 @@ async function loadUserData(email) {
             return true;
         }
 
-        console.warn('⚠️ No data found for user:', email);
-        allCards = [];
+        console.log('📚 New user: using shared decks as initial library');
+        allCards = sharedCards;
         userPlan = 'free';
-        return false;
+        return true;
         
     } finally {
         console.timeEnd('⏱️ loadUserData.total');
