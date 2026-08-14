@@ -4115,6 +4115,144 @@ color:var(--qris-text-light);
     font-size:18px;
 
 }
+
+/* ==========================================================
+   QRIS SUMMARY MOBILE FIX
+   ========================================================== */
+
+.qris2-summary {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    padding: 20px;
+    overflow: hidden;
+}
+
+.qris2-crown {
+    width: 60px;
+    height: 60px;
+    flex-shrink: 0;
+    border-radius: 18px;
+    margin-top: 0;
+}
+
+.qris2-crown i {
+    width: 28px;
+    height: 28px;
+}
+
+.qris2-summary-content {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+}
+
+.qris2-summary-top {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px;
+    margin-bottom: 12px;
+    min-width: 0;
+}
+
+.qris2-summary-top h3 {
+    margin: 0;
+    font-size: 23px;
+    line-height: 1.1;
+    font-weight: 800;
+    letter-spacing: .3px;
+
+    white-space: nowrap;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.qris2-brand {
+    margin: 0;
+    font-size: 12px;
+    line-height: 1.2;
+    white-space: nowrap;
+}
+
+.qris2-badge {
+    padding: 7px 14px;
+    margin-bottom: 10px;
+    font-size: 11px;
+}
+
+.qris2-plan {
+    font-size: 20px;
+    line-height: 1.2;
+    font-weight: 700;
+    white-space: normal;
+    overflow-wrap: break-word;
+}
+
+
+/* ==========================================================
+   DETAIL TRANSAKSI
+   ========================================================== */
+
+.qris2-section {
+    padding: 20px;
+}
+
+.qris2-section-title {
+    font-size: 18px;
+    margin-bottom: 8px;
+}
+
+.qris2-row {
+    padding: 16px 0;
+    gap: 12px;
+}
+
+.qris2-label {
+    gap: 10px;
+    font-size: 15px;
+    min-width: 0;
+}
+
+.qris2-value {
+    font-size: 15px;
+    flex-shrink: 0;
+    max-width: 55%;
+}
+
+.qris2-status {
+    font-size: 11px;
+    padding: 8px 14px;
+    white-space: nowrap;
+}
+
+
+/* ==========================================================
+   MOBILE
+   ========================================================== */
+
+@media (max-width: 480px) {
+
+    .qris2-summary {
+        padding: 20px;
+        gap: 14px;
+    }
+
+    .qris2-crown {
+        width: 60px;
+        height: 60px;
+    }
+
+    .qris2-summary-top h3 {
+        font-size: 23px;
+    }
+
+    .qris2-plan {
+        font-size: 20px;
+    }
+
+}
     
 </style>
 </head>
