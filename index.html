@@ -1815,27 +1815,29 @@ animation:qrisFade .25s ease;
    CARD
 =========================== */
 
-.qris2-card{
+.qris2-card {
 
-width:min(100%,420px);
+    width: 100%;
 
-max-height:92vh;
+    max-width: 380px;
 
-overflow:auto;
+    max-height: 92vh;
 
-background:var(--qris-card);
+    overflow: auto;
 
-border-radius:28px;
+    background: var(--qris-card);
 
-box-shadow:var(--qris-shadow-lg);
+    border-radius: 28px;
 
-padding:26px;
+    box-shadow: var(--qris-shadow-lg);
 
-box-sizing:border-box;
+    padding: 26px;
 
-animation:qrisPopup .28s ease;
+    box-sizing: border-box;
 
-position:relative;
+    animation: qrisPopup .28s ease;
+
+    position: relative;
 
 }
 
@@ -3104,22 +3106,31 @@ transform:translateX(320%);
    TABLET
 ========================================================== */
 
-@media (max-width:768px){
+@media (max-width:768px) {
 
-    .qris2-overlay{
-        padding:16px;
-        align-items:flex-end;
+    .qris2-overlay {
+
+        padding: 20px;
+
+        align-items: center;
+
     }
 
-    .qris2-card{
-        width:100%;
-        max-width:460px;
-        max-height:94vh;
+    .qris2-card {
 
-        border-radius:24px 24px 0 0;
+        width: 100%;
 
-        padding:22px;
+        max-width: 380px;
+
+        max-height: 94vh;
+
+        border-radius: 28px;
+
+        padding: 22px;
+
     }
+
+}
 
     .qris2-title{
         font-size:24px;
