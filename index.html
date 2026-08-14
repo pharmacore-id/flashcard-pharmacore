@@ -4117,77 +4117,264 @@ color:var(--qris-text-light);
 }
 
 /* ==========================================================
-   QRIS SUMMARY MOBILE FIX
+   QRIS FINAL OVERRIDE
+   ========================================================== */
+
+/* ---------- CARD ---------- */
+
+.qris2-card {
+    width: 100%;
+    max-width: 380px;
+    max-height: 92vh;
+
+    padding: 26px;
+
+    background: var(--qris-card);
+    border-radius: 28px;
+
+    overflow-x: hidden;
+    overflow-y: auto;
+
+    position: relative;
+}
+
+
+/* ---------- HEADER ---------- */
+
+.qris2-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+
+    gap: 16px;
+
+    margin-bottom: 22px;
+}
+
+.qris2-title {
+    margin: 0;
+
+    font-size: 28px;
+    line-height: 1.15;
+    font-weight: 800;
+
+    color: var(--qris-text);
+}
+
+.qris2-subtitle {
+    margin: 6px 0 0;
+
+    font-size: 14px;
+    line-height: 1.6;
+
+    color: var(--qris-text-light);
+}
+
+
+/* ---------- CLOSE BUTTON ---------- */
+
+.qris2-close {
+    width: 48px;
+    height: 48px;
+
+    flex: 0 0 48px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    padding: 0;
+
+    border: 1px solid #e5e7eb;
+    border-radius: 16px;
+
+    background: #f3f4f6;
+    color: #111827;
+
+    cursor: pointer;
+
+    transition:
+        background .2s ease,
+        color .2s ease,
+        transform .2s ease;
+}
+
+.qris2-close i {
+    width: 25px;
+    height: 25px;
+    color: currentColor;
+}
+
+.qris2-close:hover {
+    background: #e5e7eb;
+    color: #111827;
+    transform: rotate(90deg);
+}
+
+
+/* ==========================================================
+   ORANGE SUMMARY
    ========================================================== */
 
 .qris2-summary {
+    position: relative;
+    z-index: 1;
+
+    width: 100%;
+
     display: flex;
     align-items: flex-start;
-    gap: 14px;
-    padding: 20px;
+
+    gap: 16px;
+
+    padding: 22px;
+
+    margin: 0 0 18px 0;
+
+    border-radius: 28px;
+
+    background: linear-gradient(
+        135deg,
+        #ffb347 0%,
+        #ff7b00 100%
+    );
+
+    color: #fff;
+
     overflow: hidden;
+
+    box-sizing: border-box;
 }
 
+
+/* Crown */
+
 .qris2-crown {
-    width: 60px;
-    height: 60px;
-    flex-shrink: 0;
+    width: 64px;
+    height: 64px;
+
+    flex: 0 0 64px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    margin: 0;
+
     border-radius: 18px;
-    margin-top: 0;
+
+    background: rgba(255,255,255,.15);
+    border: 1px solid rgba(255,255,255,.25);
 }
 
 .qris2-crown i {
-    width: 28px;
-    height: 28px;
+    width: 30px;
+    height: 30px;
 }
+
+
+/* Content */
 
 .qris2-summary-content {
     flex: 1;
     min-width: 0;
+
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+
     overflow: hidden;
 }
+
+
+/* PHARMADECK + brand */
 
 .qris2-summary-top {
     display: flex;
     flex-direction: column;
     align-items: flex-start;
-    gap: 2px;
-    margin-bottom: 12px;
-    min-width: 0;
+
+    gap: 3px;
+
+    width: 100%;
+
+    margin: 0 0 12px;
 }
 
 .qris2-summary-top h3 {
     margin: 0;
-    font-size: 23px;
+
+    font-size: 24px;
     line-height: 1.1;
     font-weight: 800;
-    letter-spacing: .3px;
+
+    letter-spacing: .01em;
 
     white-space: nowrap;
-    max-width: 100%;
-    overflow: hidden;
-    text-overflow: ellipsis;
 }
 
 .qris2-brand {
     margin: 0;
+
     font-size: 12px;
     line-height: 1.2;
-    white-space: nowrap;
+
+    color: rgba(255,255,255,.9);
 }
+
+
+/* BOOK BUYER */
 
 .qris2-badge {
-    padding: 7px 14px;
-    margin-bottom: 10px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    padding: 7px 15px;
+
+    margin: 0 0 12px;
+
+    border-radius: 999px;
+
+    background: rgba(255,255,255,.18);
+    border: 1px solid rgba(255,255,255,.25);
+
+    color: #fff;
+
     font-size: 11px;
+    line-height: 1;
+    font-weight: 700;
+
+    letter-spacing: .06em;
 }
 
+
+/* PLAN */
+
 .qris2-plan {
-    font-size: 20px;
+    margin: 0;
+
+    font-size: 22px;
     line-height: 1.2;
     font-weight: 700;
-    white-space: normal;
+
+    color: #fff;
+
     overflow-wrap: break-word;
+}
+
+
+/* ==========================================================
+   PAYMENT VIEW
+   ========================================================== */
+
+#qris-payment-view {
+    display: block;
+
+    width: 100%;
+
+    margin: 0;
+    padding: 0;
 }
 
 
@@ -4196,35 +4383,204 @@ color:var(--qris-text-light);
    ========================================================== */
 
 .qris2-section {
+    position: relative;
+    z-index: 0;
+
+    width: 100%;
+
+    margin: 0 0 18px 0;
+
     padding: 20px;
+
+    border-radius: 24px;
+
+    background: #fff;
+
+    border: 1px solid var(--qris-border);
+
+    box-shadow: var(--qris-shadow-sm);
+
+    box-sizing: border-box;
 }
+
+
+/* Title */
 
 .qris2-section-title {
+    display: flex;
+    align-items: center;
+
+    gap: 10px;
+
+    margin: 0 0 6px;
+
     font-size: 18px;
-    margin-bottom: 8px;
+    line-height: 1.3;
+    font-weight: 800;
+
+    color: var(--qris-text);
 }
+
+.qris2-section-title i {
+    width: 20px;
+    height: 20px;
+
+    color: var(--qris-primary);
+}
+
+
+/* Rows */
 
 .qris2-row {
-    padding: 16px 0;
-    gap: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    gap: 14px;
+
+    min-height: 58px;
+
+    padding: 14px 0;
+
+    border-bottom: 1px solid #eef2f7;
 }
+
+.qris2-row:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+}
+
+
+/* Left */
 
 .qris2-label {
+    display: flex;
+    align-items: center;
+
     gap: 10px;
-    font-size: 15px;
+
     min-width: 0;
+
+    color: var(--qris-text-light);
+
+    font-size: 15px;
 }
+
+.qris2-label i {
+    width: 20px;
+    height: 20px;
+
+    flex: 0 0 20px;
+
+    color: var(--qris-text-light);
+}
+
+
+/* Right */
 
 .qris2-value {
+    flex: 0 0 auto;
+
+    max-width: 58%;
+
     font-size: 15px;
-    flex-shrink: 0;
-    max-width: 55%;
+    line-height: 1.3;
+    font-weight: 700;
+
+    color: var(--qris-text);
+
+    text-align: right;
+
+    overflow-wrap: anywhere;
 }
 
+
+/* Status */
+
 .qris2-status {
-    font-size: 11px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    max-width: 100%;
+
     padding: 8px 14px;
+
+    border-radius: 999px;
+
+    font-size: 11px;
+    line-height: 1.2;
+    font-weight: 700;
+
     white-space: nowrap;
+}
+
+
+/* ==========================================================
+   DARK MODE
+   ========================================================== */
+
+.dark .qris2-card {
+    background: #111827;
+    color: #fff;
+}
+
+
+/* Header */
+
+.dark .qris2-title {
+    color: #f9fafb;
+}
+
+.dark .qris2-subtitle {
+    color: #9ca3af;
+}
+
+
+/* X BUTTON */
+
+.dark .qris2-close {
+    background: #374151;
+
+    border-color: #4b5563;
+
+    color: #f9fafb;
+}
+
+.dark .qris2-close:hover {
+    background: #4b5563;
+    color: #fff;
+}
+
+
+/* Section */
+
+.dark .qris2-section {
+    background: #1f2937;
+
+    border-color: #374151;
+
+    box-shadow: none;
+}
+
+.dark .qris2-section-title {
+    color: #f9fafb;
+}
+
+.dark .qris2-label {
+    color: #9ca3af;
+}
+
+.dark .qris2-label i {
+    color: #9ca3af;
+}
+
+.dark .qris2-value {
+    color: #f9fafb;
+}
+
+.dark .qris2-row {
+    border-bottom-color: #374151;
 }
 
 
@@ -4234,24 +4590,121 @@ color:var(--qris-text-light);
 
 @media (max-width: 480px) {
 
-    .qris2-summary {
+    .qris2-overlay {
+        padding: 14px;
+    }
+
+    .qris2-card {
+        max-width: 100%;
+
+        max-height: 94vh;
+
         padding: 20px;
+
+        border-radius: 24px;
+    }
+
+    .qris2-header {
+        gap: 12px;
+        margin-bottom: 18px;
+    }
+
+    .qris2-title {
+        font-size: 24px;
+    }
+
+    .qris2-subtitle {
+        font-size: 13px;
+    }
+
+    .qris2-close {
+        width: 46px;
+        height: 46px;
+
+        flex-basis: 46px;
+
+        border-radius: 15px;
+    }
+
+    .qris2-summary {
         gap: 14px;
+
+        padding: 20px;
+
+        margin-bottom: 16px;
+
+        border-radius: 24px;
     }
 
     .qris2-crown {
-        width: 60px;
-        height: 60px;
+        width: 58px;
+        height: 58px;
+
+        flex-basis: 58px;
+
+        border-radius: 17px;
+    }
+
+    .qris2-crown i {
+        width: 27px;
+        height: 27px;
+    }
+
+    .qris2-summary-top {
+        margin-bottom: 10px;
     }
 
     .qris2-summary-top h3 {
-        font-size: 23px;
+        font-size: 22px;
+    }
+
+    .qris2-brand {
+        font-size: 11px;
+    }
+
+    .qris2-badge {
+        padding: 7px 13px;
+
+        margin-bottom: 10px;
+
+        font-size: 10px;
     }
 
     .qris2-plan {
-        font-size: 20px;
+        font-size: 19px;
     }
 
+    .qris2-section {
+        padding: 18px;
+
+        margin-bottom: 16px;
+
+        border-radius: 22px;
+    }
+
+    .qris2-section-title {
+        font-size: 17px;
+    }
+
+    .qris2-row {
+        min-height: 56px;
+
+        padding: 13px 0;
+    }
+
+    .qris2-label {
+        font-size: 14px;
+    }
+
+    .qris2-value {
+        font-size: 14px;
+    }
+
+    .qris2-status {
+        padding: 8px 12px;
+
+        font-size: 10px;
+    }
 }
     
 </style>
