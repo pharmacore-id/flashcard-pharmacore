@@ -110,19 +110,47 @@ if (paymentAmountEl) {
         formatRupiah(result.amount);
 }
 
-  // ===== Plan =====
-  const planEl = document.getElementById("qris-plan-display");
+  // ===== Plan / Membership =====
+  // Gunakan data payment yang benar-benar dibuat,
+  // bukan state UI yang mungkin sudah berubah.
+  const displayPlan = result.selectedPlan ?? selectedPlan;
+  const displayDuration = Number(
+    result.selectedDuration ?? selectedDuration
+  );
+
+  const planLabel =
+    displayPlan === "book" ? "Book Buyer" : "Regular";
+
+  const membershipEl =
+    document.getElementById("membership-badge");
+
+  if (membershipEl) {
+    membershipEl.textContent =
+      displayPlan === "book" ? "BOOK BUYER" : "REGULAR";
+  }
+
+  const paymentMembershipEl =
+    document.getElementById("payment-membership-display");
+
+  if (paymentMembershipEl) {
+    paymentMembershipEl.textContent =
+      displayPlan === "book" ? "BOOK BUYER" : "REGULAR";
+  }
+
+  const planEl =
+    document.getElementById("qris-plan-display");
+
   if (planEl) {
-    const displayPlan = result.selectedPlan ?? selectedPlan;
-    const displayDuration = Number(
-      result.selectedDuration ?? selectedDuration
-    );
-
-    const planLabel =
-      displayPlan === "book" ? "Book Buyer" : "Regular";
-
     planEl.textContent =
       `${planLabel} · ${displayDuration} Months`;
+  }
+
+  const paymentPlanEl =
+    document.getElementById("payment-plan-display");
+
+  if (paymentPlanEl) {
+    paymentPlanEl.textContent =
+      `${displayDuration} MONTHS`;
   }
 
   // ===== QR =====
