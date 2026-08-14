@@ -589,17 +589,3 @@ function updateSyncStatus(status, text) {
         if (el) el.textContent = text || 'Synced';
     });
 }
-
- // ============================================================
-//  FLUSH ON TAB HIDDEN (Bonus)
-// ============================================================
-
-document.addEventListener('visibilitychange', () => {
-  if (document.hidden && currentUser) {
-    if (saveTimeout) {
-      clearTimeout(saveTimeout);
-      saveTimeout = null;
-    }
-    flushSaveNow(currentUser);
-  }
-});
