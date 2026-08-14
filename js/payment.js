@@ -310,8 +310,11 @@ function startPaymentStatusListener(orderId) {
 document.getElementById("success-membership").textContent =
   "Premium";
 
+const paidPlan = payment.plan || `${selectedDuration}_month`;
+const paidDuration = parseInt(paidPlan.split("_")[0], 10);
+
 document.getElementById("success-package").textContent =
-  `${selectedPlan === "book" ? "Book" : "Regular"} • ${selectedDuration} Month${selectedDuration > 1 ? "s" : ""}`;
+  `${selectedPlan === "book" ? "Book" : "Regular"} • ${paidDuration} Month${paidDuration > 1 ? "s" : ""}`;
 
 const successExpiry = document.getElementById("success-expiry");
 
