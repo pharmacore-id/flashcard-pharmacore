@@ -98,6 +98,14 @@ if (checkPaymentBtn) {
    amountEl.textContent = formatRupiah(result.amount);
   }
 
+const paymentAmountEl =
+    document.getElementById("payment-amount-display");
+
+if (paymentAmountEl) {
+    paymentAmountEl.textContent =
+        formatRupiah(result.amount);
+}
+
   // ===== Plan =====
   const planEl = document.getElementById("qris-plan-display");
   if (planEl) {
