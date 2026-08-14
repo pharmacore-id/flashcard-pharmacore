@@ -357,34 +357,24 @@ async function performSync({
                             );
 
                         console.log(
-                            '📤 Preparing progress upload:',
-                            mergedEntries.length,
-                            'cards'
-                        );
+    '📤 Preparing progress upload:',
+    mergedCards.length,
+    'cards'
+);
 
-
-                        // ----------------------------------------------------
-                        // Metadata user
-                        // ----------------------------------------------------
-
-                        await db
-                            .collection('users')
-                            .doc(email)
-                            .set({
-                                plan:
-                                    cached.plan ||
-                                    'free',
-
-                                schema_version:
-                                    cached.schema_version ||
-                                    CURRENT_SCHEMA_VERSION,
-
-                                last_updated:
-                                    Date.now()
-                            }, {
-                                merge: true
-                            });
-
+await db
+    .collection('users')
+    .doc(email)
+    .set({
+        cards: mergedCards,
+        schema_version:
+            cached.schema_version ||
+            cloudData?.schema_version ||
+            CURRENT_SCHEMA_VERSION,
+        last_updated: saveTime
+    }, {
+        merge: true
+    });
 
                         // ----------------------------------------------------
                         // Upload batches
