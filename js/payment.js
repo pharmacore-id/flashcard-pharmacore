@@ -287,13 +287,15 @@ function startPaymentStatusListener(orderId) {
           .doc(currentUser)
           .get();
 
+        let expiry = null;
+
         if (userDoc.exists) {
 
           const userData = userDoc.data();
 
           userPlan = userData.plan || "premium";
 
-          const expiry =
+          expiry =
             userData.planExpiry?.toDate?.().toISOString() || null;
 
           savePlan(currentUser, userPlan, expiry);
@@ -310,6 +312,21 @@ document.getElementById("success-membership").textContent =
 
 document.getElementById("success-package").textContent =
   `${selectedPlan === "book" ? "Book" : "Regular"} • ${selectedDuration} Month${selectedDuration > 1 ? "s" : ""}`;
+
+const successExpiry = document.getElementById("success-expiry");
+
+if (expiry) {
+  successExpiry.textContent = new Date(expiry).toLocaleDateString(
+    "en-US",
+    {
+      month: "short",
+      day: "numeric",
+      year: "numeric"
+    }
+  );
+} else {
+  successExpiry.textContent = "-";
+}
 
 // Tampilkan halaman sukses
 showSuccessView();
