@@ -44,6 +44,10 @@ if (!btn) return;
 });
     const payment = response.data;
 
+    // Simpan pilihan yang BENAR-BENAR dipakai saat payment dibuat
+    payment.selectedPlan = selectedPlan;
+    payment.selectedDuration = Number(selectedDuration);
+
     closeUpgradeModal();
 
     showQrisModal(payment);
@@ -109,11 +113,16 @@ if (paymentAmountEl) {
   // ===== Plan =====
   const planEl = document.getElementById("qris-plan-display");
   if (planEl) {
+    const displayPlan = result.selectedPlan ?? selectedPlan;
+    const displayDuration = Number(
+      result.selectedDuration ?? selectedDuration
+    );
+
     const planLabel =
-      selectedPlan === "book" ? "Book Buyer" : "Regular";
+      displayPlan === "book" ? "Book Buyer" : "Regular";
 
     planEl.textContent =
-      `${planLabel} · ${selectedDuration} Months`;
+      `${planLabel} · ${displayDuration} Months`;
   }
 
   // ===== QR =====
