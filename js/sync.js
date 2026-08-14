@@ -37,6 +37,13 @@ function scheduleSync(debounceMs = 3000) {
 }
 
 // ===== PERFORM SYNC - SATU-SATUNYA UPLOADER =====
+// ============================================================
+// PERFORM SYNC
+// Cloud structure:
+// users/{email}                  -> metadata
+// users/{email}/progress/{id}   -> 1 progress/card
+// ============================================================
+
 async function performSync({
     force = false,
     email = currentUser
@@ -61,6 +68,7 @@ async function performSync({
             return;
         }
 
+        // ===== CEK ONLINE =====
         if (!navigator.onLine) {
             console.log('📴 Offline, sync skipped');
             updateSyncStatus('offline', 'Offline');
@@ -81,18 +89,24 @@ async function performSync({
 
                 while (retries > 0 && !completed) {
                     try {
+
                         // ====================================================
-                        // 1. AMBIL LOCAL PROGRESS
+                        // 1. AMBIL LOCAL PROGRESS DARI INDEXEDDB
                         // ====================================================
 
-                        const cached = await loadFromIndexedDB(email);
+                        const cached =
+                            await loadFromIndexedDB(email);
 
                         if (
                             !cached ||
                             !Array.isArray(cached.cards)
                         ) {
-                            console.log('ℹ️ No local progress to sync');
+                            console.log(
+                                'ℹ️ No local progress to sync'
+                            );
+
                             updateSyncStatus('', 'Synced');
+                            completed = true;
                             return;
                         }
 
@@ -104,76 +118,117 @@ async function performSync({
                             'cards'
                         );
 
+
                         // ====================================================
-                        // 2. AMBIL CLOUD TERBARU
+                        // 2. AMBIL CLOUD PROGRESS
                         // ====================================================
                         //
-                        // Jangan langsung overwrite cloud.
-                        // Cloud harus dibandingkan PER CARD.
+                        // TIDAK lagi membaca:
+                        //
+                        // users/{email}.cards
+                        //
+                        // Progress sekarang berada di:
+                        //
+                        // users/{email}/progress/{cardId}
                         // ====================================================
 
-                        let cloudData = null;
+                        const progressRef = db
+                            .collection('users')
+                            .doc(email)
+                            .collection('progress');
+
+                        let cloudCards = [];
 
                         try {
-                            const cloudDoc = await db
-                                .collection('users')
-                                .doc(email)
-                                .get();
 
-                            if (cloudDoc.exists) {
-                                cloudData = cloudDoc.data();
+                            const snapshot =
+                                await progressRef.get();
 
-                                console.log(
-                                    '☁️ Cloud progress:',
-                                    Array.isArray(cloudData.cards)
-                                        ? cloudData.cards.length
-                                        : 0,
-                                    'cards'
-                                );
-                            } else {
-                                console.log(
-                                    '☁️ No cloud document yet'
-                                );
-                            }
+                            snapshot.forEach(doc => {
+
+                                const data = doc.data();
+
+                                if (data) {
+                                    cloudCards.push({
+                                        __id:
+                                            data.__id ||
+                                            doc.id,
+                                        ...data
+                                    });
+                                }
+
+                            });
+
+                            console.log(
+                                '☁️ Cloud progress:',
+                                cloudCards.length,
+                                'cards'
+                            );
 
                         } catch (cloudError) {
+
                             console.warn(
-                                '⚠️ Failed to read cloud:',
+                                '⚠️ Failed to read cloud progress:',
                                 cloudError.message
                             );
 
                             throw cloudError;
                         }
 
-                        const cloudCards =
-                            cloudData &&
-                            Array.isArray(cloudData.cards)
-                                ? cloudData.cards
-                                : [];
 
                         // ====================================================
-                        // 3. MERGE PER CARD
+                        // 3. BUAT MAP LOCAL
                         // ====================================================
 
                         const localMap = new Map();
 
                         localCards.forEach(card => {
-                            const key = card.__id || card.card_id;
+
+                            if (!card || typeof card !== 'object') {
+                                return;
+                            }
+
+                            const key =
+                                card.__id ||
+                                card.card_id;
 
                             if (key) {
-                                localMap.set(key, card);
+                                localMap.set(
+                                    String(key),
+                                    card
+                                );
                             }
                         });
+
+
+                        // ====================================================
+                        // 4. BUAT MAP CLOUD
+                        // ====================================================
 
                         const cloudMap = new Map();
 
                         cloudCards.forEach(card => {
-                            const key = card.__id || card.card_id;
+
+                            if (!card || typeof card !== 'object') {
+                                return;
+                            }
+
+                            const key =
+                                card.__id ||
+                                card.card_id;
 
                             if (key) {
-                                cloudMap.set(key, card);
+                                cloudMap.set(
+                                    String(key),
+                                    card
+                                );
                             }
                         });
+
+
+                        // ====================================================
+                        // 5. MERGE LOCAL + CLOUD
+                        // ====================================================
 
                         const mergedProgress = new Map();
 
@@ -188,45 +243,91 @@ async function performSync({
                         let cloudOnly = 0;
 
                         allKeys.forEach(key => {
-                            const localCard = localMap.get(key);
-                            const cloudCard = cloudMap.get(key);
 
-                            // Hanya ada di local
+                            const localCard =
+                                localMap.get(key);
+
+                            const cloudCard =
+                                cloudMap.get(key);
+
+
+                            // -----------------------------
+                            // HANYA ADA DI LOCAL
+                            // -----------------------------
+
                             if (localCard && !cloudCard) {
-                                mergedProgress.set(key, localCard);
+
+                                mergedProgress.set(
+                                    key,
+                                    localCard
+                                );
+
                                 localOnly++;
+
                                 return;
                             }
 
-                            // Hanya ada di cloud
+
+                            // -----------------------------
+                            // HANYA ADA DI CLOUD
+                            // -----------------------------
+
                             if (!localCard && cloudCard) {
-                                mergedProgress.set(key, cloudCard);
+
+                                mergedProgress.set(
+                                    key,
+                                    cloudCard
+                                );
+
                                 cloudOnly++;
+
                                 return;
                             }
 
-                            // Ada di keduanya → compare timestamp
+
+                            // -----------------------------
+                            // ADA DI KEDUANYA
+                            // -----------------------------
+
                             const localTime =
                                 Number(
-                                    localCard.progress_updated_at || 0
+                                    localCard
+                                        ?.progress_updated_at || 0
                                 );
 
                             const cloudTime =
                                 Number(
-                                    cloudCard.progress_updated_at || 0
+                                    cloudCard
+                                        ?.progress_updated_at || 0
                                 );
 
+
                             if (localTime > cloudTime) {
-                                mergedProgress.set(key, localCard);
+
+                                mergedProgress.set(
+                                    key,
+                                    localCard
+                                );
+
                                 localWins++;
+
                             } else {
-                                mergedProgress.set(key, cloudCard);
+
+                                mergedProgress.set(
+                                    key,
+                                    cloudCard
+                                );
+
                                 cloudWins++;
                             }
                         });
 
+
                         const mergedCards =
-                            Array.from(mergedProgress.values());
+                            Array.from(
+                                mergedProgress.values()
+                            );
+
 
                         console.log(
                             '🔀 Progress conflict resolution:',
@@ -239,135 +340,208 @@ async function performSync({
                             }
                         );
 
-                        // ====================================================
-                        // 4. TENTUKAN APAKAH CLOUD PERLU DIUPDATE
-                        // ====================================================
-
-                        const cloudChanged =
-                            localWins > 0 ||
-                            localOnly > 0;
 
                         // ====================================================
-                        // 5. JIKA CLOUD LEBIH BARU / SAMA
-                        //    → JANGAN UPLOAD LOCAL LAMA
-                        //    → UPDATE LOCAL DENGAN MERGED RESULT
+                        // 6. UPLOAD PROGRESS PER DOCUMENT
+                        // ====================================================
+                        //
+                        // Firestore batch maksimal 500 writes.
+                        // Kita gunakan 400 supaya ada margin aman.
                         // ====================================================
 
-                        if (!cloudChanged) {
+                        const BATCH_SIZE = 400;
 
-                            console.log(
-                                '☁️ Cloud is same/newer → keeping cloud progress'
+                        const mergedEntries =
+                            Array.from(
+                                mergedProgress.entries()
                             );
-
-                            allCards = mergeProgress(
-                                typeof loadSharedDecksOnce === 'function'
-                                    ? await loadSharedDecksOnce()
-                                    : [],
-                                mergedCards
-                            );
-
-                            await saveToIndexedDB(email, {
-                                cards: mergedCards,
-                                plan:
-                                    cloudData?.plan ||
-                                    cached.plan ||
-                                    'free',
-                                schema_version:
-                                    cloudData?.schema_version ||
-                                    cached.schema_version ||
-                                    CURRENT_SCHEMA_VERSION,
-                                cloudUpdatedAt:
-                                    cloudData?.last_updated ??
-                                    cached.cloudUpdatedAt ??
-                                    Date.now()
-                            });
-
-                            completed = true;
-                            updateSyncStatus('', 'Synced');
-                            return;
-                        }
-
-                        // ====================================================
-                        // 6. LOCAL PUNYA PERUBAHAN TERBARU
-                        //    → UPLOAD MERGED RESULT
-                        // ====================================================
-
-                        const saveTime = Date.now();
 
                         console.log(
-                            '📤 Uploading merged progress:',
-                            mergedCards.length,
+                            '📤 Preparing progress upload:',
+                            mergedEntries.length,
                             'cards'
                         );
+
+
+                        // ----------------------------------------------------
+                        // Metadata user
+                        // ----------------------------------------------------
 
                         await db
                             .collection('users')
                             .doc(email)
                             .set({
-                                cards: mergedCards,
                                 plan:
                                     cached.plan ||
-                                    cloudData?.plan ||
                                     'free',
+
                                 schema_version:
                                     cached.schema_version ||
-                                    cloudData?.schema_version ||
                                     CURRENT_SCHEMA_VERSION,
-                                last_updated: saveTime
+
+                                last_updated:
+                                    Date.now()
                             }, {
                                 merge: true
                             });
 
+
+                        // ----------------------------------------------------
+                        // Upload batches
+                        // ----------------------------------------------------
+
+                        for (
+                            let start = 0;
+                            start < mergedEntries.length;
+                            start += BATCH_SIZE
+                        ) {
+
+                            const batch =
+                                db.batch();
+
+                            const chunk =
+                                mergedEntries.slice(
+                                    start,
+                                    start + BATCH_SIZE
+                                );
+
+
+                            chunk.forEach(
+                                ([key, card]) => {
+
+                                    // Firestore document ID
+                                    // tidak boleh mengandung '/'
+                                    const safeId =
+                                        String(key)
+                                            .replaceAll(
+                                                '/',
+                                                '_'
+                                            );
+
+
+                                    const docRef =
+                                        progressRef.doc(
+                                            safeId
+                                        );
+
+
+                                    batch.set(
+                                        docRef,
+                                        card,
+                                        {
+                                            merge: true
+                                        }
+                                    );
+                                }
+                            );
+
+
+                            console.log(
+                                `📤 Uploading batch ${
+                                    Math.floor(
+                                        start / BATCH_SIZE
+                                    ) + 1
+                                }`,
+                                chunk.length,
+                                'cards'
+                            );
+
+
+                            await batch.commit();
+                        }
+
+
                         // ====================================================
-                        // 7. UPDATE LOCAL CACHE DENGAN HASIL FINAL
+                        // 7. UPDATE LOCAL INDEXEDDB
                         // ====================================================
 
-                        await saveToIndexedDB(email, {
-                            cards: mergedCards,
-                            plan:
-                                cached.plan ||
-                                cloudData?.plan ||
-                                'free',
-                            schema_version:
-                                cached.schema_version ||
-                                cloudData?.schema_version ||
-                                CURRENT_SCHEMA_VERSION,
-                            cloudUpdatedAt: saveTime
-                        });
+                        const saveTime =
+                            Date.now();
 
-                        allCards = mergeProgress(
+                        await saveToIndexedDB(
+                            email,
+                            {
+                                cards:
+                                    mergedCards,
+
+                                plan:
+                                    cached.plan ||
+                                    'free',
+
+                                schema_version:
+                                    cached.schema_version ||
+                                    CURRENT_SCHEMA_VERSION,
+
+                                cloudUpdatedAt:
+                                    saveTime
+                            }
+                        );
+
+
+                        // ====================================================
+                        // 8. REBUILD allCards
+                        // ====================================================
+
+                        const sharedCards =
                             typeof loadSharedDecksOnce === 'function'
                                 ? await loadSharedDecksOnce()
-                                : [],
-                            mergedCards
-                        );
+                                : [];
+
+
+                        allCards =
+                            mergeProgress(
+                                sharedCards,
+                                mergedCards
+                            );
+
 
                         console.log(
                             '☁️ Sync complete:',
                             mergedCards.length,
-                            'cards'
+                            'progress cards'
                         );
 
+
                         completed = true;
-                        updateSyncStatus('', 'Synced');
+
+                        updateSyncStatus(
+                            '',
+                            'Synced'
+                        );
+
 
                     } catch (err) {
+
                         retries--;
 
                         console.warn(
-                            `⚠️ Retry ${3 - retries}/3:`,
+                            `⚠️ Retry ${
+                                3 - retries
+                            }/3:`,
                             err.message
                         );
 
+
                         if (retries > 0) {
+
                             await new Promise(
-                                resolve => setTimeout(resolve, 2000)
+                                resolve =>
+                                    setTimeout(
+                                        resolve,
+                                        2000
+                                    )
                             );
                         }
                     }
                 }
 
+
+                // ====================================================
+                // 9. SEMUA RETRY GAGAL
+                // ====================================================
+
                 if (!completed) {
+
                     console.error(
                         '❌ Sync failed after 3 retries'
                     );
@@ -380,7 +554,9 @@ async function performSync({
                     scheduleSync(5000);
                 }
 
+
             } catch (error) {
+
                 console.error(
                     '❌ Sync failed:',
                     error
@@ -393,16 +569,23 @@ async function performSync({
 
                 scheduleSync(5000);
 
+
             } finally {
+
                 currentSyncPromise = null;
             }
 
         })();
 
+
         await currentSyncPromise;
 
+
     } finally {
-        console.timeEnd('⏱️ performSync.total');
+
+        console.timeEnd(
+            '⏱️ performSync.total'
+        );
     }
 }
 
