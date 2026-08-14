@@ -61,13 +61,16 @@ async function loadDataInBackground() {
             return;
         }
         
-        dataHealthy = true;
-        dataReady = true;
-        
-        await migrateLocalStorageToIndexedDB(currentUser);
-        
-        renderDecks();
-        updateHome();
+       dataHealthy = true;
+dataReady = true;
+
+await migrateLocalStorageToIndexedDB(currentUser);
+
+await loadGlobalDeckOrder();
+initializeDeckOrder();
+
+renderDecks();
+updateHome();
         
         console.log('✅ Data loaded successfully');
         console.log('📊 Cards in UI:', allCards?.length || 0);
