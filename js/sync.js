@@ -454,36 +454,22 @@ async function performSync({
                         );
 
 
-                        // ====================================================
-                        // 8. REBUILD allCards
-                        // ====================================================
+                      // ====================================================
+// 8. SYNC COMPLETE
+// ====================================================
 
-                        const sharedCards =
-                            typeof loadSharedDecksOnce === 'function'
-                                ? await loadSharedDecksOnce()
-                                : [];
+console.log(
+    '☁️ Sync complete:',
+    mergedCards.length,
+    'progress cards'
+);
 
+completed = true;
 
-                        allCards =
-                            mergeProgress(
-                                sharedCards,
-                                mergedCards
-                            );
-
-
-                        console.log(
-                            '☁️ Sync complete:',
-                            mergedCards.length,
-                            'progress cards'
-                        );
-
-
-                        completed = true;
-
-                        updateSyncStatus(
-                            '',
-                            'Synced'
-                        );
+updateSyncStatus(
+    '',
+    'Synced'
+);
 
 
                     } catch (err) {
