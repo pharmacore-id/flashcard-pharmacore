@@ -17,18 +17,18 @@ const GOAL_KEY='Pharmadeck_goal';
 const STUDY_TIME_KEY='Pharmadeck_study_time';
 const DEBUG = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
 const NICKNAME_KEY='Pharmadeck_nickname_';
-const PRICING={
+const PRICING = {
 
-book:{
-1:15000,
-3:38000,
-6:70000
-},
+  book: {
+    1: 10000,
+    3: 25000,
+    6: 48000
+  },
 
-regular:{
-1:25000,
-3:68000,
-6:120000
-}
+  regular: {
+    1: 20000,
+    3: 50000,
+    6: 100000
+  }
 
 };
