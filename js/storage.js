@@ -49,6 +49,44 @@ function getDB() {
 }
 
 // ============================================================
+//  NORMALIZE PROGRESS TIMESTAMP
+// ============================================================
+
+function normalizeProgressTimestamps(cards) {
+    if (!Array.isArray(cards)) return [];
+
+    return cards.map(card => {
+        if (!card || typeof card !== 'object') {
+            return card;
+        }
+
+        // Sudah punya timestamp → JANGAN ubah
+        if (
+            card.progress_updated_at !== undefined &&
+            card.progress_updated_at !== null
+        ) {
+            return card;
+        }
+
+        // Kartu lama → gunakan last_review sebagai timestamp
+        let timestamp = 0;
+
+        if (card.last_review) {
+            const parsed = new Date(card.last_review).getTime();
+
+            if (Number.isFinite(parsed)) {
+                timestamp = parsed;
+            }
+        }
+
+        return {
+            ...card,
+            progress_updated_at: timestamp
+        };
+    });
+}
+
+// ============================================================
 //  SAVE TO INDEXEDDB - DENGAN TIMESTAMP TRACKING
 // ============================================================
 
@@ -70,10 +108,16 @@ async function saveToIndexedDB(email, data) {
         
         const now = Date.now();
         
+        const normalizedCards =
+            Array.isArray(data.cards)
+                ? normalizeProgressTimestamps(data.cards)
+                : data.cards;
+
         const record = {
             email,
             ...existing,
             ...data,
+            cards: normalizedCards,
             createdAt: existing?.createdAt ?? data.createdAt ?? now,
             schema_version: data.schema_version ?? existing?.schema_version ?? CURRENT_SCHEMA_VERSION,
             updatedAt: now,

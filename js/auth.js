@@ -428,65 +428,12 @@ async function saveUserData(email) {
         console.warn('⚠️ Metadata save failed:', e);
     }
 
-    // ===== STEP 3: DEBOUNCE FIRESTORE =====
-    if (saveTimeout) {
-        clearTimeout(saveTimeout);
-    }
-
-    saveTimeout = setTimeout(async () => {
-        // ============================================================
-        //  SNAPSHOT DIBUAT DI DALAM DEBOUNCE (FRESH!)
-        // ============================================================
-        const snapshot = createProgressSnapshot();
-        const planSnapshot = userPlan;
-
-        let retries = 3;
-        let saved = false;
-
-        while (retries > 0 && !saved) {
-            try {
-                const saveTime = Date.now();  // ← SETIAP RETRY BUAT BARU
-
-                await db.collection('users').doc(email).set({
-                    cards: snapshot.cards,
-                    plan: planSnapshot,
-                    schema_version: CURRENT_SCHEMA_VERSION,
-                    last_updated: saveTime
-                }, { merge: true });
-
-                saved = true;
-                console.log('☁️ FIREBASE SAVE:', {
-                    cards: snapshot.cards.length,
-                    timestamp: saveTime
-                });
-
-                // ============================================================
-                //  UPDATE cloudUpdatedAt SETELAH UPLOAD BERHASIL
-                // ============================================================
-                await saveToIndexedDB(email, {
-                    cloudUpdatedAt: saveTime
-                    // TIDAK ADA markProgressUpdated!
-                });
-                console.log('📦 cloudUpdatedAt updated in IndexedDB');
-
-            } catch (err) {
-                retries--;
-                console.warn(`⚠️ Save failed (${3 - retries}/3):`, err.message);
-                if (retries > 0) {
-                    await new Promise(r => setTimeout(r, 2000));
-                }
-            }
-        }
-
-        if (!saved) {
-            console.error('❌ Save failed after 3 retries');
-        }
-
-    }, 2000);
-scheduleSync(3000);
+    // ===== STEP 3: SCHEDULE SINGLE SYNC ENGINE =====
+    // Firestore upload ditangani HANYA oleh performSync()
+    scheduleSync(3000);
 }
 
-  async function handleLogout() {
+async function handleLogout() {
     console.log('🚪 Logout started...');
     
     // ===== TAMPILKAN LOADING =====

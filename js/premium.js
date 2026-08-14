@@ -469,22 +469,19 @@ function selectPlan(type){
 
 }
 
-function selectDuration(months,event){
+function selectDuration(months, event) {
 
-selectedDuration=months;
+    selectedDuration = Number(months);
 
-document
-.querySelectorAll('.upgrade-duration-btn')
-.forEach(btn=>{
+    document.querySelectorAll('.upgrade-duration-btn').forEach(btn => {
+        btn.classList.remove('active');
+    });
 
-btn.classList.remove('active');
+    if (event?.currentTarget) {
+        event.currentTarget.classList.add('active');
+    }
 
-});
-
-event.currentTarget.classList.add('active');
-
-updatePricingDisplay();
-
+    updatePricingDisplay();
 }
 
 function updatePricingDisplay(){

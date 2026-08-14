@@ -103,7 +103,10 @@ function mergeProgress(sharedCards, progressCards) {
           (card.correct_count || 0) +
           (quality >= 2 ? 1 : 0),
 
-      review_history: history
+      review_history: history,
+
+      // Timestamp perubahan progress kartu
+      progress_updated_at: Date.now()
   };
 }
 

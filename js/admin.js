@@ -322,22 +322,99 @@ async function refreshUserData() {
         const cloudData = await loadFromFirebase(currentUser);
 
         if (cloudData && cloudData.cards) {
-            // ===== SET DATA =====
-            allCards = cloudData.cards;
-            userPlan = cloudData.plan || 'free';
+            // ============================================================
+            // STEP 3: MERGE LOCAL + CLOUD PER CARD
+            // Jangan overwrite local dengan cloud mentah.
+            // Card dengan progress_updated_at terbaru yang menang.
+            // ============================================================
 
-            // ============================================================
-            //  STEP 3: SAVE KE INDEXEDDB (TANPA markProgressUpdated!)
-            //  Ini hanya sync dari cloud, BUKAN perubahan progress user
-            // ============================================================
-            await saveToIndexedDB(currentUser, {
-                cards: cloudData.cards,
-                plan: cloudData.plan || 'free',
-                schema_version: cloudData.schema_version || CURRENT_SCHEMA_VERSION,
-                cloudUpdatedAt: cloudData.last_updated ?? null
-                // TIDAK ADA markProgressUpdated!
+            const sharedCards = await loadSharedDecksOnce();
+            const localRecord = await loadFromIndexedDB(currentUser);
+
+            const localCards =
+                localRecord && Array.isArray(localRecord.cards)
+                    ? localRecord.cards
+                    : [];
+
+            const localMap = new Map();
+            localCards.forEach(card => {
+                const key = card.__id || card.card_id;
+                if (key) localMap.set(key, card);
             });
-            console.log('📦 IndexedDB updated from cloud');
+
+            const cloudMap = new Map();
+            cloudData.cards.forEach(card => {
+                const key = card.__id || card.card_id;
+                if (key) cloudMap.set(key, card);
+            });
+
+            const mergedMap = new Map();
+
+            const allKeys = new Set([
+                ...localMap.keys(),
+                ...cloudMap.keys()
+            ]);
+
+            allKeys.forEach(key => {
+                const local = localMap.get(key);
+                const cloud = cloudMap.get(key);
+
+                if (local && !cloud) {
+                    mergedMap.set(key, local);
+                    return;
+                }
+
+                if (!local && cloud) {
+                    mergedMap.set(key, cloud);
+                    return;
+                }
+
+                const localTime =
+                    Number(local?.progress_updated_at || 0);
+
+                const cloudTime =
+                    Number(cloud?.progress_updated_at || 0);
+
+                mergedMap.set(
+                    key,
+                    localTime > cloudTime
+                        ? local
+                        : cloud
+                );
+            });
+
+            const mergedCards = Array.from(
+                mergedMap.values()
+            );
+
+            allCards = mergeProgress(
+                sharedCards,
+                mergedCards
+            );
+
+            userPlan =
+                cloudData.plan ||
+                localRecord?.plan ||
+                'free';
+
+            await saveToIndexedDB(currentUser, {
+                cards: mergedCards,
+                plan: userPlan,
+                schema_version:
+                    cloudData.schema_version ||
+                    localRecord?.schema_version ||
+                    CURRENT_SCHEMA_VERSION,
+                cloudUpdatedAt:
+                    cloudData.last_updated ??
+                    localRecord?.cloudUpdatedAt ??
+                    null
+            });
+
+            console.log(
+                '🔀 Refresh merged per-card:',
+                mergedCards.length,
+                'cards'
+            );
 
             // ============================================================
             //  STEP 4: METADATA KECIL DI LOCALSTORAGE
@@ -382,7 +459,8 @@ async function refreshUserData() {
                     correct_count: card.correct_count,
                     next_review: card.next_review,
                     last_review: card.last_review,
-                    review_history: card.review_history || []
+                    review_history: card.review_history || [],
+                    progress_updated_at: card.progress_updated_at || 0
                 });
             }
         });

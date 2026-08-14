@@ -15,7 +15,8 @@ const MAX_STREAK_DAYS = 5000;
       correct_count: c.correct_count ?? 0,
       next_review: c.next_review || '',
       last_review: c.last_review || '',
-      review_history: c.review_history || []
+      review_history: c.review_history || [],
+      progress_updated_at: c.progress_updated_at || 0
     }));
 }
 
