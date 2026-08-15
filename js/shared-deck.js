@@ -3,9 +3,43 @@
 // ============================================================
 
 let sharedDecksCache = null;
+let sharedDeckCacheLoaded = false;
+
+const SHARED_DECK_CACHE_KEY = 'pharmadeck_shared_decks_v1';
 
 function hasSharedDeckCache() {
     return Array.isArray(sharedDecksCache);
+}
+
+async function loadSharedDecksFromPersistentCache() {
+    try {
+        const record = await loadFromIndexedDB(SHARED_DECK_CACHE_KEY);
+
+        if (
+            record &&
+            Array.isArray(record.cards) &&
+            record.cards.length > 0
+        ) {
+            sharedDecksCache = record.cards;
+            deckVersionsCache = record.deckVersions || {};
+
+            console.log(
+                '📦 Shared library cache loaded:',
+                sharedDecksCache.length,
+                'cards'
+            );
+
+            return true;
+        }
+
+    } catch (error) {
+        console.warn(
+            '⚠️ Shared library persistent cache failed:',
+            error
+        );
+    }
+
+    return false;
 }
 
 async function loadSharedDecksOnce() {
