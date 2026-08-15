@@ -4,6 +4,7 @@
 
 let sharedDecksCache = null;
 let sharedDeckCacheLoaded = false;
+let deckVersionsCache = {};
 
 const SHARED_DECK_CACHE_KEY = 'pharmadeck_shared_decks_v1';
 
