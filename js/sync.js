@@ -37,51 +37,6 @@ function scheduleSync(debounceMs = 3000) {
 }
 
 // ============================================================
-// INCREMENTAL SYNC METADATA
-// ============================================================
-
-async function getProgressSyncMeta(email) {
-    if (!email) return null;
-
-    try {
-        const ref = db.collection('users').doc(email);
-        const snap = await ref.get();
-
-        if (!snap.exists) return null;
-
-        const data = snap.data() || {};
-
-        return {
-            progress_sync_at:
-                Number(data.progress_sync_at || 0)
-        };
-
-    } catch (error) {
-        console.warn('⚠️ Failed to load sync metadata:', error);
-        return null;
-    }
-}
-
-
-async function saveProgressSyncMeta(email, timestamp) {
-    if (!email) return;
-
-    try {
-        await db.collection('users').doc(email).set({
-            progress_sync_at: timestamp
-        }, {
-            merge: true
-        });
-
-    } catch (error) {
-        console.warn(
-            '⚠️ Failed to save sync metadata:',
-            error
-        );
-    }
-}
-
-// ============================================================
 // PERFORM SYNC - SIMPLE VERSION
 // ============================================================
 
@@ -164,15 +119,8 @@ async function performSync({
             // 2. LOAD LAST SYNC CHECKPOINT
             // ====================================================
 
-            const syncMeta =
-                await getProgressSyncMeta(email);
-
-            const lastSyncAt =
-                Number(
-                    syncMeta?.progress_sync_at ||
-                    cached.cloudUpdatedAt ||
-                    0
-                );
+            const lastSyncAt =Number(cached.cloudUpdatedAt || 0
+            );
 
             console.log(
                 '🕐 Last progress sync:',
@@ -237,7 +185,7 @@ async function performSync({
                     await progressRef
                         .where(
                             'progress_updated_at',
-                            '>',
+                            '>=',
                             lastSyncAt
                         )
                         .get();
@@ -688,17 +636,6 @@ async function performSync({
                         newSyncAt
                 }
             );
-
-
-            // ====================================================
-            // 10. SAVE CLOUD CHECKPOINT
-            // ====================================================
-
-            await saveProgressSyncMeta(
-                email,
-                newSyncAt
-            );
-
 
             // ====================================================
             // 11. COMPLETE
