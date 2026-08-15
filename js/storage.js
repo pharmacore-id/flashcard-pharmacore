@@ -199,6 +199,105 @@ async function loadFromIndexedDB(email) {
 }
 
 // ============================================================
+//  SHARED DECKS - PERSISTENT CACHE
+// ============================================================
+
+async function saveSharedDeckCache(cards, deckVersions = {}, metadata = {}) {
+    if (!Array.isArray(cards) || cards.length === 0) {
+        console.warn('⚠️ saveSharedDeckCache: invalid cards');
+        return false;
+    }
+
+    try {
+        const db = await getDB();
+        const tx = db.transaction(SHARED_DECK_STORE, 'readwrite');
+        const store = tx.objectStore(SHARED_DECK_STORE);
+
+        const record = {
+            id: 'shared_library',
+            cards: cards,
+            deckVersions: deckVersions || {},
+            metadata: metadata || {},
+            updatedAt: Date.now()
+        };
+
+        store.put(record);
+
+        return new Promise((resolve, reject) => {
+            tx.oncomplete = () => {
+                console.log(
+                    '📦 Shared deck cache saved:',
+                    cards.length,
+                    'cards'
+                );
+                resolve(true);
+            };
+
+            tx.onerror = () => {
+                console.error(
+                    '❌ Shared deck cache save error:',
+                    tx.error
+                );
+                reject(tx.error);
+            };
+        });
+
+    } catch (error) {
+        console.error(
+            '❌ saveSharedDeckCache error:',
+            error
+        );
+        return false;
+    }
+}
+
+
+async function loadSharedDeckCache() {
+    try {
+        const db = await getDB();
+        const tx = db.transaction(SHARED_DECK_STORE, 'readonly');
+        const store = tx.objectStore(SHARED_DECK_STORE);
+
+        return new Promise((resolve, reject) => {
+            const request = store.get('shared_library');
+
+            request.onsuccess = () => {
+                const result = request.result;
+
+                if (result) {
+                    console.log(
+                        '📦 Shared deck cache found:',
+                        result.cards?.length || 0,
+                        'cards'
+                    );
+                } else {
+                    console.log(
+                        'ℹ️ No shared deck cache found'
+                    );
+                }
+
+                resolve(result || null);
+            };
+
+            request.onerror = () => {
+                console.error(
+                    '❌ Shared deck cache load error:',
+                    request.error
+                );
+                reject(request.error);
+            };
+        });
+
+    } catch (error) {
+        console.error(
+            '❌ loadSharedDeckCache error:',
+            error
+        );
+        return null;
+    }
+}
+
+// ============================================================
 //  HAS (CHECK EXISTING)
 // ============================================================
 
