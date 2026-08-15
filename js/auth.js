@@ -536,39 +536,43 @@ async function loadUserData(email) {
             localRecord?.plan ||
             'free';
 
-        // ============================================================
-        // 9. SAVE MERGED RESULT LOCALLY
-        // ============================================================
+       // ============================================================
+// 9. SAVE ONLY PROGRESS LOCALLY
+// ============================================================
 
-        if (
-            localCards.length > 0 ||
-            cloudCards.length > 0
-        ) {
+if (
+    localCards.length > 0 ||
+    cloudCards.length > 0
+) {
 
-            const progressSnapshot =
-                createProgressSnapshot();
+    const mergedProgress =
+        Array.from(
+            progressMap.values()
+        );
 
-            await saveToIndexedDB(
-                email,
-                {
-                    cards:
-                        progressSnapshot.cards,
+    await saveToIndexedDB(
+        email,
+        {
+            cards:
+                mergedProgress,
 
-                    plan:
-                        userPlan,
+            plan:
+                userPlan,
 
-                    schema_version:
-                        CURRENT_SCHEMA_VERSION,
+            schema_version:
+                CURRENT_SCHEMA_VERSION,
 
-                    cloudUpdatedAt:
-                        Date.now()
-                }
-            );
-
-            console.log(
-                '💾 Final merged progress saved locally'
-            );
+            cloudUpdatedAt:
+                Date.now()
         }
+    );
+
+    console.log(
+        '💾 Final progress saved locally:',
+        mergedProgress.length,
+        'cards'
+    );
+}
 
         return true;
 
