@@ -36,78 +36,76 @@ async function loadFromFirebase(email) {
 
         const userDoc = await userRef.get();
 
-        const userData = userDoc.exists
-            ? userDoc.data()
-            : {};
+        let plan = 'free';
+        let nickname = null;
+        let schemaVersion = CURRENT_SCHEMA_VERSION;
 
-        // Simpan nickname kalau ada
-        if (userData.nickname) {
-            localStorage.setItem(
-                NICKNAME_KEY + email,
-                userData.nickname
-            );
+        if (userDoc.exists) {
+
+            const userData = userDoc.data();
+
+            plan = userData.plan || 'free';
+
+            nickname =
+                userData.nickname || null;
+
+            schemaVersion =
+                userData.schema_version ||
+                CURRENT_SCHEMA_VERSION;
+
+            if (nickname) {
+                localStorage.setItem(
+                    NICKNAME_KEY + email,
+                    nickname
+                );
+            }
         }
 
         // ============================================================
         // 2. LOAD USER PROGRESS
         //
-        // Struktur Firestore:
-        //
         // users/{email}/progress/{cardId}
-        //
         // ============================================================
 
-        const progressRef = userRef.collection('progress');
-
-        const snapshot = await progressRef.get();
+        const progressSnapshot =
+            await userRef
+                .collection('progress')
+                .get();
 
         const progressCards = [];
 
-        snapshot.forEach(doc => {
+        progressSnapshot.forEach(doc => {
+
             const data = doc.data();
 
-            if (data) {
-                progressCards.push({
-                    __id: data.__id || doc.id,
-                    ...data
-                });
-            }
+            if (!data) return;
+
+            progressCards.push({
+                __id: data.__id || doc.id,
+                ...data
+            });
         });
 
         console.log(
-            '✅ User progress loaded from Firebase:',
+            '☁️ Firebase progress loaded:',
             progressCards.length,
             'cards'
         );
 
         // ============================================================
-        // 3. USER METADATA
-        // ============================================================
-
-        const plan =
-            userData.plan ||
-            'free';
-
-        const schemaVersion =
-            userData.schema_version ||
-            CURRENT_SCHEMA_VERSION;
-
-        const lastUpdated =
-            userData.last_updated ||
-            userData.updatedAt?.toMillis?.() ||
-            Date.now();
-
-        // ============================================================
-        // 4. RETURN PROGRESS ONLY
-        //
-        // Shared library akan digabung di loadUserData()
+        // 3. RETURN CLOUD DATA
         // ============================================================
 
         return {
             cards: progressCards,
+
             plan: plan,
-            last_updated: lastUpdated,
-            schema_version: schemaVersion
+
+            schema_version:
+                schemaVersion,
+
+            last_updated:
+                Date.now()
         };
 
     } catch (err) {
