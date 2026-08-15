@@ -390,7 +390,7 @@ function getRealCards() {
 <button
 onclick="
 event.stopPropagation();
-moveTopicUp('${topic}');
+moveTopicUp('${topic.replace(/'/g, "\\'")}');
 ">
 ⬆️
 </button>
@@ -398,7 +398,7 @@ moveTopicUp('${topic}');
 <button
 onclick="
 event.stopPropagation();
-moveTopicDown('${topic}');
+moveTopicDown('${topic.replace(/'/g, "\\'")}');
 ">
 ⬇️
 </button>
