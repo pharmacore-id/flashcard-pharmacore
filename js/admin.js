@@ -525,42 +525,186 @@ async function refreshUserData() {
 }
 
 async function loadGlobalDeckOrder() {
+
+    // ============================================================
+    // 1. MEMORY
+    // ============================================================
+
+    if (
+        deckOrderConfig &&
+        Array.isArray(deckOrderConfig.topics) &&
+        deckOrderConfig.topics.length > 0
+    ) {
+        console.log(
+            '⚡ Using memory global deck order'
+        );
+
+        return true;
+    }
+
+
+    // ============================================================
+    // 2. INDEXEDDB CACHE
+    // ============================================================
+
     try {
-        const doc = await db.collection("config").doc("global").get();
-        if (doc.exists && doc.data().deckOrderConfig) {
-            deckOrderConfig = doc.data().deckOrderConfig;
-            console.log("✅ Loaded global deck order from Firestore");
+
+        const cached =
+            await loadGlobalDeckOrderCache();
+
+        if (
+            cached &&
+            typeof cached === 'object'
+        ) {
+
+            deckOrderConfig = {
+                topics: Array.isArray(cached.topics)
+                    ? cached.topics
+                    : [],
+
+                subtopics:
+                    cached.subtopics &&
+                    typeof cached.subtopics === 'object'
+                        ? cached.subtopics
+                        : {}
+            };
+
+            console.log(
+                '⚡ Using cached global deck order'
+            );
+
             return true;
+        }
+
+    } catch (error) {
+
+        console.warn(
+            '⚠️ Global deck order cache unavailable:',
+            error
+        );
+    }
+
+
+    // ============================================================
+    // 3. FIRESTORE FALLBACK
+    // ============================================================
+
+    try {
+
+        console.log(
+            '☁️ No global deck order cache. Loading Firestore...'
+        );
+
+        const doc =
+            await db
+                .collection("config")
+                .doc("global")
+                .get();
+
+        if (
+            doc.exists &&
+            doc.data().deckOrderConfig
+        ) {
+
+            deckOrderConfig =
+                doc.data().deckOrderConfig;
+
+            console.log(
+                '☁️ Loaded global deck order from Firestore'
+            );
+
+            // ====================================================
+            // SAVE LOCAL CACHE
+            // ====================================================
+
+            await saveGlobalDeckOrderCache(
+                deckOrderConfig
+            );
+
+            return true;
+
         } else {
-            console.log("ℹ️ No global deck order found, using default");
-            // Initialize with empty object
-            deckOrderConfig = { topics: [], subtopics: {} };
+
+            console.log(
+                'ℹ️ No global deck order found, using default'
+            );
+
+            deckOrderConfig = {
+                topics: [],
+                subtopics: {}
+            };
+
+            await saveGlobalDeckOrderCache(
+                deckOrderConfig
+            );
+
             return false;
         }
+
     } catch (err) {
-        console.error("❌ Failed to load global deck order:", err);
-        deckOrderConfig = { topics: [], subtopics: {} };
+
+        console.error(
+            '❌ Failed to load global deck order:',
+            err
+        );
+
+        deckOrderConfig = {
+            topics: [],
+            subtopics: {}
+        };
+
         return false;
     }
 }
 
 // ===== SAVE GLOBAL =====
 async function saveGlobalDeckOrder() {
-    // Hanya admin yang bisa save
+
+    // Hanya admin
     if (!isAdmin) {
-        console.warn("⛔ Only admins can save deck order.");
+        console.warn(
+            "⛔ Only admins can save deck order."
+        );
         return;
     }
-    
+
     try {
-        await db.collection("config").doc("global").set({
-            deckOrderConfig: deckOrderConfig,
-            last_updated: Date.now(),
-            updated_by: currentUser
-        }, { merge: true });
-        console.log("✅ Global deck order saved");
+
+        // ========================================================
+        // FIRESTORE
+        // ========================================================
+
+        await db
+            .collection("config")
+            .doc("global")
+            .set({
+                deckOrderConfig: deckOrderConfig,
+                last_updated: Date.now(),
+                updated_by: currentUser
+            }, {
+                merge: true
+            });
+
+
+        // ========================================================
+        // INDEXEDDB CACHE
+        // ========================================================
+
+        await saveGlobalDeckOrderCache(
+            deckOrderConfig
+        );
+
+
+        console.log(
+            "✅ Global deck order saved + cached"
+        );
+
     } catch (err) {
-        console.error("❌ Failed to save global deck order:", err);
+
+        console.error(
+            "❌ Failed to save global deck order:",
+            err
+        );
     }
 }
 
