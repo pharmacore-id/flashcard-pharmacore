@@ -297,7 +297,6 @@ async function refreshUserData() {
     const btn = document.getElementById('refresh-btn');
     if (!btn) return;
 
-    // ===== DISABLE TOMBOL =====
     btn.disabled = true;
     btn.textContent = 'Refreshing...';
     btn.classList.add('opacity-50', 'cursor-not-allowed');
@@ -306,224 +305,130 @@ async function refreshUserData() {
         updateSyncStatus('syncing', 'Refreshing data...');
 
         // ===================================================
-        //  STEP 1: FLUSH SAVE DULU (PASTIKAN DATA LOCAL TERSIMPAN)
+        // 1. FLUSH LOCAL CHANGES
         // ===================================================
         if (currentUser) {
             if (saveTimeout) {
                 clearTimeout(saveTimeout);
                 saveTimeout = null;
             }
+
             await flushSaveNow(currentUser);
         }
 
         // ===================================================
-        //  STEP 2: LOAD ULANG DARI FIRESTORE
+        // 2. INCREMENTAL FIRESTORE SYNC
+        //
+        // JANGAN gunakan loadFromFirebase() di sini.
+        // performSync() hanya mengambil cloud progress
+        // yang berubah sejak checkpoint terakhir.
         // ===================================================
-        const cloudData = await loadFromFirebase(currentUser);
-
-        if (cloudData && cloudData.cards) {
-            // ============================================================
-            // STEP 3: MERGE LOCAL + CLOUD PER CARD
-            // Jangan overwrite local dengan cloud mentah.
-            // Card dengan progress_updated_at terbaru yang menang.
-            // ============================================================
-
-            const sharedCards = await loadSharedDecksOnce();
-            const localRecord = await loadFromIndexedDB(currentUser);
-
-            const localCards =
-                localRecord && Array.isArray(localRecord.cards)
-                    ? localRecord.cards
-                    : [];
-
-            const localMap = new Map();
-            localCards.forEach(card => {
-                const key = card.__id || card.card_id;
-                if (key) localMap.set(key, card);
+        if (currentUser && navigator.onLine) {
+            await performSync({
+                force: true,
+                email: currentUser
             });
+        }
 
-            const cloudMap = new Map();
-            cloudData.cards.forEach(card => {
-                const key = card.__id || card.card_id;
-                if (key) cloudMap.set(key, card);
-            });
+        // ===================================================
+        // 3. LOAD SHARED DECK DARI CACHE
+        // ===================================================
+        const sharedResult =
+            await loadSharedDecksOnce();
 
-            const mergedMap = new Map();
+        const sharedCards =
+            Array.isArray(sharedResult)
+                ? sharedResult
+                : (sharedResult?.cards || []);
 
-            const allKeys = new Set([
-                ...localMap.keys(),
-                ...cloudMap.keys()
-            ]);
+        // ===================================================
+        // 4. LOAD HASIL TERBARU DARI INDEXEDDB
+        // ===================================================
+        const localRecord =
+            await loadFromIndexedDB(currentUser);
 
-            allKeys.forEach(key => {
-                const local = localMap.get(key);
-                const cloud = cloudMap.get(key);
+        const localCards =
+            localRecord &&
+            Array.isArray(localRecord.cards)
+                ? localRecord.cards
+                : [];
 
-                if (local && !cloud) {
-                    mergedMap.set(key, local);
-                    return;
-                }
+        // ===================================================
+        // 5. GABUNGKAN SHARED + USER PROGRESS
+        // ===================================================
+        allCards = mergeProgress(
+            sharedCards,
+            localCards
+        );
 
-                if (!local && cloud) {
-                    mergedMap.set(key, cloud);
-                    return;
-                }
+        userPlan =
+            localRecord?.plan ||
+            userPlan ||
+            'free';
 
-                const localTime =
-                    Number(local?.progress_updated_at || 0);
+        // ===================================================
+        // 6. RENDER UI
+        // ===================================================
+        renderDecks();
+        updateHome();
 
-                const cloudTime =
-                    Number(cloud?.progress_updated_at || 0);
+        if (typeof renderStats === 'function') {
+            renderStats();
+        }
 
-                mergedMap.set(
-                    key,
-                    localTime > cloudTime
-                        ? local
-                        : cloud
-                );
-            });
-
-            const mergedCards = Array.from(
-                mergedMap.values()
-            );
-
-            allCards = mergeProgress(
-                sharedCards,
-                mergedCards
-            );
-
-            userPlan =
-                cloudData.plan ||
-                localRecord?.plan ||
-                'free';
-
-            await saveToIndexedDB(currentUser, {
-                cards: mergedCards,
-                plan: userPlan,
-                schema_version:
-                    cloudData.schema_version ||
-                    localRecord?.schema_version ||
-                    CURRENT_SCHEMA_VERSION,
-                cloudUpdatedAt:
-                    cloudData.last_updated ??
-                    localRecord?.cloudUpdatedAt ??
-                    null
-            });
-
-            console.log(
-                '🔀 Refresh merged per-card:',
-                mergedCards.length,
-                'cards'
-            );
-
-            // ============================================================
-            //  STEP 4: METADATA KECIL DI LOCALSTORAGE
-            // ============================================================
-            try {
-                localStorage.setItem('Pharmadeck_metadata_' + currentUser, JSON.stringify({
+        // ===================================================
+        // 7. METADATA LOCALSTORAGE
+        // ===================================================
+        try {
+            localStorage.setItem(
+                'Pharmadeck_metadata_' + currentUser,
+                JSON.stringify({
                     plan: userPlan,
                     cardsCount: allCards.length,
                     source: 'refresh',
                     lastUpdated: Date.now()
-                }));
-            } catch (e) {
-                console.warn('⚠️ Metadata save failed:', e);
-            }
-
-            // ===== RENDER ULANG UI =====
-            renderDecks();
-            updateHome();
-            if (typeof renderStats === 'function') renderStats();
-
-            updateSyncStatus('', 'Data refreshed');
-            console.log(`✅ Refresh complete (${allCards.length} cards loaded)`);
-            return;
-        }
-
-        // ============================================================
-        //  STEP 5: FALLBACK - RELOAD SHARED DECKS
-        //  (Jika cloudData tidak ditemukan)
-        // ============================================================
-        console.warn('⚠️ Cloud data not found, reloading shared decks...');
-
-        // ===== SIMPAN PROGRESS LAMA =====
-        const progressMap = new Map();
-        allCards.forEach(card => {
-            if (card.isShared) {
-                const key = card.__id || card.card_id;
-                progressMap.set(key, {
-                    ease_factor: card.ease_factor,
-                    interval: card.interval,
-                    repetitions: card.repetitions,
-                    total_reviews: card.total_reviews,
-                    correct_count: card.correct_count,
-                    next_review: card.next_review,
-                    last_review: card.last_review,
-                    review_history: card.review_history || [],
-                    progress_updated_at: card.progress_updated_at || 0
-                });
-            }
-        });
-
-        // ===== LOAD SHARED DECKS BARU =====
-        const sharedCards = await loadSharedDecksOnce();
-
-        // ===== MERGE PROGRESS =====
-        const mergedSharedCards = sharedCards.map(card => {
-            const key = card.__id || card.card_id;
-            const progress = progressMap.get(key);
-            return progress ? { ...card, ...progress } : card;
-        });
-
-        // ===== PERTAHANKAN CUSTOM CARDS =====
-        const customCards = allCards.filter(c => !c.isShared);
-
-        // ===== GABUNGKAN =====
-        allCards = [...customCards, ...mergedSharedCards];
-
-        // ============================================================
-        //  SAVE KE INDEXEDDB (TANPA markProgressUpdated)
-        // ============================================================
-        await saveToIndexedDB(currentUser, {
-            cards: buildProgressData(),
-            plan: userPlan,
-            schema_version: CURRENT_SCHEMA_VERSION,
-            cloudUpdatedAt: null
-            // TIDAK ADA markProgressUpdated!
-        });
-        console.log('📦 IndexedDB updated (fallback)');
-
-        // ===== METADATA =====
-        try {
-            localStorage.setItem('Pharmadeck_metadata_' + currentUser, JSON.stringify({
-                plan: userPlan,
-                cardsCount: allCards.length,
-                source: 'refresh_fallback',
-                lastUpdated: Date.now()
-            }));
+                })
+            );
         } catch (e) {
-            console.warn('⚠️ Metadata save failed:', e);
+            console.warn(
+                '⚠️ Metadata save failed:',
+                e
+            );
         }
 
-        renderDecks();
-        updateHome();
-        if (typeof renderStats === 'function') renderStats();
+        updateSyncStatus('', 'Data refreshed');
 
-        updateSyncStatus('', 'Shared decks refreshed');
-        console.log(`✅ Shared decks refreshed (${allCards.length} cards loaded)`);
+        console.log(
+            `✅ Refresh complete (${allCards.length} cards loaded)`
+        );
 
     } catch (error) {
-        console.error('❌ Refresh error:', error);
-        updateSyncStatus('offline', 'Refresh failed');
-        alert('❌ Failed to refresh data.\n\n' + (error?.message || 'Unknown error'));
+
+        console.error(
+            '❌ Refresh error:',
+            error
+        );
+
+        updateSyncStatus(
+            'offline',
+            'Refresh failed'
+        );
+
+        alert(
+            '❌ Failed to refresh data.\n\n' +
+            (error?.message || 'Unknown error')
+        );
+
     } finally {
-        // ===== ENABLE KEMBALI TOMBOL =====
+
         btn.disabled = false;
         btn.textContent = 'Refresh Now';
-        btn.classList.remove('opacity-50', 'cursor-not-allowed');
+        btn.classList.remove(
+            'opacity-50',
+            'cursor-not-allowed'
+        );
     }
 }
-
 async function loadGlobalDeckOrder() {
 
     // ============================================================
