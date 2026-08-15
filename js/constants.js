@@ -6,6 +6,7 @@ const DB_NAME = 'PharmaDeckDB';
 const DB_VERSION = 3;
 const STORE_NAME = 'user_data';
 const SYNC_QUEUE_STORE = 'sync_queue';
+const SHARED_DECK_STORE = 'shared_decks';
 const CURRENT_SCHEMA_VERSION = 2;
 const MIGRATION_VERSION = 'v2';
 const ADMIN_EMAILS = ['adm.pharmacore@gmail.com'];
