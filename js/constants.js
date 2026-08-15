@@ -3,7 +3,7 @@
 // ============================================================
 
 const DB_NAME = 'PharmaDeckDB';
-const DB_VERSION = 2;
+const DB_VERSION = 3;
 const STORE_NAME = 'user_data';
 const SYNC_QUEUE_STORE = 'sync_queue';
 const CURRENT_SCHEMA_VERSION = 2;
