@@ -23,6 +23,15 @@ function getDB() {
                     queueStore.createIndex('synced', 'synced', { unique: false });
                     log('✅ IndexedDB store created: sync_queue');
                 }
+
+                // ===== STORE 3: shared_decks =====
+if (!db.objectStoreNames.contains(SHARED_DECK_STORE)) {
+    db.createObjectStore(SHARED_DECK_STORE, {
+        keyPath: 'id'
+    });
+
+    log('✅ IndexedDB store created: shared_decks');
+}
             };
             
             request.onsuccess = (e) => {
