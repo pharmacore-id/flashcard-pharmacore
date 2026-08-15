@@ -210,189 +210,384 @@ async function loadUserData(email) {
     try {
         if (!email) return false;
 
-        console.log('🔍 Loading user data for:', email);
+        console.log(
+            '🔍 Loading user data for:',
+            email
+        );
 
         // ============================================================
-        // 1. SHARED DECKS = LIBRARY UTAMA SEMUA USER
+        // 1. LOAD SHARED LIBRARY
         // ============================================================
 
         console.time('⏱️ loadUserData.sharedDecks');
 
-        let sharedCards = [];
+        let result;
 
         try {
-            const result = await loadSharedDecksOnce();
-
-            sharedCards = Array.isArray(result)
-                ? result
-                : (result.cards || []);
-
-            console.log(
-                '📚 Shared library loaded:',
-                sharedCards.length,
-                'cards'
-            );
+            result = await loadSharedDecksOnce();
 
         } catch (error) {
+
             console.error(
                 '❌ Failed to load shared library:',
                 error
             );
+
+            allCards = [];
+            return false;
         }
 
-        console.timeEnd('⏱️ loadUserData.sharedDecks');
+        const sharedCards =
+            Array.isArray(result)
+                ? result
+                : Array.isArray(result?.cards)
+                    ? result.cards
+                    : [];
 
-        // Kalau shared library gagal, jangan overwrite
-        // dengan data user yang mungkin kosong.
+        console.log(
+            '📚 Shared library loaded:',
+            sharedCards.length,
+            'cards'
+        );
+
+        console.timeEnd(
+            '⏱️ loadUserData.sharedDecks'
+        );
+
         if (sharedCards.length === 0) {
+
             console.error(
-                '❌ Shared library is empty. User data will not be initialized.'
+                '❌ Shared library is empty'
             );
 
             allCards = [];
-            userPlan = 'free';
 
             return false;
         }
 
         // ============================================================
-        // 2. LOAD USER PROGRESS DARI INDEXEDDB
+        // 2. LOAD LOCAL INDEXEDDB
         // ============================================================
 
-        let cachedRecord = null;
-        let cachedProgress = null;
+        let localRecord = null;
 
         try {
-            cachedRecord = await loadFromIndexedDB(email);
 
-            if (
-                cachedRecord &&
-                Array.isArray(cachedRecord.cards) &&
-                cachedRecord.cards.length > 0
-            ) {
-                cachedProgress = cachedRecord.cards;
-
-                console.log(
-                    '📦 Cached progress:',
-                    cachedProgress.length,
-                    'cards'
-                );
-            }
+            localRecord =
+                await loadFromIndexedDB(email);
 
         } catch (error) {
+
             console.warn(
                 '⚠️ IndexedDB load failed:',
                 error
             );
         }
 
-        // ============================================================
-        // 3. DEFAULT = SHARED LIBRARY
-        // ============================================================
-
-        allCards = sharedCards;
-        userPlan = cachedRecord?.plan || 'free';
-
-        // ============================================================
-        // 4. MERGE PROGRESS USER JIKA ADA
-        // ============================================================
-
-        if (cachedProgress) {
-
-            console.log(
-                '🔄 Merging user progress with shared library...'
-            );
-
-            allCards = mergeProgress(
-                sharedCards,
-                cachedProgress
-            );
-
-            console.log(
-                '✅ Shared library + cached progress:',
-                allCards.length,
-                'cards'
-            );
-
-            return true;
-        }
-
-        // ============================================================
-        // 5. TIDAK ADA CACHE → LOAD FIRESTORE
-        // ============================================================
+        const localCards =
+            Array.isArray(localRecord?.cards)
+                ? localRecord.cards
+                : [];
 
         console.log(
-            '📂 No local progress. Checking Firestore...'
-        );
-
-        let cloudData = null;
-
-        try {
-            cloudData = await loadFromFirebase(email);
-
-            console.log(
-                '☁️ Cloud progress loaded:',
-                cloudData?.cards?.length || 0,
-                'cards'
-            );
-
-        } catch (error) {
-            console.warn(
-                '⚠️ Cloud load failed:',
-                error.message
-            );
-        }
-
-        // ============================================================
-        // 6. MERGE FIRESTORE PROGRESS JIKA ADA
-        // ============================================================
-
-        if (
-            cloudData &&
-            Array.isArray(cloudData.cards) &&
-            cloudData.cards.length > 0
-        ) {
-
-            allCards = mergeProgress(
-                sharedCards,
-                cloudData.cards
-            );
-
-            userPlan = cloudData.plan || 'free';
-
-            console.log(
-                '✅ Shared library + cloud progress:',
-                allCards.length,
-                'cards'
-            );
-
-            return true;
-        }
-
-        // ============================================================
-        // 7. USER BARU
-        // ============================================================
-
-        console.log(
-            '📚 New user: using shared library'
-        );
-
-        allCards = sharedCards;
-        userPlan = 'free';
-
-        console.log(
-            '✅ New user library:',
-            allCards.length,
+            '💾 Local progress:',
+            localCards.length,
             'cards'
         );
 
+        // ============================================================
+        // 3. LOAD CLOUD FIRESTORE
+        // ============================================================
+
+        let cloudData = null;
+
+        if (navigator.onLine) {
+
+            try {
+
+                cloudData =
+                    await loadFromFirebase(email);
+
+            } catch (error) {
+
+                console.warn(
+                    '⚠️ Cloud load failed:',
+                    error
+                );
+            }
+        }
+
+        const cloudCards =
+            Array.isArray(cloudData?.cards)
+                ? cloudData.cards
+                : [];
+
+        console.log(
+            '☁️ Cloud progress:',
+            cloudCards.length,
+            'cards'
+        );
+
+        // ============================================================
+        // 4. CREATE LOCAL MAP
+        // ============================================================
+
+        const localMap = new Map();
+
+        localCards.forEach(card => {
+
+            if (
+                !card ||
+                typeof card !== 'object'
+            ) {
+                return;
+            }
+
+            const key =
+                card.__id ||
+                card.card_id;
+
+            if (key) {
+
+                localMap.set(
+                    String(key),
+                    card
+                );
+            }
+        });
+
+        // ============================================================
+        // 5. CREATE CLOUD MAP
+        // ============================================================
+
+        const cloudMap = new Map();
+
+        cloudCards.forEach(card => {
+
+            if (
+                !card ||
+                typeof card !== 'object'
+            ) {
+                return;
+            }
+
+            const key =
+                card.__id ||
+                card.card_id;
+
+            if (key) {
+
+                cloudMap.set(
+                    String(key),
+                    card
+                );
+            }
+        });
+
+        // ============================================================
+        // 6. COMPARE LOCAL VS CLOUD
+        // ============================================================
+
+        const progressMap = new Map();
+
+        const allKeys = new Set([
+            ...localMap.keys(),
+            ...cloudMap.keys()
+        ]);
+
+        let localWins = 0;
+        let cloudWins = 0;
+        let localOnly = 0;
+        let cloudOnly = 0;
+        let unchanged = 0;
+
+        allKeys.forEach(key => {
+
+            const localCard =
+                localMap.get(key);
+
+            const cloudCard =
+                cloudMap.get(key);
+
+            // --------------------------------------------------------
+            // LOCAL ONLY
+            // --------------------------------------------------------
+
+            if (
+                localCard &&
+                !cloudCard
+            ) {
+
+                progressMap.set(
+                    key,
+                    localCard
+                );
+
+                localOnly++;
+
+                return;
+            }
+
+            // --------------------------------------------------------
+            // CLOUD ONLY
+            // --------------------------------------------------------
+
+            if (
+                !localCard &&
+                cloudCard
+            ) {
+
+                progressMap.set(
+                    key,
+                    cloudCard
+                );
+
+                cloudOnly++;
+
+                return;
+            }
+
+            // --------------------------------------------------------
+            // BOTH EXIST
+            // --------------------------------------------------------
+
+            const localTime =
+                Number(
+                    localCard?.progress_updated_at || 0
+                );
+
+            const cloudTime =
+                Number(
+                    cloudCard?.progress_updated_at || 0
+                );
+
+            if (localTime > cloudTime) {
+
+                progressMap.set(
+                    key,
+                    localCard
+                );
+
+                localWins++;
+
+            } else if (
+                cloudTime > localTime
+            ) {
+
+                progressMap.set(
+                    key,
+                    cloudCard
+                );
+
+                cloudWins++;
+
+            } else {
+
+                progressMap.set(
+                    key,
+                    localCard
+                );
+
+                unchanged++;
+            }
+        });
+
+        // ============================================================
+        // 7. MERGE PROGRESS INTO SHARED LIBRARY
+        // ============================================================
+
+        allCards = sharedCards.map(card => {
+
+            const key =
+                card.__id ||
+                card.card_id;
+
+            const progress =
+                progressMap.get(
+                    String(key)
+                ) || {};
+
+            return {
+                ...card,
+                ...progress
+            };
+        });
+
+        console.log(
+            '🔀 Initial data comparison:',
+            {
+                localWins,
+                cloudWins,
+                localOnly,
+                cloudOnly,
+                unchanged,
+                localCards: localCards.length,
+                cloudCards: cloudCards.length,
+                finalCards: allCards.length
+            }
+        );
+
+        // ============================================================
+        // 8. PLAN
+        // ============================================================
+
+        userPlan =
+            cloudData?.plan ||
+            localRecord?.plan ||
+            'free';
+
+        // ============================================================
+        // 9. SAVE MERGED RESULT LOCALLY
+        // ============================================================
+
+        if (
+            localCards.length > 0 ||
+            cloudCards.length > 0
+        ) {
+
+            const progressSnapshot =
+                createProgressSnapshot();
+
+            await saveToIndexedDB(
+                email,
+                {
+                    cards:
+                        progressSnapshot.cards,
+
+                    plan:
+                        userPlan,
+
+                    schema_version:
+                        CURRENT_SCHEMA_VERSION,
+
+                    cloudUpdatedAt:
+                        Date.now()
+                }
+            );
+
+            console.log(
+                '💾 Final merged progress saved locally'
+            );
+        }
+
         return true;
 
+    } catch (error) {
+
+        console.error(
+            '❌ loadUserData failed:',
+            error
+        );
+
+        return false;
+
     } finally {
-        console.timeEnd('⏱️ loadUserData.total');
+
+        console.timeEnd(
+            '⏱️ loadUserData.total'
+        );
     }
 }
-    
  
 
 // ============================================================
