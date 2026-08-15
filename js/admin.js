@@ -304,46 +304,32 @@ async function refreshUserData() {
     try {
         updateSyncStatus('syncing', 'Refreshing data...');
 
-        // ===================================================
-        // 1. FLUSH LOCAL CHANGES
-        // ===================================================
-        if (currentUser) {
-            if (saveTimeout) {
-                clearTimeout(saveTimeout);
-                saveTimeout = null;
-            }
+        // =====================================================
+        // SATU-SATUNYA FIRESTORE SYNC
+        // =====================================================
 
+        if (currentUser) {
             await flushSaveNow(currentUser);
         }
 
-        // ===================================================
-        // 2. INCREMENTAL FIRESTORE SYNC
-        //
-        // JANGAN gunakan loadFromFirebase() di sini.
-        // performSync() hanya mengambil cloud progress
-        // yang berubah sejak checkpoint terakhir.
-        // ===================================================
-        if (currentUser && navigator.onLine) {
-            await performSync({
-                force: true,
-                email: currentUser
-            });
-        }
+        // =====================================================
+        // SHARED DECK TIDAK PERLU DIBACA ULANG
+        // karena cache sudah tersedia
+        // =====================================================
 
-        // ===================================================
-        // 3. LOAD SHARED DECK DARI CACHE
-        // ===================================================
-        const sharedResult =
-            await loadSharedDecksOnce();
+        const sharedResult = await loadSharedDecksOnce();
 
         const sharedCards =
             Array.isArray(sharedResult)
                 ? sharedResult
-                : (sharedResult?.cards || []);
+                : Array.isArray(sharedResult?.cards)
+                    ? sharedResult.cards
+                    : [];
 
-        // ===================================================
-        // 4. LOAD HASIL TERBARU DARI INDEXEDDB
-        // ===================================================
+        // =====================================================
+        // AMBIL PROGRESS TERBARU DARI INDEXEDDB
+        // =====================================================
+
         const localRecord =
             await loadFromIndexedDB(currentUser);
 
@@ -353,9 +339,10 @@ async function refreshUserData() {
                 ? localRecord.cards
                 : [];
 
-        // ===================================================
-        // 5. GABUNGKAN SHARED + USER PROGRESS
-        // ===================================================
+        // =====================================================
+        // GABUNGKAN SHARED + PROGRESS
+        // =====================================================
+
         allCards = mergeProgress(
             sharedCards,
             localCards
@@ -366,34 +353,15 @@ async function refreshUserData() {
             userPlan ||
             'free';
 
-        // ===================================================
-        // 6. RENDER UI
-        // ===================================================
+        // =====================================================
+        // RENDER UI
+        // =====================================================
+
         renderDecks();
         updateHome();
 
         if (typeof renderStats === 'function') {
             renderStats();
-        }
-
-        // ===================================================
-        // 7. METADATA LOCALSTORAGE
-        // ===================================================
-        try {
-            localStorage.setItem(
-                'Pharmadeck_metadata_' + currentUser,
-                JSON.stringify({
-                    plan: userPlan,
-                    cardsCount: allCards.length,
-                    source: 'refresh',
-                    lastUpdated: Date.now()
-                })
-            );
-        } catch (e) {
-            console.warn(
-                '⚠️ Metadata save failed:',
-                e
-            );
         }
 
         updateSyncStatus('', 'Data refreshed');
@@ -429,6 +397,7 @@ async function refreshUserData() {
         );
     }
 }
+
 async function loadGlobalDeckOrder() {
 
     // ============================================================
