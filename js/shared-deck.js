@@ -11,20 +11,20 @@ function hasSharedDeckCache() {
     return Array.isArray(sharedDecksCache);
 }
 
-async function loadSharedDecksFromPersistentCache() {
+async function loadPersistentSharedDeckCache() {
     try {
-        const record = await loadFromIndexedDB(SHARED_DECK_CACHE_KEY);
+        const cached = await loadSharedDeckCache();
 
         if (
-            record &&
-            Array.isArray(record.cards) &&
-            record.cards.length > 0
+            cached &&
+            Array.isArray(cached.cards) &&
+            cached.cards.length > 0
         ) {
-            sharedDecksCache = record.cards;
-            deckVersionsCache = record.deckVersions || {};
+            sharedDecksCache = cached.cards;
+            deckVersionsCache = cached.deckVersions || {};
 
             console.log(
-                '📦 Shared library cache loaded:',
+                '⚡ Persistent shared library loaded:',
                 sharedDecksCache.length,
                 'cards'
             );
@@ -34,7 +34,7 @@ async function loadSharedDecksFromPersistentCache() {
 
     } catch (error) {
         console.warn(
-            '⚠️ Shared library persistent cache failed:',
+            '⚠️ Persistent shared cache unavailable:',
             error
         );
     }
@@ -45,18 +45,54 @@ async function loadSharedDecksFromPersistentCache() {
 async function loadSharedDecksOnce() {
     console.time('⏱️ sharedDecks.total');
     console.log('🔍 loadSharedDecksOnce: START');
-    
+
+    // ============================================================
+    // 1. MEMORY CACHE
+    // ============================================================
+
     if (hasSharedDeckCache()) {
-        console.log('📚 Using cached shared decks:', sharedDecksCache.length);
+        console.log(
+            '⚡ Using memory shared deck cache:',
+            sharedDecksCache.length
+        );
+
         console.timeEnd('⏱️ sharedDecks.total');
+
         return {
             cards: sharedDecksCache,
             deckVersions: deckVersionsCache || {}
         };
     }
-    
+
+    // ============================================================
+    // 2. PERSISTENT INDEXEDDB CACHE
+    // ============================================================
+
+    const persistentLoaded =
+        await loadPersistentSharedDeckCache();
+
+    if (persistentLoaded) {
+        console.log(
+            '⚡ Using persistent shared deck cache:',
+            sharedDecksCache.length
+        );
+
+        console.timeEnd('⏱️ sharedDecks.total');
+
+        return {
+            cards: sharedDecksCache,
+            deckVersions: deckVersionsCache || {}
+        };
+    }
+
+    // ============================================================
+    // 3. FIRESTORE FALLBACK
+    // ============================================================
+
     try {
-        console.log('🔍 loadSharedDecksOnce: calling loadSharedDecks()...');
+        console.log(
+            '☁️ No shared deck cache. Loading from Firestore...'
+        );
         const result = await loadSharedDecks();
         
         console.log('🔍 DEBUG result:', result);
@@ -182,7 +218,33 @@ async function saveSharedDeck(deckData, isPremium = false) {
         });
 
         console.log('🔍 sharedCards built:', sharedCards.length);
-        return sharedCards;
+
+// ============================================================
+//  SAVE TO PERSISTENT CACHE
+// ============================================================
+
+if (sharedCards.length > 0) {
+    try {
+        await saveSharedDeckCache(
+            sharedCards,
+            deckVersionsCache || {}
+        );
+
+        console.log(
+            '💾 Shared library cached:',
+            sharedCards.length,
+            'cards'
+        );
+
+    } catch (error) {
+        console.warn(
+            '⚠️ Failed to save shared library cache:',
+            error
+        );
+    }
+}
+
+return sharedCards;
 
     } catch (error) {
         console.error('❌ loadSharedDecks: ERROR', error);
