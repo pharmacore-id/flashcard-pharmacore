@@ -647,3 +647,101 @@ async function migrateLocalStorageToIndexedDB(email) {
         console.error('❌ Migration failed for:', email, error);
     }
 }
+
+// ============================================================
+// GLOBAL DECK ORDER CACHE
+// ============================================================
+
+const GLOBAL_DECK_ORDER_CACHE_KEY = 'global_deck_order';
+
+async function saveGlobalDeckOrderCache(config) {
+    try {
+        const db = await getDB();
+        const tx = db.transaction(STORE_NAME, 'readwrite');
+        const store = tx.objectStore(STORE_NAME);
+
+        const existing = await new Promise((resolve, reject) => {
+            const request = store.get('__global__');
+
+            request.onsuccess = () => resolve(request.result);
+            request.onerror = () => reject(request.error);
+        });
+
+        const record = {
+            ...(existing || {}),
+            email: '__global__',
+            globalDeckOrder: config,
+            globalDeckOrderUpdatedAt: Date.now()
+        };
+
+        store.put(record);
+
+        return new Promise((resolve, reject) => {
+            tx.oncomplete = () => {
+                console.log('💾 Global deck order cached locally');
+                resolve(true);
+            };
+
+            tx.onerror = () => {
+                console.error(
+                    '❌ Failed to cache global deck order:',
+                    tx.error
+                );
+                reject(tx.error);
+            };
+        });
+
+    } catch (error) {
+        console.error(
+            '❌ saveGlobalDeckOrderCache error:',
+            error
+        );
+        return false;
+    }
+}
+
+
+async function loadGlobalDeckOrderCache() {
+    try {
+        const db = await getDB();
+        const tx = db.transaction(STORE_NAME, 'readonly');
+        const store = tx.objectStore(STORE_NAME);
+
+        return new Promise((resolve, reject) => {
+            const request = store.get('__global__');
+
+            request.onsuccess = () => {
+                const record = request.result;
+
+                if (
+                    record &&
+                    record.globalDeckOrder
+                ) {
+                    console.log(
+                        '⚡ Global deck order loaded from IndexedDB'
+                    );
+
+                    resolve(record.globalDeckOrder);
+                } else {
+                    console.log(
+                        'ℹ️ No global deck order cache found'
+                    );
+
+                    resolve(null);
+                }
+            };
+
+            request.onerror = () => {
+                reject(request.error);
+            };
+        });
+
+    } catch (error) {
+        console.error(
+            '❌ loadGlobalDeckOrderCache error:',
+            error
+        );
+
+        return null;
+    }
+}
