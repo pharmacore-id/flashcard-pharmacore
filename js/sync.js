@@ -37,16 +37,52 @@ function scheduleSync(debounceMs = 3000) {
 }
 
 // ============================================================
+// INCREMENTAL SYNC METADATA
+// ============================================================
+
+async function getProgressSyncMeta(email) {
+    if (!email) return null;
+
+    try {
+        const ref = db.collection('users').doc(email);
+        const snap = await ref.get();
+
+        if (!snap.exists) return null;
+
+        const data = snap.data() || {};
+
+        return {
+            progress_sync_at:
+                Number(data.progress_sync_at || 0)
+        };
+
+    } catch (error) {
+        console.warn('⚠️ Failed to load sync metadata:', error);
+        return null;
+    }
+}
+
+
+async function saveProgressSyncMeta(email, timestamp) {
+    if (!email) return;
+
+    try {
+        await db.collection('users').doc(email).set({
+            progress_sync_at: timestamp
+        }, {
+            merge: true
+        });
+
+    } catch (error) {
+        console.warn(
+            '⚠️ Failed to save sync metadata:',
+            error
+        );
+    }
+}
+
+// ============================================================
 // PERFORM SYNC - SIMPLE VERSION
-//
-// Cloud structure:
-// users/{email}                  -> metadata
-// users/{email}/progress/{id}   -> 1 progress/card
-//
-// IMPORTANT:
-// - Tidak memanggil loadSharedDecksOnce()
-// - Tidak upload semua kartu setiap sync
-// - Hanya upload kartu yang local-nya lebih baru
 // ============================================================
 
 async function performSync({
@@ -55,10 +91,6 @@ async function performSync({
 } = {}) {
 
     console.time('⏱️ performSync.total');
-
-    // ============================================================
-    // 1. BASIC CHECK
-    // ============================================================
 
     if (!email) {
         console.warn('⚠️ performSync: No email provided');
@@ -73,11 +105,6 @@ async function performSync({
         return;
     }
 
-
-    // ============================================================
-    // 2. PREVENT MULTIPLE SYNC
-    // ============================================================
-
     if (currentSyncPromise) {
 
         if (force) {
@@ -91,7 +118,6 @@ async function performSync({
         return;
     }
 
-
     console.log(
         '🔄 Performing sync...',
         force ? '(force)' : ''
@@ -100,16 +126,12 @@ async function performSync({
     updateSyncStatus('syncing', 'Syncing...');
 
 
-    // ============================================================
-    // 3. CREATE ONE SYNC PROMISE
-    // ============================================================
-
     currentSyncPromise = (async () => {
 
         try {
 
             // ====================================================
-            // 4. LOAD LOCAL
+            // 1. LOAD LOCAL PROGRESS
             // ====================================================
 
             const cached =
@@ -125,14 +147,11 @@ async function performSync({
                 );
 
                 updateSyncStatus('', 'Synced');
-
                 return;
             }
 
-
             const localCards =
                 cached.cards;
-
 
             console.log(
                 '📦 Local progress:',
@@ -142,7 +161,29 @@ async function performSync({
 
 
             // ====================================================
-            // 5. LOAD CLOUD PROGRESS
+            // 2. LOAD LAST SYNC CHECKPOINT
+            // ====================================================
+
+            const syncMeta =
+                await getProgressSyncMeta(email);
+
+            const lastSyncAt =
+                Number(
+                    syncMeta?.progress_sync_at ||
+                    cached.cloudUpdatedAt ||
+                    0
+                );
+
+            console.log(
+                '🕐 Last progress sync:',
+                lastSyncAt
+                    ? new Date(lastSyncAt).toISOString()
+                    : 'NEVER'
+            );
+
+
+            // ====================================================
+            // 3. PROGRESS COLLECTION
             // ====================================================
 
             const progressRef =
@@ -152,39 +193,84 @@ async function performSync({
                     .collection('progress');
 
 
-            const snapshot =
-                await progressRef.get();
+            // ====================================================
+            // 4. LOAD ONLY CHANGED CLOUD PROGRESS
+            // ====================================================
 
+            let cloudCards = [];
+            let isInitialSync = !lastSyncAt;
 
-            const cloudCards = [];
+            if (isInitialSync) {
 
+                console.log(
+                    '🆕 Initial sync → loading all cloud progress'
+                );
 
-            snapshot.forEach(doc => {
+                const snapshot =
+                    await progressRef.get();
 
-                const data = doc.data();
+                snapshot.forEach(doc => {
 
-                if (data) {
+                    const data = doc.data();
 
-                    cloudCards.push({
-                        __id:
-                            data.__id ||
-                            doc.id,
+                    if (data) {
 
-                        ...data
-                    });
-                }
-            });
+                        cloudCards.push({
+                            __id:
+                                data.__id ||
+                                doc.id,
+
+                            ...data
+                        });
+
+                    }
+
+                });
+
+            } else {
+
+                console.log(
+                    '⚡ Incremental sync → loading changed progress only'
+                );
+
+                const snapshot =
+                    await progressRef
+                        .where(
+                            'progress_updated_at',
+                            '>',
+                            lastSyncAt
+                        )
+                        .get();
+
+                snapshot.forEach(doc => {
+
+                    const data = doc.data();
+
+                    if (data) {
+
+                        cloudCards.push({
+                            __id:
+                                data.__id ||
+                                doc.id,
+
+                            ...data
+                        });
+
+                    }
+
+                });
+            }
 
 
             console.log(
-                '☁️ Cloud progress:',
+                '☁️ Cloud progress loaded:',
                 cloudCards.length,
                 'cards'
             );
 
 
             // ====================================================
-            // 6. CREATE MAPS
+            // 5. CREATE MAPS
             // ====================================================
 
             const localMap =
@@ -209,7 +295,9 @@ async function performSync({
                         String(key),
                         card
                     );
+
                 }
+
             });
 
 
@@ -235,12 +323,14 @@ async function performSync({
                         String(key),
                         card
                     );
+
                 }
+
             });
 
 
             // ====================================================
-            // 7. COMPARE LOCAL VS CLOUD
+            // 6. MERGE
             // ====================================================
 
             const mergedMap =
@@ -250,134 +340,211 @@ async function performSync({
                 new Map();
 
 
-            const allKeys =
-                new Set([
-                    ...localMap.keys(),
-                    ...cloudMap.keys()
-                ]);
+            // ====================================================
+            // IMPORTANT
+            //
+            // Initial sync:
+            // compare ALL local/cloud.
+            //
+            // Incremental sync:
+            // only cloud-changed cards need comparison.
+            // Local-only cards still need upload.
+            // ====================================================
+
+            if (isInitialSync) {
+
+                const allKeys =
+                    new Set([
+                        ...localMap.keys(),
+                        ...cloudMap.keys()
+                    ]);
+
+                allKeys.forEach(key => {
+
+                    const localCard =
+                        localMap.get(key);
+
+                    const cloudCard =
+                        cloudMap.get(key);
 
 
-            let localWins = 0;
-            let cloudWins = 0;
-            let localOnly = 0;
-            let cloudOnly = 0;
-            let unchanged = 0;
+                    if (localCard && !cloudCard) {
+
+                        mergedMap.set(
+                            key,
+                            localCard
+                        );
+
+                        uploadMap.set(
+                            key,
+                            localCard
+                        );
+
+                        return;
+                    }
 
 
-            allKeys.forEach(key => {
+                    if (!localCard && cloudCard) {
 
-                const localCard =
-                    localMap.get(key);
+                        mergedMap.set(
+                            key,
+                            cloudCard
+                        );
 
-                const cloudCard =
-                    cloudMap.get(key);
-
-
-                // =================================================
-                // LOCAL ONLY
-                // =================================================
-
-                if (localCard && !cloudCard) {
-
-                    mergedMap.set(
-                        key,
-                        localCard
-                    );
-
-                    uploadMap.set(
-                        key,
-                        localCard
-                    );
-
-                    localOnly++;
-
-                    return;
-                }
+                        return;
+                    }
 
 
-                // =================================================
-                // CLOUD ONLY
-                // =================================================
+                    const localTime =
+                        Number(
+                            localCard?.progress_updated_at || 0
+                        );
 
-                if (!localCard && cloudCard) {
-
-                    mergedMap.set(
-                        key,
-                        cloudCard
-                    );
-
-                    cloudOnly++;
-
-                    return;
-                }
+                    const cloudTime =
+                        Number(
+                            cloudCard?.progress_updated_at || 0
+                        );
 
 
-                // =================================================
-                // BOTH EXIST
-                // =================================================
+                    if (localTime > cloudTime) {
 
-                const localTime =
-                    Number(
-                        localCard?.progress_updated_at || 0
-                    );
+                        mergedMap.set(
+                            key,
+                            localCard
+                        );
 
-                const cloudTime =
-                    Number(
-                        cloudCard?.progress_updated_at || 0
-                    );
+                        uploadMap.set(
+                            key,
+                            localCard
+                        );
 
+                    } else {
 
-                // -------------------------------------------------
-                // LOCAL LEBIH BARU
-                // -------------------------------------------------
+                        mergedMap.set(
+                            key,
+                            cloudCard
+                        );
 
-                if (localTime > cloudTime) {
+                    }
 
-                    mergedMap.set(
-                        key,
-                        localCard
-                    );
+                });
 
-                    uploadMap.set(
-                        key,
-                        localCard
-                    );
+            } else {
 
-                    localWins++;
+                // ==================================================
+                // INCREMENTAL
+                // ==================================================
 
-                    return;
-                }
+                // Mulai dari seluruh local data.
+                localMap.forEach((card, key) => {
+                    mergedMap.set(key, card);
+                });
 
 
-                // -------------------------------------------------
-                // CLOUD LEBIH BARU
-                // -------------------------------------------------
+                // Hanya cloud-changed cards dibandingkan.
+                cloudMap.forEach((cloudCard, key) => {
 
-                if (cloudTime > localTime) {
-
-                    mergedMap.set(
-                        key,
-                        cloudCard
-                    );
-
-                    cloudWins++;
-
-                    return;
-                }
+                    const localCard =
+                        localMap.get(key);
 
 
-                // -------------------------------------------------
-                // SAMA
-                // -------------------------------------------------
+                    if (!localCard) {
 
-                mergedMap.set(
-                    key,
-                    localCard
-                );
+                        mergedMap.set(
+                            key,
+                            cloudCard
+                        );
 
-                unchanged++;
+                        return;
+                    }
 
-            });
+
+                    const localTime =
+                        Number(
+                            localCard.progress_updated_at || 0
+                        );
+
+                    const cloudTime =
+                        Number(
+                            cloudCard.progress_updated_at || 0
+                        );
+
+
+                    if (cloudTime > localTime) {
+
+                        mergedMap.set(
+                            key,
+                            cloudCard
+                        );
+
+                    } else if (localTime > cloudTime) {
+
+                        mergedMap.set(
+                            key,
+                            localCard
+                        );
+
+                        uploadMap.set(
+                            key,
+                            localCard
+                        );
+
+                    } else {
+
+                        mergedMap.set(
+                            key,
+                            localCard
+                        );
+
+                    }
+
+                });
+
+
+                // ==================================================
+                // LOCAL-ONLY / LOCAL-NEWER
+                //
+                // Hanya upload jika local timestamp lebih baru
+                // dari checkpoint.
+                // ==================================================
+
+                localMap.forEach((localCard, key) => {
+
+                    const localTime =
+                        Number(
+                            localCard.progress_updated_at || 0
+                        );
+
+                    if (
+                        localTime > lastSyncAt
+                    ) {
+
+                        const cloudCard =
+                            cloudMap.get(key);
+
+                        const cloudTime =
+                            Number(
+                                cloudCard?.progress_updated_at || 0
+                            );
+
+
+                        if (
+                            !cloudCard ||
+                            localTime > cloudTime
+                        ) {
+
+                            uploadMap.set(
+                                key,
+                                localCard
+                            );
+
+                        }
+
+                    }
+
+                });
+
+            }
 
 
             const mergedCards =
@@ -389,11 +556,8 @@ async function performSync({
             console.log(
                 '🔀 Sync comparison:',
                 {
-                    localWins,
-                    cloudWins,
-                    localOnly,
-                    cloudOnly,
-                    unchanged,
+                    initial: isInitialSync,
+                    cloudChanged: cloudCards.length,
                     upload: uploadMap.size,
                     merged: mergedCards.length
                 }
@@ -401,7 +565,7 @@ async function performSync({
 
 
             // ====================================================
-            // 8. UPLOAD ONLY CHANGED LOCAL DATA
+            // 7. UPLOAD CHANGED LOCAL DATA
             // ====================================================
 
             const uploadEntries =
@@ -413,7 +577,9 @@ async function performSync({
             const BATCH_SIZE = 400;
 
 
-            if (uploadEntries.length === 0) {
+            if (
+                uploadEntries.length === 0
+            ) {
 
                 console.log(
                     '☁️ Nothing to upload'
@@ -422,7 +588,7 @@ async function performSync({
             } else {
 
                 console.log(
-                    '📤 Uploading only changed progress:',
+                    '📤 Uploading changed progress:',
                     uploadEntries.length,
                     'cards'
                 );
@@ -469,6 +635,7 @@ async function performSync({
                                     merge: true
                                 }
                             );
+
                         }
                     );
 
@@ -485,17 +652,23 @@ async function performSync({
 
 
                     await batch.commit();
+
                 }
+
             }
 
 
             // ====================================================
-            // 9. UPDATE LOCAL INDEXEDDB
+            // 8. CREATE NEW SYNC CHECKPOINT
             // ====================================================
 
-            const saveTime =
+            const newSyncAt =
                 Date.now();
 
+
+            // ====================================================
+            // 9. SAVE MERGED DATA LOCALLY
+            // ====================================================
 
             await saveToIndexedDB(
                 email,
@@ -512,13 +685,23 @@ async function performSync({
                         CURRENT_SCHEMA_VERSION,
 
                     cloudUpdatedAt:
-                        saveTime
+                        newSyncAt
                 }
             );
 
 
             // ====================================================
-            // 10. COMPLETE
+            // 10. SAVE CLOUD CHECKPOINT
+            // ====================================================
+
+            await saveProgressSyncMeta(
+                email,
+                newSyncAt
+            );
+
+
+            // ====================================================
+            // 11. COMPLETE
             // ====================================================
 
             console.log(
@@ -527,11 +710,17 @@ async function performSync({
                 'progress cards'
             );
 
+            console.log(
+                '🕐 New sync checkpoint:',
+                new Date(newSyncAt).toISOString()
+            );
+
 
             updateSyncStatus(
                 '',
                 'Synced'
             );
+
 
         } catch (error) {
 
@@ -539,7 +728,6 @@ async function performSync({
                 '❌ Sync failed:',
                 error
             );
-
 
             updateSyncStatus(
                 'error',
@@ -550,14 +738,11 @@ async function performSync({
 
             currentSyncPromise =
                 null;
+
         }
 
     })();
 
-
-    // ============================================================
-    // 11. WAIT FOR THIS SYNC
-    // ============================================================
 
     try {
 
@@ -568,6 +753,7 @@ async function performSync({
         console.timeEnd(
             '⏱️ performSync.total'
         );
+
     }
 }
 
