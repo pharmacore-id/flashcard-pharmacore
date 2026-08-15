@@ -527,7 +527,7 @@ async function refreshUserData() {
 async function loadGlobalDeckOrder() {
 
     // ============================================================
-    // 1. MEMORY
+    // 1. MEMORY CACHE
     // ============================================================
 
     if (
@@ -536,7 +536,7 @@ async function loadGlobalDeckOrder() {
         deckOrderConfig.topics.length > 0
     ) {
         console.log(
-            '⚡ Using memory global deck order'
+            '⚡ Global deck order loaded from memory'
         );
 
         return true;
@@ -558,9 +558,10 @@ async function loadGlobalDeckOrder() {
         ) {
 
             deckOrderConfig = {
-                topics: Array.isArray(cached.topics)
-                    ? cached.topics
-                    : [],
+                topics:
+                    Array.isArray(cached.topics)
+                        ? cached.topics
+                        : [],
 
                 subtopics:
                     cached.subtopics &&
@@ -570,7 +571,7 @@ async function loadGlobalDeckOrder() {
             };
 
             console.log(
-                '⚡ Using cached global deck order'
+                '⚡ Global deck order loaded from IndexedDB'
             );
 
             return true;
@@ -579,9 +580,10 @@ async function loadGlobalDeckOrder() {
     } catch (error) {
 
         console.warn(
-            '⚠️ Global deck order cache unavailable:',
+            '⚠️ Global deck order IndexedDB read failed:',
             error
         );
+
     }
 
 
@@ -592,60 +594,75 @@ async function loadGlobalDeckOrder() {
     try {
 
         console.log(
-            '☁️ No global deck order cache. Loading Firestore...'
+            '☁️ Global deck order cache miss → loading Firestore'
         );
 
         const doc =
             await db
-                .collection("config")
-                .doc("global")
+                .collection('config')
+                .doc('global')
                 .get();
 
         if (
             doc.exists &&
-            doc.data().deckOrderConfig
+            doc.data()?.deckOrderConfig
         ) {
 
             deckOrderConfig =
                 doc.data().deckOrderConfig;
 
             console.log(
-                '☁️ Loaded global deck order from Firestore'
+                '☁️ Global deck order loaded from Firestore'
             );
 
+
             // ====================================================
-            // SAVE LOCAL CACHE
+            // CACHE FIRESTORE RESULT LOCALLY
             // ====================================================
 
-            await saveGlobalDeckOrderCache(
-                deckOrderConfig
-            );
+            const cached =
+                await saveGlobalDeckOrderCache(
+                    deckOrderConfig
+                );
+
+            if (cached) {
+
+                console.log(
+                    '💾 Global deck order saved to IndexedDB cache'
+                );
+
+            }
 
             return true;
 
-        } else {
-
-            console.log(
-                'ℹ️ No global deck order found, using default'
-            );
-
-            deckOrderConfig = {
-                topics: [],
-                subtopics: {}
-            };
-
-            await saveGlobalDeckOrderCache(
-                deckOrderConfig
-            );
-
-            return false;
         }
 
-    } catch (err) {
+
+        // ========================================================
+        // NO FIRESTORE CONFIG
+        // ========================================================
+
+        console.log(
+            'ℹ️ No global deck order found → using default'
+        );
+
+        deckOrderConfig = {
+            topics: [],
+            subtopics: {}
+        };
+
+        await saveGlobalDeckOrderCache(
+            deckOrderConfig
+        );
+
+        return false;
+
+
+    } catch (error) {
 
         console.error(
             '❌ Failed to load global deck order:',
-            err
+            error
         );
 
         deckOrderConfig = {
@@ -656,7 +673,6 @@ async function loadGlobalDeckOrder() {
         return false;
     }
 }
-
 // ===== SAVE GLOBAL =====
 async function saveGlobalDeckOrder() {
 
