@@ -469,7 +469,6 @@ async function saveUserData(email) {
         cards: indexSnapshot.cards,
         plan: indexSnapshot.plan,
         schema_version: indexSnapshot.schema_version,
-        markProgressUpdated: true  // ← TANDA PROGRESS BERUBAH
     });
     console.log('📦 IndexedDB saved (local)');
 
