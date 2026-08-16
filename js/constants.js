@@ -21,15 +21,34 @@ const NICKNAME_KEY='Pharmadeck_nickname_';
 const PRICING = {
 
   book: {
-    1: 10000,
-    3: 25000,
-    6: 48000
+    1: {
+      normal: 15000,
+      price: 10000
+    },
+    3: {
+      normal: 35000,
+      price: 25000
+    },
+    6: {
+      normal: 60000,
+      price: 48000
+    }
   },
 
   regular: {
-    1: 20000,
-    3: 50000,
-    6: 100000
+    1: {
+      normal: 25000,
+      price: 20000
+    },
+    3: {
+      normal: 65000,
+      price: 55000
+    },
+    6: {
+      normal: 120000,
+      price: 100000
+    }
   }
 
+};
 };
