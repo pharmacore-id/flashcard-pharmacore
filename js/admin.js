@@ -826,3 +826,107 @@ async function moveSubtopicDown(topic, subtopic) {
     await saveGlobalDeckOrder();
     renderDecks();
 }
+
+async function generateGiftCodesUI(count) {
+
+    if (!isAdmin) {
+        alert('Only admins can generate gift codes.');
+        return;
+    }
+
+    try {
+
+        // ============================================
+        // CONNECT TO FIREBASE CLOUD FUNCTION
+        // ============================================
+
+        if (
+            typeof firebase === 'undefined' ||
+            typeof firebase.functions !== 'function'
+        ) {
+            throw new Error(
+                'Firebase Functions SDK is not loaded.'
+            );
+        }
+
+        const functionsInstance =
+            firebase
+                .app()
+                .functions('asia-southeast2');
+
+        const generateGiftCodesCallable =
+            functionsInstance.httpsCallable(
+                'generateGiftCodes'
+            );
+
+        // ============================================
+        // CALL BACKEND
+        // ============================================
+
+        const result =
+            await generateGiftCodesCallable({
+                count: count
+            });
+
+        if (!result.data?.success) {
+            throw new Error(
+                result.data?.message ||
+                'Failed to generate gift codes'
+            );
+        }
+
+        const codes =
+            result.data.codes || [];
+
+        // ============================================
+        // DISPLAY GENERATED CODES
+        // ============================================
+
+        const list =
+            document.getElementById(
+                'gift-code-admin-list'
+            );
+
+        if (list) {
+
+            list.innerHTML = codes
+                .map(code => `
+                    <div
+                        class="flex items-center justify-between p-2 rounded-lg"
+                        style="
+                            background:var(--bg);
+                            border:1px solid var(--border);
+                        "
+                    >
+                        <span class="font-mono font-semibold">
+                            ${code}
+                        </span>
+
+                        <span class="text-xs text-sec">
+                            1 month
+                        </span>
+                    </div>
+                `)
+                .join("");
+        }
+
+        alert(
+            `✅ Successfully generated ${codes.length} gift codes.`
+        );
+
+    } catch (error) {
+
+        console.error(
+            '❌ Generate gift codes error:',
+            error
+        );
+
+        alert(
+            '❌ ' +
+            (
+                error.message ||
+                'Failed to generate gift codes'
+            )
+        );
+    }
+}
