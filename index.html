@@ -4776,6 +4776,48 @@ color:var(--qris-text-light);
 .qris2-btn-cancel {
     min-height: 46px;
 }
+
+/* ===========================
+   QRIS MOBILE FIX
+   =========================== */
+@media (max-width: 480px) {
+
+    /* Status agar bisa wrap */
+    .qris2-row > div:last-child {
+        min-width: 0;
+        max-width: 110px;
+        flex-shrink: 1;
+    }
+
+    .qris2-status {
+        max-width: 100px;
+        padding: 5px 8px;
+        font-size: 9px;
+        line-height: 1.25;
+        white-space: normal !important;
+        text-align: center;
+        overflow-wrap: break-word;
+        word-break: normal;
+    }
+
+    /* QR jangan terlalu besar */
+    .qris2-qr-wrapper {
+        width: 100%;
+        max-width: 100%;
+        min-height: 0;
+        padding: 8px;
+        box-sizing: border-box;
+        overflow: hidden;
+    }
+
+    .qris2-image {
+        width: 190px !important;
+        max-width: 100% !important;
+        height: auto;
+        padding: 6px;
+        box-sizing: border-box;
+    }
+}
     
 </style>
 </head>
