@@ -16,8 +16,18 @@ const DEFAULT_BORDER_COLOR = "var(--border)";
 //  SAVE / LOAD PLAN
 // ============================================================
 
-function savePlan(email, plan, expiry) {
-    localStorage.setItem("Pharmadeck_plan_" + email, plan);
+async function savePlan(email, plan, expiry) {
+
+    if (!email) return;
+
+    // ============================
+    // LOCAL STORAGE CACHE
+    // ============================
+
+    localStorage.setItem(
+        "Pharmadeck_plan_" + email,
+        plan
+    );
 
     if (expiry) {
         localStorage.setItem(
@@ -30,9 +40,45 @@ function savePlan(email, plan, expiry) {
         );
     }
 
-    userPlan = plan;
-}
+    // ============================
+    // MEMORY
+    // ============================
 
+    userPlan = plan;
+
+    // ============================
+    // INDEXEDDB CACHE
+    // ============================
+
+    try {
+
+        const cached =
+            await loadFromIndexedDB(email);
+
+        if (cached) {
+
+            await saveToIndexedDB(email, {
+                ...cached,
+                plan: plan,
+                planExpiry: expiry || null
+            });
+
+        }
+
+        console.log(
+            "💎 Plan cache updated:",
+            plan,
+            expiry
+        );
+
+    } catch (error) {
+
+        console.warn(
+            "⚠️ Failed to update plan cache:",
+            error
+        );
+    }
+}
 
 function getPlanExpiry(email) {
     return (
@@ -760,15 +806,15 @@ async function redeemGiftCode() {
             );
         }
 
-        const expiry =
-            result.data.expiresAt;
+       const expiry =
+    result.data.expiresAt;
 
         // Update local frontend state
-        savePlan(
-            currentUser,
-            "premium",
-            expiry
-        );
+        await savePlan(
+    currentUser,
+    "premium",
+    expiry
+);
 
         status.textContent =
             "🎉 Gift code redeemed! Premium activated for 1 month.";
