@@ -4778,44 +4778,49 @@ color:var(--qris-text-light);
 }
 
 /* ===========================
-   QRIS MOBILE FIX
+   QRIS MOBILE FINAL FIX
    =========================== */
 @media (max-width: 480px) {
 
-    /* Status agar bisa wrap */
+    /* STATUS */
     .qris2-row > div:last-child {
         min-width: 0;
+        flex: 0 1 110px;
         max-width: 110px;
-        flex-shrink: 1;
     }
 
     .qris2-status {
-        max-width: 100px;
-        padding: 5px 8px;
+        display: inline-flex;
+        width: 100%;
+        max-width: 100%;
+        padding: 5px 7px;
         font-size: 9px;
-        line-height: 1.25;
+        line-height: 1.2;
         white-space: normal !important;
         text-align: center;
         overflow-wrap: break-word;
         word-break: normal;
+        box-sizing: border-box;
     }
 
-    /* QR jangan terlalu besar */
+    /* QR */
     .qris2-qr-wrapper {
         width: 100%;
         max-width: 100%;
         min-height: 0;
         padding: 8px;
-        box-sizing: border-box;
         overflow: hidden;
+        box-sizing: border-box;
     }
 
     .qris2-image {
-        width: 190px !important;
+        display: block;
+        width: 170px !important;
         max-width: 100% !important;
         height: auto;
         padding: 6px;
         box-sizing: border-box;
+        margin: 0 auto;
     }
 }
     
