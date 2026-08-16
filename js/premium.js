@@ -698,6 +698,115 @@ async function validateUpgradeCode() {
     }
 }
 
+// ============================================================
+//  REDEEM GIFT CODE
+// ============================================================
+
+async function redeemGiftCode() {
+
+    const input =
+        document.getElementById("gift-code-input");
+
+    const status =
+        document.getElementById("gift-code-status");
+
+    const button =
+        document.getElementById("gift-code-btn");
+
+    if (!input || !status) return;
+
+    const code =
+        input.value
+            .trim()
+            .toUpperCase();
+
+    if (!code) {
+        status.textContent =
+            "Please enter a gift code.";
+
+        status.style.color =
+            "#ef4444";
+
+        return;
+    }
+
+    try {
+
+        if (button) {
+            button.disabled = true;
+            button.textContent = "Redeeming...";
+        }
+
+        status.textContent =
+            "⏳ Checking gift code...";
+
+        status.style.color =
+            "#6b7280";
+
+        const result =
+            await redeemGiftCodeCallable({
+                code
+            });
+
+        if (!result.data?.success) {
+            throw new Error(
+                result.data?.message ||
+                "Failed to redeem gift code"
+            );
+        }
+
+        const expiry =
+            result.data.expiresAt;
+
+        // Update local frontend state
+        savePlan(
+            currentUser,
+            "premium",
+            expiry
+        );
+
+        status.textContent =
+            "🎉 Gift code redeemed! Premium activated for 1 month.";
+
+        status.style.color =
+            "#059669";
+
+        input.value = "";
+
+        updatePlanUI();
+
+        setTimeout(() => {
+            status.textContent =
+                expiry
+                    ? `Premium active until ${formatExpiryDate(expiry)}`
+                    : "Premium activated!";
+        }, 1200);
+
+    } catch (error) {
+
+        console.error(
+            "Gift code redemption error:",
+            error
+        );
+
+        status.textContent =
+            "❌ " +
+            (
+                error.message ||
+                "Failed to redeem gift code"
+            );
+
+        status.style.color =
+            "#ef4444";
+
+    } finally {
+
+        if (button) {
+            button.disabled = false;
+            button.textContent = "Redeem";
+        }
+    }
+}
 
 // ============================================================
 //  SELECT PLAN
