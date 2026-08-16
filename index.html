@@ -2389,29 +2389,167 @@ height:16px;
 
 }
 
+/* ==========================================================
+   QRIS EXPIRY / COUNTDOWN
+   ========================================================== */
+
+.qris2-note {
+    display: block;
+    width: 100%;
+    box-sizing: border-box;
+
+    margin-top: 18px;
+    margin-bottom: 18px;
+
+    padding: 14px 16px;
+
+    background: #fff;
+
+    border: 1px solid #ffe1c5;
+    border-left: 5px solid #ff6b00;
+
+    border-radius: 0;
+
+    color: #374151;
+}
+
+
 /* ===========================
-   COUNTDOWN
-=========================== */
+   INFO MESSAGE
+   =========================== */
 
-.qris2-countdown{
-    display:flex;
-    justify-content:center;
-    align-items:center;
+.qris2-note-content {
+    width: 100%;
+}
 
-    width:120px;
-    height:50px;
+.qris2-note-message {
+    display: flex;
+    align-items: flex-start;
 
-    margin:10px auto 0;
+    gap: 12px;
 
-    background:var(--qris-danger);
-    color:#fff;
-    border-radius:999px;
+    font-size: 13px;
+    line-height: 1.6;
 
-    font-size:24px;
-    font-weight:800;
-    letter-spacing:.05em;
+    color: #4b5563;
+}
 
-    box-shadow:0 12px 28px rgba(239,68,68,.28);
+.qris2-note-message i {
+    width: 18px;
+    height: 18px;
+
+    flex: 0 0 18px;
+
+    color: #ea580c;
+
+    margin-top: 2px;
+}
+
+.qris2-note-message strong {
+    color: #c2410c;
+    font-weight: 700;
+}
+
+
+/* ===========================
+   COUNTDOWN ROW
+   =========================== */
+
+.qris2-countdown-row {
+    display: flex;
+
+    align-items: center;
+    justify-content: space-between;
+
+    margin-top: 10px;
+
+    padding-top: 10px;
+
+    border-top: 0;
+}
+
+
+/* LEFT: ICON + LABEL */
+
+.qris2-countdown-label {
+    display: flex;
+
+    align-items: center;
+
+    gap: 12px;
+
+    color: #4b5563;
+
+    font-size: 13px;
+}
+
+.qris2-countdown-label i {
+    width: 18px;
+    height: 18px;
+
+    color: #6b7280;
+
+    flex: 0 0 18px;
+}
+
+
+/* RIGHT: TIMER */
+
+.qris2-countdown {
+    display: block;
+
+    width: auto;
+    height: auto;
+
+    margin: 0;
+
+    padding: 0;
+
+    background: transparent;
+
+    color: #ea580c;
+
+    border-radius: 0;
+
+    box-shadow: none;
+
+    font-size: 17px;
+
+    line-height: 1;
+
+    font-weight: 800;
+
+    letter-spacing: .02em;
+
+    text-align: right;
+}
+
+    @media (max-width: 480px) {
+
+    .qris2-note {
+        padding: 13px 14px;
+        margin-top: 16px;
+        margin-bottom: 16px;
+    }
+
+    .qris2-note-message {
+        font-size: 13px;
+        line-height: 1.55;
+        gap: 10px;
+    }
+
+    .qris2-countdown-row {
+        margin-top: 9px;
+    }
+
+    .qris2-countdown-label {
+        font-size: 13px;
+        gap: 10px;
+    }
+
+    .qris2-countdown {
+        font-size: 17px;
+    }
 }
     
 /* ===========================
@@ -5505,13 +5643,6 @@ color:var(--qris-text-light);
 
 </div>
 
-<!-- =========================
-     QRIS COUNTDOWN
-========================= -->
-<div id="qris-countdown" class="qris2-countdown">
-    10:00
-</div>
-
     <!-- =========================
          QR CARD
     ========================== -->
@@ -5549,15 +5680,39 @@ color:var(--qris-text-light);
 
     <div class="qris2-note">
 
-        <i data-lucide="info"></i>
+    <div class="qris2-note-content">
 
-        <div>
+        <!-- INFO -->
+        <div class="qris2-note-message">
+            <i data-lucide="info"></i>
 
-            QR akan otomatis kedaluwarsa setelah waktu habis.
+            <span>
+                QR akan otomatis
+                <strong>kedaluwarsa</strong>
+                setelah <strong>waktu habis</strong>.
+            </span>
+        </div>
+
+        <!-- COUNTDOWN -->
+        <div class="qris2-countdown-row">
+
+            <div class="qris2-countdown-label">
+                <i data-lucide="timer"></i>
+                <span>Sisa waktu</span>
+            </div>
+
+            <div
+                id="qris-countdown"
+                class="qris2-countdown"
+            >
+                10:00
+            </div>
 
         </div>
 
     </div>
+
+</div>
 
 
    <div class="qris2-actions">
