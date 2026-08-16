@@ -1172,25 +1172,14 @@ function updatePricingDisplay() {
             `${formatPrice(perDay)}/day`;
     }
 
+   // ============================================================
+// PAYMENT BUTTON
+// ============================================================
 
-    // ============================================================
-    // PAYMENT BUTTON
-    // ============================================================
+const payBtn =
+    document.getElementById("upgrade-pay-btn");
 
-    const payBtn =
-        document.getElementById(
-            "upgrade-pay-btn"
-        );
-
-
-   if (payBtn) {
-
-    payBtn.textContent =
-        `Pay ${formatPrice(salePrice)}`;
-
-    // ========================================================
-    // DISABLE PAYMENT BUTTON UNTIL ACCESS CODE IS VALID
-    // ========================================================
+if (payBtn) {
 
     const codeRequired =
         selectedPlan === "book";
@@ -1198,14 +1187,25 @@ function updatePricingDisplay() {
     const codeValid =
         hasValidCode === true;
 
-    payBtn.disabled =
-        codeRequired && !codeValid;
+    if (codeRequired && !codeValid) {
 
-    // Visual disabled state
-    payBtn.style.opacity =
-        payBtn.disabled ? "0.5" : "1";
+        payBtn.textContent =
+            "Please validate code first";
 
-    payBtn.style.cursor =
-        payBtn.disabled ? "not-allowed" : "pointer";
+        payBtn.disabled = true;
+
+        payBtn.style.opacity = "0.5";
+        payBtn.style.cursor = "not-allowed";
+
+    } else {
+
+        payBtn.textContent =
+            `Pay ${formatPrice(salePrice)}`;
+
+        payBtn.disabled = false;
+
+        payBtn.style.opacity = "1";
+        payBtn.style.cursor = "pointer";
+    }
 }
 }
