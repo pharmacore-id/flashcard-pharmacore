@@ -24,6 +24,9 @@ function createProgressSnapshot() {
     return {
         cards: buildProgressData(),
         plan: userPlan,
+        planExpiry: currentUser
+            ? getPlanExpiry(currentUser)
+            : null,
         schema_version: CURRENT_SCHEMA_VERSION
     };
 }
