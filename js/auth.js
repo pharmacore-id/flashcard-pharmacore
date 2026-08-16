@@ -288,56 +288,66 @@ async function loadUserData(email) {
                 '⚡ LOCAL-FIRST: Using IndexedDB cache'
             );
 
-            console.log(
-                '💾 Local progress:',
-                cachedRecord.cards.length,
-                'cards'
+            allCards = mergeProgress(
+                sharedCards,
+                cachedRecord.cards
             );
 
-            allCards = mergeProgress(
-    sharedCards,
-    cachedRecord.cards
-);
-
-userPlan =
-    cachedRecord.plan ||
-    localStorage.getItem(
-        "Pharmadeck_plan_" + email
-    ) ||
-    'free';
-
-const cachedExpiry =
-    cachedRecord.planExpiry ||
-    localStorage.getItem(
-        "Pharmadeck_expiry_" + email
-    );
-
-if (cachedExpiry) {
-    localStorage.setItem(
-        "Pharmadeck_expiry_" + email,
-        cachedExpiry
-    );
-}
-
-console.log(
-    '💎 Cached plan:',
-    userPlan,
-    cachedExpiry
-);
-
             // ========================================================
-            // IMPORTANT:
-            // JANGAN loadFromFirebase() DI SINI.
-            //
-            // Firestore sync akan ditangani oleh sync engine.
+            // PREMIUM CACHE
+            // Prioritas:
+            // 1. IndexedDB
+            // 2. localStorage
             // ========================================================
+
+            const cachedPlan =
+                cachedRecord.plan ||
+                localStorage.getItem(
+                    "Pharmadeck_plan_" + email
+                ) ||
+                'free';
+
+            const cachedExpiry =
+                cachedRecord.planExpiry ||
+                localStorage.getItem(
+                    "Pharmadeck_expiry_" + email
+                ) ||
+                null;
+
+            userPlan = cachedPlan;
+
+            // Simpan kembali supaya cache konsisten
+            localStorage.setItem(
+                "Pharmadeck_plan_" + email,
+                userPlan
+            );
+
+            if (cachedExpiry) {
+
+                localStorage.setItem(
+                    "Pharmadeck_expiry_" + email,
+                    cachedExpiry
+                );
+
+            } else {
+
+                localStorage.removeItem(
+                    "Pharmadeck_expiry_" + email
+                );
+            }
+
+            console.log(
+                '💎 Cached plan:',
+                userPlan,
+                cachedExpiry
+            );
 
             return true;
         }
 
         // ============================================================
         // 4. NO LOCAL CACHE
-        //    → BARU BOLEH AMBIL FIRESTORE
+        //    → LOAD FIRESTORE
         // ============================================================
 
         console.log(
@@ -366,32 +376,49 @@ console.log(
         }
 
         // ============================================================
-        // 5. MERGE CLOUD PROGRESS
+        // 5. CLOUD DATA
         // ============================================================
 
-        if (
-            cloudData &&
-            Array.isArray(cloudData.cards) &&
-            cloudData.cards.length > 0
-        ) {
+        if (cloudData) {
 
             allCards = mergeProgress(
                 sharedCards,
-                cloudData.cards
+                cloudData.cards || []
             );
 
             userPlan =
                 cloudData.plan ||
                 'free';
 
-            console.log(
-                '☁️ Initial cloud data:',
-                allCards.length,
-                'cards'
-            );
+            const cloudExpiry =
+                cloudData.planExpiry ||
+                null;
 
             // ========================================================
-            // SIMPAN HASIL INITIAL SYNC KE INDEXEDDB
+            // CACHE PLAN LOCALLY
+            // ========================================================
+
+            localStorage.setItem(
+                "Pharmadeck_plan_" + email,
+                userPlan
+            );
+
+            if (cloudExpiry) {
+
+                localStorage.setItem(
+                    "Pharmadeck_expiry_" + email,
+                    cloudExpiry
+                );
+
+            } else {
+
+                localStorage.removeItem(
+                    "Pharmadeck_expiry_" + email
+                );
+            }
+
+            // ========================================================
+            // SIMPAN KE INDEXEDDB
             // ========================================================
 
             const progressSnapshot =
@@ -402,10 +429,17 @@ console.log(
                 {
                     cards: progressSnapshot.cards,
                     plan: userPlan,
+                    planExpiry: cloudExpiry,
                     schema_version:
                         progressSnapshot.schema_version,
                     cloudUpdatedAt: Date.now()
                 }
+            );
+
+            console.log(
+                '💎 Cloud plan:',
+                userPlan,
+                cloudExpiry
             );
 
             console.log(
@@ -416,7 +450,7 @@ console.log(
         }
 
         // ============================================================
-        // 6. USER BARU
+        // 6. USER BARU / NO CLOUD DATA
         // ============================================================
 
         console.log(
@@ -426,7 +460,15 @@ console.log(
         allCards = sharedCards;
         userPlan = 'free';
 
-        // Simpan progress default ke IndexedDB
+        localStorage.setItem(
+            "Pharmadeck_plan_" + email,
+            "free"
+        );
+
+        localStorage.removeItem(
+            "Pharmadeck_expiry_" + email
+        );
+
         const initialSnapshot =
             createProgressSnapshot();
 
@@ -434,7 +476,8 @@ console.log(
             email,
             {
                 cards: initialSnapshot.cards,
-                plan: userPlan,
+                plan: 'free',
+                planExpiry: null,
                 schema_version:
                     initialSnapshot.schema_version,
                 cloudUpdatedAt: null
@@ -465,8 +508,6 @@ console.log(
         );
     }
 }
- 
-
 // ============================================================
 //  SAVE USER DATA - DENGAN TIMESTAMP TRACKING
 // ============================================================
