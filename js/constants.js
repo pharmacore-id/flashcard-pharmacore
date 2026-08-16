@@ -19,36 +19,30 @@ const STUDY_TIME_KEY='Pharmadeck_study_time';
 const DEBUG = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
 const NICKNAME_KEY='Pharmadeck_nickname_';
 const PRICING = {
-
   book: {
-    1: {
-      normal: 15000,
-      price: 10000
-    },
-    3: {
-      normal: 35000,
-      price: 25000
-    },
-    6: {
-      normal: 60000,
-      price: 48000
-    }
+    1: 10000,
+    3: 25000,
+    6: 48000
   },
 
   regular: {
-    1: {
-      normal: 25000,
-      price: 20000
-    },
-    3: {
-      normal: 65000,
-      price: 55000
-    },
-    6: {
-      normal: 120000,
-      price: 100000
-    }
+    1: 20000,
+    3: 55000,
+    6: 100000
   }
-
 };
+
+// HARGA NORMAL
+const NORMAL_PRICING = {
+  book: {
+    1: 15000,
+    3: 35000,
+    6: 60000
+  },
+
+  regular: {
+    1: 25000,
+    3: 65000,
+    6: 120000
+  }
 };
