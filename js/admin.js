@@ -659,6 +659,67 @@ function initializeDeckOrder() {
     
     console.log('✅ Deck order initialized:', deckOrderConfig);
 }
+
+async function generateGiftCodesUI(count) {
+
+    try {
+
+        const result =
+            await generateGiftCodesCallable({
+                count: count
+            });
+
+        if (!result.data?.success) {
+            throw new Error(
+                result.data?.message ||
+                "Failed to generate gift codes"
+            );
+        }
+
+        const codes =
+            result.data.codes || [];
+
+        // Tampilkan kode ke admin
+        const list =
+            document.getElementById("gift-code-admin-list");
+
+        if (list) {
+
+            list.innerHTML = codes
+                .map(code => `
+                    <div class="flex items-center justify-between p-2 rounded-lg"
+                         style="background:var(--bg);border:1px solid var(--border);">
+                        <span class="font-mono font-semibold">
+                            ${code}
+                        </span>
+                        <span class="text-xs text-sec">
+                            1 month
+                        </span>
+                    </div>
+                `)
+                .join("");
+        }
+
+        alert(
+            `Successfully generated ${codes.length} gift codes.`
+        );
+
+    } catch (error) {
+
+        console.error(
+            "Generate gift codes error:",
+            error
+        );
+
+        alert(
+            "❌ " +
+            (
+                error.message ||
+                "Failed to generate gift codes"
+            )
+        );
+    }
+}
     
    async function renderCodeList() {
   const container = document.getElementById('code-list');
