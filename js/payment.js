@@ -478,22 +478,29 @@ document.getElementById("success-close-btn").onclick = () => {
 
 };
 
-async function downloadQrisCard(){
+async function downloadQrisCard() {
 
-    const card=document.getElementById("download-card");
+    const card = document.getElementById("download-card");
 
-    const canvas=await html2canvas(card,{
-        scale:3,
-        backgroundColor:"#ffffff"
+    if (!card) {
+        alert("QR card tidak ditemukan.");
+        return;
+    }
+
+    const canvas = await html2canvas(card, {
+        scale: 2,
+        backgroundColor: "#ffffff",
+        useCORS: true
     });
 
-    const link=document.createElement("a");
+    const link = document.createElement("a");
 
-    link.download=`PHARMADECK_QRIS_${Date.now()}.png`;
+    link.download =
+        `PHARMADECK_QRIS_${Date.now()}.png`;
 
-    link.href=canvas.toDataURL("image/png");
+    link.href =
+        canvas.toDataURL("image/png");
 
     link.click();
-
 }
 
