@@ -583,25 +583,6 @@ function updatePricingDisplay() {
     }
 
     // ============================================================
-    // LABEL
-    // ============================================================
-
-    const planLabel =
-        selectedPlan === 'book'
-            ? 'Book Buyer'
-            : 'Regular';
-
-    const labelEl =
-        document.getElementById('modal-price-label');
-
-    if (labelEl) {
-
-        labelEl.textContent =
-            `${planLabel} · ${duration} Month${duration > 1 ? 's' : ''}`;
-
-    }
-
-    // ============================================================
     // PRICE PER DAY
     // ============================================================
 
