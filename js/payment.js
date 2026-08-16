@@ -7,6 +7,12 @@ const createPayment = functions.httpsCallable("createPayment");
 const QRIS_EXPIRE_SECONDS = 600;
 const QRIS_SIZE = 280;
 const PAYMENT_SUCCESS_DELAY = 1500;
+const GIFT_CODE_DURATION_MONTHS = 1;
+const GIFT_CODE_LENGTH = 6;
+// Menghindari karakter yang mudah tertukar:
+// I / 1 dan O / 0
+const GIFT_CODE_CHARS =
+    'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
 
 let paymentStatusUnsubscribe = null;
 
