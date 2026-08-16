@@ -1,3 +1,8 @@
+const generateGiftCodesCallable =
+  firebase.app()
+    .functions('asia-southeast2')
+    .httpsCallable('generateGiftCodes');
+
 function switchTab(tab) {
   if (currentTab === tab && tab !== 'study-select') return;
 
