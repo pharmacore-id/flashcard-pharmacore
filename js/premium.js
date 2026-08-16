@@ -1183,9 +1183,29 @@ function updatePricingDisplay() {
         );
 
 
-    if (payBtn) {
+   if (payBtn) {
 
-        payBtn.textContent =
-            `Pay ${formatPrice(salePrice)}`;
-    }
+    payBtn.textContent =
+        `Pay ${formatPrice(salePrice)}`;
+
+    // ========================================================
+    // DISABLE PAYMENT BUTTON UNTIL ACCESS CODE IS VALID
+    // ========================================================
+
+    const codeRequired =
+        selectedPlan === "book";
+
+    const codeValid =
+        hasValidCode === true;
+
+    payBtn.disabled =
+        codeRequired && !codeValid;
+
+    // Visual disabled state
+    payBtn.style.opacity =
+        payBtn.disabled ? "0.5" : "1";
+
+    payBtn.style.cursor =
+        payBtn.disabled ? "not-allowed" : "pointer";
+}
 }
