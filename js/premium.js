@@ -51,10 +51,11 @@ function isPremiumActive() {
         return false;
     }
 
-    const expiry = getPlanExpiry(currentUser);
+    const expiry =
+        getPlanExpiry(currentUser);
 
     if (!expiry) {
-        return true;
+        return false;
     }
 
     return new Date(expiry) > new Date();
@@ -413,6 +414,10 @@ function updatePlanUI() {
 // ============================================================
 
 function showUpgradeModal() {
+
+    if (isPremiumActive()) {
+        return;
+    }
 
     const modal =
         document.getElementById("upgrade-modal");
