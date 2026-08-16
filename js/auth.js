@@ -522,11 +522,13 @@ async function saveUserData(email) {
     // ===== STEP 1: SAVE KE INDEXEDDB (LANGSUNG) =====
     const indexSnapshot = createProgressSnapshot();
     
-    await saveToIndexedDB(email, {
-        cards: indexSnapshot.cards,
-        plan: indexSnapshot.plan,
-        schema_version: indexSnapshot.schema_version,
-    });
+   await saveToIndexedDB(email, {
+    cards: indexSnapshot.cards,
+    plan: indexSnapshot.plan,
+    planExpiry: indexSnapshot.planExpiry,
+    schema_version: indexSnapshot.schema_version,
+});
+      
     console.log('📦 IndexedDB saved (local)');
 
     // ===== STEP 2: METADATA DI LOCALSTORAGE =====
