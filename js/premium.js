@@ -16,7 +16,6 @@ const DEFAULT_BORDER_COLOR = "var(--border)";
     userPlan = plan;
 }
 
-
   function getPlanExpiry(email) {
       return localStorage.getItem('Pharmadeck_expiry_' + email) || null;
     }
