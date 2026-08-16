@@ -512,66 +512,6 @@ async function handleExcelImport(event) {
 }
 
 // ============================================================
-//  GIFT CODES (ADMIN)
-//  Giveaway → 1 Month Premium
-// ============================================================
-
-// ============================================================
-// GIFT CODES (ADMIN)
-// ============================================================
-
-const generateGiftCodesCallable =
-    functions.httpsCallable("generateGiftCodes");
-
-async function generateGiftCodes(count) {
-
-  if (!isAdmin) {
-    alert('Only admins can generate gift codes.');
-    return;
-  }
-
-  try {
-
-    const result =
-      await generateGiftCodesCallable({
-        count: count
-      });
-
-    if (!result.data?.success) {
-      throw new Error(
-        result.data?.message ||
-        'Failed to generate gift codes.'
-      );
-    }
-
-    const codes =
-      result.data.codes || [];
-
-    alert(
-      `✅ Generated ${codes.length} new gift codes!`
-    );
-
-    // Refresh daftar gift code
-    renderGiftCodeList();
-
-  } catch (error) {
-
-    console.error(
-      'Gift code generation error:',
-      error
-    );
-
-    alert(
-      '❌ ' +
-      (
-        error.message ||
-        'Failed to generate gift codes.'
-      )
-    );
-  }
-}
-
-// ============================================================
 //  EXPORT GIFT CODES
 // ============================================================
 
