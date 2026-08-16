@@ -930,3 +930,83 @@ async function generateGiftCodesUI(count) {
         );
     }
 }
+
+async function renderGiftCodeList() {
+
+    if (!isAdmin) return;
+
+    const container =
+        document.getElementById(
+            'gift-code-admin-list'
+        );
+
+    if (!container) return;
+
+    try {
+
+        const snapshot =
+            await db
+                .collection('giftCodes')
+                .orderBy('createdAt', 'desc')
+                .limit(100)
+                .get();
+
+        if (snapshot.empty) {
+
+            container.innerHTML =
+                '<p class="text-xs text-sec">No gift codes generated yet.</p>';
+
+            return;
+        }
+
+        let html = '';
+
+        snapshot.forEach(doc => {
+
+            const c = doc.data();
+
+            const used =
+                c.used === true;
+
+            html += `
+                <div
+                    class="flex items-center justify-between gap-3 p-2 rounded-lg"
+                    style="
+                        background:var(--bg);
+                        border:1px solid var(--border);
+                    "
+                >
+
+                    <span class="font-mono font-semibold">
+                        ${c.code}
+                    </span>
+
+                    <span class="text-xs ${
+                        used
+                            ? 'text-gray-400'
+                            : 'text-green-600'
+                    }">
+                        ${
+                            used
+                                ? 'USED'
+                                : 'AVAILABLE'
+                        }
+                    </span>
+
+                </div>
+            `;
+        });
+
+        container.innerHTML = html;
+
+    } catch (error) {
+
+        console.error(
+            'Failed to load gift codes:',
+            error
+        );
+
+        container.innerHTML =
+            '<p class="text-xs text-red-500">Failed to load gift codes.</p>';
+    }
+}
