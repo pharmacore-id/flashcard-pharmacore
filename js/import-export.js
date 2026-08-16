@@ -641,7 +641,7 @@ async function renderGiftCodeList() {
 
   const container =
     document.getElementById(
-      'gift-code-list'
+      'gift-code-admin-list'
     );
 
   if (!container) return;
