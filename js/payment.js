@@ -318,7 +318,7 @@ function startPaymentStatusListener(orderId) {
 
       // ===== Payment Success =====
       if (payment.status === "paid") {
-
+          stopQrisCountdown();
         if (paymentStatusUnsubscribe) {
           paymentStatusUnsubscribe();
           paymentStatusUnsubscribe = null;
@@ -416,11 +416,7 @@ function closeQrisModal() {
   modal.classList.add("hidden");
   document.body.classList.remove("payment-open");
 
-  // Stop countdown
-  if (modal.dataset.timerInterval) {
-    clearInterval(Number(modal.dataset.timerInterval));
-    delete modal.dataset.timerInterval;
-  }
+ stopQrisCountdown();
 
   // Stop Firestore listener
   if (paymentStatusUnsubscribe) {
@@ -508,5 +504,16 @@ async function downloadQrisCard() {
         canvas.toDataURL("image/png");
 
     link.click();
+}
+
+function stopQrisCountdown() {
+    const modal = document.getElementById("qris-modal");
+
+    if (!modal) return;
+
+    if (modal.dataset.timerInterval) {
+        clearInterval(Number(modal.dataset.timerInterval));
+        delete modal.dataset.timerInterval;
+    }
 }
 
