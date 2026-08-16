@@ -5544,16 +5544,6 @@ color:var(--qris-text-light);
           </div>
         </div>
 
-        <div class="surface rounded-2xl p-4 border border-theme shadow-card">
-          <h3 class="font-bold mb-2">🔑 Access Codes</h3>
-          <div class="flex gap-2 mb-3 flex-wrap">
-            <button onclick="generateCodes(10)" class="accent-bg text-white px-4 py-2 rounded-xl text-sm font-medium">Generate 10 Codes</button>
-            <button onclick="generateCodes(50)" class="accent-bg text-white px-4 py-2 rounded-xl text-sm font-medium">Generate 50 Codes</button>
-            <button onclick="exportCodes()" class="border border-theme px-4 py-2 rounded-xl text-sm font-medium" style="background:var(--bg);color:var(--text);">Export Codes</button>
-          </div>
-          <div id="code-list" class="max-h-40 overflow-y-auto text-xs space-y-1"></div>
-        </div>
-
         <div class="surface rounded-2xl p-4 border border-theme shadow-card mt-4">
   <h3 class="font-bold mb-2">🎁 Gift Codes</h3>
 
@@ -5564,27 +5554,39 @@ color:var(--qris-text-light);
   <div class="flex gap-2 mb-3 flex-wrap">
 
     <button
-      onclick="generateGiftCodesUI(10)"
+      onclick="generateGiftCodes(10)"
       class="accent-bg text-white px-4 py-2 rounded-xl text-sm font-medium"
     >
       Generate 10 Codes
     </button>
 
     <button
-      onclick="generateGiftCodesUI(50)"
+      onclick="generateGiftCodes(50)"
       class="accent-bg text-white px-4 py-2 rounded-xl text-sm font-medium"
     >
       Generate 50 Codes
     </button>
 
+    <button
+      onclick="exportGiftCodes()"
+      class="border border-theme px-4 py-2 rounded-xl text-sm font-medium"
+      style="background:var(--bg);color:var(--text);"
+    >
+      Export Codes
+    </button>
+
   </div>
 
   <div
-    id="gift-code-admin-list"
-    class="max-h-40 overflow-y-auto text-xs space-y-1"
-  ></div>
+    id="gift-code-list"
+    class="max-h-60 overflow-y-auto text-xs space-y-1"
+  >
+    <p class="text-xs text-sec">
+      No gift codes generated yet.
+    </p>
+  </div>
 </div>
-
+        
         <div class="surface rounded-2xl p-4 border border-theme shadow-card mt-4">
           <h3 class="font-bold mb-2">📋 Current Decks</h3>
           <div id="admin-deck-list" class="space-y-2"></div>
