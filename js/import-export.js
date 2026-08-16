@@ -544,7 +544,7 @@ async function exportGiftCodes() {
         Code: c.code,
 
         Duration:
-          `${c.months || 1} Month`,
+  `${c.months || 1} Month`,
 
         Used:
           c.used ? 'Yes' : 'No',
