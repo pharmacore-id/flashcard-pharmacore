@@ -1,88 +1,144 @@
+// ============================================================
+//  PREMIUM / PLAN
+// ============================================================
+
 const validateAccessCodeCallable =
     functions.httpsCallable("validateAccessCode");
 
 const ACTIVE_BORDER_COLOR = "#d97706";
 const DEFAULT_BORDER_COLOR = "var(--border)";
 
- function savePlan(email, plan, expiry) {
+
+// ============================================================
+//  SAVE / LOAD PLAN
+// ============================================================
+
+function savePlan(email, plan, expiry) {
     localStorage.setItem("Pharmadeck_plan_" + email, plan);
 
     if (expiry) {
-        localStorage.setItem("Pharmadeck_expiry_" + email, expiry);
+        localStorage.setItem(
+            "Pharmadeck_expiry_" + email,
+            expiry
+        );
     } else {
-        localStorage.removeItem("Pharmadeck_expiry_" + email);
+        localStorage.removeItem(
+            "Pharmadeck_expiry_" + email
+        );
     }
 
     userPlan = plan;
 }
 
-  function getPlanExpiry(email) {
-      return localStorage.getItem('Pharmadeck_expiry_' + email) || null;
-    }
 
-   function isPremiumActive() {
-  if (isAdmin) return true;
-  if (userPlan !== 'premium') return false;
-  const expiry = getPlanExpiry(currentUser);
-  if (!expiry) return true; 
-  return new Date(expiry) > new Date();
+function getPlanExpiry(email) {
+    return (
+        localStorage.getItem(
+            "Pharmadeck_expiry_" + email
+        ) || null
+    );
 }
 
- function showFreeTrial() {
-      document.getElementById('free-trial-modal').classList.remove('hidden');
-      if (typeof lucide !== 'undefined' && lucide.createIcons) {
-        lucide.createIcons();
-      }
+
+function isPremiumActive() {
+
+    if (isAdmin) return true;
+
+    if (userPlan !== "premium") {
+        return false;
     }
 
-    function closeFreeTrial() { document.getElementById('free-trial-modal').classList.add('hidden') }
+    const expiry = getPlanExpiry(currentUser);
 
-    function startFreeTrial() {
-      closeFreeTrial();
-      if (!currentUser) {
+    if (!expiry) {
+        return true;
+    }
+
+    return new Date(expiry) > new Date();
+}
+
+
+// ============================================================
+//  FREE TRIAL
+// ============================================================
+
+function showFreeTrial() {
+
+    const modal =
+        document.getElementById("free-trial-modal");
+
+    if (modal) {
+        modal.classList.remove("hidden");
+    }
+
+    if (
+        typeof lucide !== "undefined" &&
+        lucide.createIcons
+    ) {
+        lucide.createIcons();
+    }
+}
+
+
+function closeFreeTrial() {
+
+    const modal =
+        document.getElementById("free-trial-modal");
+
+    if (modal) {
+        modal.classList.add("hidden");
+    }
+}
+
+
+function startFreeTrial() {
+
+    closeFreeTrial();
+
+    if (!currentUser) {
         showSignup();
         return;
-      }
-      switchTab('home');
     }
 
-  function updatePlanUI() {
+    switchTab("home");
+}
+
+
+// ============================================================
+//  UPDATE PLAN UI
+// ============================================================
+
+function updatePlanUI() {
 
     const isPremium = isPremiumActive();
     const isAdminUser = isAdmin;
+
 
     // ======================
     // Top badge
     // ======================
 
     const badge =
-        document.getElementById('plan-badge');
+        document.getElementById("plan-badge");
 
     if (badge) {
 
         if (isAdminUser) {
 
-            badge.className =
-                'hidden';
+            badge.className = "hidden";
 
         } else if (isPremium) {
 
-            badge.className =
-                'premium-badge';
-
-            badge.textContent =
-                'PRO';
+            badge.className = "premium-badge";
+            badge.textContent = "PRO";
 
         } else {
 
-            badge.className =
-                'free-badge';
-
-            badge.textContent =
-                'FREE';
-
+            badge.className = "free-badge";
+            badge.textContent = "FREE";
         }
     }
+
 
     // ======================
     // Settings plan label
@@ -90,7 +146,7 @@ const DEFAULT_BORDER_COLOR = "var(--border)";
 
     const planLabel =
         document.getElementById(
-            'settings-plan-label'
+            "settings-plan-label"
         );
 
     if (planLabel) {
@@ -98,7 +154,7 @@ const DEFAULT_BORDER_COLOR = "var(--border)";
         if (isAdminUser) {
 
             planLabel.textContent =
-                'Admin 👑';
+                "Admin 👑";
 
         } else if (isPremium) {
 
@@ -107,18 +163,18 @@ const DEFAULT_BORDER_COLOR = "var(--border)";
 
             const days =
                 expiry
-                ? daysUntil(expiry)
-                : 0;
+                    ? daysUntil(expiry)
+                    : 0;
 
             planLabel.textContent =
                 `Premium ✦ (${days} days left)`;
 
         } else {
 
-            planLabel.textContent =
-                'Free';
+            planLabel.textContent = "Free";
         }
     }
+
 
     // ======================
     // Upgrade button
@@ -126,16 +182,17 @@ const DEFAULT_BORDER_COLOR = "var(--border)";
 
     const upgradeBtn =
         document.getElementById(
-            'settings-upgrade-btn'
+            "settings-upgrade-btn"
         );
 
     if (upgradeBtn) {
 
         upgradeBtn.style.display =
             (isPremium || isAdminUser)
-            ? 'none'
-            : 'inline-block';
+                ? "none"
+                : "inline-block";
     }
+
 
     // ======================
     // Expiry
@@ -143,7 +200,7 @@ const DEFAULT_BORDER_COLOR = "var(--border)";
 
     const expiryLabel =
         document.getElementById(
-            'expiry-label'
+            "expiry-label"
         );
 
     if (expiryLabel) {
@@ -151,10 +208,10 @@ const DEFAULT_BORDER_COLOR = "var(--border)";
         if (isAdminUser) {
 
             expiryLabel.textContent =
-                'Permanent';
+                "Permanent";
 
             expiryLabel.className =
-                'status premium';
+                "status premium";
 
         } else if (isPremium) {
 
@@ -163,21 +220,22 @@ const DEFAULT_BORDER_COLOR = "var(--border)";
 
             expiryLabel.textContent =
                 expiry
-                ? formatExpiryDate(expiry)
-                : 'Permanent';
+                    ? formatExpiryDate(expiry)
+                    : "Permanent";
 
             expiryLabel.className =
-                'status premium';
+                "status premium";
 
         } else {
 
             expiryLabel.textContent =
-                'Not active';
+                "Not active";
 
             expiryLabel.className =
-                'status free';
+                "status free";
         }
     }
+
 
     // ======================
     // Feature labels
@@ -186,85 +244,90 @@ const DEFAULT_BORDER_COLOR = "var(--border)";
     const premiumEnabled =
         isPremium || isAdminUser;
 
+
     const deckLimitLabel =
         document.getElementById(
-            'deck-limit-label'
+            "deck-limit-label"
         );
 
     if (deckLimitLabel) {
 
         deckLimitLabel.textContent =
             premiumEnabled
-            ? '♾️ All decks'
-            : 'Free decks only';
+                ? "♾️ All decks"
+                : "Free decks only";
 
         deckLimitLabel.className =
             `status ${
                 premiumEnabled
-                ? 'premium'
-                : 'free'
+                    ? "premium"
+                    : "free"
             }`;
     }
 
+
     const modeLabel =
         document.getElementById(
-            'mode-limit-label'
+            "mode-limit-label"
         );
 
     if (modeLabel) {
 
         modeLabel.textContent =
             premiumEnabled
-            ? '✅ All modes'
-            : 'Flashcards only';
+                ? "✅ All modes"
+                : "Flashcards only";
 
         modeLabel.className =
             `status ${
                 premiumEnabled
-                ? 'premium'
-                : 'free'
+                    ? "premium"
+                    : "free"
             }`;
     }
 
+
     const srsLabel =
         document.getElementById(
-            'srs-limit-label'
+            "srs-limit-label"
         );
 
     if (srsLabel) {
 
         srsLabel.textContent =
             premiumEnabled
-            ? '✅ Advanced'
-            : 'Basic';
+                ? "✅ Advanced"
+                : "Basic";
 
         srsLabel.className =
             `status ${
                 premiumEnabled
-                ? 'premium'
-                : 'free'
+                    ? "premium"
+                    : "free"
             }`;
     }
 
+
     const analyticsLabel =
         document.getElementById(
-            'analytics-limit-label'
+            "analytics-limit-label"
         );
 
     if (analyticsLabel) {
 
         analyticsLabel.textContent =
             premiumEnabled
-            ? '✅ Full'
-            : 'Limited';
+                ? "✅ Full"
+                : "Limited";
 
         analyticsLabel.className =
             `status ${
                 premiumEnabled
-                ? 'premium'
-                : 'free'
+                    ? "premium"
+                    : "free"
             }`;
     }
+
 
     // ======================
     // Inputs
@@ -272,728 +335,544 @@ const DEFAULT_BORDER_COLOR = "var(--border)";
 
     const easeInput =
         document.getElementById(
-            'ease-input'
+            "ease-input"
         );
 
     const intervalInput =
         document.getElementById(
-            'interval-input'
+            "interval-input"
         );
 
+
     if (easeInput) {
+
         easeInput.disabled =
             !premiumEnabled;
 
         easeInput.style.opacity =
             premiumEnabled
-            ? '1'
-            : '0.5';
+                ? "1"
+                : "0.5";
     }
 
+
     if (intervalInput) {
+
         intervalInput.disabled =
             !premiumEnabled;
 
         intervalInput.style.opacity =
             premiumEnabled
-            ? '1'
-            : '0.5';
+                ? "1"
+                : "0.5";
     }
+
+
+    // ======================
+    // Premium lock
+    // ======================
 
     const lockMsg =
         document.getElementById(
-            'premium-lock-msg'
+            "premium-lock-msg"
         );
 
     if (lockMsg) {
+
         lockMsg.classList.toggle(
-            'hidden',
+            "hidden",
             premiumEnabled
         );
     }
 
+
+    // ======================
+    // Home upgrade prompt
+    // ======================
+
     const prompt =
         document.getElementById(
-            'home-upgrade-prompt'
+            "home-upgrade-prompt"
         );
 
     if (prompt) {
 
         prompt.style.display =
             premiumEnabled
-            ? 'none'
-            : 'flex';
+                ? "none"
+                : "flex";
     }
 }
 
- // ============================================================
-    //  UPGRADE & PAYMENT
-    // ============================================================
-    function showUpgradeModal() {
-      document.getElementById('upgrade-modal').classList.remove('hidden');
-      document.getElementById('upgrade-code-input').value = '';
-      document.getElementById('upgrade-code-status').textContent = '';
-      hasValidCode = false;
-      selectedPlan = null;
-        selectedDuration = 3;
-        document.querySelectorAll('.upgrade-duration-btn').forEach(btn => {
-    btn.classList.remove('active');
-});
 
-document.querySelector('.upgrade-duration-btn[onclick*="selectDuration(3"]')
-    ?.classList.add('active');
-     document.getElementById("book-buyer-card").style.borderColor =
-    DEFAULT_BORDER_COLOR;
-document.getElementById("regular-card").style.borderColor =
-    DEFAULT_BORDER_COLOR;
+// ============================================================
+//  UPGRADE & PAYMENT
+// ============================================================
 
-      const isPremium = isPremiumActive();
-      if (isPremium) {
-    document.getElementById('modal-price-display').textContent =
-        '✅ Premium Active';
+function showUpgradeModal() {
 
-    document.getElementById('modal-price-label').textContent =
-        'You already have premium!';
-} else {
-    selectedPlan = "book";
+    const modal =
+        document.getElementById("upgrade-modal");
+
+    if (!modal) return;
+
+    modal.classList.remove("hidden");
+
+
+    const codeInput =
+        document.getElementById(
+            "upgrade-code-input"
+        );
+
+    const codeStatus =
+        document.getElementById(
+            "upgrade-code-status"
+        );
+
+    if (codeInput) {
+        codeInput.value = "";
+    }
+
+    if (codeStatus) {
+        codeStatus.textContent = "";
+    }
+
+
+    hasValidCode = false;
+    selectedPlan = null;
     selectedDuration = 3;
-    updatePricingDisplay();
-}
 
-      const currentPlanLabel = document.getElementById('upgrade-current-plan');
-      if (currentPlanLabel) {
-        currentPlanLabel.textContent = isPremium ? 'Premium ✦' : 'Free';
-        currentPlanLabel.className = isPremium ? 'premium-badge' : 'free-badge';
-      }
 
-      if (isPremium) {
-        const status = document.getElementById('upgrade-code-status');
-        status.textContent = '✅ You already have Premium access!';
-        status.style.color = '#059669';
-      }
+    // ======================
+    // Reset duration buttons
+    // ======================
 
-      if (typeof lucide !== 'undefined' && lucide.createIcons) {
+    document
+        .querySelectorAll(
+            ".upgrade-duration-btn"
+        )
+        .forEach(btn => {
+            btn.classList.remove("active");
+        });
+
+
+    const defaultDuration =
+        document.querySelector(
+            '.upgrade-duration-btn[onclick*="selectDuration(3"]'
+        );
+
+    if (defaultDuration) {
+        defaultDuration.classList.add("active");
+    }
+
+
+    // ======================
+    // Reset plan borders
+    // ======================
+
+    const bookCard =
+        document.getElementById(
+            "book-buyer-card"
+        );
+
+    const regularCard =
+        document.getElementById(
+            "regular-card"
+        );
+
+    if (bookCard) {
+        bookCard.style.borderColor =
+            DEFAULT_BORDER_COLOR;
+    }
+
+    if (regularCard) {
+        regularCard.style.borderColor =
+            DEFAULT_BORDER_COLOR;
+    }
+
+
+    // ======================
+    // Premium status
+    // ======================
+
+    const isPremium =
+        isPremiumActive();
+
+
+    if (isPremium) {
+
+        const priceDisplay =
+            document.getElementById(
+                "modal-price-display"
+            );
+
+        const priceLabel =
+            document.getElementById(
+                "modal-price-label"
+            );
+
+        if (priceDisplay) {
+            priceDisplay.textContent =
+                "✅ Premium Active";
+        }
+
+        if (priceLabel) {
+            priceLabel.textContent =
+                "You already have premium!";
+        }
+
+    } else {
+
+        selectedPlan = "book";
+        selectedDuration = 3;
+
+        updatePricingDisplay();
+    }
+
+
+    // ======================
+    // Current plan label
+    // ======================
+
+    const currentPlanLabel =
+        document.getElementById(
+            "upgrade-current-plan"
+        );
+
+    if (currentPlanLabel) {
+
+        currentPlanLabel.textContent =
+            isPremium
+                ? "Premium ✦"
+                : "Free";
+
+        currentPlanLabel.className =
+            isPremium
+                ? "premium-badge"
+                : "free-badge";
+    }
+
+
+    if (isPremium && codeStatus) {
+
+        codeStatus.textContent =
+            "✅ You already have Premium access!";
+
+        codeStatus.style.color =
+            "#059669";
+    }
+
+
+    if (
+        typeof lucide !== "undefined" &&
+        lucide.createIcons
+    ) {
         lucide.createIcons();
-      }
     }
-
-    function closeUpgradeModal() { document.getElementById('upgrade-modal').classList.add('hidden') }
-
- async function validateUpgradeCode() {
-  const code = document
-    .getElementById('upgrade-code-input')
-    .value
-    .trim()
-    .toUpperCase();
-
-  const status = document.getElementById('upgrade-code-status');
-
-  if (!code) {
-    hasValidCode = false;
-    status.textContent = 'Please enter access code';
-    status.style.color = '#ef4444';
-    updatePricingDisplay();
-    return;
-  }
-
-  try {
-    status.textContent = '⏳ Validating...';
-    status.style.color = '#6b7280';
-
-   const result =
-    await validateAccessCodeCallable({ code });
-
-    if (!result.data.valid) {
-      hasValidCode = false;
-      status.textContent = '❌ ' + (result.data.message || 'Invalid access code');
-      status.style.color = '#ef4444';
-      updatePricingDisplay();
-      return;
-    }
-
-    hasValidCode = true;
-    status.textContent = '✅ Access code verified';
-    status.style.color = '#10b981';
-    updatePricingDisplay();
-
-  } catch (error) {
-    console.error('Access code validation error:', error);
-
-    hasValidCode = false;
-    status.textContent =
-      '❌ ' + (error.message || 'Validation error');
-    status.style.color = '#ef4444';
-
-    updatePricingDisplay();
-  }
 }
-    
-function selectPlan(type){
 
-    if(isPremiumActive()){
-        alert("You already have Premium access!");
+
+function closeUpgradeModal() {
+
+    const modal =
+        document.getElementById(
+            "upgrade-modal"
+        );
+
+    if (modal) {
+        modal.classList.add("hidden");
+    }
+}
+
+
+// ============================================================
+//  VALIDATE ACCESS CODE
+// ============================================================
+
+async function validateUpgradeCode() {
+
+    const input =
+        document.getElementById(
+            "upgrade-code-input"
+        );
+
+    const status =
+        document.getElementById(
+            "upgrade-code-status"
+        );
+
+    if (!input || !status) return;
+
+
+    const code =
+        input.value
+            .trim()
+            .toUpperCase();
+
+
+    if (!code) {
+
+        hasValidCode = false;
+
+        status.textContent =
+            "Please enter access code";
+
+        status.style.color =
+            "#ef4444";
+
+        updatePricingDisplay();
+
         return;
     }
+
+
+    try {
+
+        status.textContent =
+            "⏳ Validating...";
+
+        status.style.color =
+            "#6b7280";
+
+
+        const result =
+            await validateAccessCodeCallable({
+                code
+            });
+
+
+        if (!result.data.valid) {
+
+            hasValidCode = false;
+
+            status.textContent =
+                "❌ " +
+                (
+                    result.data.message ||
+                    "Invalid access code"
+                );
+
+            status.style.color =
+                "#ef4444";
+
+            updatePricingDisplay();
+
+            return;
+        }
+
+
+        hasValidCode = true;
+
+        status.textContent =
+            "✅ Access code verified";
+
+        status.style.color =
+            "#10b981";
+
+        updatePricingDisplay();
+
+
+    } catch (error) {
+
+        console.error(
+            "Access code validation error:",
+            error
+        );
+
+        hasValidCode = false;
+
+        status.textContent =
+            "❌ " +
+            (
+                error.message ||
+                "Validation error"
+            );
+
+        status.style.color =
+            "#ef4444";
+
+        updatePricingDisplay();
+    }
+}
+
+
+// ============================================================
+//  SELECT PLAN
+// ============================================================
+
+function selectPlan(type) {
+
+    if (isPremiumActive()) {
+
+        alert(
+            "You already have Premium access!"
+        );
+
+        return;
+    }
+
 
     selectedPlan = type;
 
-    document
-        .getElementById("book-buyer-card")
-        .style.borderColor =
+
+    const bookCard =
+        document.getElementById(
+            "book-buyer-card"
+        );
+
+    const regularCard =
+        document.getElementById(
+            "regular-card"
+        );
+
+
+    if (bookCard) {
+
+        bookCard.style.borderColor =
             type === "book"
                 ? ACTIVE_BORDER_COLOR
                 : DEFAULT_BORDER_COLOR;
+    }
 
-    document
-        .getElementById("regular-card")
-        .style.borderColor =
+
+    if (regularCard) {
+
+        regularCard.style.borderColor =
             type === "regular"
                 ? ACTIVE_BORDER_COLOR
                 : DEFAULT_BORDER_COLOR;
+    }
 
-    // ===== Show / Hide Access Code =====
-    const accessSection = document.getElementById("access-code-section");
+
+    // ======================
+    // Access code
+    // ======================
+
+    const accessSection =
+        document.getElementById(
+            "access-code-section"
+        );
+
 
     if (type === "book") {
-        accessSection.classList.remove("hidden");
-    } else {
-        accessSection.classList.add("hidden");
 
-        document.getElementById("upgrade-code-input").value = "";
-        document.getElementById("upgrade-code-status").textContent = "";
+        if (accessSection) {
+            accessSection.classList.remove(
+                "hidden"
+            );
+        }
+
+    } else {
+
+        if (accessSection) {
+            accessSection.classList.add(
+                "hidden"
+            );
+        }
+
+
+        const codeInput =
+            document.getElementById(
+                "upgrade-code-input"
+            );
+
+        const codeStatus =
+            document.getElementById(
+                "upgrade-code-status"
+            );
+
+
+        if (codeInput) {
+            codeInput.value = "";
+        }
+
+        if (codeStatus) {
+            codeStatus.textContent = "";
+        }
+
         hasValidCode = false;
     }
 
-    updatePricingDisplay();
 
+    updatePricingDisplay();
 }
+
+
+// ============================================================
+//  SELECT DURATION
+// ============================================================
 
 function selectDuration(months, event) {
 
-    selectedDuration = Number(months);
+    selectedDuration =
+        Number(months);
 
-    document.querySelectorAll('.upgrade-duration-btn').forEach(btn => {
-        btn.classList.remove('active');
-    });
-
-    if (event?.currentTarget) {
-        event.currentTarget.classList.add('active');
-    }
-
-    updatePricingDisplay();
-}
-
-const validateAccessCodeCallable =
-    functions.httpsCallable("validateAccessCode");
-
-const ACTIVE_BORDER_COLOR = "#d97706";
-const DEFAULT_BORDER_COLOR = "var(--border)";
-
- function savePlan(email, plan, expiry) {
-    localStorage.setItem("Pharmadeck_plan_" + email, plan);
-
-    if (expiry) {
-        localStorage.setItem("Pharmadeck_expiry_" + email, expiry);
-    } else {
-        localStorage.removeItem("Pharmadeck_expiry_" + email);
-    }
-
-    userPlan = plan;
-}
-
-
-  function getPlanExpiry(email) {
-      return localStorage.getItem('Pharmadeck_expiry_' + email) || null;
-    }
-
-   function isPremiumActive() {
-  if (isAdmin) return true;
-  if (userPlan !== 'premium') return false;
-  const expiry = getPlanExpiry(currentUser);
-  if (!expiry) return true; 
-  return new Date(expiry) > new Date();
-}
-
- function showFreeTrial() {
-      document.getElementById('free-trial-modal').classList.remove('hidden');
-      if (typeof lucide !== 'undefined' && lucide.createIcons) {
-        lucide.createIcons();
-      }
-    }
-
-    function closeFreeTrial() { document.getElementById('free-trial-modal').classList.add('hidden') }
-
-    function startFreeTrial() {
-      closeFreeTrial();
-      if (!currentUser) {
-        showSignup();
-        return;
-      }
-      switchTab('home');
-    }
-
-  function updatePlanUI() {
-
-    const isPremium = isPremiumActive();
-    const isAdminUser = isAdmin;
-
-    // ======================
-    // Top badge
-    // ======================
-
-    const badge =
-        document.getElementById('plan-badge');
-
-    if (badge) {
-
-        if (isAdminUser) {
-
-            badge.className =
-                'hidden';
-
-        } else if (isPremium) {
-
-            badge.className =
-                'premium-badge';
-
-            badge.textContent =
-                'PRO';
-
-        } else {
-
-            badge.className =
-                'free-badge';
-
-            badge.textContent =
-                'FREE';
-
-        }
-    }
-
-    // ======================
-    // Settings plan label
-    // ======================
-
-    const planLabel =
-        document.getElementById(
-            'settings-plan-label'
-        );
-
-    if (planLabel) {
-
-        if (isAdminUser) {
-
-            planLabel.textContent =
-                'Admin 👑';
-
-        } else if (isPremium) {
-
-            const expiry =
-                getPlanExpiry(currentUser);
-
-            const days =
-                expiry
-                ? daysUntil(expiry)
-                : 0;
-
-            planLabel.textContent =
-                `Premium ✦ (${days} days left)`;
-
-        } else {
-
-            planLabel.textContent =
-                'Free';
-        }
-    }
-
-    // ======================
-    // Upgrade button
-    // ======================
-
-    const upgradeBtn =
-        document.getElementById(
-            'settings-upgrade-btn'
-        );
-
-    if (upgradeBtn) {
-
-        upgradeBtn.style.display =
-            (isPremium || isAdminUser)
-            ? 'none'
-            : 'inline-block';
-    }
-
-    // ======================
-    // Expiry
-    // ======================
-
-    const expiryLabel =
-        document.getElementById(
-            'expiry-label'
-        );
-
-    if (expiryLabel) {
-
-        if (isAdminUser) {
-
-            expiryLabel.textContent =
-                'Permanent';
-
-            expiryLabel.className =
-                'status premium';
-
-        } else if (isPremium) {
-
-            const expiry =
-                getPlanExpiry(currentUser);
-
-            expiryLabel.textContent =
-                expiry
-                ? formatExpiryDate(expiry)
-                : 'Permanent';
-
-            expiryLabel.className =
-                'status premium';
-
-        } else {
-
-            expiryLabel.textContent =
-                'Not active';
-
-            expiryLabel.className =
-                'status free';
-        }
-    }
-
-    // ======================
-    // Feature labels
-    // ======================
-
-    const premiumEnabled =
-        isPremium || isAdminUser;
-
-    const deckLimitLabel =
-        document.getElementById(
-            'deck-limit-label'
-        );
-
-    if (deckLimitLabel) {
-
-        deckLimitLabel.textContent =
-            premiumEnabled
-            ? '♾️ All decks'
-            : 'Free decks only';
-
-        deckLimitLabel.className =
-            `status ${
-                premiumEnabled
-                ? 'premium'
-                : 'free'
-            }`;
-    }
-
-    const modeLabel =
-        document.getElementById(
-            'mode-limit-label'
-        );
-
-    if (modeLabel) {
-
-        modeLabel.textContent =
-            premiumEnabled
-            ? '✅ All modes'
-            : 'Flashcards only';
-
-        modeLabel.className =
-            `status ${
-                premiumEnabled
-                ? 'premium'
-                : 'free'
-            }`;
-    }
-
-    const srsLabel =
-        document.getElementById(
-            'srs-limit-label'
-        );
-
-    if (srsLabel) {
-
-        srsLabel.textContent =
-            premiumEnabled
-            ? '✅ Advanced'
-            : 'Basic';
-
-        srsLabel.className =
-            `status ${
-                premiumEnabled
-                ? 'premium'
-                : 'free'
-            }`;
-    }
-
-    const analyticsLabel =
-        document.getElementById(
-            'analytics-limit-label'
-        );
-
-    if (analyticsLabel) {
-
-        analyticsLabel.textContent =
-            premiumEnabled
-            ? '✅ Full'
-            : 'Limited';
-
-        analyticsLabel.className =
-            `status ${
-                premiumEnabled
-                ? 'premium'
-                : 'free'
-            }`;
-    }
-
-    // ======================
-    // Inputs
-    // ======================
-
-    const easeInput =
-        document.getElementById(
-            'ease-input'
-        );
-
-    const intervalInput =
-        document.getElementById(
-            'interval-input'
-        );
-
-    if (easeInput) {
-        easeInput.disabled =
-            !premiumEnabled;
-
-        easeInput.style.opacity =
-            premiumEnabled
-            ? '1'
-            : '0.5';
-    }
-
-    if (intervalInput) {
-        intervalInput.disabled =
-            !premiumEnabled;
-
-        intervalInput.style.opacity =
-            premiumEnabled
-            ? '1'
-            : '0.5';
-    }
-
-    const lockMsg =
-        document.getElementById(
-            'premium-lock-msg'
-        );
-
-    if (lockMsg) {
-        lockMsg.classList.toggle(
-            'hidden',
-            premiumEnabled
-        );
-    }
-
-    const prompt =
-        document.getElementById(
-            'home-upgrade-prompt'
-        );
-
-    if (prompt) {
-
-        prompt.style.display =
-            premiumEnabled
-            ? 'none'
-            : 'flex';
-    }
-}
-
- // ============================================================
-    //  UPGRADE & PAYMENT
-    // ============================================================
-    function showUpgradeModal() {
-      document.getElementById('upgrade-modal').classList.remove('hidden');
-      document.getElementById('upgrade-code-input').value = '';
-      document.getElementById('upgrade-code-status').textContent = '';
-      hasValidCode = false;
-      selectedPlan = null;
-        selectedDuration = 3;
-        document.querySelectorAll('.upgrade-duration-btn').forEach(btn => {
-    btn.classList.remove('active');
-});
-
-document.querySelector('.upgrade-duration-btn[onclick*="selectDuration(3"]')
-    ?.classList.add('active');
-     document.getElementById("book-buyer-card").style.borderColor =
-    DEFAULT_BORDER_COLOR;
-document.getElementById("regular-card").style.borderColor =
-    DEFAULT_BORDER_COLOR;
-
-      const isPremium = isPremiumActive();
-      if (isPremium) {
-    document.getElementById('modal-price-display').textContent =
-        '✅ Premium Active';
-
-    document.getElementById('modal-price-label').textContent =
-        'You already have premium!';
-} else {
-    selectedPlan = "book";
-    selectedDuration = 3;
-    updatePricingDisplay();
-}
-
-      const currentPlanLabel = document.getElementById('upgrade-current-plan');
-      if (currentPlanLabel) {
-        currentPlanLabel.textContent = isPremium ? 'Premium ✦' : 'Free';
-        currentPlanLabel.className = isPremium ? 'premium-badge' : 'free-badge';
-      }
-
-      if (isPremium) {
-        const status = document.getElementById('upgrade-code-status');
-        status.textContent = '✅ You already have Premium access!';
-        status.style.color = '#059669';
-      }
-
-      if (typeof lucide !== 'undefined' && lucide.createIcons) {
-        lucide.createIcons();
-      }
-    }
-
-    function closeUpgradeModal() { document.getElementById('upgrade-modal').classList.add('hidden') }
-
- async function validateUpgradeCode() {
-  const code = document
-    .getElementById('upgrade-code-input')
-    .value
-    .trim()
-    .toUpperCase();
-
-  const status = document.getElementById('upgrade-code-status');
-
-  if (!code) {
-    hasValidCode = false;
-    status.textContent = 'Please enter access code';
-    status.style.color = '#ef4444';
-    updatePricingDisplay();
-    return;
-  }
-
-  try {
-    status.textContent = '⏳ Validating...';
-    status.style.color = '#6b7280';
-
-   const result =
-    await validateAccessCodeCallable({ code });
-
-    if (!result.data.valid) {
-      hasValidCode = false;
-      status.textContent = '❌ ' + (result.data.message || 'Invalid access code');
-      status.style.color = '#ef4444';
-      updatePricingDisplay();
-      return;
-    }
-
-    hasValidCode = true;
-    status.textContent = '✅ Access code verified';
-    status.style.color = '#10b981';
-    updatePricingDisplay();
-
-  } catch (error) {
-    console.error('Access code validation error:', error);
-
-    hasValidCode = false;
-    status.textContent =
-      '❌ ' + (error.message || 'Validation error');
-    status.style.color = '#ef4444';
-
-    updatePricingDisplay();
-  }
-}
-    
-function selectPlan(type){
-
-    if(isPremiumActive()){
-        alert("You already have Premium access!");
-        return;
-    }
-
-    selectedPlan = type;
 
     document
-        .getElementById("book-buyer-card")
-        .style.borderColor =
-            type === "book"
-                ? ACTIVE_BORDER_COLOR
-                : DEFAULT_BORDER_COLOR;
+        .querySelectorAll(
+            ".upgrade-duration-btn"
+        )
+        .forEach(btn => {
+            btn.classList.remove("active");
+        });
 
-    document
-        .getElementById("regular-card")
-        .style.borderColor =
-            type === "regular"
-                ? ACTIVE_BORDER_COLOR
-                : DEFAULT_BORDER_COLOR;
-
-    // ===== Show / Hide Access Code =====
-    const accessSection = document.getElementById("access-code-section");
-
-    if (type === "book") {
-        accessSection.classList.remove("hidden");
-    } else {
-        accessSection.classList.add("hidden");
-
-        document.getElementById("upgrade-code-input").value = "";
-        document.getElementById("upgrade-code-status").textContent = "";
-        hasValidCode = false;
-    }
-
-    updatePricingDisplay();
-
-}
-
-function selectDuration(months, event) {
-
-    selectedDuration = Number(months);
-
-    document.querySelectorAll('.upgrade-duration-btn').forEach(btn => {
-        btn.classList.remove('active');
-    });
 
     if (event?.currentTarget) {
-        event.currentTarget.classList.add('active');
+
+        event.currentTarget.classList.add(
+            "active"
+        );
     }
+
 
     updatePricingDisplay();
 }
+
+
+// ============================================================
+//  UPDATE PRICING DISPLAY
+// ============================================================
 
 function updatePricingDisplay() {
 
-    if (!selectedPlan || !selectedDuration) {
+    if (
+        !selectedPlan ||
+        !selectedDuration
+    ) {
         return;
     }
 
-    const duration = Number(selectedDuration);
+
+    const duration =
+        Number(selectedDuration);
+
 
     const salePrice =
         PRICING[selectedPlan]?.[duration];
 
+
     const normalPrice =
         NORMAL_PRICING[selectedPlan]?.[duration];
 
+
     if (!salePrice) {
+
         console.warn(
-            '⚠️ Pricing not found:',
+            "⚠️ Pricing not found:",
             selectedPlan,
             duration
         );
+
         return;
     }
 
-    const formatPrice = (amount) =>
-        "Rp" + Number(amount).toLocaleString("id-ID");
+
+    const formatPrice =
+        amount =>
+            "Rp" +
+            Number(amount)
+                .toLocaleString("id-ID");
+
 
     // ============================================================
     // DISCOUNT
@@ -1001,21 +880,31 @@ function updatePricingDisplay() {
 
     let discountPercent = 0;
 
+
     if (
         normalPrice &&
         normalPrice > salePrice
     ) {
-        discountPercent = Math.round(
-            ((normalPrice - salePrice) / normalPrice) * 100
-        );
+
+        discountPercent =
+            Math.round(
+                (
+                    (normalPrice - salePrice) /
+                    normalPrice
+                ) * 100
+            );
     }
+
 
     // ============================================================
     // PRICE DISPLAY
     // ============================================================
 
     const priceEl =
-        document.getElementById('modal-price-display');
+        document.getElementById(
+            "modal-price-display"
+        );
+
 
     if (priceEl) {
 
@@ -1063,28 +952,36 @@ function updatePricingDisplay() {
 
             priceEl.textContent =
                 formatPrice(salePrice);
-
         }
     }
+
 
     // ============================================================
     // LABEL
     // ============================================================
 
     const planLabel =
-        selectedPlan === 'book'
-            ? 'Book Buyer'
-            : 'Regular';
+        selectedPlan === "book"
+            ? "Book Buyer"
+            : "Regular";
+
 
     const labelEl =
-        document.getElementById('modal-price-label');
+        document.getElementById(
+            "modal-price-label"
+        );
+
 
     if (labelEl) {
 
         labelEl.textContent =
-            `${planLabel} · ${duration} Month${duration > 1 ? 's' : ''}`;
-
+            `${planLabel} · ${duration} Month${
+                duration > 1
+                    ? "s"
+                    : ""
+            }`;
     }
+
 
     // ============================================================
     // PRICE PER DAY
@@ -1093,30 +990,39 @@ function updatePricingDisplay() {
     const days =
         duration * 30;
 
+
     const perDay =
-        Math.round(salePrice / days);
+        Math.round(
+            salePrice / days
+        );
+
 
     const dailyEl =
-        document.getElementById('price-per-day');
+        document.getElementById(
+            "price-per-day"
+        );
+
 
     if (dailyEl) {
 
         dailyEl.textContent =
             `${formatPrice(perDay)}/day`;
-
     }
+
 
     // ============================================================
     // PAYMENT BUTTON
     // ============================================================
 
     const payBtn =
-        document.getElementById('upgrade-pay-btn');
+        document.getElementById(
+            "upgrade-pay-btn"
+        );
+
 
     if (payBtn) {
 
         payBtn.textContent =
             `Pay ${formatPrice(salePrice)}`;
-
     }
 }
