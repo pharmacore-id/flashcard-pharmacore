@@ -295,11 +295,11 @@ async function loadUserData(email) {
             );
 
             allCards = mergeProgress(
-                sharedCards,
-                cachedRecord.cards
-            );
+    sharedCards,
+    cachedRecord.cards
+);
 
-            userPlan =
+userPlan =
     cachedRecord.plan ||
     localStorage.getItem(
         "Pharmadeck_plan_" + email
@@ -319,11 +319,11 @@ if (cachedExpiry) {
     );
 }
 
-            console.log(
-                '✅ Local data ready:',
-                allCards.length,
-                'cards'
-            );
+console.log(
+    '💎 Cached plan:',
+    userPlan,
+    cachedExpiry
+);
 
             // ========================================================
             // IMPORTANT:
