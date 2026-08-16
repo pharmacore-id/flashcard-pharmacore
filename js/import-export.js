@@ -543,10 +543,8 @@ async function exportGiftCodes() {
 
         Code: c.code,
 
-        Type: c.type || 'giveaway',
-
         Duration:
-          `${c.durationMonths || 1} Month`,
+          `${c.months || 1} Month`,
 
         Used:
           c.used ? 'Yes' : 'No',
@@ -596,7 +594,7 @@ async function exportGiftCodes() {
       '❌ Failed to export gift codes.'
     );
   }
-}  
+}
 
 async function exportCodes() {
   if (!isAdmin) return;
