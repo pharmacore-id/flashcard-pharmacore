@@ -36,30 +36,75 @@ async function loadFromFirebase(email) {
 
         const userDoc = await userRef.get();
 
-        let plan = 'free';
-        let nickname = null;
-        let schemaVersion = CURRENT_SCHEMA_VERSION;
+       let plan = 'free';
+let planExpiry = null;
+let nickname = null;
+let schemaVersion = CURRENT_SCHEMA_VERSION;
 
-        if (userDoc.exists) {
+if (userDoc.exists) {
 
-            const userData = userDoc.data();
+    const userData = userDoc.data();
 
-            plan = userData.plan || 'free';
+    plan = userData.plan || 'free';
 
-            nickname =
-                userData.nickname || null;
+    // ============================
+    // PREMIUM EXPIRY
+    // ============================
 
-            schemaVersion =
-                userData.schema_version ||
-                CURRENT_SCHEMA_VERSION;
+    if (userData.planExpiry) {
 
-            if (nickname) {
-                localStorage.setItem(
-                    NICKNAME_KEY + email,
-                    nickname
-                );
-            }
+        if (
+            typeof userData.planExpiry.toDate === 'function'
+        ) {
+
+            planExpiry =
+                userData.planExpiry
+                    .toDate()
+                    .toISOString();
+
+        } else {
+
+            planExpiry =
+                new Date(
+                    userData.planExpiry
+                ).toISOString();
         }
+    }
+
+    // ============================
+    // CACHE PREMIUM LOCALLY
+    // ============================
+
+   localStorage.setItem(
+    "Pharmadeck_plan_" + email,
+    plan
+);
+
+if (planExpiry) {
+    localStorage.setItem(
+        "Pharmadeck_expiry_" + email,
+        planExpiry
+    );
+} else {
+    localStorage.removeItem(
+        "Pharmadeck_expiry_" + email
+    );
+}
+
+    nickname =
+        userData.nickname || null;
+
+    schemaVersion =
+        userData.schema_version ||
+        CURRENT_SCHEMA_VERSION;
+
+    if (nickname) {
+        localStorage.setItem(
+            NICKNAME_KEY + email,
+            nickname
+        );
+    }
+}
 
         // ============================================================
         // 2. LOAD USER PROGRESS
@@ -96,17 +141,19 @@ async function loadFromFirebase(email) {
         // 3. RETURN CLOUD DATA
         // ============================================================
 
-        return {
-            cards: progressCards,
+       return {
+    cards: progressCards,
 
-            plan: plan,
+    plan: plan,
 
-            schema_version:
-                schemaVersion,
+    planExpiry: planExpiry,
 
-            last_updated:
-                Date.now()
-        };
+    schema_version:
+        schemaVersion,
+
+    last_updated:
+        Date.now()
+};
 
     } catch (err) {
 
