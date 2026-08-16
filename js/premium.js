@@ -5,6 +5,9 @@
 const validateAccessCodeCallable =
     functions.httpsCallable("validateAccessCode");
 
+const redeemGiftCodeCallable =
+    functions.httpsCallable("redeemGiftCode");
+
 const ACTIVE_BORDER_COLOR = "#d97706";
 const DEFAULT_BORDER_COLOR = "var(--border)";
 
