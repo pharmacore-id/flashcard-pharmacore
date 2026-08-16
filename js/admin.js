@@ -152,27 +152,38 @@ async function deleteRequest(requestId) {
   }
 }
     
-    function showAdminImport() {
-      if (!isAdmin) {
+   function showAdminImport() {
+    if (!isAdmin) {
         alert('Only admins can import decks.');
         return;
-      }
-      document.querySelectorAll('.view').forEach(v => {
+    }
+
+    document.querySelectorAll('.view').forEach(v => {
         v.classList.remove('active');
         v.style.display = 'none';
-      });
-      const adminImportView = document.getElementById('view-admin-import');
-      if (adminImportView) {
+    });
+
+    const adminImportView =
+        document.getElementById('view-admin-import');
+
+    if (adminImportView) {
         adminImportView.classList.add('active');
         adminImportView.style.display = 'flex';
-      }
-      currentTab = 'admin-import';
-      renderAdminDeckList();
-      renderCodeList();
-      if (typeof lucide !== 'undefined' && lucide.createIcons) {
-        lucide.createIcons();
-      }
     }
+
+    currentTab = 'admin-import';
+
+    renderAdminDeckList();
+    renderCodeList();
+    renderGiftCodeList();
+
+    if (
+        typeof lucide !== 'undefined' &&
+        lucide.createIcons
+    ) {
+        lucide.createIcons();
+    }
+}
 
 function renderAdminDeckList() {
   const container = document.getElementById('admin-deck-list');
@@ -271,22 +282,32 @@ async function deleteSelectedDecks() {
 
   if (!confirm(`Delete ${selectedDeckIds.length} selected deck(s)?`)) return;
 
+  let deletedCount = 0;
+
   for (const deckId of selectedDeckIds) {
-    const isSharedDeck = allCards.some(c => c.deck_id === deckId && c.isShared);
+    const isSharedDeck = allCards.some(
+      c => c.deck_id === deckId && c.isShared
+    );
+
     if (isSharedDeck) {
       const docId = deckId.replace('shared_', '');
+
       try {
         await db.collection('sharedDecks').doc(docId).delete();
       } catch (error) {
         console.error('Failed to delete shared deck:', error);
+        continue;
       }
     }
-    // ===== HAPUS DARI allCards =====
+
     allCards = allCards.filter(c => c.deck_id !== deckId);
+    deletedCount++;
   }
 
   await saveUserData(currentUser);
+
   selectedDeckIds = [];
+
   renderDecks();
   updateHome();
   renderAdminDeckList();
