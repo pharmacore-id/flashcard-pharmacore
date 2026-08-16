@@ -5845,6 +5845,57 @@ color:var(--qris-text-light);
           </div>
         </div>
 
+         <!-- ===== GIFT CODE ===== -->
+
+<div class="surface rounded-2xl border border-theme p-4 shadow-card mt-3">
+
+  <div class="flex items-center gap-2 mb-1">
+    <i
+      data-lucide="gift"
+      class="w-5 h-5"
+      style="color:var(--premium-gold)"
+    ></i>
+
+    <p class="text-sm font-semibold">
+      Have a Gift Code?
+    </p>
+  </div>
+
+  <p class="text-xs text-sec mb-3">
+    Redeem a gift code to get 1 month of Premium for free.
+  </p>
+
+  <div class="flex gap-2">
+
+    <input
+      id="gift-code-input"
+      type="text"
+      maxlength="6"
+      autocomplete="off"
+      autocapitalize="characters"
+      placeholder="ABC123"
+      class="code-input flex-1 border rounded-xl px-3 py-2.5 surface text-sm"
+      style="border-color:var(--border)"
+    />
+
+    <button
+      id="gift-code-btn"
+      onclick="redeemGiftCode()"
+      class="px-4 py-2.5 rounded-xl text-white text-sm font-semibold"
+      style="background:linear-gradient(135deg,var(--premium-gold),var(--premium-purple));"
+    >
+      Redeem
+    </button>
+
+  </div>
+
+  <div
+    id="gift-code-status"
+    class="text-xs mt-2 min-h-[18px]"
+  ></div>
+
+</div>
+
         <div class="surface rounded-2xl border border-theme p-4 shadow-card">
           <p class="text-sm text-sec font-medium mb-2">🔑 Change Password</p>
           <div class="space-y-3">
@@ -5906,56 +5957,6 @@ color:var(--qris-text-light);
             <span id="settings-plan-label" class="font-semibold">Free</span>
             <button onclick="showUpgradeModal()" id="settings-upgrade-btn" class="px-4 py-1.5 rounded-xl text-white text-sm font-medium" style="background:linear-gradient(135deg,var(--premium-gold),var(--premium-purple));">Upgrade</button>
           </div>
-          <!-- ===== GIFT CODE ===== -->
-
-<div class="surface rounded-2xl border border-theme p-4 shadow-card mt-3">
-
-  <div class="flex items-center gap-2 mb-1">
-    <i
-      data-lucide="gift"
-      class="w-5 h-5"
-      style="color:var(--premium-gold)"
-    ></i>
-
-    <p class="text-sm font-semibold">
-      Have a Gift Code?
-    </p>
-  </div>
-
-  <p class="text-xs text-sec mb-3">
-    Redeem a gift code to get 1 month of Premium for free.
-  </p>
-
-  <div class="flex gap-2">
-
-    <input
-      id="gift-code-input"
-      type="text"
-      maxlength="6"
-      autocomplete="off"
-      autocapitalize="characters"
-      placeholder="ABC123"
-      class="code-input flex-1 border rounded-xl px-3 py-2.5 surface text-sm"
-      style="border-color:var(--border)"
-    />
-
-    <button
-      id="gift-code-btn"
-      onclick="redeemGiftCode()"
-      class="px-4 py-2.5 rounded-xl text-white text-sm font-semibold"
-      style="background:linear-gradient(135deg,var(--premium-gold),var(--premium-purple));"
-    >
-      Redeem
-    </button>
-
-  </div>
-
-  <div
-    id="gift-code-status"
-    class="text-xs mt-2 min-h-[18px]"
-  ></div>
-
-</div>
           <div class="feature-list mt-2">
             <div class="feature-item"><i data-lucide="layers" class="icon gold"></i><span class="label">Decks Available</span><span class="status free" id="deck-limit-label">5 decks</span></div>
             <div class="feature-item"><i data-lucide="book-open" class="icon gold"></i><span class="label">Study Modes</span><span class="status free" id="mode-limit-label">Flashcards only</span></div>
