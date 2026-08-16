@@ -22,6 +22,10 @@ async function processPayment() {
     alert("Please select a plan first.");
     return;
   }
+if (selectedPlan === "book" && !hasValidCode) {
+  alert("Please validate your access code first.");
+  return;
+}
 
   if (isPremiumActive()) {
     alert("You already have Premium access!");
