@@ -484,72 +484,154 @@ function selectDuration(months, event) {
     updatePricingDisplay();
 }
 
-function updatePricingDisplay(){
+function updatePricingDisplay() {
 
-if (!selectedPlan || !selectedDuration) {
-    return;
+    if (!selectedPlan || !selectedDuration) {
+        return;
+    }
+
+    const duration = Number(selectedDuration);
+
+    const salePrice =
+        PRICING[selectedPlan]?.[duration];
+
+    const normalPrice =
+        NORMAL_PRICING[selectedPlan]?.[duration];
+
+    if (!salePrice) {
+        console.warn(
+            '⚠️ Pricing not found:',
+            selectedPlan,
+            duration
+        );
+        return;
+    }
+
+    const formatPrice = (amount) =>
+        "Rp" + Number(amount).toLocaleString("id-ID");
+
+    // ============================================================
+    // DISCOUNT
+    // ============================================================
+
+    let discountPercent = 0;
+
+    if (
+        normalPrice &&
+        normalPrice > salePrice
+    ) {
+        discountPercent = Math.round(
+            ((normalPrice - salePrice) / normalPrice) * 100
+        );
+    }
+
+    // ============================================================
+    // PRICE DISPLAY
+    // ============================================================
+
+    const priceEl =
+        document.getElementById('modal-price-display');
+
+    if (priceEl) {
+
+        if (discountPercent > 0) {
+
+            priceEl.innerHTML = `
+                <div style="
+                    display:flex;
+                    align-items:center;
+                    gap:8px;
+                    flex-wrap:wrap;
+                ">
+
+                    <span style="
+                        font-size:15px;
+                        font-weight:500;
+                        text-decoration:line-through;
+                        opacity:.5;
+                    ">
+                        ${formatPrice(normalPrice)}
+                    </span>
+
+                    <span style="
+                        font-size:30px;
+                        font-weight:800;
+                    ">
+                        ${formatPrice(salePrice)}
+                    </span>
+
+                    <span style="
+                        font-size:11px;
+                        font-weight:700;
+                        background:#dcfce7;
+                        color:#15803d;
+                        padding:3px 7px;
+                        border-radius:999px;
+                    ">
+                        SAVE ${discountPercent}%
+                    </span>
+
+                </div>
+            `;
+
+        } else {
+
+            priceEl.textContent =
+                formatPrice(salePrice);
+
+        }
+    }
+
+    // ============================================================
+    // LABEL
+    // ============================================================
+
+    const planLabel =
+        selectedPlan === 'book'
+            ? 'Book Buyer'
+            : 'Regular';
+
+    const labelEl =
+        document.getElementById('modal-price-label');
+
+    if (labelEl) {
+
+        labelEl.textContent =
+            `${planLabel} · ${duration} Month${duration > 1 ? 's' : ''}`;
+
+    }
+
+    // ============================================================
+    // PRICE PER DAY
+    // ============================================================
+
+    const days =
+        duration * 30;
+
+    const perDay =
+        Math.round(salePrice / days);
+
+    const dailyEl =
+        document.getElementById('price-per-day');
+
+    if (dailyEl) {
+
+        dailyEl.textContent =
+            `${formatPrice(perDay)}/day`;
+
+    }
+
+    // ============================================================
+    // PAYMENT BUTTON
+    // ============================================================
+
+    const payBtn =
+        document.getElementById('upgrade-pay-btn');
+
+    if (payBtn) {
+
+        payBtn.textContent =
+            `Pay ${formatPrice(salePrice)}`;
+
+    }
 }
-
-const price=
-PRICING[selectedPlan][selectedDuration];
-
-const priceDisplay =
-    document.getElementById("modal-price-display");
-
-if (priceDisplay) {
-    priceDisplay.textContent =
-        `Rp${price.toLocaleString()}`;
-}
-
-const perDay=
-Math.round(
-price/(selectedDuration*30)
-);
-
-const label =
-selectedPlan === "book"
-    ? "BOOK BUYER"
-    : "REGULAR";
-
-document
-.getElementById("modal-price-label")
-.textContent =
-label;
-
-document
-.getElementById(
-'price-per-day'
-)
-.textContent=
-`Rp${perDay.toLocaleString()}/day`;
-
-const payBtn=
-document.getElementById(
-'upgrade-pay-btn'
-);
-
-payBtn.textContent=
-`Pay Rp${price.toLocaleString()}`;
-
-
-// Disable payment for book buyer until token valid
-
-if(
-selectedPlan==="book"
-&& !hasValidCode
-){
-
-payBtn.disabled=true;
-
-payBtn.style.opacity=".5";
-
-payBtn.textContent=
-'Validate access code first';
-
-}
-else{
-
-payBtn.disabled=false;
-
-payBtn.style.opacity="1";}}
-
