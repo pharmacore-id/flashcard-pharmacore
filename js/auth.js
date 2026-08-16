@@ -300,8 +300,24 @@ async function loadUserData(email) {
             );
 
             userPlan =
-                cachedRecord.plan ||
-                'free';
+    cachedRecord.plan ||
+    localStorage.getItem(
+        "Pharmadeck_plan_" + email
+    ) ||
+    'free';
+
+const cachedExpiry =
+    cachedRecord.planExpiry ||
+    localStorage.getItem(
+        "Pharmadeck_expiry_" + email
+    );
+
+if (cachedExpiry) {
+    localStorage.setItem(
+        "Pharmadeck_expiry_" + email,
+        cachedExpiry
+    );
+}
 
             console.log(
                 '✅ Local data ready:',
