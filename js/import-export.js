@@ -511,7 +511,195 @@ async function handleExcelImport(event) {
   renderCodeList();
 }
 
-  async function exportCodes() {
+// ============================================================
+//  GIFT CODES (ADMIN)
+//  Giveaway → 1 Month Premium
+// ============================================================
+
+function generateGiftCode() {
+  const chars =
+    'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+
+  let code = '';
+
+  for (let i = 0; i < 6; i++) {
+    code += chars.charAt(
+      Math.floor(Math.random() * chars.length)
+    );
+  }
+
+  return code;
+}
+
+
+async function generateGiftCodes(count) {
+
+  if (!isAdmin) {
+    alert('Only admins can generate gift codes.');
+    return;
+  }
+
+  let generated = 0;
+
+  for (let i = 0; i < count; i++) {
+
+    let created = false;
+
+    // Coba beberapa kali kalau kebetulan collision
+    for (let attempt = 0; attempt < 5; attempt++) {
+
+      const code = generateGiftCode();
+
+      try {
+
+        const ref =
+          db.collection('giftCodes').doc(code);
+
+        const existing =
+          await ref.get();
+
+        if (existing.exists) {
+          continue;
+        }
+
+        await ref.set({
+
+          code: code,
+
+          type: 'giveaway',
+
+          durationMonths: 1,
+
+          used: false,
+
+          usedBy: null,
+
+          usedAt: null,
+
+          createdAt:
+            firebase.firestore.FieldValue.serverTimestamp(),
+
+          createdBy: currentUser
+
+        });
+
+        generated++;
+        created = true;
+
+        break;
+
+      } catch (error) {
+
+        console.error(
+          'Failed to generate gift code:',
+          error
+        );
+
+      }
+    }
+
+    if (!created) {
+      console.error(
+        'Could not generate unique gift code.'
+      );
+    }
+  }
+
+  alert(
+    `✅ Generated ${generated} new gift codes!`
+  );
+
+  renderGiftCodeList();
+}
+
+// ============================================================
+//  EXPORT GIFT CODES
+// ============================================================
+
+async function exportGiftCodes() {
+
+  if (!isAdmin) return;
+
+  try {
+
+    const snapshot =
+      await db.collection('giftCodes').get();
+
+    if (snapshot.empty) {
+
+      alert(
+        'No gift codes to export. Generate some first!'
+      );
+
+      return;
+    }
+
+    const data = [];
+
+    snapshot.forEach(doc => {
+
+      const c = doc.data();
+
+      data.push({
+
+        Code: c.code,
+
+        Type: c.type || 'giveaway',
+
+        Duration:
+          `${c.durationMonths || 1} Month`,
+
+        Used:
+          c.used ? 'Yes' : 'No',
+
+        'Used By':
+          c.usedBy || '',
+
+        'Used At':
+          c.usedAt?.toDate?.() ||
+          c.usedAt ||
+          '',
+
+        'Created At':
+          c.createdAt?.toDate?.() ||
+          c.createdAt ||
+          ''
+
+      });
+
+    });
+
+    const wb =
+      XLSX.utils.book_new();
+
+    const ws =
+      XLSX.utils.json_to_sheet(data);
+
+    XLSX.utils.book_append_sheet(
+      wb,
+      ws,
+      'Gift Codes'
+    );
+
+    XLSX.writeFile(
+      wb,
+      'Pharmadeck_gift_codes.xlsx'
+    );
+
+  } catch (error) {
+
+    console.error(
+      'Gift code export error:',
+      error
+    );
+
+    alert(
+      '❌ Failed to export gift codes.'
+    );
+  }
+}  
+
+async function exportCodes() {
   if (!isAdmin) return;
 
   try {
@@ -541,5 +729,82 @@ async function handleExcelImport(event) {
   } catch (error) {
     console.error('Export error:', error);
     alert('❌ Failed to export codes.');
+  }
+}
+
+// ============================================================
+//  RENDER GIFT CODE LIST
+// ============================================================
+
+async function renderGiftCodeList() {
+
+  if (!isAdmin) return;
+
+  const container =
+    document.getElementById(
+      'gift-code-list'
+    );
+
+  if (!container) return;
+
+  try {
+
+    const snapshot =
+      await db.collection('giftCodes')
+        .orderBy('createdAt', 'desc')
+        .get();
+
+    if (snapshot.empty) {
+
+      container.innerHTML =
+        '<p class="text-xs text-sec">No gift codes generated yet.</p>';
+
+      return;
+    }
+
+    let html = '';
+
+    snapshot.forEach(doc => {
+
+      const c = doc.data();
+
+      const used = c.used === true;
+
+      html += `
+        <div class="flex items-center justify-between gap-3 p-3 rounded-xl border border-theme">
+
+          <div>
+            <div class="font-mono font-semibold">
+              ${c.code}
+            </div>
+
+            <div class="text-xs text-sec">
+              1 Month · ${used ? 'Used' : 'Available'}
+            </div>
+          </div>
+
+          <div class="text-xs font-medium ${
+            used
+              ? 'text-gray-400'
+              : 'text-green-600'
+          }">
+            ${used ? 'USED' : 'AVAILABLE'}
+          </div>
+
+        </div>
+      `;
+    });
+
+    container.innerHTML = html;
+
+  } catch (error) {
+
+    console.error(
+      'Failed to render gift codes:',
+      error
+    );
+
+    container.innerHTML =
+      '<p class="text-xs text-red-500">Failed to load gift codes.</p>';
   }
 }
