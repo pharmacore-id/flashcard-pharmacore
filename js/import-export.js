@@ -516,21 +516,12 @@ async function handleExcelImport(event) {
 //  Giveaway → 1 Month Premium
 // ============================================================
 
-function generateGiftCode() {
-  const chars =
-    'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+// ============================================================
+// GIFT CODES (ADMIN)
+// ============================================================
 
-  let code = '';
-
-  for (let i = 0; i < 6; i++) {
-    code += chars.charAt(
-      Math.floor(Math.random() * chars.length)
-    );
-  }
-
-  return code;
-}
-
+const generateGiftCodesCallable =
+    functions.httpsCallable("generateGiftCodes");
 
 async function generateGiftCodes(count) {
 
@@ -539,77 +530,45 @@ async function generateGiftCodes(count) {
     return;
   }
 
-  let generated = 0;
+  try {
 
-  for (let i = 0; i < count; i++) {
+    const result =
+      await generateGiftCodesCallable({
+        count: count
+      });
 
-    let created = false;
-
-    // Coba beberapa kali kalau kebetulan collision
-    for (let attempt = 0; attempt < 5; attempt++) {
-
-      const code = generateGiftCode();
-
-      try {
-
-        const ref =
-          db.collection('giftCodes').doc(code);
-
-        const existing =
-          await ref.get();
-
-        if (existing.exists) {
-          continue;
-        }
-
-        await ref.set({
-
-          code: code,
-
-          type: 'giveaway',
-
-          durationMonths: 1,
-
-          used: false,
-
-          usedBy: null,
-
-          usedAt: null,
-
-          createdAt:
-            firebase.firestore.FieldValue.serverTimestamp(),
-
-          createdBy: currentUser
-
-        });
-
-        generated++;
-        created = true;
-
-        break;
-
-      } catch (error) {
-
-        console.error(
-          'Failed to generate gift code:',
-          error
-        );
-
-      }
-    }
-
-    if (!created) {
-      console.error(
-        'Could not generate unique gift code.'
+    if (!result.data?.success) {
+      throw new Error(
+        result.data?.message ||
+        'Failed to generate gift codes.'
       );
     }
+
+    const codes =
+      result.data.codes || [];
+
+    alert(
+      `✅ Generated ${codes.length} new gift codes!`
+    );
+
+    // Refresh daftar gift code
+    renderGiftCodeList();
+
+  } catch (error) {
+
+    console.error(
+      'Gift code generation error:',
+      error
+    );
+
+    alert(
+      '❌ ' +
+      (
+        error.message ||
+        'Failed to generate gift codes.'
+      )
+    );
   }
-
-  alert(
-    `✅ Generated ${generated} new gift codes!`
-  );
-
-  renderGiftCodeList();
 }
 
 // ============================================================
