@@ -274,13 +274,13 @@ else {
 
       if (seconds <= 0) {
 
-        clearInterval(timerInterval);
+    clearInterval(timerInterval);
 
-        timerEl.textContent = "Expired";
-        timerEl.style.background = "#6b7280";
+    timerEl.textContent = "Expired";
+    timerEl.style.color = "#6b7280";
 
-        return;
-      }
+    return;
+}
 
       const mins = Math.floor(seconds / 60);
       const secs = seconds % 60;
