@@ -28,36 +28,119 @@ async function processPayment() {
     return;
   }
 
-  if (selectedPlan === "book" && !hasValidCode) {
-    alert("Please validate your access code first.");
-    return;
+  // ============================================================
+  // BOOK BUYER → AUTO VALIDATE ACCESS CODE
+  // ============================================================
+
+  if (selectedPlan === "book") {
+
+    const codeInput =
+      document.getElementById("upgrade-code-input");
+
+    const code =
+      codeInput?.value.trim().toUpperCase();
+
+    // Belum memasukkan code
+    if (!code) {
+      alert("Please enter your access code first.");
+      codeInput?.focus();
+      return;
+    }
+
+    // Belum tervalidasi → validasi otomatis
+    if (!hasValidCode) {
+
+      try {
+
+        const result =
+          await validateAccessCodeCallable({
+            code
+          });
+
+        if (!result.data?.valid) {
+
+          hasValidCode = false;
+
+          alert(
+            result.data?.message ||
+            "Invalid access code."
+          );
+
+          return;
+        }
+
+        hasValidCode = true;
+
+        console.log(
+          "✅ Access code automatically validated"
+        );
+
+      } catch (error) {
+
+        console.error(
+          "Access code validation error:",
+          error
+        );
+
+        hasValidCode = false;
+
+        alert(
+          error.message ||
+          "Failed to validate access code."
+        );
+
+        return;
+      }
+    }
   }
 
-  const btn = document.getElementById("upgrade-pay-btn");
-if (!btn) return;
+  // ============================================================
+  // CREATE PAYMENT
+  // ============================================================
+
+  const btn =
+    document.getElementById("upgrade-pay-btn");
+
+  if (!btn) return;
+
   btn.disabled = true;
   btn.textContent = "Creating payment...";
 
   try {
 
-    const response = await createPayment({
-    userType: selectedPlan,
-    plan: `${selectedDuration}_month`,
-    accessCode:
-        selectedPlan === "book"
-            ? document.getElementById("upgrade-code-input").value.trim()
+    const response =
+      await createPayment({
+        userType: selectedPlan,
+
+        plan:
+          `${selectedDuration}_month`,
+
+        accessCode:
+          selectedPlan === "book"
+            ? document
+                .getElementById("upgrade-code-input")
+                .value
+                .trim()
             : null
-});
+      });
+
     const payment = response.data;
 
-    // Simpan pilihan yang BENAR-BENAR dipakai saat payment dibuat
-    payment.selectedPlan = selectedPlan;
-    payment.selectedDuration = Number(selectedDuration);
+    // Simpan pilihan yang BENAR-BENAR
+    // dipakai saat payment dibuat
+    payment.selectedPlan =
+      selectedPlan;
+
+    payment.selectedDuration =
+      Number(selectedDuration);
 
     closeUpgradeModal();
 
     showQrisModal(payment);
-    startPaymentStatusListener(payment.orderId);
+
+    startPaymentStatusListener(
+      payment.orderId
+    );
 
   } catch (err) {
 
@@ -73,11 +156,8 @@ if (!btn) return;
     btn.disabled = false;
 
     updatePricingDisplay();
-
   }
-
 }
-
 function formatRupiah(amount) {
     return "Rp " + Number(amount).toLocaleString("id-ID");
 }
