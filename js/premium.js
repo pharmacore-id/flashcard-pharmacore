@@ -471,7 +471,7 @@ function showUpgradeModal() {
     if (!modal) return;
 
     modal.classList.remove("hidden");
-
+    updatePremiumComparison();
 
     const codeInput =
         document.getElementById(
