@@ -112,38 +112,42 @@ function getDateRange(days) {
       return allCards.filter(c => c.last_review && c.last_review.startsWith(todayStr)).length;
     }
 
-function getCardsByDate(date) {
+function getTotalReviewsForDate(date) {
+    let total = 0;
 
-    return allCards.filter(card => {
+    allCards.forEach(card => {
 
-        // New system
-        if (card.review_history &&
-            card.review_history.length > 0) {
+        // =====================================================
+        // NEW SYSTEM: count actual review entries for this date
+        // =====================================================
+        if (Array.isArray(card.review_history) && card.review_history.length > 0) {
 
-            return card.review_history.includes(date);
+            total += card.review_history.filter(reviewDate => {
+                return String(reviewDate).startsWith(date);
+            }).length;
+
+            return;
         }
 
-        // Old cards: convert old data once
+        // =====================================================
+        // OLD SYSTEM: fallback to last_review
+        // =====================================================
         if (
             card.last_review &&
-            card.last_review.startsWith(date)
+            String(card.last_review).startsWith(date)
         ) {
-
-            card.review_history = [date];
-
-            return true;
+            total++;
         }
-
-        return false;
-
     });
+ console.log(
+    allCards.filter(c =>
+        Array.isArray(c.review_history) &&
+        c.review_history.includes('2026-08-18')
+    ).length
+);
 
-}
-
-    function getTotalReviewsForDate(date) {
-    return getCardsByDate(date).length;
-}
-    
+    return total;
+}    
     function getSubjectBreakdown() {
       const subjects = {};
       getRealCards().forEach(c => {
