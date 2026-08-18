@@ -5342,10 +5342,7 @@ color:var(--qris-text-light);
 .comparison-row {
     display: grid;
 
-    grid-template-columns:
-        minmax(0, 1.55fr)
-        minmax(0, 0.9fr)
-        minmax(0, 0.9fr);
+    grid-template-columns: 40% 30% 30%;
 
     width: 100%;
 }
@@ -5496,12 +5493,9 @@ color:var(--qris-text-light);
 @media (max-width: 600px) {
 
     .comparison-header,
-    .comparison-row {
-        grid-template-columns:
-            minmax(0, 1.55fr)
-            minmax(0, 0.9fr)
-            minmax(0, 0.9fr);
-    }
+.comparison-row {
+    grid-template-columns: 40% 30% 30%;
+}
 
     .comparison-header {
         min-height: 56px;
@@ -5559,13 +5553,10 @@ color:var(--qris-text-light);
 
 @media (max-width: 360px) {
 
-    .comparison-header,
-    .comparison-row {
-        grid-template-columns:
-            minmax(0, 1.5fr)
-            minmax(0, 0.9fr)
-            minmax(0, 0.9fr);
-    }
+   .comparison-header,
+.comparison-row {
+    grid-template-columns: 40% 30% 30%;
+}
 
     .comparison-feature {
         padding: 10px 7px;
