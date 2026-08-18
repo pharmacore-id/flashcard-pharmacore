@@ -1209,3 +1209,201 @@ if (payBtn) {
     }
 }
 }
+
+// ============================================================
+// PREMIUM COMPARISON COUNTS
+// ============================================================
+
+function updatePremiumComparison() {
+
+    try {
+
+        // ----------------------------------------------------
+        // TOTAL CARDS
+        // ----------------------------------------------------
+
+        const totalCards =
+            Array.isArray(allCards)
+                ? allCards.length
+                : 0;
+
+
+        // ----------------------------------------------------
+        // DECKS
+        //
+        // Sesuaikan dengan struktur deck yang digunakan app.
+        // ----------------------------------------------------
+
+        let totalDecks = 0;
+        let freeDecks = 0;
+
+        let freeCards = 0;
+
+
+        /*
+         * Jika data deck tersedia sebagai sharedDecks.
+         */
+        if (Array.isArray(window.sharedDecks)) {
+
+            const decks =
+                window.sharedDecks;
+
+
+            totalDecks =
+                decks.length;
+
+
+            freeDecks =
+                decks.filter(deck => {
+
+                    return (
+                        deck.premium !== true &&
+                        deck.isPremium !== true
+                    );
+
+                }).length;
+
+
+            /*
+             * Hitung cards dari deck FREE.
+             */
+            decks.forEach(deck => {
+
+                const isPremiumDeck =
+                    deck.premium === true ||
+                    deck.isPremium === true;
+
+
+                if (!isPremiumDeck) {
+
+                    if (Array.isArray(deck.cards)) {
+
+                        freeCards +=
+                            deck.cards.length;
+
+                    }
+
+                }
+
+            });
+
+        }
+
+
+        // ----------------------------------------------------
+        // FALLBACK
+        //
+        // Kalau sharedDecks belum tersedia,
+        // jangan tampilkan angka palsu.
+        // ----------------------------------------------------
+
+        if (!totalDecks) {
+
+            const deckElements =
+                document.querySelectorAll(
+                    "[data-deck-id]"
+                );
+
+            if (deckElements.length) {
+
+                totalDecks =
+                    deckElements.length;
+
+            }
+
+        }
+
+
+        // ----------------------------------------------------
+        // PREMIUM CARDS
+        // ----------------------------------------------------
+
+        const premiumCards =
+            totalCards;
+
+
+        // Kalau freeCards tidak berhasil dihitung
+        // dari struktur deck, gunakan 0 agar tidak misleading.
+        if (!Number.isFinite(freeCards)) {
+            freeCards = 0;
+        }
+
+
+        // ----------------------------------------------------
+        // UPDATE UI
+        // ----------------------------------------------------
+
+        const freeDeckEl =
+            document.getElementById(
+                "comparison-free-decks"
+            );
+
+        const premiumDeckEl =
+            document.getElementById(
+                "comparison-premium-decks"
+            );
+
+        const freeCardsEl =
+            document.getElementById(
+                "comparison-free-cards"
+            );
+
+        const premiumCardsEl =
+            document.getElementById(
+                "comparison-premium-cards"
+            );
+
+
+        if (freeDeckEl) {
+
+            freeDeckEl.textContent =
+                `Free (${freeDecks})`;
+
+        }
+
+
+        if (premiumDeckEl) {
+
+            premiumDeckEl.textContent =
+                `All (${totalDecks})`;
+
+        }
+
+
+        if (freeCardsEl) {
+
+            freeCardsEl.textContent =
+                `Free (${freeCards})`;
+
+        }
+
+
+        if (premiumCardsEl) {
+
+            premiumCardsEl.textContent =
+                `All (${premiumCards})`;
+
+        }
+
+
+        console.log(
+            "📊 Premium comparison:",
+            {
+                freeDecks,
+                totalDecks,
+                freeCards,
+                premiumCards
+            }
+        );
+
+
+    } catch (error) {
+
+        console.warn(
+            "⚠️ Failed to update premium comparison:",
+            error
+        );
+
+    }
+
+}
