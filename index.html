@@ -5316,6 +5316,353 @@ color:var(--qris-text-light);
     }
 
 }
+
+/* ============================================================
+   PREMIUM COMPARISON
+============================================================ */
+
+.premium-comparison-section {
+    margin-top: 34px;
+    width: 100%;
+}
+
+
+/* TITLE */
+
+.comparison-title {
+    margin: 0 0 6px;
+    font-size: 22px;
+    font-weight: 800;
+    color: #1f2038;
+}
+
+.comparison-title span {
+    color: #ff6b00;
+}
+
+
+.comparison-subtitle {
+    margin: 0 0 18px;
+    font-size: 14px;
+    line-height: 1.5;
+    color: #82766c;
+}
+
+
+/* MAIN CARD */
+
+.comparison-card {
+    width: 100%;
+    border: 2px solid #eee3d3;
+    border-radius: 22px;
+    overflow: hidden;
+    background: #fff;
+}
+
+
+/* HEADER */
+
+.comparison-header {
+    display: grid;
+    grid-template-columns: minmax(0, 1.5fr) 0.7fr 0.9fr;
+    align-items: stretch;
+
+    background: #faf7f2;
+    border-bottom: 1px solid #eee3d3;
+}
+
+
+.comparison-plan {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    min-height: 52px;
+
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: .5px;
+}
+
+
+.comparison-plan.free {
+    color: #77706a;
+}
+
+
+.comparison-plan.premium {
+    color: #ff6b00;
+    background: #fff5eb;
+}
+
+
+/* ROW */
+
+.comparison-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1.5fr) 0.7fr 0.9fr;
+
+    min-height: 72px;
+
+    border-bottom: 1px solid #f0e9df;
+}
+
+
+.comparison-row.last-row {
+    border-bottom: none;
+}
+
+
+/* FEATURE */
+
+.comparison-feature {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+
+    padding: 12px 10px 12px 16px;
+
+    min-width: 0;
+}
+
+
+.comparison-icon {
+    flex: 0 0 auto;
+
+    width: 28px;
+    text-align: center;
+
+    font-size: 19px;
+}
+
+
+.comparison-feature > div {
+    min-width: 0;
+}
+
+
+.comparison-feature strong {
+    display: block;
+
+    font-size: 14px;
+    font-weight: 700;
+    color: #25253d;
+
+    line-height: 1.25;
+}
+
+
+.comparison-feature small {
+    display: block;
+
+    margin-top: 3px;
+
+    font-size: 10px;
+    color: #9a8f85;
+
+    line-height: 1.3;
+}
+
+
+/* VALUES */
+
+.comparison-value {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    padding: 8px 5px;
+
+    text-align: center;
+
+    font-size: 11px;
+    line-height: 1.35;
+    color: #6f6861;
+}
+
+
+.comparison-value.free {
+    background: #fff;
+}
+
+
+.comparison-value.premium {
+    background: #fff9f3;
+
+    color: #302d42;
+    font-weight: 700;
+}
+
+
+/* CHECK */
+
+.comparison-value .check {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 18px;
+    height: 18px;
+
+    margin-right: 4px;
+
+    border-radius: 50%;
+
+    background: #ff6b00;
+    color: white;
+
+    font-size: 11px;
+    font-weight: 900;
+}
+
+
+/* LOCK */
+
+.comparison-value.locked {
+    opacity: .6;
+}
+
+
+/* PREMIUM CTA */
+
+.premium-comparison-cta {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+
+    margin-top: 16px;
+    padding: 14px 16px;
+
+    border: 1px solid #f2d8bb;
+    border-radius: 16px;
+
+    background: #fff8f0;
+}
+
+
+.premium-cta-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 34px;
+    height: 34px;
+
+    flex: 0 0 auto;
+
+    border-radius: 50%;
+
+    background: #ff6b00;
+    color: white;
+
+    font-size: 17px;
+    font-weight: 800;
+}
+
+
+.premium-comparison-cta strong {
+    display: block;
+
+    color: #29283e;
+    font-size: 13px;
+    font-weight: 800;
+
+    line-height: 1.3;
+}
+
+
+.premium-comparison-cta span {
+    display: block;
+
+    margin-top: 3px;
+
+    color: #887b70;
+    font-size: 11px;
+
+    line-height: 1.3;
+}
+
+
+/* ============================================================
+   MOBILE
+============================================================ */
+
+@media (max-width: 480px) {
+
+    .premium-comparison-section {
+        margin-top: 28px;
+    }
+
+    .comparison-title {
+        font-size: 20px;
+    }
+
+    .comparison-subtitle {
+        font-size: 13px;
+    }
+
+    .comparison-card {
+        border-radius: 18px;
+    }
+
+    .comparison-header,
+    .comparison-row {
+        grid-template-columns:
+            minmax(0, 1.45fr)
+            0.68fr
+            0.87fr;
+    }
+
+    .comparison-row {
+        min-height: 68px;
+    }
+
+    .comparison-feature {
+        padding-left: 11px;
+        gap: 6px;
+    }
+
+    .comparison-icon {
+        width: 22px;
+        font-size: 16px;
+    }
+
+    .comparison-feature strong {
+        font-size: 12px;
+    }
+
+    .comparison-feature small {
+        font-size: 9px;
+    }
+
+    .comparison-value {
+        font-size: 10px;
+        padding: 6px 3px;
+    }
+
+    .comparison-plan {
+        font-size: 10px;
+    }
+
+    .comparison-value .check {
+        width: 16px;
+        height: 16px;
+        font-size: 9px;
+        margin-right: 3px;
+    }
+
+    .premium-comparison-cta {
+        padding: 12px;
+    }
+
+    .premium-comparison-cta strong {
+        font-size: 12px;
+    }
+
+    .premium-comparison-cta span {
+        font-size: 10px;
+    }
+}
     
 </style>
 </head>
@@ -6533,7 +6880,6 @@ color:var(--qris-text-light);
             <div class="feature-item"><i data-lucide="layers" class="icon gold"></i><span class="label">Decks Available</span><span class="status free" id="deck-limit-label">5 decks</span></div>
             <div class="feature-item"><i data-lucide="book-open" class="icon gold"></i><span class="label">Study Modes</span><span class="status free" id="mode-limit-label">Flashcards only</span></div>
             <div class="feature-item"><i data-lucide="brain" class="icon gold"></i><span class="label">SRS Controls</span><span class="status free" id="srs-limit-label">Basic</span></div>
-            <div class="feature-item"><i data-lucide="bar-chart-2" class="icon gold"></i><span class="label">Analytics</span><span class="status free" id="analytics-limit-label">Limited</span></div>
             <div class="feature-item" id="expiry-feature"><i data-lucide="clock" class="icon gold"></i><span class="label">Premium Expires</span><span class="status free" id="expiry-label">Not active</span></div>
           </div>
         </div>
@@ -7046,6 +7392,203 @@ Back to Settings
 
     </div>
 
+  <!-- ============================================================
+     WHY GO PREMIUM
+============================================================ -->
+
+<div class="premium-comparison-section">
+
+    <h3 class="comparison-title">
+        Why go Premium? <span>✦</span>
+    </h3>
+
+    <p class="comparison-subtitle">
+        Get more decks, more cards, and more ways to study.
+    </p>
+
+    <div class="comparison-card">
+
+        <!-- HEADER -->
+        <div class="comparison-header">
+            <div></div>
+
+            <div class="comparison-plan free">
+                <span>FREE</span>
+            </div>
+
+            <div class="comparison-plan premium">
+                <span>✦ PREMIUM</span>
+            </div>
+        </div>
+
+
+        <!-- DECKS -->
+        <div class="comparison-row">
+
+            <div class="comparison-feature">
+                <span class="comparison-icon">📚</span>
+
+                <div>
+                    <strong>Decks</strong>
+                    <small>Available decks</small>
+                </div>
+            </div>
+
+            <div class="comparison-value free">
+                <span id="comparison-free-decks">
+                    —
+                </span>
+            </div>
+
+            <div class="comparison-value premium">
+                <span id="comparison-premium-decks">
+                    —
+                </span>
+            </div>
+
+        </div>
+
+
+        <!-- CARDS -->
+        <div class="comparison-row">
+
+            <div class="comparison-feature">
+                <span class="comparison-icon">🃏</span>
+
+                <div>
+                    <strong>Cards</strong>
+                    <small>Available cards</small>
+                </div>
+            </div>
+
+            <div class="comparison-value free">
+                <span id="comparison-free-cards">
+                    —
+                </span>
+            </div>
+
+            <div class="comparison-value premium">
+                <span id="comparison-premium-cards">
+                    —
+                </span>
+            </div>
+
+        </div>
+
+
+        <!-- STUDY MODES -->
+        <div class="comparison-row">
+
+            <div class="comparison-feature">
+                <span class="comparison-icon">🎓</span>
+
+                <div>
+                    <strong>Study Modes</strong>
+                    <small>Ways to study</small>
+                </div>
+            </div>
+
+            <div class="comparison-value free">
+                <span>Flashcards</span>
+            </div>
+
+            <div class="comparison-value premium">
+                <span class="check">✓</span>
+                <span>Flashcards + Learn + Test</span>
+            </div>
+
+        </div>
+
+
+        <!-- SRS -->
+        <div class="comparison-row">
+
+            <div class="comparison-feature">
+                <span class="comparison-icon">🧠</span>
+
+                <div>
+                    <strong>SRS</strong>
+                    <small>Spaced repetition</small>
+                </div>
+            </div>
+
+            <div class="comparison-value free">
+                <span>Basic</span>
+            </div>
+
+            <div class="comparison-value premium">
+                <span class="check">✓</span>
+                <span>Advanced</span>
+            </div>
+
+        </div>
+
+
+        <!-- ANALYTICS -->
+        <div class="comparison-row">
+
+            <div class="comparison-feature">
+                <span class="comparison-icon">📊</span>
+
+                <div>
+                    <strong>Analytics</strong>
+                    <small>Track your progress</small>
+                </div>
+            </div>
+
+            <div class="comparison-value free">
+                <span>Limited</span>
+            </div>
+
+            <div class="comparison-value premium">
+                <span class="check">✓</span>
+                <span>Full</span>
+            </div>
+
+        </div>
+
+
+        <!-- PREMIUM DECKS -->
+        <div class="comparison-row last-row">
+
+            <div class="comparison-feature">
+                <span class="comparison-icon">⭐</span>
+
+                <div>
+                    <strong>Premium Decks</strong>
+                    <small>Exclusive pharmacy content</small>
+                </div>
+            </div>
+
+            <div class="comparison-value free locked">
+                <span>🔒</span>
+            </div>
+
+            <div class="comparison-value premium">
+                <span class="check">✓</span>
+                <span>Included</span>
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- PREMIUM CTA -->
+    <div class="premium-comparison-cta">
+
+        <div class="premium-cta-icon">
+            ✦
+        </div>
+
+        <div>
+            <strong>Unlock the full Pharmadeck experience</strong>
+            <span>Study smarter with everything unlocked.</span>
+        </div>
+
+    </div>
+
+</div>
 
     <!-- PLAN -->
 
